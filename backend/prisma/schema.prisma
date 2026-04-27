@@ -1,0 +1,278 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum ServiceType {
+  COMPETITIVE_INTELLIGENCE
+  CORPORATE_HEALTH
+  CYBERSECURITY_RADAR
+}
+
+enum ReportFrequency {
+  DAILY
+  WEEKLY
+  BIWEEKLY
+  MONTHLY
+}
+
+enum DeliveryChannel {
+  EMAIL
+  WHATSAPP
+  SMS
+}
+
+enum ProjectStatus {
+  TRIAL
+  ACTIVE
+  PAUSED
+  CANCELLED
+  EXPIRED
+}
+
+enum ReportStatus {
+  QUEUED
+  GENERATING
+  COMPLETED
+  FAILED
+}
+
+enum SubscriptionStatus {
+  TRIALING
+  ACTIVE
+  PAST_DUE
+  CANCELLED
+  UNPAID
+}
+
+model User {
+  id               String         @id @default(uuid())
+  email            String         @unique
+  fullName         String?
+  avatarUrl        String?
+  phone            String?
+  stripeCustomerId String?        @unique
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+  projects         Project[]
+  subscriptions    Subscription[]
+
+  @@map("users")
+}
+
+model Project {
+  id               String            @id @default(cuid())
+  userId           String
+  user             User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name             String
+  serviceType      ServiceType
+  frequency        ReportFrequency
+  status           ProjectStatus     @default(TRIAL)
+  deliveryChannels DeliveryChannel[]
+  deliveryEmail    String?
+  deliveryPhone    String?
+  trialStartedAt   DateTime          @default(now())
+  trialEndsAt      DateTime
+  nextReportAt     DateTime?
+  reportSlug       String            @unique @default(cuid())
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+
+  subscription         Subscription?
+  reports              Report[]
+  competitiveSetup     CompetitiveIntelligenceSetup?
+  corporateHealthSetup CorporateHealthSetup?
+  cybersecuritySetup   CybersecuritySetup?
+
+  @@map("projects")
+}
+
+model CompetitiveIntelligenceSetup {
+  id               String   @id @default(cuid())
+  projectId        String   @unique
+  project          Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  companyName      String
+  website          String?
+  industry         String
+  subIndustry      String?
+  country          String   @default("México")
+  city             String?
+  mainProducts     String[]
+  targetMarket     String?
+  priceSegment     String?
+  salesChannels    String[]
+  competitor1Name    String?
+  competitor1Website String?
+  competitor2Name    String?
+  competitor2Website String?
+  competitor3Name    String?
+  competitor3Website String?
+  competitor4Name    String?
+  competitor4Website String?
+  competitor5Name    String?
+  competitor5Website String?
+  linkedinUrl      String?
+  instagramUrl     String?
+  facebookUrl      String?
+  twitterUrl       String?
+  tiktokUrl        String?
+  trackingKeywords   String[]
+  regulatoryBodies   String[]
+  geographicScope    String[]
+  focusAreas         String[]
+  languagePreference String   @default("es-MX")
+  additionalContext  String?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@map("competitive_intelligence_setups")
+}
+
+model CorporateHealthSetup {
+  id                 String   @id @default(cuid())
+  projectId          String   @unique
+  project            Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  companyName        String
+  website            String?
+  industry           String
+  country            String   @default("México")
+  city               String?
+  employeeCount      Int
+  ageRangeMin        Int?
+  ageRangeMax        Int?
+  genderDistribution String?
+  workModality       String
+  shiftType          String?
+  mainRoles          String[]
+  mainDepartments    String[]
+  highStressRoles    String[]
+  existingPrograms   String[]
+  mainHRChallenges   String[]
+  absenteeismRate    String?
+  turnoverRate       String?
+  priorityTopics     String[]
+  budgetRange        String?
+  complianceNeeds    String[]
+  languagePreference String   @default("es-MX")
+  additionalContext  String?
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  @@map("corporate_health_setups")
+}
+
+model CybersecuritySetup {
+  id                     String   @id @default(cuid())
+  projectId              String   @unique
+  project                Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  companyName            String
+  primaryDomain          String
+  additionalDomains      String[]
+  country                String   @default("México")
+  industry               String
+  hostingType            String?
+  cloudProvider          String?
+  cdnProvider            String?
+  serverOs               String?
+  cmsUsed                String?
+  cmsVersion             String?
+  ecommercePlugin        String?
+  erpSystem              String?
+  crmSystem              String?
+  emailProvider          String?
+  videoConf              String?
+  activeTools            String[]
+  handlesPersonalData    Boolean  @default(false)
+  handlesPCI             Boolean  @default(false)
+  handlesHealthData      Boolean  @default(false)
+  dataStorageLocation    String?
+  employeeCount          Int?
+  hasFirewall            Boolean  @default(false)
+  hasSSL                 Boolean  @default(true)
+  hasMFA                 Boolean  @default(false)
+  hasBackups             Boolean  @default(false)
+  hasIncidentResponse    Boolean  @default(false)
+  lastSecurityAudit      String?
+  securityCertifications String[]
+  regulatoryFrameworks   String[]
+  complianceDeadlines    String?
+  languagePreference     String   @default("es-MX")
+  additionalContext      String?
+  createdAt              DateTime @default(now())
+  updatedAt              DateTime @updatedAt
+
+  @@map("cybersecurity_setups")
+}
+
+model Subscription {
+  id                     String             @id @default(cuid())
+  projectId              String             @unique
+  project                Project            @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  userId                 String
+  user                   User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  stripeSubscriptionId   String?            @unique
+  stripePriceId          String?
+  stripeCurrentPeriodEnd DateTime?
+  status                 SubscriptionStatus @default(TRIALING)
+  frequency              ReportFrequency
+  pricePerMonth          Float
+  trialStartedAt         DateTime           @default(now())
+  trialEndsAt            DateTime
+  cancelledAt            DateTime?
+  cancelReason           String?
+  createdAt              DateTime           @default(now())
+  updatedAt              DateTime           @updatedAt
+
+  @@map("subscriptions")
+}
+
+model Report {
+  id               String            @id @default(cuid())
+  projectId        String
+  project          Project           @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  status           ReportStatus      @default(QUEUED)
+  claudeModel      String?
+  promptTokens     Int?
+  completionTokens Int?
+  generationMs     Int?
+  r2Key            String?
+  r2Url            String?
+  pdfSizeBytes     Int?
+  deliveredAt      DateTime?
+  deliveryChannels DeliveryChannel[]
+  deliveryError    String?
+  reportTitle      String?
+  reportPeriod     String?
+  sectionsJson     Json?
+  errorMessage     String?
+  retryCount       Int               @default(0)
+  sentryEventId    String?
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+
+  @@map("reports")
+}
+
+model ReportAccessLog {
+  id         String   @id @default(cuid())
+  reportId   String
+  ipAddress  String?
+  userAgent  String?
+  accessedAt DateTime @default(now())
+
+  @@map("report_access_logs")
+}
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  userId    String?
+  projectId String?
+  event     String
+  metadata  Json?
+  createdAt DateTime @default(now())
+
+  @@map("audit_logs")
+}
