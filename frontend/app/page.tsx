@@ -62,6 +62,7 @@ const testimonials = [
 
 export default function Home() {
   const [activeTestimonial, setActiveTestimonial] = useState(0)
+  const [anual, setAnual] = useState(false)
 
   const prev = () => setActiveTestimonial(i => (i - 1 + testimonials.length) % testimonials.length)
   const next = () => setActiveTestimonial(i => (i + 1) % testimonials.length)
@@ -448,57 +449,99 @@ export default function Home() {
         </div>
       </section>
 
-      {/* PRECIOS */}
+      {/* {/* PRECIOS */}
       <section id="precios" className="relative px-6 py-20">
         <div className="max-w-5xl mx-auto">
-          <div className="text-center mb-16">
+          <div className="text-center mb-10">
             <div className="text-cyan-400 text-xs font-bold uppercase tracking-widest mb-3">Precios transparentes</div>
             <h2 className="text-4xl font-black mb-4">Un precio. Sin letra chica.</h2>
             <p className="text-gray-400 max-w-xl mx-auto">Elige la frecuencia de entrega de tu reporte. Cambia o cancela cuando quieras.</p>
           </div>
 
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-14">
-            {[
-              { freq: 'Mensual', price: '$20', desc: '1 reporte al mes', tag: null },
-              { freq: 'Quincenal', price: '$22', desc: 'Cada 15 días', tag: null },
-              { freq: 'Semanal', price: '$25', desc: 'Cada semana', tag: 'Más popular' },
-              { freq: 'Diario', price: '$29.99', desc: 'Cada día hábil', tag: 'Max ROI' },
-            ].map(plan => (
-              <div key={plan.freq} className={`relative rounded-2xl p-6 text-center border transition-all hover:scale-105 cursor-pointer group ${plan.tag === 'Más popular' ? 'bg-gradient-to-b from-blue-600/25 to-blue-600/5 border-blue-500/50 shadow-lg shadow-blue-500/10' : 'bg-white/3 border-white/8 hover:border-white/20 hover:bg-white/5'}`}>
-                {plan.tag && (
-                  <div className={`absolute -top-3 left-1/2 -translate-x-1/2 text-white text-xs font-black px-3 py-1 rounded-full ${plan.tag === 'Más popular' ? 'bg-gradient-to-r from-blue-600 to-violet-600' : 'bg-gradient-to-r from-amber-600 to-orange-600'}`}>
-                    {plan.tag}
-                  </div>
-                )}
-                <div className="text-gray-400 text-sm mb-2 font-medium">{plan.freq}</div>
-                <div className="text-4xl font-black mb-0.5">{plan.price}</div>
-                <div className="text-gray-500 text-xs mb-3">/mes por módulo</div>
-                <div className="text-gray-500 text-xs border-t border-white/5 pt-3">{plan.desc}</div>
+          {/* Toggle mensual/anual */}
+          <div className="flex items-center justify-center gap-4 mb-12">
+            <span className={`text-sm font-semibold transition-colors ${!anual ? 'text-white' : 'text-gray-500'}`}>
+              Pago mensual
+            </span>
+            <button
+              onClick={() => setAnual(a => !a)}
+              className={`relative w-14 h-7 rounded-full transition-colors ${anual ? 'bg-blue-600' : 'bg-white/15'}`}
+            >
+              <div className={`absolute top-1 w-5 h-5 bg-white rounded-full shadow transition-all ${anual ? 'left-8' : 'left-1'}`} />
+            </button>
+            <span className={`text-sm font-semibold transition-colors ${anual ? 'text-white' : 'text-gray-500'}`}>
+              Pago anual
+            </span>
+            {anual && (
+              <div className="bg-green-500/20 border border-green-500/30 text-green-400 text-xs font-black px-3 py-1 rounded-full animate-pulse">
+                🎉 Ahorras 20%
               </div>
-            ))}
+            )}
           </div>
 
-          {/* Activation CTA */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-14">
+            {[
+              { freq: 'Mensual', price: 20, desc: '1 reporte al mes', tag: null },
+              { freq: 'Quincenal', price: 22, desc: 'Cada 15 días', tag: null },
+              { freq: 'Semanal', price: 25, desc: 'Cada semana', tag: 'Más popular' },
+              { freq: 'Diario', price: 29.99, desc: 'Cada día hábil', tag: 'Max ROI' },
+            ].map(plan => {
+              const precioFinal = anual ? +(plan.price * 0.8).toFixed(2) : plan.price
+              const precioAnual = +(precioFinal * 12).toFixed(2)
+              return (
+                <div key={plan.freq} className={`relative rounded-2xl p-6 text-center border transition-all hover:scale-105 cursor-pointer ${plan.tag === 'Más popular' ? 'bg-gradient-to-b from-blue-600/25 to-blue-600/5 border-blue-500/50 shadow-lg shadow-blue-500/10' : 'bg-white/3 border-white/8 hover:border-white/20 hover:bg-white/5'}`}>
+                  {plan.tag && (
+                    <div className={`absolute -top-3 left-1/2 -translate-x-1/2 text-white text-xs font-black px-3 py-1 rounded-full whitespace-nowrap ${plan.tag === 'Más popular' ? 'bg-gradient-to-r from-blue-600 to-violet-600' : 'bg-gradient-to-r from-amber-600 to-orange-600'}`}>
+                      {plan.tag}
+                    </div>
+                  )}
+                  <div className="text-gray-400 text-sm mb-2 font-medium">{plan.freq}</div>
+
+                  {/* Precio tachado si es anual */}
+                  {anual && (
+                    <div className="text-gray-600 text-sm line-through mb-0.5">${plan.price}/mes</div>
+                  )}
+
+                  <div className="text-4xl font-black mb-0.5">
+                    ${precioFinal}
+                  </div>
+                  <div className="text-gray-500 text-xs mb-1">/mes por módulo</div>
+
+                  {/* Badge descuento */}
+                  {anual && (
+                    <div className="inline-flex items-center gap-1 bg-green-500/15 border border-green-500/20 text-green-400 text-xs font-bold px-2 py-0.5 rounded-full mb-2">
+                      20% OFF
+                    </div>
+                  )}
+
+                  <div className="border-t border-white/5 pt-3 mt-2 space-y-1">
+                    <div className="text-gray-500 text-xs">{plan.desc}</div>
+                    {anual && (
+                      <div className="text-gray-600 text-xs">${precioAnual}/año total</div>
+                    )}
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+
           <div className="relative bg-gradient-to-r from-blue-950/80 via-violet-950/80 to-blue-950/80 border border-blue-500/25 rounded-3xl p-12 text-center overflow-hidden">
-            <div className="absolute inset-0 bg-gradient-to-r from-blue-600/5 to-violet-600/5 pointer-events-none" />
             <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-blue-500/40 to-transparent" />
-            <div className="relative">
-              <div className="inline-flex items-center gap-2 bg-green-500/15 border border-green-500/25 text-green-400 text-sm font-bold px-4 py-2 rounded-full mb-6">
-                <Zap size={14} className="fill-green-400" />
-                Activación gratis · En segundos · Sin tarjeta
-              </div>
-              <h3 className="text-4xl font-black mb-4">Genera tu primer reporte<br /><span className="text-blue-400">en los próximos 5 minutos</span></h3>
-              <p className="text-gray-400 mb-8 max-w-lg mx-auto text-lg">Regístrate ahora, configura tu empresa y recibe tu primer reporte de inteligencia AI antes de que termine tu café.</p>
-              <Link href="/register" className="inline-flex items-center gap-3 bg-gradient-to-r from-blue-600 to-violet-600 text-white font-black px-12 py-5 rounded-2xl transition-all hover:shadow-2xl hover:shadow-blue-500/30 hover:scale-105 text-xl">
-                <Sparkles size={22} />
-                Comenzar gratis ahora
-                <ArrowRight size={22} />
-              </Link>
-              <div className="flex items-center justify-center gap-8 mt-8 text-sm text-gray-500">
-                <div className="flex items-center gap-2"><CheckCircle size={14} className="text-green-400" /> 7 días completamente gratis</div>
-                <div className="flex items-center gap-2"><CheckCircle size={14} className="text-green-400" /> Sin tarjeta de crédito</div>
-                <div className="flex items-center gap-2"><CheckCircle size={14} className="text-green-400" /> Cancela con un clic</div>
-              </div>
+            <div className="inline-flex items-center gap-2 bg-green-500/15 border border-green-500/25 text-green-400 text-sm font-bold px-4 py-2 rounded-full mb-6">
+              <Zap size={14} />
+              Activación gratis · En segundos · Sin tarjeta
+            </div>
+            <h3 className="text-4xl font-black mb-4">Genera tu primer reporte<br /><span className="text-blue-400">en los próximos 5 minutos</span></h3>
+            <p className="text-gray-400 mb-8 max-w-lg mx-auto text-lg">Regístrate ahora, configura tu empresa y recibe tu primer reporte de inteligencia AI antes de que termine tu café.</p>
+            <Link href="/register" className="inline-flex items-center gap-3 bg-gradient-to-r from-blue-600 to-violet-600 text-white font-black px-12 py-5 rounded-2xl transition-all hover:shadow-2xl hover:shadow-blue-500/30 hover:scale-105 text-xl">
+              <Sparkles size={22} />
+              Comenzar gratis ahora
+              <ArrowRight size={22} />
+            </Link>
+            <div className="flex items-center justify-center gap-8 mt-8 text-sm text-gray-500 flex-wrap">
+              <div className="flex items-center gap-2"><CheckCircle size={14} className="text-green-400" /> 7 días completamente gratis</div>
+              <div className="flex items-center gap-2"><CheckCircle size={14} className="text-green-400" /> Sin tarjeta de crédito</div>
+              <div className="flex items-center gap-2"><CheckCircle size={14} className="text-green-400" /> Cancela con un clic</div>
             </div>
           </div>
         </div>
