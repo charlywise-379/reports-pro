@@ -1,0 +1,129 @@
+import { Router, Request, Response } from 'express'
+import { prisma } from '../lib/prisma'
+import { DeliveryChannel, ReportFrequency, ServiceType, ProjectStatus, SubscriptionStatus, Prisma } from '@prisma/client'
+
+const router = Router()
+
+router.post('/competitive', async (req: Request, res: Response) => {
+  try {
+    const {
+      userId, companyName, website, industry, companySize,
+      targetMarket, mainProducts, socialMedia, industriesOfInterest,
+      valueProposition, products, presenceRegional, presenceNational,
+      presenceInternational, directCompetitors, indirectCompetitors,
+      monitorAreas, frequency, deliveryChannel, deliveryEmail, deliveryPhone,
+    } = req.body
+
+    if (!userId || !companyName || !industry || !frequency) {
+      return res.status(400).json({ error: 'Faltan campos requeridos' })
+    }
+
+    // Usuario
+    let user = await prisma.user.findUnique({ where: { id: userId } })
+    if (!user) {
+      user = await prisma.user.create({
+        data: {
+          id: userId,
+          email: deliveryEmail || `user-${userId}@reportspro.com`,
+          phone: deliveryPhone || null,
+        }
+      })
+    }
+
+    // Fechas
+    const trialStartedAt = new Date()
+    const trialEndsAt = new Date()
+    trialEndsAt.setDate(trialEndsAt.getDate() + 7)
+
+    const nextReportAt = new Date()
+    const frequencyDays: Record<string, number> = {
+      DAILY: 1, WEEKLY: 7, BIWEEKLY: 14, MONTHLY: 30
+    }
+    nextReportAt.setDate(nextReportAt.getDate() + (frequencyDays[frequency] || 7))
+
+    const prices: Record<string, number> = {
+      DAILY: 29.99, WEEKLY: 25.00, BIWEEKLY: 22.00, MONTHLY: 20.00
+    }
+
+    // Canales
+    const deliveryChannels: DeliveryChannel[] = []
+    if (deliveryChannel === 'EMAIL' || deliveryChannel === 'BOTH') deliveryChannels.push(DeliveryChannel.EMAIL)
+    if (deliveryChannel === 'WHATSAPP' || deliveryChannel === 'BOTH') deliveryChannels.push(DeliveryChannel.WHATSAPP)
+
+    const additionalContext = JSON.stringify({
+      companySize, targetMarket, valueProposition,
+      products: products?.filter((p: any) => p.name),
+      presence: { regional: presenceRegional, national: presenceNational, international: presenceInternational },
+      directCompetitors: directCompetitors?.filter((c: any) => c.name),
+      indirectCompetitors: indirectCompetitors?.filter((c: any) => c.name),
+      industriesOfInterest, socialMedia,
+    })
+
+    // Crear Project
+    const newProject = await prisma.project.create({
+      data: {
+        userId: user.id,
+        name: `${companyName} — Inteligencia Competitiva`,
+        serviceType: ServiceType.COMPETITIVE_INTELLIGENCE,
+        frequency: frequency as ReportFrequency,
+        status: ProjectStatus.TRIAL,
+        deliveryChannels,
+        deliveryEmail: deliveryEmail || null,
+        deliveryPhone: deliveryPhone || null,
+        trialStartedAt,
+        trialEndsAt,
+        nextReportAt,
+      }
+    })
+
+    // Crear Setup
+    await prisma.competitiveIntelligenceSetup.create({
+      data: {
+        projectId: newProject.id,
+        companyName,
+        website: website || null,
+        industry,
+        mainProducts: mainProducts ? [mainProducts] : [],
+        targetMarket: targetMarket || null,
+        linkedinUrl: socialMedia?.lin || null,
+        instagramUrl: socialMedia?.ig || null,
+        facebookUrl: socialMedia?.fb || null,
+        twitterUrl: socialMedia?.x || null,
+        tiktokUrl: socialMedia?.tt || null,
+        focusAreas: monitorAreas || [],
+        geographicScope: [
+          ...(presenceRegional ? ['REGIONAL'] : []),
+          ...(presenceNational ? ['NATIONAL'] : []),
+          ...(presenceInternational ? ['INTERNATIONAL'] : []),
+        ],
+        additionalContext,
+      }
+    })
+
+    // Crear Subscription
+    await prisma.subscription.create({
+      data: {
+        projectId: newProject.id,
+        userId: user.id,
+        status: SubscriptionStatus.TRIALING,
+        frequency: frequency as ReportFrequency,
+        pricePerMonth: prices[frequency] || 25.00,
+        trialStartedAt,
+        trialEndsAt,
+      }
+    })
+
+    res.status(201).json({
+      success: true,
+      projectId: newProject.id,
+      message: 'Módulo activado correctamente',
+      trialEndsAt,
+    })
+
+  } catch (error: any) {
+    console.error('Error en onboarding:', error)
+    res.status(500).json({ error: 'Error interno', detail: error.message })
+  }
+})
+
+export default router
