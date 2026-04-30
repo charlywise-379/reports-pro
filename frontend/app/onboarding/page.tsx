@@ -1,173 +1,1029 @@
 'use client'
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
-import {
-  Zap, ArrowRight, ArrowLeft, CheckCircle, Building2,
-  Users, Target, Plus, X, Mail, Phone, BarChart2, TrendingUp,
-  ShieldAlert, Newspaper, Radio, MapPin, Star
-} from 'lucide-react'
 
 const STEPS = [
-  { id: 1, title: 'Tu empresa' },
-  { id: 2, title: 'Posicionamiento' },
-  { id: 3, title: 'Competidores directos' },
-  { id: 4, title: 'Competidores indirectos' },
-  { id: 5, title: 'Áreas a monitorear' },
-  { id: 6, title: 'Entrega' },
-  { id: 7, title: 'Confirmar' },
+  { id: 1, label: 'Tu empresa' },
+  { id: 2, label: 'Posicionamiento' },
+  { id: 3, label: 'Competidores directos' },
+  { id: 4, label: 'Competidores indirectos' },
+  { id: 5, label: 'Áreas a monitorear' },
+  { id: 6, label: 'Frecuencia y entrega' },
+  { id: 7, label: 'Confirmación y activación' },
 ]
 
-const emptyCompetitor = () => ({
-  name: '', products: '', website: '',
-  ig: '', fb: '', tt: '', yt: '', lin: '', x: '',
-  presence: 'LOCAL', threat: 5
-})
-
-const emptyProduct = () => ({ name: '', price: '' })
-
-const industries = [
-  'Manufactura', 'Retail / Comercio', 'Tecnología', 'Finanzas',
-  'Salud', 'Educación', 'Alimentos y Bebidas', 'Construcción',
-  'Logística', 'Turismo', 'Servicios profesionales', 'Automotriz',
-  'Energía', 'Telecomunicaciones', 'Farmacéutica', 'Otro'
+const TAGS_LIB = [
+  // Manufactura
+  'Manufactura','Industria 4.0','Automatización','Cadena de suministro','Control de calidad',
+  // Comercio / Retail
+  'Retail','E-commerce','Marketplace','Omnicanal','D2C','POS',
+  // Tecnología
+  'SaaS B2B','SaaS B2C','Inteligencia Artificial','Ciberseguridad','Cloud','DevOps','API-first',
+  // Finanzas
+  'Fintech','Banking','Crédito','Pagos','Insurtech','Wealth','Roboadvisor','Web3','Trading',
+  // Salud
+  'Salud digital','Telemedicina','MedTech','Farmacia online','BioTech',
+  // Educación
+  'EdTech','E-learning','Upskilling','Educación K-12','Universidad',
+  // Alimentos
+  'FoodTech','Restaurantes','Agro-alimentos','Bebidas','Delivery de comida',
+  // Construcción
+  'PropTech','Inmobiliaria','Construcción','Infraestructura','Smart buildings',
+  // Logística
+  'Logística','Last-mile','Transporte','Flota','Supply chain',
+  // Turismo
+  'Turismo','Hospitalidad','TravelTech','Hoteles','Experiencias',
+  // Servicios profesionales
+  'Consultoría','Legal','Contabilidad','RR.HH.','Marketing digital',
+  // Automotriz
+  'Automotriz','Movilidad eléctrica','Fleet management','AutoTech',
+  // Energía
+  'Energía renovable','Oil & Gas','CleanTech','Utilities',
+  // Telecomunicaciones
+  'Telecomunicaciones','Medios digitales','Streaming','AdTech',
+  // Farmacéutica
+  'Farmacéutica','BioTech','Dispositivos médicos','CRO',
+  // Agro
+  'AgriTech','Agroindustria','Ganadería','Acuicultura',
+  // Gobierno
+  'GovTech','ONG','Sector público','Smart city',
+  // Moda
+  'Moda','Retail de lujo','Consumo masivo','Belleza',
+  // Entretenimiento
+  'Entretenimiento','Deportes','GameTech','eSports','Eventos',
 ]
-
-const frequencies = [
-  { value: 'DAILY', label: 'Diario', price: '$29.99', desc: 'Cada día hábil' },
-  { value: 'WEEKLY', label: 'Semanal', price: '$25.00', desc: 'Cada semana', popular: true },
-  { value: 'BIWEEKLY', label: 'Quincenal', price: '$22.00', desc: 'Cada 15 días' },
-  { value: 'MONTHLY', label: 'Mensual', price: '$20.00', desc: 'Una vez al mes' },
+const INDUSTRIES = ['Manufactura','Comercio / Retail','Tecnología','Finanzas','Salud','Educación','Alimentos y Bebidas','Construcción / Inmobiliario','Logística / Transporte','Turismo / Hospitalidad','Servicios Profesionales','Automotriz / Movilidad','Energía / Recursos Naturales','Telecomunicaciones / Medios','Farmacéutica / Biotech','Agroindustria','Gobierno / ONG','Moda / Consumo','Entretenimiento / Deportes','Otro']
+const DIFFS_LIB = ['Precio competitivo','Alta calidad','Servicio al cliente excepcional','Entrega rápida','Atención personalizada','Innovación constante','Tecnología avanzada','Experiencia comprobada','Especialización en el sector','Soluciones a medida','Rapidez de respuesta','Confianza y reputación','Garantía y respaldo','Cobertura nacional','Cobertura internacional','Procesos eficientes','Flexibilidad operativa','Personal altamente capacitado','Cumplimiento normativo','Seguridad y protección de datos','Sustentabilidad / enfoque ecológico','Soporte postventa','Excelente relación calidad-precio','Atención 24/7','Resultados medibles']
+const AREAS = [
+  { id:'industries', code:'A.01', label:'Industrias a monitorear', desc:'Movimientos macro de los sectores que elegiste como foco.', meta:'12 sources', on:true },
+  { id:'prices',     code:'A.02', label:'Precios de competidores', desc:'Cambios de tarifa, descuentos, paquetes y ofertas activas.', meta:'Real-time', on:true },
+  { id:'campaigns',  code:'A.03', label:'Campañas de competidores', desc:'Activaciones de marketing en paid, orgánico y prensa.', meta:'Daily sweep', on:true },
+  { id:'launches',   code:'A.04', label:'Lanzamientos de competidores', desc:'Productos nuevos, betas, expansiones de SKU y partnerships.', meta:'Weekly', on:true },
+  { id:'hiring',     code:'A.05', label:'Hiring & talento', desc:'Contrataciones clave, equipos y señales de expansión.', meta:'Weekly', on:false },
+  { id:'media',      code:'A.06', label:'Medios & prensa', desc:'Cobertura editorial, op-eds y reportajes en medios tier-1.', meta:'240 outlets', on:true },
+  { id:'social',     code:'A.07', label:'Redes sociales de competidores', desc:'Engagement, sentimiento y picos virales en sus canales.', meta:'6 networks', on:true },
+  { id:'geo',        code:'A.08', label:'Expansión geográfica', desc:'Aperturas, retiros y movimientos territoriales de la competencia.', meta:'Mapped', on:false },
+  { id:'data',       code:'A.09', label:'Datos relevantes de industria', desc:'Indicadores, encuestas, reportes públicos y benchmarks.', meta:'Aggregated', on:false },
 ]
-
-const monitorOptions = [
-  { value: 'INDUSTRIES', label: 'Industrias a monitorear', icon: Building2 },
-  { value: 'PRICES', label: 'Precios de competidores', icon: TrendingUp },
-  { value: 'CAMPAIGNS', label: 'Campañas de competidores', icon: Radio },
-  { value: 'LAUNCHES', label: 'Lanzamientos de productos', icon: Star },
-  { value: 'REGULATIONS', label: 'Regulaciones del mercado', icon: ShieldAlert },
-  { value: 'NEWS', label: 'Medios y noticias', icon: Newspaper },
-  { value: 'SOCIAL', label: 'Redes sociales competidores', icon: Users },
-  { value: 'EXPANSION', label: 'Expansión geográfica', icon: MapPin },
-  { value: 'INDUSTRY_DATA', label: 'Datos relevantes industria', icon: BarChart2 },
+const PLANS = [
+  { id:'DAILY',    label:'Diario',    tag:'PRO · DAILY',    price:29.99, priceAnnual:23.99, features:['22 reportes / mes','Alertas en tiempo real','10 competidores · 9 áreas'] },
+  { id:'WEEKLY',   label:'Semanal',   tag:'PRO · WEEKLY',   price:25.00, priceAnnual:20.00, features:['4 reportes / mes + alertas','10 competidores · 9 áreas','Briefings ad-hoc'], popular:true },
+  { id:'BIWEEKLY', label:'Quincenal', tag:'PRO · BIWEEKLY', price:22.00, priceAnnual:17.60, features:['2 reportes / mes','Hasta 7 competidores','6 áreas'] },
+  { id:'MONTHLY',  label:'Mensual',   tag:'PRO · MONTHLY',  price:20.00, priceAnnual:16.00, features:['1 reporte / mes','Hasta 5 competidores','4 áreas'] },
 ]
+const DAYS  = ['Lun','Mar','Mié','Jue','Vie','Sáb','Dom']
+const TIMES = ['06:00','07:00','08:00','09:00','12:00','15:00','18:00','21:00']
+const COUNTRIES = ['MX','CO','PE','CL','AR','BR','ES','US','UY','EC']
 
-interface CompetitorFormProps {
-  type: 'direct' | 'indirect'
-  list: any[]
-  onUpdate: (type: 'direct' | 'indirect', i: number, field: string, val: any) => void
-  onAdd: (type: 'direct' | 'indirect') => void
-  onRemove: (type: 'direct' | 'indirect', i: number) => void
+const emptyCompetitor = () => ({ name:'', url:'', products:'', presence:'Nacional', threat:5, ig:'', fb:'', x:'', li:'' })
+const emptyIndirect   = () => ({ id: Math.random().toString(36).slice(2), name:'', industry:'', threat:5, relevance:5 })
+const emptyProduct    = () => ({ name:'', category:'', priceFrom:'', priceTo:'' })
+
+const S: Record<string, React.CSSProperties> = {
+  card:    { background:'rgba(255,255,255,0.03)', border:'1px solid rgba(255,255,255,0.07)', borderRadius:16, padding:'22px 20px', marginBottom:16 },
+  label:   { fontSize:10, fontWeight:700, letterSpacing:'0.1em', color:'#5A627A', display:'block', marginBottom:6 },
+  input:   { width:'100%', background:'rgba(255,255,255,0.04)', border:'1px solid rgba(255,255,255,0.1)', borderRadius:10, padding:'10px 14px', color:'#F0F2FF', fontSize:13, outline:'none', boxSizing:'border-box' as const },
+  section: { fontSize:13, fontWeight:700, color:'#F0F2FF', marginBottom:16, display:'flex', alignItems:'center', gap:10 },
+  pill:    { fontSize:11, fontWeight:600, padding:'5px 12px', borderRadius:20, border:'1px solid rgba(255,255,255,0.1)', background:'rgba(255,255,255,0.04)', color:'#9CA3AF', cursor:'pointer' },
+  pillOn:  { fontSize:11, fontWeight:600, padding:'5px 12px', borderRadius:20, border:'1px solid rgba(139,123,255,0.5)', background:'rgba(139,123,255,0.15)', color:'#8B7BFF', cursor:'pointer' },
 }
 
-function CompetitorForm({ type, list, onUpdate, onAdd, onRemove }: CompetitorFormProps) {
+function SectionNum({ n, label }: { n: string; label: string }) {
   return (
-    <div className="space-y-6">
-      {list.map((comp, i) => (
-        <div key={i} className="bg-white/3 border border-white/8 rounded-2xl p-5 relative">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-2">
-              <div className="w-7 h-7 bg-blue-500/20 border border-blue-500/30 rounded-lg flex items-center justify-center text-blue-400 text-xs font-black">{i + 1}</div>
-              <span className="text-sm font-semibold text-gray-300">
-                {type === 'direct' ? 'Competidor directo' : 'Competidor indirecto'} #{i + 1}
-              </span>
-            </div>
-            {list.length > 1 && (
-              <button type="button" onClick={() => onRemove(type, i)}
-                className="w-7 h-7 bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 rounded-lg flex items-center justify-center transition-all">
-                <X size={13} className="text-red-400" />
-              </button>
-            )}
-          </div>
+    <div style={{ display:'flex', alignItems:'center', gap:10, marginBottom:18 }}>
+      <div style={{ width:28, height:28, borderRadius:8, background:'rgba(139,123,255,0.15)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:11, fontWeight:800, color:'#8B7BFF', flexShrink:0 }}>{n}</div>
+      <span style={{ fontSize:16, fontWeight:700, color:'#F0F2FF' }}>{label}</span>
+    </div>
+  )
+}
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-            <div>
-              <label className="text-xs text-gray-500 mb-1 block">Nombre del competidor *</label>
-              <input type="text" value={comp.name} onChange={e => onUpdate(type, i, 'name', e.target.value)}
-                placeholder="Empresa competidora"
-                className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2.5 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-blue-500/50 transition-all" />
-            </div>
-            <div>
-              <label className="text-xs text-gray-500 mb-1 block">Sitio web</label>
-              <input type="text" value={comp.website} onChange={e => onUpdate(type, i, 'website', e.target.value)}
-                placeholder="www.competidor.com"
-                className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2.5 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-blue-500/50 transition-all" />
-            </div>
-          </div>
+// ──────────────────────────────────────────
+// PASO 1
+// ──────────────────────────────────────────
+function Step1({ data, set }: any) {
+  return (
+    <div>
+      <div style={{ fontSize:11, fontWeight:700, letterSpacing:'0.12em', color:'#8B7BFF', marginBottom:10 }}>01 / 07 · IDENTIDAD CORPORATIVA</div>
+      <h1 style={{ fontSize:38, fontWeight:900, letterSpacing:'-0.03em', color:'#F0F2FF', lineHeight:1.1, marginBottom:8 }}>
+        Háblanos de <span style={{ color:'#8B7BFF' }}>tu empresa</span>
+      </h1>
+      <p style={{ fontSize:14, color:'#9CA3AF', marginBottom:28, lineHeight:1.6 }}>Esta información ancla todos los reportes. Cuanto más preciso seas aquí, más relevante es lo que entregamos cada semana.</p>
 
-          <div className="mb-4">
-            <label className="text-xs text-gray-500 mb-1 block">Productos o servicios en competencia</label>
-            <input type="text" value={comp.products} onChange={e => onUpdate(type, i, 'products', e.target.value)}
-              placeholder="Ej: Línea de empaque industrial..."
-              className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2.5 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-blue-500/50 transition-all" />
+      {/* Identidad */}
+      <div style={S.card}>
+        <SectionNum n="01" label="Identidad" />
+        <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr 1fr', gap:14, marginBottom:14 }}>
+          <div>
+            <label style={S.label}>Nombre legal</label>
+            <input style={S.input} value={data.companyName} onChange={e=>set('companyName',e.target.value)} placeholder="Empresa S.A. de C.V." />
           </div>
-
-          <div className="mb-4">
-            <label className="text-xs text-gray-500 mb-3 block">Redes sociales</label>
-            <div className="grid grid-cols-3 gap-2">
-              {[
-                { key: 'ig', label: 'Instagram', placeholder: '@usuario' },
-                { key: 'fb', label: 'Facebook', placeholder: 'facebook.com/...' },
-                { key: 'tt', label: 'TikTok', placeholder: '@usuario' },
-                { key: 'yt', label: 'YouTube', placeholder: 'Canal' },
-                { key: 'lin', label: 'LinkedIn', placeholder: 'linkedin.com/...' },
-                { key: 'x', label: 'X (Twitter)', placeholder: '@usuario' },
-              ].map(soc => (
-                <div key={soc.key}>
-                  <label className="text-xs text-gray-600 mb-1 block">{soc.label}</label>
-                  <input type="text" value={comp[soc.key]} onChange={e => onUpdate(type, i, soc.key, e.target.value)}
-                    placeholder={soc.placeholder}
-                    className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-xs text-white placeholder-gray-700 focus:outline-none focus:border-blue-500/50 transition-all" />
-                </div>
+          <div>
+            <label style={S.label}>Marca comercial</label>
+            <input style={S.input} value={data.brand} onChange={e=>set('brand',e.target.value)} placeholder="Mi Marca" />
+          </div>
+          <div>
+            <label style={S.label}>Sitio web</label>
+            <input style={S.input} value={data.website} onChange={e=>set('website',e.target.value)} placeholder="https://tuempresa.com" />
+          </div>
+        </div>
+        <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr 1fr', gap:14 }}>
+          <div>
+            <label style={S.label}>Industria</label>
+            <select style={{...S.input, appearance:'none' as const}} value={data.industry} onChange={e=>set('industry',e.target.value)}>
+  <option value="">Seleccionar...</option>
+  {INDUSTRIES.map(i=><option key={i}>{i}</option>)}
+</select>
+{data.industry === 'Otro' && (
+  <input style={{...S.input, marginTop:8}} value={data.industryCustom||''} onChange={e=>set('industryCustom',e.target.value)} placeholder="Describe el giro de tu negocio..." />
+)}
+          </div>
+          <div>
+            <label style={S.label}>Tamaño (Personal)</label>
+            <div style={{ display:'flex', gap:6 }}>
+              {[['1-10','1-10'],['11-50','11-50'],['51-200','51-200'],['200+','200+']].map(([v,l])=>(
+                <button key={v} onClick={()=>set('companySize',v)} style={{ flex:1, padding:'9px 4px', borderRadius:8, border:'1px solid', fontSize:11, fontWeight:600, cursor:'pointer', background: data.companySize===v ? 'rgba(139,123,255,0.2)' : 'rgba(255,255,255,0.04)', borderColor: data.companySize===v ? 'rgba(139,123,255,0.5)' : 'rgba(255,255,255,0.1)', color: data.companySize===v ? '#8B7BFF' : '#9CA3AF' }}>{l}</button>
               ))}
             </div>
           </div>
+          <div>
+            <label style={S.label}>Mercado objetivo</label>
+            <input style={S.input} value={data.targetMarket} onChange={e=>set('targetMarket',e.target.value)} placeholder="Ej: B2B mid-market LATAM" />
+          </div>
+        </div>
+      </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="text-xs text-gray-500 mb-2 block">Presencia en el mercado</label>
-              <div className="grid grid-cols-2 gap-1.5">
-                {[
-                  { value: 'LOCAL', label: 'Local' },
-                  { value: 'REGIONAL', label: 'Regional' },
-                  { value: 'NATIONAL', label: 'Nacional' },
-                  { value: 'GLOBAL', label: 'Global' },
-                ].map(p => (
-                  <button key={p.value} type="button" onClick={() => onUpdate(type, i, 'presence', p.value)}
-                    className={`text-xs py-2 px-3 rounded-lg border transition-all ${comp.presence === p.value ? 'bg-blue-600/25 border-blue-500/50 text-blue-300 font-semibold' : 'bg-white/3 border-white/8 text-gray-500 hover:border-white/20'}`}>
-                    {p.label}
-                  </button>
-                ))}
+      {/* Presencia digital */}
+      <div style={S.card}>
+        <SectionNum n="02" label="Presencia digital" />
+        <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr 1fr', gap:10 }}>
+          {[['IG','ig','instagram.com/...'],['FB','fb','facebook.com/...'],['TT','tt','tiktok.com/@...'],['YT','yt','youtube.com/@...'],['LI','li','linkedin.com/co...'],['X','x','x.com/...']].map(([icon,key,ph])=>(
+            <div key={key} style={{ display:'flex', alignItems:'center', gap:8, background:'rgba(255,255,255,0.03)', border:'1px solid rgba(255,255,255,0.07)', borderRadius:10, padding:'8px 12px' }}>
+              <span style={{ fontSize:10, fontWeight:800, color:'#8B7BFF', width:20, flexShrink:0 }}>{icon}</span>
+              <input style={{ flex:1, background:'transparent', border:'none', outline:'none', color:'#F0F2FF', fontSize:12 }} value={data.socialMedia?.[key]||''} onChange={e=>set('socialMedia',{...data.socialMedia,[key]:e.target.value})} placeholder={ph} />
+            </div>
+          ))}
+        </div>
+      </div>
+
+      
+
+      {/* Pitch */}
+      <div style={S.card}>
+        <SectionNum n="03" label="Propuesta de valor" />
+        <label style={S.label}>Una frase que define tu diferenciación <span style={{ color:'#5A627A', fontWeight:400 }}>{(data.pitch||'').length}/160 char.</span></label>
+        <textarea style={{...S.input, minHeight:80, resize:'vertical' as const}} maxLength={160} value={data.pitch} onChange={e=>set('pitch',e.target.value)} placeholder="Plataforma de wealth management automatizada para mid-market latinoamericano..." />
+      </div>
+      {/* Catálogo */}
+      <div style={S.card}>
+        <SectionNum n="04" label="Catálogo y enfoque sectorial" />
+        <div style={{ marginBottom:14 }}>
+          <label style={S.label}>Principales productos / servicios <span style={{ color:'#5A627A', fontWeight:400 }}>separados por coma</span></label>
+          <textarea style={{...S.input, minHeight:80, resize:'vertical' as const}} value={data.mainProducts} onChange={e=>set('mainProducts',e.target.value)} placeholder="Roboadvisor Norte, Fondos institucionales, Cuenta Norte Premium..." />
+        </div>
+        <div>
+          <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:10 }}>
+            <label style={S.label}>Tags activos</label>
+            <span style={{ fontSize:10, color:'#5A627A' }}>{(data.tags||[]).length}/6</span>
+          </div>
+          <div style={{ display:'flex', flexWrap:'wrap', gap:6 }}>
+            {TAGS_LIB.map(tag=>{
+              const on=(data.tags||[]).includes(tag)
+              return <button key={tag} onClick={()=>set('tags', on ? data.tags.filter((t:string)=>t!==tag) : data.tags?.length<6 ? [...(data.tags||[]),tag] : data.tags)} style={on?{...S.pillOn}:{...S.pill}}>{tag}{on&&' ×'}</button>
+            })}
+          </div>
+        </div>
+      </div>
+    </div>
+    
+  )
+}
+
+// ──────────────────────────────────────────
+// PASO 2
+// ──────────────────────────────────────────
+function Step2({ data, set }: any) {
+  const products: any[] = data.products || [emptyProduct()]
+  const addProduct = () => products.length < 10 && set('products',[...products, emptyProduct()])
+  const removeProduct = (i:number) => set('products', products.filter((_:any,idx:number)=>idx!==i))
+  const updateProduct = (i:number, field:string, val:string) => set('products', products.map((p:any,idx:number)=>idx===i?{...p,[field]:val}:p))
+
+  return (
+    <div>
+      <div style={{ fontSize:11, fontWeight:700, letterSpacing:'0.12em', color:'#8B7BFF', marginBottom:10 }}>02 / 07 · POSICIONAMIENTO</div>
+      <h1 style={{ fontSize:38, fontWeight:900, letterSpacing:'-0.03em', color:'#F0F2FF', lineHeight:1.1, marginBottom:8 }}>
+        Cómo te <span style={{ color:'#8B7BFF' }}>diferencias</span>
+      </h1>
+      <p style={{ fontSize:14, color:'#9CA3AF', marginBottom:28, lineHeight:1.6 }}>Tu propuesta de valor calibra cómo el motor compara mensajes, ofertas y narrativas competitivas.</p>
+
+      {/* Diferenciadores */}
+      <div style={S.card}>
+        <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:16 }}>
+          <SectionNum n="01" label="Propuesta de valor" />
+        </div>
+        <div style={{ marginBottom:14 }}>
+          <label style={{ ...S.label, marginBottom:8 }}>Propuesta de valor <span style={{ color:'#5A627A', fontWeight:400 }}>1 frase, máx 160 char.</span></label>
+          <textarea style={{...S.input, minHeight:80, resize:'vertical' as const}} maxLength={160} value={data.pitch||''} onChange={e=>set('pitch',e.target.value)} placeholder="Wealth management automatizado para mid-market latinoamericano..." />
+        </div>
+        <label style={{ ...S.label, marginBottom:10 }}>Diferenciadores clave · {data.industry||'Tu industria'} <span style={{ color:'#5A627A', fontWeight:400 }}>auto-curado por industria</span></label>
+        <div style={{ display:'flex', flexWrap:'wrap', gap:6 }}>
+          {DIFFS_LIB.map(d=>{
+            const on=(data.differentiators||[]).includes(d)
+            return <button key={d} onClick={()=>set('differentiators', on ? data.differentiators.filter((x:string)=>x!==d) : [...(data.differentiators||[]),d])} style={on?{...S.pillOn}:{...S.pill}}>{d}{on&&' ×'}</button>
+          })}
+        </div>
+      </div>
+
+      {/* Productos */}
+      <div style={S.card}>
+        <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:16 }}>
+          <SectionNum n="02" label="Catálogo Clave (Productos / Servicios)" />
+        </div>
+        {products.map((p:any, i:number)=>(
+          <div key={i} style={{ display:'grid', gridTemplateColumns:'auto 1fr 1fr 1fr auto', gap:10, alignItems:'center', padding:'10px 0', borderBottom:'1px solid rgba(255,255,255,0.05)' }}>
+            <span style={{ fontSize:10, fontWeight:800, color:'#5A627A', fontFamily:'monospace' }}>P{String(i+1).padStart(2,'0')}</span>
+<input style={S.input} value={p.name} onChange={e=>updateProduct(i,'name',e.target.value)} placeholder="Nombre del producto o servicio" />
+<input style={S.input} value={p.category} onChange={e=>updateProduct(i,'category',e.target.value)} placeholder="Detalle" />
+<div style={{ display:'flex', alignItems:'center', gap:6 }}>
+  <div style={{ position:'relative', flex:1 }}>
+    <span style={{ position:'absolute', left:10, top:'50%', transform:'translateY(-50%)', color:'#5A627A', fontSize:13 }}>$</span>
+    <input style={{...S.input, paddingLeft:22}} value={p.priceFrom||''} onChange={e=>updateProduct(i,'priceFrom',e.target.value)} placeholder="Precio Desde" />
+  </div>
+  <span style={{ color:'#5A627A', fontSize:12, flexShrink:0 }}>—</span>
+  <div style={{ position:'relative', flex:1 }}>
+    <span style={{ position:'absolute', left:10, top:'50%', transform:'translateY(-50%)', color:'#5A627A', fontSize:13 }}>$</span>
+    <input style={{...S.input, paddingLeft:22}} value={p.priceTo||''} onChange={e=>updateProduct(i,'priceTo',e.target.value)} placeholder="Precio Hasta" />
+  </div>
+</div>
+            {products.length>1&&<button onClick={()=>removeProduct(i)} style={{ background:'rgba(255,107,107,0.1)', border:'1px solid rgba(255,107,107,0.2)', borderRadius:8, width:28, height:28, cursor:'pointer', color:'#FF6B6B', fontSize:14 }}>×</button>}
+          </div>
+        ))}
+        {products.length<10&&(
+          <button onClick={addProduct} style={{ display:'flex', alignItems:'center', gap:8, marginTop:12, background:'rgba(139,123,255,0.08)', border:'1px dashed rgba(139,123,255,0.3)', borderRadius:10, padding:'10px 16px', color:'#8B7BFF', fontSize:13, fontWeight:600, cursor:'pointer', width:'100%' }}>
+            <span style={{ fontSize:18 }}>+</span> Añadir producto · {products.length}/10
+          </button>
+        )}
+      </div>
+
+      {/* Presencia */}
+<div style={S.card}>
+  <SectionNum n="03" label="Presencia geográfica" />
+  <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:20, alignItems:'start' }}>
+    
+    {/* Controles izquierda */}
+<div style={{ paddingTop:28 }}>
+      <div style={{ marginBottom:16 }}>
+        <label style={S.label}>Alcance</label>
+        <div style={{ display:'flex', gap:8, flexWrap:'wrap' }}>
+          {['Local','Regional','Nacional','Internacional'].map(v=>(
+            <button key={v} onClick={()=>set('presenceScope',v)} style={{ padding:'8px 16px', borderRadius:20, border:'1px solid', fontSize:12, fontWeight:600, cursor:'pointer', background: data.presenceScope===v ? '#8B7BFF' : 'rgba(255,255,255,0.04)', borderColor: data.presenceScope===v ? '#8B7BFF' : 'rgba(255,255,255,0.1)', color: data.presenceScope===v ? '#fff' : '#9CA3AF' }}>{v}</button>
+          ))}
+        </div>
+      </div>
+      <div>
+        <label style={S.label}>Países activos <span style={{ color:'#5A627A', fontWeight:400 }}>· toca para activar en el mapa</span></label>
+        <div style={{ display:'flex', flexWrap:'wrap', gap:6 }}>
+          {COUNTRIES.map(c=>{
+            const on=(data.countries||[]).includes(c)
+            return <button key={c} onClick={()=>set('countries', on ? (data.countries||[]).filter((x:string)=>x!==c) : [...(data.countries||[]),c])} style={{ padding:'6px 14px', borderRadius:20, border:'1px solid', fontSize:12, fontWeight:700, cursor:'pointer', transition:'all 0.2s', background: on ? 'rgba(139,123,255,0.2)' : 'rgba(255,255,255,0.04)', borderColor: on ? 'rgba(139,123,255,0.5)' : 'rgba(255,255,255,0.1)', color: on ? '#8B7BFF' : '#9CA3AF' }}>{on?`${c} ×`:c}</button>
+          })}
+        </div>
+      </div>
+    </div>
+
+    {/* Mapa derecha */}
+<div style={{ background:'rgba(255,255,255,0.02)', border:'1px solid rgba(255,255,255,0.07)', borderRadius:14, padding:'8px 10px 6px', position:'relative', overflow:'hidden' }}>
+      <div style={{ fontSize:9, fontWeight:700, letterSpacing:'0.1em', color:'#5A627A', marginBottom:2 }}>PRESENCIA · {(data.countries||[]).length} PAÍSES ACTIVOS</div>
+<svg viewBox="0 0 500 260" style={{ width:'75%', height:'auto', maxHeight:150, display:'block', margin:'-6px 0 0 auto', verticalAlign:'top' }}>
+        <rect width="500" height="260" fill="#0A0B14" rx="8"/>
+        {/* Grid sutil */}
+        {[52,104,156,208].map(y=><line key={y} x1="0" x2="500" y1={y} y2={y} stroke="rgba(255,255,255,0.03)" strokeWidth="1"/>)}
+        {[100,200,300,400].map(x=><line key={x} x1={x} x2={x} y1="0" y2="260" stroke="rgba(255,255,255,0.03)" strokeWidth="1"/>)}
+
+        {/* ── NORTEAMÉRICA ── */}
+        <path d="M 52 28 L 72 22 L 95 24 L 118 20 L 138 28 L 148 38 L 152 52 L 148 68 L 138 80 L 128 90 L 118 96 L 105 98 L 92 94 L 80 86 L 68 74 L 58 60 L 48 44 Z"
+          fill="rgba(255,255,255,0.07)" stroke="rgba(255,255,255,0.12)" strokeWidth="0.8"/>
+        {/* Baja California */}
+        <path d="M 82 98 L 78 108 L 74 122 L 76 126 L 80 120 L 84 106 L 86 98 Z"
+          fill="rgba(255,255,255,0.06)" stroke="rgba(255,255,255,0.1)" strokeWidth="0.6"/>
+
+        {/* ── CENTROAMÉRICA ── */}
+        <path d="M 118 96 L 128 98 L 132 104 L 128 112 L 122 116 L 116 112 L 112 104 Z"
+          fill="rgba(255,255,255,0.06)" stroke="rgba(255,255,255,0.1)" strokeWidth="0.6"/>
+
+        {/* ── SUDAMÉRICA ── */}
+        <path d="M 108 122 L 122 118 L 138 118 L 152 122 L 162 132 L 168 148 L 170 164 L 166 182 L 158 198 L 148 212 L 136 222 L 122 226 L 110 222 L 100 210 L 94 194 L 92 176 L 94 158 L 100 140 Z"
+          fill="rgba(255,255,255,0.07)" stroke="rgba(255,255,255,0.12)" strokeWidth="0.8"/>
+
+        {/* ── GROENLANDIA ── */}
+        <path d="M 148 12 L 168 8 L 182 14 L 178 26 L 162 30 L 148 24 Z"
+          fill="rgba(255,255,255,0.05)" stroke="rgba(255,255,255,0.08)" strokeWidth="0.5"/>
+
+        {/* ── EUROPA ── */}
+        <path d="M 218 28 L 232 22 L 250 20 L 264 22 L 274 30 L 278 42 L 272 54 L 260 62 L 246 66 L 232 64 L 220 56 L 212 44 Z"
+          fill="rgba(255,255,255,0.07)" stroke="rgba(255,255,255,0.12)" strokeWidth="0.8"/>
+        {/* Península ibérica */}
+        <path d="M 218 60 L 226 56 L 232 64 L 228 72 L 220 74 L 214 68 Z"
+          fill="rgba(255,255,255,0.06)" stroke="rgba(255,255,255,0.1)" strokeWidth="0.5"/>
+        {/* Escandinavia */}
+        <path d="M 242 14 L 250 10 L 258 14 L 260 22 L 250 20 L 242 20 Z"
+          fill="rgba(255,255,255,0.05)" stroke="rgba(255,255,255,0.08)" strokeWidth="0.5"/>
+
+        {/* ── ÁFRICA ── */}
+        <path d="M 218 78 L 238 72 L 260 70 L 278 74 L 290 86 L 296 102 L 298 120 L 296 140 L 288 158 L 274 174 L 258 184 L 242 186 L 226 180 L 214 164 L 206 144 L 204 122 L 206 100 Z"
+          fill="rgba(255,255,255,0.07)" stroke="rgba(255,255,255,0.12)" strokeWidth="0.8"/>
+        {/* Cuerno de África */}
+        <path d="M 296 110 L 308 106 L 312 114 L 302 120 L 296 118 Z"
+          fill="rgba(255,255,255,0.05)" stroke="rgba(255,255,255,0.08)" strokeWidth="0.5"/>
+
+        {/* ── ASIA ── */}
+        <path d="M 288 18 L 320 12 L 360 10 L 400 14 L 430 20 L 448 32 L 452 48 L 444 64 L 428 76 L 408 84 L 380 88 L 350 86 L 320 80 L 298 68 L 284 52 L 282 36 Z"
+          fill="rgba(255,255,255,0.07)" stroke="rgba(255,255,255,0.12)" strokeWidth="0.8"/>
+        {/* Península arábiga */}
+        <path d="M 290 86 L 304 82 L 314 90 L 318 106 L 308 116 L 296 112 L 288 100 Z"
+          fill="rgba(255,255,255,0.06)" stroke="rgba(255,255,255,0.1)" strokeWidth="0.6"/>
+        {/* India */}
+        <path d="M 342 88 L 358 86 L 366 96 L 364 114 L 354 126 L 340 120 L 336 104 Z"
+          fill="rgba(255,255,255,0.06)" stroke="rgba(255,255,255,0.1)" strokeWidth="0.6"/>
+        {/* Japón */}
+        <path d="M 438 44 L 444 40 L 450 46 L 448 56 L 440 58 L 436 50 Z"
+          fill="rgba(255,255,255,0.05)" stroke="rgba(255,255,255,0.08)" strokeWidth="0.5"/>
+        {/* SEA / Indonesia simplificada */}
+        <path d="M 390 106 L 410 102 L 424 108 L 426 118 L 412 122 L 396 118 Z"
+          fill="rgba(255,255,255,0.05)" stroke="rgba(255,255,255,0.08)" strokeWidth="0.5"/>
+
+        {/* ── OCEANÍA ── */}
+        <path d="M 400 148 L 426 142 L 450 146 L 462 158 L 460 174 L 446 184 L 424 186 L 406 178 L 396 164 Z"
+          fill="rgba(255,255,255,0.07)" stroke="rgba(255,255,255,0.12)" strokeWidth="0.8"/>
+        {/* Nueva Zelanda */}
+        <path d="M 462 182 L 468 178 L 472 186 L 468 192 L 462 190 Z"
+          fill="rgba(255,255,255,0.05)" stroke="rgba(255,255,255,0.08)" strokeWidth="0.5"/>
+
+        {/* ── PUNTOS DE PAÍSES ── */}
+        {[
+          { code:'MX', x:96,  y:82  },
+          { code:'CO', x:124, y:136 },
+          { code:'PE', x:116, y:162 },
+          { code:'CL', x:118, y:202 },
+          { code:'AR', x:126, y:214 },
+          { code:'BR', x:148, y:172 },
+          { code:'ES', x:222, y:64  },
+          { code:'US', x:88,  y:58  },
+          { code:'UY', x:136, y:216 },
+          { code:'EC', x:110, y:148 },
+        ].map(p=>{
+          const on=(data.countries||[]).includes(p.code)
+          return (
+            <g key={p.code} onClick={()=>set('countries', (data.countries||[]).includes(p.code) ? (data.countries||[]).filter((x:string)=>x!==p.code) : [...(data.countries||[]),p.code])} style={{ cursor:'pointer' }}>
+              {on && <circle cx={p.x} cy={p.y} r="12" fill="rgba(139,123,255,0.12)" stroke="rgba(139,123,255,0.25)" strokeWidth="1"/>}
+              <circle cx={p.x} cy={p.y} r={on?5:3} fill={on?'#8B7BFF':'rgba(255,255,255,0.18)'} stroke={on?'rgba(180,170,255,0.8)':'rgba(255,255,255,0.08)'} strokeWidth="1.5"/>
+              {on && <text x={p.x} y={p.y-9} textAnchor="middle" fill="#A89BFF" fontSize="7" fontWeight="700" fontFamily="monospace">{p.code}</text>}
+              {on && (
+                <circle cx={p.x} cy={p.y} r="8" fill="none" stroke="rgba(139,123,255,0.4)" strokeWidth="0.8">
+                  <animate attributeName="r" from="5" to="14" dur="2s" repeatCount="indefinite"/>
+                  <animate attributeName="opacity" from="0.5" to="0" dur="2s" repeatCount="indefinite"/>
+                </circle>
+              )}
+            </g>
+          )
+        })}
+      </svg>
+      <div style={{ display:'flex', gap:10, marginTop:10, flexWrap:'wrap' }}>
+        {(data.countries||[]).map((c:string)=>(
+          <span key={c} style={{ fontSize:10, fontWeight:700, padding:'3px 10px', borderRadius:12, background:'rgba(139,123,255,0.15)', border:'1px solid rgba(139,123,255,0.3)', color:'#8B7BFF' }}>{c}</span>
+        ))}
+        {(data.countries||[]).length===0 && <span style={{ fontSize:10, color:'#3D4458' }}>Toca un país para activarlo en el mapa</span>}
+      </div>
+    </div>
+  </div>
+</div>
+    </div>
+  )
+}
+
+// ──────────────────────────────────────────
+// PASO 3
+// ──────────────────────────────────────────
+function Step3({ data, set }: any) {
+  const list: any[] = data.directCompetitors || [emptyCompetitor()]
+  const update = (i:number, field:string, val:any) => set('directCompetitors', list.map((c:any,idx:number)=>idx===i?{...c,[field]:val}:c))
+  const add    = () => list.length<10 && set('directCompetitors',[...list, emptyCompetitor()])
+  const remove = (i:number) => set('directCompetitors', list.filter((_:any,idx:number)=>idx!==i))
+
+  return (
+    <div>
+      <div style={{ fontSize:11, fontWeight:700, letterSpacing:'0.12em', color:'#8B7BFF', marginBottom:10 }}>03 / 07 · MAPA DE AMENAZAS</div>
+      <h1 style={{ fontSize:38, fontWeight:900, letterSpacing:'-0.03em', color:'#F0F2FF', lineHeight:1.1, marginBottom:8 }}>
+        Quiénes te <span style={{ color:'#8B7BFF' }}>disputan el mercado</span>
+      </h1>
+      <p style={{ fontSize:14, color:'#9CA3AF', marginBottom:28, lineHeight:1.6 }}>Hasta 10 competidores directos. Asigna un nivel de amenaza — el motor pondera la cobertura de cada uno en el reporte.</p>
+
+      <div style={S.card}>
+        <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:16 }}>
+          <SectionNum n="01" label="Mapa de amenaza - Competidores Nivel 1" />
+          <button onClick={add} style={{ display:'flex', alignItems:'center', gap:6, background:'rgba(139,123,255,0.1)', border:'1px solid rgba(139,123,255,0.3)', borderRadius:20, padding:'6px 14px', color:'#8B7BFF', fontSize:12, fontWeight:600, cursor:'pointer' }}>+ Competidor</button>
+        </div>
+
+        <div style={{ display:'flex', flexDirection:'column', gap:14 }}>
+          {list.map((c:any, i:number)=>(
+            <div key={i} style={{ background:'rgba(255,255,255,0.02)', border:'1px solid rgba(255,255,255,0.06)', borderRadius:14, padding:'16px' }}>
+              <div style={{ display:'flex', alignItems:'center', gap:12, marginBottom:14 }}>
+                <div style={{ width:40, height:40, borderRadius:10, background:'rgba(139,123,255,0.2)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:14, fontWeight:800, color:'#8B7BFF', flexShrink:0 }}>{c.name?c.name[0].toUpperCase():'?'}</div>
+                <div style={{ flex:1, display:'grid', gridTemplateColumns:'1fr 1fr 1fr', gap:10 }}>
+                  <input style={S.input} value={c.name} onChange={e=>update(i,'name',e.target.value)} placeholder="Nombre del competidor" />
+                  <input style={S.input} value={c.url} onChange={e=>update(i,'url',e.target.value)} placeholder="sitio.com" />
+                  <input style={S.input} value={c.products} onChange={e=>update(i,'products',e.target.value)} placeholder="Productos en competencia" />
+                </div>
+                {list.length>1&&<button onClick={()=>remove(i)} style={{ background:'rgba(255,107,107,0.1)', border:'1px solid rgba(255,107,107,0.2)', borderRadius:8, width:28, height:28, cursor:'pointer', color:'#FF6B6B', fontSize:14 }}>×</button>}
+              </div>
+
+<div style={{ display:'grid', gridTemplateColumns:'auto 1fr auto', gap:14, alignItems:'center', marginBottom:14 }}>
+                <span style={{ fontSize:11, fontWeight:700, color:'#5A627A' }}>PRESENCIA</span>
+                <div style={{ display:'flex', gap:8 }}>
+                  {['Local','Regional','Nacional','Internacional'].map(v=>(
+                    <button key={v} onClick={()=>update(i,'presence',v)} style={{ padding:'6px 14px', borderRadius:16, border:'1px solid', fontSize:12, fontWeight:600, cursor:'pointer', background: c.presence===v ? 'rgba(139,123,255,0.2)' : 'transparent', borderColor: c.presence===v ? 'rgba(139,123,255,0.5)' : 'rgba(255,255,255,0.1)', color: c.presence===v ? '#8B7BFF' : '#5A627A' }}>{v}</button>
+                  ))}
+                </div>
+                <div style={{ display:'flex', gap:10 }}>
+                  {[['IG','ig'],['FB','fb'],['X','x'],['LI','li']].map(([icon,key])=>(
+                    <div key={key} style={{ display:'flex', alignItems:'center', gap:6, background:'rgba(255,255,255,0.04)', border:'1px solid rgba(255,255,255,0.08)', borderRadius:10, padding:'6px 12px' }}>
+                      <span style={{ fontSize:10, fontWeight:800, color:'#8B7BFF' }}>{icon}</span>
+                      <input style={{ width:72, background:'transparent', border:'none', outline:'none', color:'#F0F2FF', fontSize:12 }} value={c[key]||''} onChange={e=>update(i,key,e.target.value)} placeholder="@usuario" />
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div style={{ display:'flex', alignItems:'center', gap:12 }}>
+                <span style={{ fontSize:10, fontWeight:700, color:'#5A627A', width:60 }}>AMENAZA</span>
+                <input type="range" min={1} max={10} value={c.threat} onChange={e=>update(i,'threat',+e.target.value)} style={{ flex:1, accentColor:'#8B7BFF' }} />
+                <span style={{ fontSize:14, fontWeight:800, color: c.threat>=8?'#FF6B6B':c.threat>=5?'#F2C063':'#6EE7A4', minWidth:40 }}>{c.threat}/10</span>
               </div>
             </div>
-            <div>
-              <label className="text-xs text-gray-500 mb-2 block">
-                Nivel de amenaza: <span className="text-white font-bold">{comp.threat}/10</span>
-              </label>
-              <input type="range" min="1" max="10" value={comp.threat}
-                onChange={e => onUpdate(type, i, 'threat', parseInt(e.target.value))}
-                className="w-full accent-blue-500 cursor-pointer" />
-              <div className="flex justify-between text-xs text-gray-600 mt-1">
-                <span>Baja amenaza</span>
-                <span>Alta amenaza</span>
+          ))}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// ──────────────────────────────────────────
+// PASO 4
+// ──────────────────────────────────────────
+function Step4({ data, set }: any) {
+  const list: any[] = data.indirectCompetitors || [emptyIndirect()]
+  const update = (i:number, field:string, val:any) => set('indirectCompetitors', list.map((c:any,idx:number)=>idx===i?{...c,[field]:val}:c))
+  const add    = () => list.length<10 && set('indirectCompetitors',[...list, emptyIndirect()])
+  const remove = (i:number) => set('indirectCompetitors', list.filter((_:any,idx:number)=>idx!==i))
+
+  const quad = (t:number,r:number) => t>=6&&r>=6?'🔴 Disruptor real':t>=6&&r<6?'🟡 Vigilar':t<6&&r>=6?'🟣 Friccional':'⚪ Ruido bajo'
+
+  return (
+    <div>
+      <div style={{ fontSize:11, fontWeight:700, letterSpacing:'0.12em', color:'#8B7BFF', marginBottom:10 }}>04 / 07 · DISRUPTORES ADYACENTES</div>
+      <h1 style={{ fontSize:38, fontWeight:900, letterSpacing:'-0.03em', color:'#F0F2FF', lineHeight:1.1, marginBottom:8 }}>
+        Competidores Nivel 2, <span style={{ color:'#8B7BFF' }}>menos participación, los tenemos a la vista</span>
+      </h1>
+      <p style={{ fontSize:14, color:'#9CA3AF', marginBottom:28, lineHeight:1.6 }}>Sustitutos, adyacentes y disruptores potenciales. El sistema los pondera con menor frecuencia pero alta sensibilidad a movimientos atípicos.</p>
+
+      {/* Stats */}
+      <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr 1fr', gap:12, marginBottom:16 }}>
+        {[
+          { label:'AMENAZA PROM.', value: list.length ? (list.reduce((a:number,c:any)=>a+c.threat,0)/list.length).toFixed(1)+'/10' : '—' },
+          { label:'RELEVANCIA PROM.', value: list.length ? (list.reduce((a:number,c:any)=>a+c.relevance,0)/list.length).toFixed(1)+'/10' : '—' },
+          { label:'SLOTS', value: `${list.length}/10` },
+        ].map((m,i)=>(
+          <div key={i} style={{ background:'rgba(255,255,255,0.03)', border:'1px solid rgba(255,255,255,0.07)', borderRadius:12, padding:'14px 16px' }}>
+            <div style={{ fontSize:9, fontWeight:700, letterSpacing:'0.1em', color:'#5A627A', marginBottom:6 }}>{m.label}</div>
+            <div style={{ fontSize:20, fontWeight:800, color:'#F0F2FF' }}>{m.value}</div>
+          </div>
+        ))}
+      </div>
+
+      <div style={S.card}>
+        <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:16 }}>
+          <SectionNum n="02" label="Competidores Nivel 2" />
+          <button onClick={add} style={{ display:'flex', alignItems:'center', gap:6, background:'rgba(139,123,255,0.1)', border:'1px solid rgba(139,123,255,0.3)', borderRadius:20, padding:'6px 14px', color:'#8B7BFF', fontSize:12, fontWeight:600, cursor:'pointer' }}>+ Competidor</button>
+        </div>
+
+        {list.map((c:any,i:number)=>(
+          <div key={c.id||i} style={{ background:'rgba(255,255,255,0.02)', border:'1px solid rgba(255,255,255,0.06)', borderRadius:14, padding:'16px', marginBottom:12 }}>
+            <div style={{ display:'grid', gridTemplateColumns:'auto 1fr 1fr auto', gap:10, alignItems:'center', marginBottom:14 }}>
+              <div style={{ width:36, height:36, borderRadius:10, background:'rgba(93,212,212,0.15)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:13, fontWeight:800, color:'#5DD4D4' }}>{c.name?c.name[0].toUpperCase():'?'}</div>
+              <input style={S.input} value={c.name} onChange={e=>update(i,'name',e.target.value)} placeholder="Nombre del competidor" />
+              <input style={S.input} value={c.industry} onChange={e=>update(i,'industry',e.target.value)} placeholder="Industria / Categoría" />
+              {list.length>1&&<button onClick={()=>remove(i)} style={{ background:'rgba(255,107,107,0.1)', border:'1px solid rgba(255,107,107,0.2)', borderRadius:8, width:28, height:28, cursor:'pointer', color:'#FF6B6B', fontSize:14 }}>×</button>}
+            </div>
+            <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:16 }}>
+              <div>
+                <div style={{ display:'flex', justifyContent:'space-between', marginBottom:6 }}>
+                  <span style={{ fontSize:10, fontWeight:700, color:'#5A627A' }}>AMENAZA</span>
+                  <span style={{ fontSize:12, fontWeight:800, color:'#F2C063' }}>{c.threat}/10</span>
+                </div>
+                <input type="range" min={0} max={10} value={c.threat} onChange={e=>update(i,'threat',+e.target.value)} style={{ width:'100%', accentColor:'#F2C063' }} />
+              </div>
+              <div>
+                <div style={{ display:'flex', justifyContent:'space-between', marginBottom:6 }}>
+                  <span style={{ fontSize:10, fontWeight:700, color:'#5A627A' }}>RELEVANCIA</span>
+                  <span style={{ fontSize:12, fontWeight:800, color:'#5DD4D4' }}>{c.relevance}/10</span>
+                </div>
+                <input type="range" min={0} max={10} value={c.relevance} onChange={e=>update(i,'relevance',+e.target.value)} style={{ width:'100%', accentColor:'#5DD4D4' }} />
+              </div>
+            </div>
+            <div style={{ marginTop:12, display:'flex', alignItems:'center', gap:12, background:'rgba(255,255,255,0.02)', border:'1px solid rgba(255,255,255,0.06)', borderRadius:12, padding:'10px 14px' }}>
+              {/* Ícono semáforo */}
+              <div style={{ display:'flex', flexDirection:'column', gap:3, flexShrink:0 }}>
+                <div style={{ width:10, height:10, borderRadius:'50%', background: c.threat>=8&&c.relevance>=8 ? '#FF6B6B' : 'rgba(255,107,107,0.15)', border:'1px solid rgba(255,107,107,0.3)', transition:'all 0.3s' }}/>
+                <div style={{ width:10, height:10, borderRadius:'50%', background: c.threat>=5&&c.relevance>=5&&!(c.threat>=8&&c.relevance>=8) ? '#F2C063' : 'rgba(242,192,99,0.15)', border:'1px solid rgba(242,192,99,0.3)', transition:'all 0.3s' }}/>
+                <div style={{ width:10, height:10, borderRadius:'50%', background: c.threat<5&&c.relevance<5 ? '#6EE7A4' : 'rgba(110,231,164,0.15)', border:'1px solid rgba(110,231,164,0.3)', transition:'all 0.3s' }}/>
+              </div>
+              {/* Texto */}
+              <div>
+                <div style={{ fontSize:9, fontWeight:700, letterSpacing:'0.1em', color:'#5A627A', marginBottom:3 }}>ALERTA COMPETIDORES INDIRECTOS</div>
+                <div style={{ fontSize:12, fontWeight:700, color:
+                  c.threat>=8&&c.relevance>=8 ? '#FF6B6B' :
+                  c.threat>=6&&c.relevance>=6 ? '#F2C063' :
+                  c.threat>=6&&c.relevance<6  ? '#8B7BFF' :
+                  '#6EE7A4'
+                }}>
+                  {c.threat>=8&&c.relevance>=8 ? '🔴 Disruptor real — monitoreo diario' :
+                   c.threat>=6&&c.relevance>=6 ? '🟡 Vigilar de cerca — riesgo moderado' :
+                   c.threat>=6&&c.relevance<6  ? '🟣 Friccional — impacto parcial' :
+                                                 '🟢 Ruido bajo — sin acción inmediata'}
+                </div>
+              </div>
+              {/* Barra de riesgo */}
+              <div style={{ marginLeft:'auto', textAlign:'right', flexShrink:0 }}>
+                <div style={{ fontSize:9, color:'#5A627A', marginBottom:4 }}>RIESGO COMBINADO</div>
+                <div style={{ width:60, height:6, background:'rgba(255,255,255,0.06)', borderRadius:3, overflow:'hidden' }}>
+                  <div style={{ height:'100%', width:`${((c.threat+c.relevance)/20)*100}%`, background:
+                    c.threat>=8&&c.relevance>=8 ? '#FF6B6B' :
+                    c.threat>=6&&c.relevance>=6 ? '#F2C063' :
+                    '#6EE7A4', borderRadius:3, transition:'width 0.3s'
+                  }}/>
+                </div>
+                <div style={{ fontSize:11, fontWeight:800, color:'#F0F2FF', marginTop:3 }}>{Math.round((c.threat+c.relevance)/2)}/10</div>
               </div>
             </div>
           </div>
-        </div>
-      ))}
+        ))}
+      </div>
+    </div>
+  )
+}
 
-      {list.length < 10 && (
-        <button type="button" onClick={() => onAdd(type)}
-          className="w-full flex items-center justify-center gap-2 bg-white/3 hover:bg-white/5 border border-dashed border-white/15 hover:border-blue-500/30 text-gray-400 hover:text-blue-400 text-sm py-3 rounded-xl transition-all">
-          <Plus size={16} />
-          Agregar {type === 'direct' ? 'competidor directo' : 'competidor indirecto'} ({list.length}/10)
-        </button>
+// ──────────────────────────────────────────
+// PASO 5
+// ──────────────────────────────────────────
+function Step5({ data, set }: any) {
+  const active: string[] = data.monitorAreas || AREAS.filter(a=>a.on).map(a=>a.id)
+  const depth: Record<string,number> = data.areaDepth || {}
+  const toggle = (id:string) => set('monitorAreas', active.includes(id)?active.filter(x=>x!==id):[...active,id])
+  const setDepth = (id:string, v:number) => set('areaDepth',{...depth,[id]:v})
+
+  return (
+    <div>
+      <div style={{ fontSize:11, fontWeight:700, letterSpacing:'0.12em', color:'#8B7BFF', marginBottom:10 }}>05 / 07 · ALCANCE DE MONITOREO</div>
+      <h1 style={{ fontSize:38, fontWeight:900, letterSpacing:'-0.03em', color:'#F0F2FF', lineHeight:1.1, marginBottom:8 }}>
+        Qué debe <span style={{ color:'#8B7BFF' }}>vigilar el motor</span>
+      </h1>
+      <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start', marginBottom:28 }}>
+        <p style={{ fontSize:14, color:'#9CA3AF', lineHeight:1.6, maxWidth:480 }}>Selecciona las áreas que quieres en cada reporte. Cada una activa pipelines independientes de scraping, NLP y verificación.</p>
+        <div/>
+      </div>
+
+      <div style={S.card}>
+        <SectionNum n="01" label="Activar áreas" />
+        <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:12 }}>
+          {AREAS.map(a=>{
+            const on=active.includes(a.id)
+            return (
+              <button key={a.id} onClick={()=>toggle(a.id)} style={{ textAlign:'left', padding:'18px', borderRadius:14, border:'1px solid', cursor:'pointer', transition:'all 0.2s', background: on ? 'rgba(139,123,255,0.1)' : 'rgba(255,255,255,0.02)', borderColor: on ? 'rgba(139,123,255,0.4)' : 'rgba(255,255,255,0.06)', position:'relative' }}>
+                <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start', marginBottom:10 }}>
+                  <span style={{ fontSize:9, fontWeight:700, letterSpacing:'0.1em', color:'#5A627A', fontFamily:'monospace' }}>{a.code}</span>
+                  <div style={{ width:22, height:22, borderRadius:6, background: on ? '#8B7BFF' : 'rgba(255,255,255,0.06)', border:'1px solid', borderColor: on ? '#8B7BFF' : 'rgba(255,255,255,0.1)', display:'flex', alignItems:'center', justifyContent:'center' }}>
+                    {on&&<span style={{ color:'#fff', fontSize:12, fontWeight:800 }}>✓</span>}
+                  </div>
+                </div>
+                <div style={{ fontSize:14, fontWeight:700, color: on ? '#F0F2FF' : '#9CA3AF', marginBottom:6 }}>{a.label}</div>
+                <div style={{ fontSize:12, color:'#5A627A', lineHeight:1.5, marginBottom:12 }}>{a.desc}</div>
+                <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center' }}>
+                  <span style={{ fontSize:10, fontFamily:'monospace', color: on ? '#8B7BFF' : '#3D4458' }}>{a.meta}</span>
+                  <span style={{ fontSize:10, fontWeight:700, color: on ? '#6EE7A4' : '#3D4458' }}>{on?'ON':'OFF'}</span>
+                </div>
+              </button>
+            )
+          })}
+        </div>
+      </div>
+
+      {/* Profundidad */}
+      {active.length > 0 && (
+        <div style={S.card}>
+          <SectionNum n="02" label="Profundidad por área" />
+          <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:20 }}>
+            {active.slice(0,6).map(id=>{
+              const area = AREAS.find(a=>a.id===id)!
+              const val = depth[id] || 7
+              return (
+                <div key={id}>
+                  <div style={{ display:'flex', justifyContent:'space-between', marginBottom:8 }}>
+                    <span style={{ fontSize:10, fontWeight:700, letterSpacing:'0.08em', color:'#5A627A' }}>{area.label.toUpperCase()} · PROFUNDIDAD</span>
+                    <div style={{ width:24, height:24, borderRadius:12, background:'#8B7BFF', display:'flex', alignItems:'center', justifyContent:'center', fontSize:11, fontWeight:800, color:'#fff' }}>{val}</div>
+                  </div>
+                  <input type="range" min={1} max={10} value={val} onChange={e=>setDepth(id,+e.target.value)} style={{ width:'100%', accentColor:'#8B7BFF' }} />
+                </div>
+              )
+            })}
+          </div>
+        </div>
       )}
     </div>
   )
 }
 
+// ──────────────────────────────────────────
+// PASO 6
+// ──────────────────────────────────────────
+function Step6({ data, set }: any) {
+  const annual = data.annualBilling || false
+  const planId = data.frequency || 'WEEKLY'
+  const plan = PLANS.find(p=>p.id===planId)!
+
+  return (
+    <div>
+      <div style={{ fontSize:11, fontWeight:700, letterSpacing:'0.12em', color:'#8B7BFF', marginBottom:10 }}>06 / 07 · CADENCIA & CANALES</div>
+      <h1 style={{ fontSize:38, fontWeight:900, letterSpacing:'-0.03em', color:'#F0F2FF', lineHeight:1.1, marginBottom:8 }}>
+        Cuándo y <span style={{ color:'#8B7BFF' }}>cómo lo recibes</span>
+      </h1>
+      <p style={{ fontSize:14, color:'#9CA3AF', marginBottom:28, lineHeight:1.6 }}>Elige plan, frecuencia, día, hora y canales. Puedes cambiarlo después sin perder histórico.</p>
+
+      {/* Planes */}
+      <div style={S.card}>
+        <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:20 }}>
+          <SectionNum n="01" label="Plan de inteligencia" />
+          <div style={{ display:'flex', gap:6, background:'rgba(255,255,255,0.05)', borderRadius:20, padding:4 }}>
+            <button onClick={()=>set('annualBilling',false)} style={{ padding:'5px 14px', borderRadius:16, border:'none', fontSize:11, fontWeight:700, cursor:'pointer', background:!annual?'#8B7BFF':'transparent', color:!annual?'#fff':'#9CA3AF' }}>Mensual</button>
+            <button onClick={()=>set('annualBilling',true)} style={{ padding:'5px 14px', borderRadius:16, border:'none', fontSize:11, fontWeight:700, cursor:'pointer', background:annual?'#8B7BFF':'transparent', color:annual?'#fff':'#9CA3AF', display:'flex', alignItems:'center', gap:6 }}>Anual <span style={{ background:'#6EE7A4', color:'#0D0F1A', padding:'1px 6px', borderRadius:8, fontSize:9, fontWeight:800 }}>-20%</span></button>
+          </div>
+        </div>
+        <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:12 }}>
+          {PLANS.map(p=>{
+            const on=planId===p.id
+            const price=annual?p.priceAnnual:p.price
+            return (
+              <button key={p.id} onClick={()=>set('frequency',p.id)} style={{ textAlign:'left', padding:'20px', borderRadius:14, border:'1px solid', cursor:'pointer', transition:'all 0.2s', background: on ? 'rgba(139,123,255,0.12)' : 'rgba(255,255,255,0.02)', borderColor: on ? 'rgba(139,123,255,0.5)' : 'rgba(255,255,255,0.06)', position:'relative' }}>
+                {p.popular&&<div style={{ position:'absolute', top:-10, right:14, background:'#8B7BFF', color:'#fff', fontSize:9, fontWeight:800, padding:'3px 8px', borderRadius:8, letterSpacing:'0.08em' }}>RECOMENDADO</div>}
+                <div style={{ fontSize:9, fontWeight:700, letterSpacing:'0.1em', color:'#5A627A', marginBottom:8, fontFamily:'monospace' }}>{p.tag}</div>
+                <div style={{ fontSize:22, fontWeight:900, color: on?'#F0F2FF':'#9CA3AF', marginBottom:2 }}>{p.label}</div>
+                <div style={{ fontSize:28, fontWeight:900, color: on?'#8B7BFF':'#5A627A', marginBottom:12 }}>USD {price.toLocaleString()} <span style={{ fontSize:12, fontWeight:500, color:'#5A627A' }}>/ mes</span></div>
+                {p.features.map((f,i)=><div key={i} style={{ display:'flex', alignItems:'center', gap:6, fontSize:12, color: on?'#9CA3AF':'#5A627A', marginBottom:4 }}><span style={{ color: on?'#8B7BFF':'#3D4458' }}>✓</span>{f}</div>)}
+              </button>
+            )
+          })}
+        </div>
+      </div>
+
+      {/* Día + Hora */}
+      <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:16, marginBottom:16 }}>
+        <div style={S.card}>
+          <SectionNum n="02" label="Día de entrega" />
+          <div style={{ display:'flex', gap:6 }}>
+            {DAYS.map((d,i)=>(
+              <button key={i} onClick={()=>set('deliveryDay',i)} style={{ flex:1, padding:'10px 0', borderRadius:10, border:'1px solid', fontSize:12, fontWeight:700, cursor:'pointer', background: data.deliveryDay===i ? '#8B7BFF' : 'rgba(255,255,255,0.04)', borderColor: data.deliveryDay===i ? '#8B7BFF' : 'rgba(255,255,255,0.08)', color: data.deliveryDay===i ? '#fff' : '#5A627A' }}>{d}</button>
+            ))}
+          </div>
+        </div>
+        <div style={S.card}>
+          <SectionNum n="03" label="Horario · UTC-5" />
+          <div style={{ display:'flex', flexWrap:'wrap', gap:6 }}>
+            {TIMES.map((t,i)=>(
+              <button key={i} onClick={()=>set('deliveryTime',i)} style={{ padding:'8px 12px', borderRadius:10, border:'1px solid', fontSize:12, fontWeight:700, fontFamily:'monospace', cursor:'pointer', background: data.deliveryTime===i ? '#8B7BFF' : 'rgba(255,255,255,0.04)', borderColor: data.deliveryTime===i ? '#8B7BFF' : 'rgba(255,255,255,0.08)', color: data.deliveryTime===i ? '#fff' : '#5A627A' }}>{t}</button>
+            ))}
+          </div>
+          <p style={{ fontSize:11, color:'#3D4458', marginTop:10 }}>🏆 Lunes 07:00 maximiza adopción ejecutiva</p>
+        </div>
+      </div>
+
+      {/* Canales */}
+      <div style={S.card}>
+        <SectionNum n="04" label="Canales de entrega" />
+        <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr 1fr', gap:12, marginBottom:16 }}>
+          {[['EMAIL','Email','PDF + HTML'],['WHATSAPP','WhatsApp','Resumen + link'],['BOTH','Ambos','Recomendado']].map(([v,l,sub])=>(
+            <button key={v} onClick={()=>set('deliveryChannel',v)} style={{ padding:'16px', borderRadius:12, border:'1px solid', cursor:'pointer', background: data.deliveryChannel===v ? 'rgba(139,123,255,0.15)' : 'rgba(255,255,255,0.03)', borderColor: data.deliveryChannel===v ? 'rgba(139,123,255,0.5)' : 'rgba(255,255,255,0.08)', textAlign:'center' as const }}>
+              <div style={{ fontSize:13, fontWeight:700, color: data.deliveryChannel===v ? '#F0F2FF' : '#9CA3AF', marginBottom:4 }}>{l}</div>
+              <div style={{ fontSize:11, color:'#5A627A' }}>{sub}</div>
+            </button>
+          ))}
+        </div>
+        {(data.deliveryChannel==='EMAIL'||data.deliveryChannel==='BOTH') && (
+          <div style={{ marginBottom:12 }}>
+            <label style={S.label}>Email de entrega</label>
+            <input style={S.input} type="email" value={data.deliveryEmail||''} onChange={e=>set('deliveryEmail',e.target.value)} placeholder="director@tuempresa.com" />
+          </div>
+        )}
+        {(data.deliveryChannel==='WHATSAPP'||data.deliveryChannel==='BOTH') && (
+          <div>
+            <label style={S.label}>WhatsApp</label>
+            <input style={S.input} type="tel" value={data.deliveryPhone||''} onChange={e=>set('deliveryPhone',e.target.value)} placeholder="+52 81 1234 5678" />
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
+
+// ──────────────────────────────────────────
+// PASO 7
+// ──────────────────────────────────────────
+function Step7({ data, loading, onActivate, errorMsg }: any) {
+  const plan = PLANS.find(p=>p.id===(data.frequency||'WEEKLY'))!
+  const price = data.annualBilling ? plan.priceAnnual : plan.price
+  const directCount = (data.directCompetitors||[]).filter((c:any)=>c.name).length
+  const indirectCount = (data.indirectCompetitors||[]).filter((c:any)=>c.name).length
+  const activeAreas = (data.monitorAreas||[]).length
+
+  return (
+    <div>
+      <div style={{ fontSize:11, fontWeight:700, letterSpacing:'0.12em', color:'#8B7BFF', marginBottom:10 }}>07 / 07 · BRIEFING CONSOLIDADO</div>
+      <h1 style={{ fontSize:38, fontWeight:900, letterSpacing:'-0.03em', color:'#F0F2FF', lineHeight:1.1, marginBottom:8 }}>
+        Listo para <span style={{ color:'#8B7BFF' }}>activar</span>
+      </h1>
+      <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start', marginBottom:28 }}>
+        <p style={{ fontSize:14, color:'#9CA3AF', lineHeight:1.6, maxWidth:400 }}>Revisa la configuración y dispara la primera ronda de inteligencia. El motor entregará el reporte inicial en aproximadamente 6 horas.</p>
+        <div style={{ textAlign:'right', flexShrink:0 }}>
+          <div style={{ fontSize:9, fontWeight:700, letterSpacing:'0.1em', color:'#5A627A' }}>SCORE</div>
+          <div style={{ fontSize:24, fontWeight:900, color:'#6EE7A4' }}>94/100</div>
+          <div style={{ fontSize:9, fontWeight:700, letterSpacing:'0.1em', color:'#6EE7A4' }}>STATUS READY</div>
+        </div>
+      </div>
+
+      {/* Resumen ejecutivo */}
+      <div style={S.card}>
+        <SectionNum n="01" label="Resumen ejecutivo" />
+        <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:12 }}>
+          {[
+            { label:'EMPRESA', title: data.companyName||data.brand||'—', items:[`${data.industry||'—'} · ${data.companySize||'—'} empleados`, data.presenceScope||'—', data.website||'—'] },
+            { label:'POSICIONAMIENTO', title: data.pitch ? data.pitch.slice(0,40)+'...' : '—', items:[`${(data.products||[]).filter((p:any)=>p.name).length} productos cargados`, `${(data.differentiators||[]).length} diferenciadores clave`, data.presenceScope ? `Presencia ${data.presenceScope.toLowerCase()}` : '—'] },
+            { label:'COMPETIDORES DIRECTOS', title: `${directCount} marcas · amenaza media ${directCount ? ((data.directCompetitors||[]).filter((c:any)=>c.name).reduce((a:number,c:any)=>a+c.threat,0)/Math.max(directCount,1)).toFixed(1) : '0'}`, items: (data.directCompetitors||[]).filter((c:any)=>c.name).slice(0,3).map((c:any)=>`${c.name} · ${c.threat}/10`) },
+            { label:'COMPETIDORES INDIRECTOS', title: `${indirectCount} sustitutos · sensibilidad alta`, items: (data.indirectCompetitors||[]).filter((c:any)=>c.name).slice(0,3).map((c:any)=>c.name) },
+            { label:'ÁREAS DE MONITOREO', title: `${activeAreas} áreas · ${activeAreas*4} pipelines`, items: (data.monitorAreas||[]).slice(0,3).map((id:string)=>AREAS.find(a=>a.id===id)?.label||id) },
+            { label:'ENTREGA', title: `${DAYS[data.deliveryDay||0]} ${TIMES[data.deliveryTime||0]} · ${plan.label.toLowerCase()}`, items:[`${data.deliveryChannel==='BOTH'?'Email + WhatsApp':data.deliveryChannel==='EMAIL'?'Email':'WhatsApp'}`, `Plan ${plan.tag}`, `USD ${price} / mes`] },
+          ].map((card,i)=>(
+            <div key={i} style={{ background:'rgba(255,255,255,0.02)', border:'1px solid rgba(255,255,255,0.06)', borderRadius:14, padding:'18px' }}>
+              <div style={{ fontSize:9, fontWeight:700, letterSpacing:'0.12em', color:'#5A627A', marginBottom:10 }}>{card.label}</div>
+              <div style={{ fontSize:16, fontWeight:800, color:'#F0F2FF', marginBottom:10, lineHeight:1.3 }}>{card.title}</div>
+              {card.items.map((item:string,j:number)=>(
+                <div key={j} style={{ display:'flex', alignItems:'center', gap:6, fontSize:12, color:'#9CA3AF', marginBottom:4 }}>
+                  <span style={{ width:4, height:4, borderRadius:'50%', background:'#8B7BFF', flexShrink:0 }} />
+                  {item}
+                </div>
+              ))}
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div style={S.card}>
+        <SectionNum n="02" label="Vista previa del reporte" />
+        <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:16 }}>
+
+          {/* Portada */}
+          <div style={{ background:'#080A12', border:'1px solid rgba(139,123,255,0.2)', borderRadius:12, overflow:'hidden' }}>
+            <div style={{ padding:'20px 20px 16px' }}>
+              <div style={{ fontSize:9, fontWeight:700, letterSpacing:'0.12em', color:'#5A627A', fontFamily:'monospace', marginBottom:12 }}>
+                {plan.label.toUpperCase()} · EDICIÓN 001
+              </div>
+              <div style={{ fontSize:24, fontWeight:900, color:'#F0F2FF', lineHeight:1.15, marginBottom:4 }}>
+                Inteligencia<br/>
+                <span style={{ color:'#8B7BFF', fontStyle:'italic' }}>Sectorial</span><br/>
+                <span style={{ fontSize:18 }}>{data.companyName||data.brand||'Tu empresa'}</span>
+              </div>
+              <div style={{ fontSize:11, color:'#5A627A', marginTop:10, lineHeight:1.6 }}>
+                Vista previa de la portada. Incluirá movimientos clave, radar competitivo, lectura editorial y feed de señales.
+              </div>
+            </div>
+            <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:1, background:'rgba(255,255,255,0.05)', borderTop:'1px solid rgba(255,255,255,0.05)' }}>
+              {[
+                { label:'MOVIMIENTOS', value:'12', color:'#8B7BFF' },
+                { label:'LANZAMIENTOS', value:'3', color:'#5DD4D4' },
+                { label:'CAMBIOS DE PRECIO', value:'8', color:'#F2C063' },
+                { label:'IMPACTO EN MEDIOS', value:'47', color:'#6EE7A4' },
+              ].map((m,i)=>(
+                <div key={i} style={{ background:'#080A12', padding:'14px 16px', borderTop: i>=2 ? '1px solid rgba(255,255,255,0.05)' : 'none' }}>
+                  <div style={{ fontSize:9, fontWeight:700, letterSpacing:'0.1em', color:'#5A627A', fontFamily:'monospace', marginBottom:6 }}>{m.label}</div>
+                  <div style={{ fontSize:26, fontWeight:900, color:m.color }}>{m.value}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Benchmark */}
+          <div style={{ background:'#080A12', border:'1px solid rgba(255,255,255,0.07)', borderRadius:12, padding:20 }}>
+            <div style={{ fontSize:9, fontWeight:700, letterSpacing:'0.12em', color:'#5A627A', marginBottom:4 }}>SECCIÓN · BENCHMARK COMPETITIVO</div>
+            <div style={{ fontSize:15, fontWeight:700, color:'#F0F2FF', marginBottom:16 }}>Movimientos clave de la semana</div>
+
+            <div style={{ height:6, background:'rgba(255,255,255,0.08)', borderRadius:3, marginBottom:8, width:'95%' }}/>
+            <div style={{ height:6, background:'rgba(255,255,255,0.05)', borderRadius:3, marginBottom:16, width:'70%' }}/>
+
+            <div style={{ background:'rgba(139,123,255,0.05)', border:'1px solid rgba(139,123,255,0.12)', borderRadius:10, padding:12, marginBottom:14 }}>
+              <svg viewBox="0 0 300 90" style={{ width:'100%', height:'auto' }}>
+                <defs>
+                  <linearGradient id="gv2" x1="0" x2="0" y1="0" y2="1">
+                    <stop offset="0%" stopColor="#8B7BFF" stopOpacity="0.4"/>
+                    <stop offset="100%" stopColor="#8B7BFF" stopOpacity="0"/>
+                  </linearGradient>
+                  <linearGradient id="gc2" x1="0" x2="0" y1="0" y2="1">
+                    <stop offset="0%" stopColor="#5DD4D4" stopOpacity="0.3"/>
+                    <stop offset="100%" stopColor="#5DD4D4" stopOpacity="0"/>
+                  </linearGradient>
+                </defs>
+                <line x1="0" x2="300" y1="30" y2="30" stroke="rgba(255,255,255,0.04)" strokeWidth="1"/>
+                <line x1="0" x2="300" y1="60" y2="60" stroke="rgba(255,255,255,0.04)" strokeWidth="1"/>
+                <path d="M0 70 L40 55 L80 60 L120 40 L160 45 L200 30 L240 35 L280 20 L300 25 L300 90 L0 90 Z" fill="url(#gv2)"/>
+                <path d="M0 70 L40 55 L80 60 L120 40 L160 45 L200 30 L240 35 L280 20 L300 25" fill="none" stroke="#8B7BFF" strokeWidth="1.8"/>
+                <path d="M0 80 L40 72 L80 75 L120 65 L160 68 L200 55 L240 58 L280 50 L300 52 L300 90 L0 90 Z" fill="url(#gc2)"/>
+                <path d="M0 80 L40 72 L80 75 L120 65 L160 68 L200 55 L240 58 L280 50 L300 52" fill="none" stroke="#5DD4D4" strokeWidth="1.5"/>
+                <circle cx="200" cy="30" r="4" fill="#8B7BFF" stroke="#0D0F1A" strokeWidth="2"/>
+                <line x1="200" x2="200" y1="30" y2="90" stroke="#8B7BFF" strokeWidth="1" strokeDasharray="3 3" opacity="0.4"/>
+              </svg>
+              <div style={{ display:'flex', gap:12, marginTop:6 }}>
+                <div style={{ display:'flex', alignItems:'center', gap:4 }}>
+                  <div style={{ width:8, height:2, background:'#8B7BFF', borderRadius:1 }}/>
+                  <span style={{ fontSize:9, fontWeight:700, color:'#5A627A' }}>Tu empresa</span>
+                </div>
+                <div style={{ display:'flex', alignItems:'center', gap:4 }}>
+                  <div style={{ width:8, height:2, background:'#5DD4D4', borderRadius:1 }}/>
+                  <span style={{ fontSize:9, fontWeight:700, color:'#5A627A' }}>Sector</span>
+                </div>
+              </div>
+            </div>
+
+            <div style={{ height:6, background:'rgba(255,255,255,0.06)', borderRadius:3, marginBottom:6, width:'88%' }}/>
+            <div style={{ height:6, background:'rgba(255,255,255,0.04)', borderRadius:3, marginBottom:14, width:'55%' }}/>
+            <div style={{ fontSize:9, fontWeight:700, letterSpacing:'0.1em', color:'#3D4458', fontFamily:'monospace' }}>› CONTINÚA EN P. 04</div>
+          </div>
+
+        </div>
+      </div>
+
+      {/* Botón activar grande */}
+      <div style={{ background:'linear-gradient(135deg, rgba(139,123,255,0.2), rgba(93,212,212,0.1))', border:'1px solid rgba(139,123,255,0.3)', borderRadius:16, padding:'24px 28px', display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:16 }}>
+        <div>
+          <div style={{ fontSize:18, fontWeight:800, color:'#F0F2FF' }}>Activar inteligencia competitiva →</div>
+          <div style={{ fontSize:12, color:'#9CA3AF', marginTop:4 }}>7 días gratis · Sin tarjeta requerida · Cancela cuando quieras</div>
+        </div>
+        <button onClick={onActivate} disabled={loading} style={{ background:'linear-gradient(135deg,#8B7BFF,#5DD4D4)', border:'none', borderRadius:20, padding:'12px 24px', color:'#0D0F1A', fontSize:13, fontWeight:800, cursor: loading?'not-allowed':'pointer', display:'flex', alignItems:'center', gap:8, opacity: loading?0.7:1 }}>
+          {loading ? <div style={{ width:16, height:16, borderRadius:'50%', border:'2px solid rgba(0,0,0,0.3)', borderTopColor:'#0D0F1A', animation:'spin 0.8s linear infinite' }} /> : null}
+          PRIMER REPORTE EN ≈ 6H
+        </button>
+      </div>
+
+      {errorMsg && (
+        <div style={{ background:'rgba(255,107,107,0.1)', border:'1px solid rgba(255,107,107,0.2)', borderRadius:12, padding:'12px 16px', color:'#FF6B6B', fontSize:13 }}>⚠️ {errorMsg}</div>
+      )}
+    </div>
+  )
+}
+
+// ──────────────────────────────────────────
+// SIDEBAR
+// ──────────────────────────────────────────
+function Sidebar({ step, setStep }: { step: number; setStep: (n: number) => void }) {
+  const progress = Math.round(((step - 1) / 6) * 100)
+  return (
+    <aside style={{ width:268, minHeight:'100vh', background:'#0D0F1A', borderRight:'1px solid rgba(255,255,255,0.06)', display:'flex', flexDirection:'column', padding:'28px 20px', flexShrink:0 }}>
+      <div style={{ marginBottom:32 }}>
+        <div style={{ fontSize:10, fontWeight:700, letterSpacing:'0.12em', color:'#5A627A', marginBottom:10 }}>WIZARD · 7 PASOS</div>
+        <div style={{ fontSize:22, fontWeight:800, color:'#F0F2FF', lineHeight:1.2, letterSpacing:'-0.02em' }}>Inteligencia<br />Competitiva Sectorial</div>
+        <div style={{ fontSize:16, fontWeight:700, color:'#8B7BFF', marginTop:2 }}>AI Automated</div>
+      </div>
+      <nav style={{ display:'flex', flexDirection:'column', gap:4, flex:1 }}>
+        {STEPS.map(s=>{
+          const done=step>s.id, active=step===s.id
+          return (
+            <button key={s.id} onClick={()=>setStep(s.id)} style={{ display:'flex', alignItems:'center', gap:12, padding:'10px 14px', borderRadius:12, border:'none', cursor:'pointer', textAlign:'left', background:active?'rgba(139,123,255,0.15)':'transparent', transition:'all 0.2s' }}>
+              <div style={{ width:28, height:28, borderRadius:8, flexShrink:0, display:'flex', alignItems:'center', justifyContent:'center', fontSize:11, fontWeight:800, background:done?'#6EE7A4':active?'#8B7BFF':'rgba(255,255,255,0.06)', color:done?'#0D0F1A':active?'#fff':'#5A627A', border:active||done?'none':'1px solid rgba(255,255,255,0.08)' }}>{done?'✓':`0${s.id}`}</div>
+              <div style={{ fontSize:13, fontWeight:active?700:500, color:active?'#F0F2FF':done?'#9CA3AF':'#5A627A' }}>{s.label}</div>
+              {active&&<div style={{ marginLeft:'auto', color:'#8B7BFF', fontSize:16 }}>→</div>}
+            </button>
+          )
+        })}
+      </nav>
+      <div style={{ marginTop:24 }}>
+        <div style={{ display:'flex', justifyContent:'space-between', marginBottom:8 }}>
+          <span style={{ fontSize:10, fontWeight:700, letterSpacing:'0.08em', color:'#5A627A' }}>PROGRESO {progress}%</span>
+          <span style={{ fontSize:10, color:'#5A627A' }}>≈ {Math.max(7-step,0)+1} MIN</span>
+        </div>
+        <div style={{ height:4, background:'rgba(255,255,255,0.06)', borderRadius:4, overflow:'hidden' }}>
+          <div style={{ height:'100%', width:`${progress}%`, background:'linear-gradient(90deg,#8B7BFF,#5DD4D4)', borderRadius:4, transition:'width 0.4s' }} />
+        </div>
+      </div>
+    </aside>
+  )
+}
+
+// ──────────────────────────────────────────
+// BRIEFING PANEL
+// ──────────────────────────────────────────
+function BriefingPanel({ step }: { step: number }) {
+  const briefings: Record<number,{title:string;next:string}> = {
+    1:{title:'Toda la lógica de monitoreo se ancla aquí. Industria define los corpus de scraping; tamaño calibra benchmarking.',next:'Posicionamiento'},
+    2:{title:'El motor compara tu propuesta de valor contra cada competidor para detectar copia, convergencia o diferenciación.',next:'Competidores directos'},
+    3:{title:'Más amenaza = más profundidad. Ajusta los sliders con criterio: marca el espacio competitivo real.',next:'Competidores indirectos'},
+    4:{title:'Los sustitutos son el 30% de la sorpresa: aquí cae el disruptor que aún no aparece en tu radar.',next:'Áreas a monitorear'},
+    5:{title:'Cada área activa pipelines independientes. Activar todas no degrada el reporte; lo enriquece.',next:'Frecuencia y entrega'},
+    6:{title:'Lunes a primera hora maximiza adopción ejecutiva. El briefing entra antes del primer comité.',next:'Confirmación y activación'},
+    7:{title:'Briefing completo. Al activar, el motor empieza a indexar inmediatamente. Primer reporte en ~6h.',next:'Configuración lista. Activa para empezar.'},
+  }
+  const b=briefings[step]
+  return (
+    <aside style={{ width:280, minHeight:'100vh', background:'#0D0F1A', borderLeft:'1px solid rgba(255,255,255,0.06)', padding:'28px 20px', flexShrink:0, display:'flex', flexDirection:'column', gap:14 }}>
+      <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:4 }}>
+        <span style={{ fontSize:13, fontWeight:800, color:'#F0F2FF' }}>BRIEFING AI</span>
+        <div style={{ display:'flex', alignItems:'center', gap:6 }}>
+          <div style={{ width:6, height:6, borderRadius:'50%', background:'#6EE7A4' }} />
+          <span style={{ fontSize:10, fontWeight:700, letterSpacing:'0.08em', color:'#6EE7A4' }}>ANALYZING</span>
+        </div>
+      </div>
+      <div style={{ background:'rgba(139,123,255,0.08)', border:'1px solid rgba(139,123,255,0.2)', borderRadius:14, padding:'16px 14px' }}>
+        <div style={{ fontSize:10, fontWeight:700, letterSpacing:'0.1em', color:'#8B7BFF', marginBottom:8 }}>PASO ACTUAL · 0{step}/07</div>
+        <div style={{ fontSize:13, color:'#C4C9E2', lineHeight:1.6 }}>{b.title}</div>
+      </div>
+      <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:10 }}>
+        {[['CONEXIONES','240','activas'],['SCANS / SEM','1.4M',''],['ALERTAS','12','esta sem.'],['AVANCE ONBOARDING','94','%']].map(([label,value,sub],i)=>(
+          <div key={i} style={{ background:'rgba(255,255,255,0.03)', border:'1px solid rgba(255,255,255,0.07)', borderRadius:12, padding:'12px 14px' }}>
+            <div style={{ fontSize:9, fontWeight:700, letterSpacing:'0.1em', color:'#5A627A', marginBottom:6 }}>{label}</div>
+            <div style={{ fontSize:22, fontWeight:800, color:'#F0F2FF', letterSpacing:'-0.02em', lineHeight:1 }}>{value} <span style={{ fontSize:11, color:'#5A627A', fontWeight:500 }}>{sub}</span></div>
+          </div>
+        ))}
+      </div>
+      <div style={{ background:'rgba(255,255,255,0.03)', border:'1px solid rgba(255,255,255,0.07)', borderRadius:14, padding:'14px' }}>
+        <div style={{ fontSize:10, fontWeight:700, letterSpacing:'0.1em', color:'#5A627A', marginBottom:8 }}>PRÓXIMO</div>
+        <div style={{ fontSize:13, fontWeight:600, color:'#F0F2FF' }}>{b.next}</div>
+        <div style={{ fontSize:11, color:'#5A627A', marginTop:2 }}>0{Math.min(step+1,7)}/07 · ≈ 1 min</div>
+      </div>
+      <div style={{ background:'rgba(255,255,255,0.03)', border:'1px solid rgba(255,255,255,0.07)', borderRadius:14, padding:'14px' }}>
+        <div style={{ fontSize:10, fontWeight:700, letterSpacing:'0.1em', color:'#5A627A', marginBottom:8 }}>AYUDA</div>
+        <div style={{ fontSize:12, color:'#9CA3AF', lineHeight:1.6 }}>¿Dudas? El equipo de PRO Reports responde en menos de 2h en horario laboral.</div>
+      </div>
+      <div style={{ background:'rgba(139,123,255,0.08)', border:'1px solid rgba(139,123,255,0.2)', borderRadius:14, padding:'14px' }}>
+  <div style={{ fontSize:10, fontWeight:700, letterSpacing:'0.1em', color:'#8B7BFF', marginBottom:10 }}>¿TIENES DUDAS? PREGÚNTANOS</div>
+  <div style={{ display:'flex', flexDirection:'column', gap:8 }}>
+    <div style={{ display:'flex', alignItems:'center', gap:8, background:'rgba(110,231,164,0.08)', border:'1px solid rgba(110,231,164,0.15)', borderRadius:10, padding:'8px 12px', cursor:'pointer' }}>
+      <div style={{ width:6, height:6, borderRadius:'50%', background:'#6EE7A4', flexShrink:0 }} />
+      <div>
+        <div style={{ fontSize:11, fontWeight:700, color:'#6EE7A4' }}>Agente AI</div>
+        <div style={{ fontSize:10, color:'#5A627A' }}>Respuestas de inmediato</div>
+      </div>
+    </div>
+    <div style={{ display:'flex', alignItems:'center', gap:8, background:'rgba(255,255,255,0.03)', border:'1px solid rgba(255,255,255,0.07)', borderRadius:10, padding:'8px 12px', cursor:'pointer' }}>
+      <div style={{ width:6, height:6, borderRadius:'50%', background:'#8B7BFF', flexShrink:0 }} />
+      <div>
+        <div style={{ fontSize:11, fontWeight:700, color:'#C4C9E2' }}>Agente Humano</div>
+        <div style={{ fontSize:10, color:'#5A627A' }}>1 hora máx</div>
+      </div>
+    </div>
+  </div>
+</div>
+<div style={{ marginTop:'auto', display:'flex', justifyContent:'space-between', alignItems:'center' }}>
+  <span style={{ fontSize:10, fontFamily:'monospace', color:'#3D4458' }}>MODELO PRO-R-04 · LIVE</span>
+  <span style={{ fontSize:10, color:'#5A627A', cursor:'pointer' }}>› DOCS</span>
+</div>
+    </aside>
+  )
+}
+
+// ──────────────────────────────────────────
+// TOP NAV
+// ──────────────────────────────────────────
+function TopNav() {
+  return (
+    <div style={{ height:56, borderBottom:'1px solid rgba(255,255,255,0.06)', display:'flex', alignItems:'center', justifyContent:'space-between', padding:'0 24px', background:'#0D0F1A', flexShrink:0 }}>
+      <div style={{ display:'flex', alignItems:'center', gap:12 }}>
+        <div style={{ width:36, height:36, borderRadius:10, background:'linear-gradient(135deg,#8B7BFF,#5DD4D4)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:12, fontWeight:900, color:'#0D0F1A' }}>PR</div>
+        <div>
+          <div style={{ fontSize:14, fontWeight:800, color:'#F0F2FF' }}>PRO Reports</div>
+          <div style={{ fontSize:11, color:'#5A627A' }}>Inteligencia Competitiva · AI</div>
+        </div>
+      </div>
+      <div style={{ display:'flex', alignItems:'center', gap:12 }}>
+        <div style={{ display:'flex', alignItems:'center', gap:6, background:'rgba(110,231,164,0.1)', border:'1px solid rgba(110,231,164,0.2)', borderRadius:20, padding:'5px 12px' }}>
+          <div style={{ width:6, height:6, borderRadius:'50%', background:'#6EE7A4' }} />
+          <span style={{ fontSize:11, fontWeight:700, letterSpacing:'0.08em', color:'#6EE7A4' }}>SETUP · LIVE</span>
+        </div>
+        <div style={{ display:'flex', gap:4, background:'rgba(255,255,255,0.05)', borderRadius:20, padding:4 }}>
+          <button style={{ padding:'4px 10px', borderRadius:16, border:'none', background:'#8B7BFF', color:'#fff', fontSize:11, fontWeight:700, cursor:'pointer' }}>ES</button>
+          <button style={{ padding:'4px 10px', borderRadius:16, border:'none', background:'transparent', color:'#5A627A', fontSize:11, fontWeight:700, cursor:'pointer' }}>EN</button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// ──────────────────────────────────────────
+// MAIN
+// ──────────────────────────────────────────
 export default function OnboardingPage() {
   const router = useRouter()
   const supabase = createClient()
@@ -175,568 +1031,87 @@ export default function OnboardingPage() {
   const [loading, setLoading] = useState(false)
   const [errorMsg, setErrorMsg] = useState('')
 
-  // PASO 1
-  const [companyName, setCompanyName] = useState('')
-  const [website, setWebsite] = useState('')
-  const [industry, setIndustry] = useState('')
-  const [companySize, setCompanySize] = useState('')
-  const [targetMarket, setTargetMarket] = useState('')
-  const [industriesOfInterest, setIndustriesOfInterest] = useState<string[]>([])
-  const [socialMedia, setSocialMedia] = useState({ ig: '', fb: '', tt: '', yt: '', lin: '', x: '' })
-  const [mainProducts, setMainProducts] = useState('')
+  const [data, setData] = useState<any>({
+    companyName:'', brand:'', website:'', industry:'', companySize:'', targetMarket:'',
+    socialMedia:{ ig:'', fb:'', tt:'', yt:'', li:'', x:'' },
+    mainProducts:'', tags:[], pitch:'',
+    differentiators:[], products:[emptyProduct()], presenceScope:'Nacional', countries:[],
+    directCompetitors:[emptyCompetitor()],
+    indirectCompetitors:[emptyIndirect()],
+    monitorAreas: AREAS.filter(a=>a.on).map(a=>a.id),
+    areaDepth:{},
+    frequency:'WEEKLY', annualBilling:false,
+    deliveryDay:0, deliveryTime:0, deliveryChannel:'EMAIL',
+    deliveryEmail:'', deliveryPhone:'',
+  })
 
-  // PASO 2
-  const [valueProposition, setValueProposition] = useState('')
-  const [products, setProducts] = useState([emptyProduct()])
-  const [presenceRegional, setPresenceRegional] = useState(false)
-  const [presenceNational, setPresenceNational] = useState(false)
-  const [presenceInternational, setPresenceInternational] = useState(false)
+  const set = (key: string, val: any) => setData((prev: any) => ({ ...prev, [key]: val }))
 
-  // PASO 3
-  const [directCompetitors, setDirectCompetitors] = useState([emptyCompetitor()])
-
-  // PASO 4
-  const [indirectCompetitors, setIndirectCompetitors] = useState([emptyCompetitor()])
-
-  // PASO 5
-  const [monitorAreas, setMonitorAreas] = useState<string[]>([
-    'PRICES', 'CAMPAIGNS', 'LAUNCHES', 'REGULATIONS', 'NEWS', 'SOCIAL', 'EXPANSION'
-  ])
-
-  // PASO 6
-  const [frequency, setFrequency] = useState('WEEKLY')
-  const [deliveryChannel, setDeliveryChannel] = useState('EMAIL')
-  const [deliveryEmail, setDeliveryEmail] = useState('')
-  const [deliveryPhone, setDeliveryPhone] = useState('')
-
-  const addProduct = () => products.length < 10 && setProducts([...products, emptyProduct()])
-  const removeProduct = (i: number) => setProducts(products.filter((_, idx) => idx !== i))
-  const updateProduct = (i: number, field: 'name' | 'price', val: string) => {
-    const u = [...products]; u[i] = { ...u[i], [field]: val }; setProducts(u)
-  }
-
-  const addCompetitor = (type: 'direct' | 'indirect') => {
-    if (type === 'direct' && directCompetitors.length < 10)
-      setDirectCompetitors([...directCompetitors, emptyCompetitor()])
-    if (type === 'indirect' && indirectCompetitors.length < 10)
-      setIndirectCompetitors([...indirectCompetitors, emptyCompetitor()])
-  }
-
-  const removeCompetitor = (type: 'direct' | 'indirect', i: number) => {
-    if (type === 'direct') setDirectCompetitors(directCompetitors.filter((_, idx) => idx !== i))
-    else setIndirectCompetitors(indirectCompetitors.filter((_, idx) => idx !== i))
-  }
-
-  const updateCompetitor = (type: 'direct' | 'indirect', i: number, field: string, val: any) => {
-    if (type === 'direct') {
-      setDirectCompetitors(directCompetitors.map((c, idx) => idx === i ? { ...c, [field]: val } : c))
-    } else {
-      setIndirectCompetitors(indirectCompetitors.map((c, idx) => idx === i ? { ...c, [field]: val } : c))
-    }
-  }
-
-  const toggleArea = (area: string) => {
-    setMonitorAreas(prev => prev.includes(area) ? prev.filter(a => a !== area) : [...prev, area])
-  }
-
-  const toggleIndustry = (ind: string) => {
-    setIndustriesOfInterest(prev => prev.includes(ind) ? prev.filter(a => a !== ind) : [...prev, ind])
-  }
-
-  // ✅ CONECTADO AL BACKEND
   const handleActivate = async () => {
     setLoading(true)
     setErrorMsg('')
     try {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) throw new Error('No hay sesión activa')
-
       const response = await fetch('http://localhost:3001/api/onboarding/competitive', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
         body: JSON.stringify({
           userId: user.id,
-          companyName, website, industry, companySize,
-          targetMarket, mainProducts, socialMedia, industriesOfInterest,
-          valueProposition, products, presenceRegional, presenceNational,
-          presenceInternational, directCompetitors, indirectCompetitors,
-          monitorAreas, frequency, deliveryChannel, deliveryEmail, deliveryPhone,
+          companyName: data.companyName || data.brand,
+          ...data,
+          deliveryDay: DAYS[data.deliveryDay],
+          deliveryTime: TIMES[data.deliveryTime],
         })
       })
-
-      const data = await response.json()
-      if (!response.ok) throw new Error(data.error || 'Error al activar')
-
+      const res = await response.json()
+      if (!response.ok) throw new Error(res.error || 'Error al activar')
       router.push('/dashboard')
-    } catch (error: any) {
-      console.error(error)
-      setErrorMsg(error.message || 'Error inesperado')
+    } catch (err: any) {
+      setErrorMsg(err.message)
       setLoading(false)
     }
   }
 
+  const stepContent: Record<number, React.ReactNode> = {
+    1: <Step1 data={data} set={set} />,
+    2: <Step2 data={data} set={set} />,
+    3: <Step3 data={data} set={set} />,
+    4: <Step4 data={data} set={set} />,
+    5: <Step5 data={data} set={set} />,
+    6: <Step6 data={data} set={set} />,
+    7: <Step7 data={data} loading={loading} onActivate={handleActivate} errorMsg={errorMsg} />,
+  }
+
   return (
-    <main className="min-h-screen bg-[#060609] text-white">
-      <div className="fixed inset-0 pointer-events-none overflow-hidden">
-        <div className="absolute top-0 left-1/4 w-96 h-96 bg-blue-600/10 rounded-full blur-3xl" />
-        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-violet-600/8 rounded-full blur-3xl" />
-      </div>
-
-      <nav className="relative z-50 border-b border-white/5 backdrop-blur-xl bg-[#060609]/80">
-        <div className="max-w-4xl mx-auto px-6 py-4 flex items-center justify-between">
-          <Link href="/dashboard" className="flex items-center gap-2.5">
-            <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-violet-600 rounded-lg flex items-center justify-center">
-              <Zap size={15} className="text-white" />
+    <div style={{ display:'flex', flexDirection:'column', minHeight:'100vh', background:'#0D0F1A', color:'#F0F2FF', fontFamily:'"Plus Jakarta Sans", system-ui, sans-serif' }}>
+      <style>{`* { box-sizing: border-box; margin:0; padding:0; } input, textarea, select, button { font-family: inherit; } @keyframes spin { to { transform: rotate(360deg); } }`}</style>
+      <TopNav />
+      <div style={{ display:'flex', flex:1, overflow:'hidden' }}>
+        <Sidebar step={step} setStep={setStep} />
+        <main style={{ flex:1, overflowY:'auto', padding:'32px 36px', paddingBottom:120 }}>
+          {stepContent[step]}
+          {/* Navegación */}
+          <div style={{ position:'sticky', bottom:0, left:0, right:0, background:'linear-gradient(0deg, #0D0F1A 80%, transparent)', padding:'20px 0 0', display:'flex', justifyContent:'space-between', alignItems:'center', marginTop:32 }}>
+            <button onClick={()=>step>1?setStep(step-1):router.push('/dashboard')} style={{ display:'flex', alignItems:'center', gap:8, background:'rgba(255,255,255,0.05)', border:'1px solid rgba(255,255,255,0.1)', borderRadius:20, padding:'10px 20px', color:'#9CA3AF', fontSize:13, fontWeight:600, cursor:'pointer' }}>
+              ← {step===1?'Cancelar':'Atrás'}
+            </button>
+            <div style={{ display:'flex', gap:10 }}>
+              <button style={{ background:'transparent', border:'1px solid rgba(255,255,255,0.1)', borderRadius:20, padding:'10px 20px', color:'#9CA3AF', fontSize:13, fontWeight:600, cursor:'pointer' }}>Guardar borrador</button>
+              {step<7 ? (
+                <button onClick={()=>setStep(step+1)} style={{ background:'#8B7BFF', border:'none', borderRadius:20, padding:'10px 24px', color:'#fff', fontSize:13, fontWeight:700, cursor:'pointer', display:'flex', alignItems:'center', gap:6 }}>
+                  Continuar →
+                </button>
+              ) : (
+                <button onClick={handleActivate} disabled={loading} style={{ background:'linear-gradient(135deg,#8B7BFF,#5DD4D4)', border:'none', borderRadius:20, padding:'10px 24px', color:'#0D0F1A', fontSize:13, fontWeight:800, cursor:'pointer', display:'flex', alignItems:'center', gap:6 }}>
+                  {loading?'Activando...':'Activar inteligencia →'}
+                </button>
+              )}
             </div>
-            <span className="font-black">Reports<span className="text-blue-400"> PRO</span></span>
-          </Link>
-          <div className="text-gray-500 text-sm">
-            Paso <span className="text-white font-bold">{step}</span> de{' '}
-            <span className="text-white font-bold">{STEPS.length}</span> ·{' '}
-            <span className="text-blue-400 font-semibold">Inteligencia Competitiva</span>
           </div>
-        </div>
-      </nav>
-
-      <div className="relative max-w-3xl mx-auto px-6 py-10">
-
-        <div className="flex items-center justify-between mb-10 overflow-x-auto pb-2">
-          {STEPS.map((s, i) => (
-            <div key={s.id} className="flex items-center gap-1 shrink-0">
-              <div className="flex flex-col items-center">
-                <div className={`w-8 h-8 rounded-xl flex items-center justify-center font-black text-xs transition-all ${
-                  step > s.id ? 'bg-green-500 text-white' :
-                  step === s.id ? 'bg-gradient-to-br from-blue-600 to-violet-600 text-white shadow-lg shadow-blue-500/30' :
-                  'bg-white/5 border border-white/10 text-gray-600'
-                }`}>
-                  {step > s.id ? <CheckCircle size={14} /> : s.id}
-                </div>
-                <div className={`mt-1.5 text-[10px] font-medium whitespace-nowrap hidden md:block ${step === s.id ? 'text-white' : 'text-gray-600'}`}>{s.title}</div>
-              </div>
-              {i < STEPS.length - 1 && <div className={`w-6 h-px mx-1 ${step > s.id ? 'bg-green-500/50' : 'bg-white/8'}`} />}
-            </div>
-          ))}
-        </div>
-
-        <div className="relative bg-white/3 border border-white/8 rounded-3xl p-8 backdrop-blur-sm mb-6">
-          <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-blue-500/30 to-transparent rounded-t-3xl" />
-
-          {/* PASO 1 */}
-          {step === 1 && (
-            <div className="space-y-6">
-              <div className="flex items-center gap-3 mb-2">
-                <div className="w-12 h-12 bg-blue-500/15 border border-blue-500/20 rounded-2xl flex items-center justify-center">
-                  <Building2 size={22} className="text-blue-400" />
-                </div>
-                <div>
-                  <h2 className="text-xl font-black">Datos de tu empresa</h2>
-                  <p className="text-gray-400 text-sm">Esta información personaliza todos tus reportes</p>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="text-xs text-gray-400 font-medium mb-1.5 block">Nombre de la empresa *</label>
-                  <input type="text" value={companyName} onChange={e => setCompanyName(e.target.value)}
-                    placeholder="Grupo Industrial del Norte"
-                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-blue-500/50 transition-all" />
-                </div>
-                <div>
-                  <label className="text-xs text-gray-400 font-medium mb-1.5 block">Sitio web</label>
-                  <input type="text" value={website} onChange={e => setWebsite(e.target.value)}
-                    placeholder="www.tuempresa.com"
-                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-blue-500/50 transition-all" />
-                </div>
-              </div>
-
-              <div>
-                <label className="text-xs text-gray-400 font-medium mb-2 block">Industria principal *</label>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-                  {industries.slice(0, 12).map(ind => (
-                    <button key={ind} type="button" onClick={() => setIndustry(ind)}
-                      className={`text-xs py-2.5 px-3 rounded-xl border transition-all text-left ${industry === ind ? 'bg-blue-600/30 border-blue-500/50 text-blue-300 font-semibold' : 'bg-white/3 border-white/8 text-gray-400 hover:border-white/20'}`}>
-                      {ind}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="text-xs text-gray-400 font-medium mb-2 block">Tamaño de empresa</label>
-                  <div className="grid grid-cols-2 gap-2">
-                    {['1-10', '11-50', '51-200', '200+'].map(s => (
-                      <button key={s} type="button" onClick={() => setCompanySize(s)}
-                        className={`text-xs py-2.5 px-3 rounded-xl border transition-all ${companySize === s ? 'bg-blue-600/30 border-blue-500/50 text-blue-300 font-semibold' : 'bg-white/3 border-white/8 text-gray-400 hover:border-white/20'}`}>
-                        {s} empleados
-                      </button>
-                    ))}
-                  </div>
-                </div>
-                <div>
-                  <label className="text-xs text-gray-400 font-medium mb-1.5 block">Mercado objetivo</label>
-                  <input type="text" value={targetMarket} onChange={e => setTargetMarket(e.target.value)}
-                    placeholder="Ej: PyMEs en Nuevo León"
-                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-blue-500/50 transition-all" />
-                </div>
-              </div>
-
-              <div>
-                <label className="text-xs text-gray-400 font-medium mb-1.5 block">Principales productos o servicios</label>
-                <textarea value={mainProducts} onChange={e => setMainProducts(e.target.value)} rows={2}
-                  placeholder="Ej: Empaque industrial, etiquetas adhesivas..."
-                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-blue-500/50 transition-all resize-none" />
-              </div>
-
-              <div>
-                <label className="text-xs text-gray-400 font-medium mb-3 block">Tus redes sociales</label>
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                  {[
-                    { key: 'ig', label: '📸 Instagram', placeholder: '@tuempresa' },
-                    { key: 'fb', label: '📘 Facebook', placeholder: 'facebook.com/...' },
-                    { key: 'tt', label: '🎵 TikTok', placeholder: '@tuempresa' },
-                    { key: 'yt', label: '▶️ YouTube', placeholder: 'Canal de YouTube' },
-                    { key: 'lin', label: '💼 LinkedIn', placeholder: 'linkedin.com/company/...' },
-                    { key: 'x', label: '✖️ X (Twitter)', placeholder: '@tuempresa' },
-                  ].map(soc => (
-                    <div key={soc.key}>
-                      <label className="text-xs text-gray-500 mb-1 block">{soc.label}</label>
-                      <input type="text" value={(socialMedia as any)[soc.key]}
-                        onChange={e => setSocialMedia({ ...socialMedia, [soc.key]: e.target.value })}
-                        placeholder={soc.placeholder}
-                        className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2.5 text-xs text-white placeholder-gray-700 focus:outline-none focus:border-blue-500/50 transition-all" />
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              <div>
-                <label className="text-xs text-gray-400 font-medium mb-2 block">Industrias de interés a monitorear</label>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-                  {industries.map(ind => (
-                    <button key={ind} type="button" onClick={() => toggleIndustry(ind)}
-                      className={`text-xs py-2 px-3 rounded-xl border transition-all text-left flex items-center gap-1.5 ${industriesOfInterest.includes(ind) ? 'bg-violet-600/25 border-violet-500/40 text-violet-300 font-semibold' : 'bg-white/3 border-white/8 text-gray-500 hover:border-white/20'}`}>
-                      {industriesOfInterest.includes(ind) && <CheckCircle size={10} />}
-                      {ind}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* PASO 2 */}
-          {step === 2 && (
-            <div className="space-y-6">
-              <div className="flex items-center gap-3 mb-2">
-                <div className="w-12 h-12 bg-violet-500/15 border border-violet-500/20 rounded-2xl flex items-center justify-center">
-                  <TrendingUp size={22} className="text-violet-400" />
-                </div>
-                <div>
-                  <h2 className="text-xl font-black">Tu posicionamiento</h2>
-                  <p className="text-gray-400 text-sm">¿Cómo se diferencia tu empresa en el mercado?</p>
-                </div>
-              </div>
-
-              <div>
-                <label className="text-xs text-gray-400 font-medium mb-1.5 block">Propuesta de valor / Diferenciadores clave</label>
-                <textarea value={valueProposition} onChange={e => setValueProposition(e.target.value)} rows={3}
-                  placeholder="Ej: Somos los únicos en la región con certificación ISO 9001..."
-                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-violet-500/50 transition-all resize-none" />
-              </div>
-
-              <div>
-                <label className="text-xs text-gray-400 font-medium mb-3 block">
-                  Productos o servicios con precio aproximado
-                  <span className="text-gray-600 ml-2">({products.length}/10)</span>
-                </label>
-                <div className="space-y-3">
-                  {products.map((p, i) => (
-                    <div key={i} className="flex items-center gap-3">
-                      <div className="w-6 h-6 bg-violet-500/15 border border-violet-500/20 rounded-lg flex items-center justify-center text-violet-400 text-xs font-black shrink-0">{i + 1}</div>
-                      <input type="text" value={p.name} onChange={e => updateProduct(i, 'name', e.target.value)}
-                        placeholder="Nombre del producto o servicio"
-                        className="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-violet-500/50 transition-all" />
-                      <div className="relative w-36 shrink-0">
-                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm">$</span>
-                        <input type="number" value={p.price} onChange={e => updateProduct(i, 'price', e.target.value)}
-                          placeholder="0.00"
-                          className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 pl-7 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-violet-500/50 transition-all" />
-                      </div>
-                      {products.length > 1 && (
-                        <button type="button" onClick={() => removeProduct(i)}
-                          className="w-8 h-8 bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 rounded-lg flex items-center justify-center transition-all shrink-0">
-                          <X size={13} className="text-red-400" />
-                        </button>
-                      )}
-                    </div>
-                  ))}
-                  {products.length < 10 && (
-                    <button type="button" onClick={addProduct}
-                      className="w-full flex items-center justify-center gap-2 bg-white/3 hover:bg-white/5 border border-dashed border-white/15 hover:border-violet-500/30 text-gray-400 hover:text-violet-400 text-sm py-3 rounded-xl transition-all">
-                      <Plus size={16} /> Agregar producto o servicio
-                    </button>
-                  )}
-                </div>
-              </div>
-
-              <div>
-                <label className="text-xs text-gray-400 font-medium mb-3 block">Presencia en mercados</label>
-                <div className="grid grid-cols-3 gap-3">
-                  {[
-                    { key: 'regional', label: 'Regional', desc: 'Estado o región', set: setPresenceRegional, val: presenceRegional },
-                    { key: 'national', label: 'Nacional', desc: 'Todo México', set: setPresenceNational, val: presenceNational },
-                    { key: 'international', label: 'Internacional', desc: 'Otros países', set: setPresenceInternational, val: presenceInternational },
-                  ].map(p => (
-                    <button key={p.key} type="button" onClick={() => p.set(!p.val)}
-                      className={`p-4 rounded-2xl border text-center transition-all ${p.val ? 'bg-violet-600/20 border-violet-500/50 shadow-lg shadow-violet-500/10' : 'bg-white/3 border-white/8 hover:border-white/20'}`}>
-                      <div className={`text-sm font-bold mb-0.5 ${p.val ? 'text-violet-300' : 'text-gray-300'}`}>{p.label}</div>
-                      <div className="text-xs text-gray-500">{p.desc}</div>
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* PASO 3 */}
-          {step === 3 && (
-            <div>
-              <div className="flex items-center gap-3 mb-6">
-                <div className="w-12 h-12 bg-red-500/15 border border-red-500/20 rounded-2xl flex items-center justify-center">
-                  <ShieldAlert size={22} className="text-red-400" />
-                </div>
-                <div>
-                  <h2 className="text-xl font-black">Competidores directos</h2>
-                  <p className="text-gray-400 text-sm">Empresas que ofrecen productos/servicios similares</p>
-                </div>
-              </div>
-              <CompetitorForm type="direct" list={directCompetitors}
-                onUpdate={updateCompetitor} onAdd={addCompetitor} onRemove={removeCompetitor} />
-            </div>
-          )}
-
-          {/* PASO 4 */}
-          {step === 4 && (
-            <div>
-              <div className="flex items-center gap-3 mb-6">
-                <div className="w-12 h-12 bg-amber-500/15 border border-amber-500/20 rounded-2xl flex items-center justify-center">
-                  <Target size={22} className="text-amber-400" />
-                </div>
-                <div>
-                  <h2 className="text-xl font-black">Competidores indirectos</h2>
-                  <p className="text-gray-400 text-sm">Empresas que satisfacen la misma necesidad de otra forma</p>
-                </div>
-              </div>
-              <CompetitorForm type="indirect" list={indirectCompetitors}
-                onUpdate={updateCompetitor} onAdd={addCompetitor} onRemove={removeCompetitor} />
-            </div>
-          )}
-
-          {/* PASO 5 */}
-          {step === 5 && (
-            <div>
-              <div className="flex items-center gap-3 mb-6">
-                <div className="w-12 h-12 bg-cyan-500/15 border border-cyan-500/20 rounded-2xl flex items-center justify-center">
-                  <BarChart2 size={22} className="text-cyan-400" />
-                </div>
-                <div>
-                  <h2 className="text-xl font-black">Áreas a monitorear</h2>
-                  <p className="text-gray-400 text-sm">El AI enfocará el reporte en los temas que selecciones</p>
-                </div>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                {monitorOptions.map(opt => (
-                  <button key={opt.value} type="button" onClick={() => toggleArea(opt.value)}
-                    className={`flex items-center gap-3 p-4 rounded-2xl border text-left transition-all ${monitorAreas.includes(opt.value) ? 'bg-blue-600/20 border-blue-500/40 shadow-lg shadow-blue-500/10' : 'bg-white/3 border-white/8 hover:border-white/20'}`}>
-                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${monitorAreas.includes(opt.value) ? 'bg-blue-500/20' : 'bg-white/5'}`}>
-                      <opt.icon size={18} className={monitorAreas.includes(opt.value) ? 'text-blue-400' : 'text-gray-500'} />
-                    </div>
-                    <div className="flex-1">
-                      <div className={`text-sm font-semibold ${monitorAreas.includes(opt.value) ? 'text-white' : 'text-gray-300'}`}>{opt.label}</div>
-                    </div>
-                    {monitorAreas.includes(opt.value) && <CheckCircle size={16} className="text-blue-400 shrink-0" />}
-                  </button>
-                ))}
-              </div>
-              <div className="mt-4 bg-blue-500/8 border border-blue-500/15 rounded-xl p-3 text-xs text-blue-300">
-                💡 Seleccionadas: <span className="font-bold">{monitorAreas.length}</span> de {monitorOptions.length} áreas
-              </div>
-            </div>
-          )}
-
-          {/* PASO 6 */}
-          {step === 6 && (
-            <div className="space-y-6">
-              <div className="flex items-center gap-3 mb-2">
-                <div className="w-12 h-12 bg-green-500/15 border border-green-500/20 rounded-2xl flex items-center justify-center">
-                  <Mail size={22} className="text-green-400" />
-                </div>
-                <div>
-                  <h2 className="text-xl font-black">Frecuencia y entrega</h2>
-                  <p className="text-gray-400 text-sm">¿Cuándo y cómo quieres recibir tu reporte?</p>
-                </div>
-              </div>
-
-              <div>
-                <label className="text-xs text-gray-400 font-medium mb-3 block">Frecuencia del reporte</label>
-                <div className="grid grid-cols-2 gap-3">
-                  {frequencies.map(f => (
-                    <button key={f.value} type="button" onClick={() => setFrequency(f.value)}
-                      className={`relative p-4 rounded-2xl border text-left transition-all ${frequency === f.value ? 'bg-green-600/20 border-green-500/50 shadow-lg shadow-green-500/10' : 'bg-white/3 border-white/8 hover:border-white/20'}`}>
-                      {f.popular && <div className="absolute -top-2.5 left-3 bg-gradient-to-r from-blue-600 to-violet-600 text-white text-xs font-bold px-2 py-0.5 rounded-full">Popular</div>}
-                      <div className="font-black text-xl">{f.price}<span className="text-gray-500 text-xs font-normal">/mes</span></div>
-                      <div className={`font-semibold text-sm ${frequency === f.value ? 'text-green-300' : 'text-gray-300'}`}>{f.label}</div>
-                      <div className="text-gray-500 text-xs">{f.desc}</div>
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              <div>
-                <label className="text-xs text-gray-400 font-medium mb-3 block">Canal de entrega</label>
-                <div className="grid grid-cols-3 gap-3">
-                  {[
-                    { value: 'EMAIL', label: 'Email', icon: Mail },
-                    { value: 'WHATSAPP', label: 'WhatsApp', icon: Phone },
-                    { value: 'BOTH', label: 'Ambos', icon: Users },
-                  ].map(ch => (
-                    <button key={ch.value} type="button" onClick={() => setDeliveryChannel(ch.value)}
-                      className={`p-4 rounded-2xl border text-center transition-all ${deliveryChannel === ch.value ? 'bg-green-600/20 border-green-500/50' : 'bg-white/3 border-white/8 hover:border-white/20'}`}>
-                      <ch.icon size={20} className={`mx-auto mb-2 ${deliveryChannel === ch.value ? 'text-green-400' : 'text-gray-500'}`} />
-                      <div className={`text-sm font-semibold ${deliveryChannel === ch.value ? 'text-green-300' : 'text-gray-400'}`}>{ch.label}</div>
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {(deliveryChannel === 'EMAIL' || deliveryChannel === 'BOTH') && (
-                <div>
-                  <label className="text-xs text-gray-400 font-medium mb-1.5 block">Email de entrega</label>
-                  <div className="relative">
-                    <Mail size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-500" />
-                    <input type="email" value={deliveryEmail} onChange={e => setDeliveryEmail(e.target.value)}
-                      placeholder="director@tuempresa.com"
-                      className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 pl-10 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-green-500/50 transition-all" />
-                  </div>
-                </div>
-              )}
-
-              {(deliveryChannel === 'WHATSAPP' || deliveryChannel === 'BOTH') && (
-                <div>
-                  <label className="text-xs text-gray-400 font-medium mb-1.5 block">WhatsApp</label>
-                  <div className="relative">
-                    <Phone size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-500" />
-                    <input type="tel" value={deliveryPhone} onChange={e => setDeliveryPhone(e.target.value)}
-                      placeholder="+52 81 1234 5678"
-                      className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 pl-10 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-green-500/50 transition-all" />
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* PASO 7 */}
-          {step === 7 && (
-            <div className="space-y-4">
-              <div className="flex items-center gap-3 mb-2">
-                <div className="w-12 h-12 bg-green-500/15 border border-green-500/20 rounded-2xl flex items-center justify-center">
-                  <CheckCircle size={22} className="text-green-400" />
-                </div>
-                <div>
-                  <h2 className="text-xl font-black">Confirma tu configuración</h2>
-                  <p className="text-gray-400 text-sm">Revisa todo antes de activar tu módulo AI</p>
-                </div>
-              </div>
-
-              <div className="bg-white/3 border border-white/8 rounded-2xl p-5">
-                <div className="text-xs text-gray-500 uppercase tracking-widest mb-3">Empresa</div>
-                <div className="grid grid-cols-2 gap-2 text-sm">
-                  <div><span className="text-gray-500">Nombre:</span> <span className="text-white font-medium">{companyName}</span></div>
-                  <div><span className="text-gray-500">Industria:</span> <span className="text-white font-medium">{industry}</span></div>
-                  <div><span className="text-gray-500">Tamaño:</span> <span className="text-white font-medium">{companySize} empleados</span></div>
-                  <div><span className="text-gray-500">Web:</span> <span className="text-white font-medium">{website || '—'}</span></div>
-                </div>
-              </div>
-
-              <div className="bg-white/3 border border-white/8 rounded-2xl p-5">
-                <div className="text-xs text-gray-500 uppercase tracking-widest mb-3">Competidores directos</div>
-                <div className="text-sm text-white">{directCompetitors.filter(c => c.name).length} competidores cargados</div>
-              </div>
-
-              <div className="bg-white/3 border border-white/8 rounded-2xl p-5">
-                <div className="text-xs text-gray-500 uppercase tracking-widest mb-3">Competidores indirectos</div>
-                <div className="text-sm text-white">{indirectCompetitors.filter(c => c.name).length} competidores cargados</div>
-              </div>
-
-              <div className="bg-white/3 border border-white/8 rounded-2xl p-5">
-                <div className="text-xs text-gray-500 uppercase tracking-widest mb-3">Áreas monitoreadas</div>
-                <div className="flex flex-wrap gap-2">
-                  {monitorAreas.map(area => {
-                    const opt = monitorOptions.find(o => o.value === area)
-                    return opt ? (
-                      <span key={area} className="bg-blue-500/15 border border-blue-500/20 text-blue-300 text-xs px-2.5 py-1 rounded-full">{opt.label}</span>
-                    ) : null
-                  })}
-                </div>
-              </div>
-
-              <div className="bg-white/3 border border-white/8 rounded-2xl p-5">
-                <div className="text-xs text-gray-500 uppercase tracking-widest mb-3">Entrega</div>
-                <div className="grid grid-cols-2 gap-2 text-sm">
-                  <div><span className="text-gray-500">Frecuencia:</span> <span className="text-white font-medium">{frequencies.find(f => f.value === frequency)?.label}</span></div>
-                  <div><span className="text-gray-500">Precio:</span> <span className="text-white font-medium">{frequencies.find(f => f.value === frequency)?.price}/mes</span></div>
-                  <div><span className="text-gray-500">Canal:</span> <span className="text-white font-medium">{deliveryChannel}</span></div>
-                  {deliveryEmail && <div><span className="text-gray-500">Email:</span> <span className="text-white font-medium">{deliveryEmail}</span></div>}
-                </div>
-              </div>
-
-              <div className="bg-gradient-to-r from-green-950/80 to-emerald-950/80 border border-green-500/25 rounded-2xl p-5 flex items-center justify-between">
-                <div>
-                  <div className="font-bold text-green-300">7 días gratis incluidos</div>
-                  <div className="text-gray-400 text-xs">Sin cargo hasta que termine tu prueba</div>
-                </div>
-                <div className="text-2xl font-black text-green-400">
-                  {frequencies.find(f => f.value === frequency)?.price}
-                  <span className="text-gray-500 text-sm font-normal">/mes</span>
-                </div>
-              </div>
-
-              {errorMsg && (
-                <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-3 text-sm text-red-400">
-                  ⚠️ {errorMsg}
-                </div>
-              )}
-            </div>
-          )}
-        </div>
-
-        {/* NAVEGACIÓN */}
-        <div className="flex items-center justify-between">
-          <button type="button"
-            onClick={() => step > 1 ? setStep(step - 1) : router.push('/dashboard')}
-            className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors px-4 py-2">
-            <ArrowLeft size={16} />
-            {step === 1 ? 'Cancelar' : 'Atrás'}
-          </button>
-
-          {step < 7 ? (
-            <button type="button" onClick={() => setStep(step + 1)}
-              disabled={step === 1 && (!companyName || !industry)}
-              className="bg-gradient-to-r from-blue-600 to-violet-600 text-white font-bold px-8 py-3 rounded-xl transition-all hover:shadow-lg hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 flex items-center gap-2">
-              Continuar <ArrowRight size={16} />
-            </button>
-          ) : (
-            <button type="button" onClick={handleActivate} disabled={loading}
-              className="bg-gradient-to-r from-green-600 to-emerald-500 text-white font-bold px-8 py-3 rounded-xl transition-all hover:shadow-lg hover:shadow-green-500/25 hover:scale-105 disabled:opacity-50 flex items-center gap-2">
-              {loading
-                ? <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                : <><CheckCircle size={16} /> Activar módulo gratis</>
-              }
-            </button>
-          )}
-        </div>
+        </main>
+        <BriefingPanel step={step} />
       </div>
-    </main>
+    </div>
   )
 }

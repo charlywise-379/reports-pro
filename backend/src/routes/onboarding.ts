@@ -1,24 +1,25 @@
 import { Router, Request, Response } from 'express'
 import { prisma } from '../lib/prisma'
-import { DeliveryChannel, ReportFrequency, ServiceType, ProjectStatus, SubscriptionStatus, Prisma } from '@prisma/client'
+import { DeliveryChannel, ReportFrequency, ServiceType, ProjectStatus, SubscriptionStatus } from '@prisma/client'
 
 const router = Router()
 
 router.post('/competitive', async (req: Request, res: Response) => {
   try {
     const {
-      userId, companyName, website, industry, companySize,
+      userId, companyName, brand, website, industry, companySize,
       targetMarket, mainProducts, socialMedia, industriesOfInterest,
       valueProposition, products, presenceRegional, presenceNational,
       presenceInternational, directCompetitors, indirectCompetitors,
       monitorAreas, frequency, deliveryChannel, deliveryEmail, deliveryPhone,
     } = req.body
 
-    if (!userId || !companyName || !industry || !frequency) {
-      return res.status(400).json({ error: 'Faltan campos requeridos' })
-    }
+    const finalName = companyName || brand || 'Sin nombre'
 
-    // Usuario
+if (!userId) {
+  return res.status(400).json({ error: 'No hay sesión activa' })
+}
+
     let user = await prisma.user.findUnique({ where: { id: userId } })
     if (!user) {
       user = await prisma.user.create({
@@ -30,7 +31,6 @@ router.post('/competitive', async (req: Request, res: Response) => {
       })
     }
 
-    // Fechas
     const trialStartedAt = new Date()
     const trialEndsAt = new Date()
     trialEndsAt.setDate(trialEndsAt.getDate() + 7)
@@ -45,7 +45,6 @@ router.post('/competitive', async (req: Request, res: Response) => {
       DAILY: 29.99, WEEKLY: 25.00, BIWEEKLY: 22.00, MONTHLY: 20.00
     }
 
-    // Canales
     const deliveryChannels: DeliveryChannel[] = []
     if (deliveryChannel === 'EMAIL' || deliveryChannel === 'BOTH') deliveryChannels.push(DeliveryChannel.EMAIL)
     if (deliveryChannel === 'WHATSAPP' || deliveryChannel === 'BOTH') deliveryChannels.push(DeliveryChannel.WHATSAPP)
@@ -59,11 +58,10 @@ router.post('/competitive', async (req: Request, res: Response) => {
       industriesOfInterest, socialMedia,
     })
 
-    // Crear Project
     const newProject = await prisma.project.create({
       data: {
         userId: user.id,
-        name: `${companyName} — Inteligencia Competitiva`,
+        name: `${finalName} — Inteligencia Competitiva`,
         serviceType: ServiceType.COMPETITIVE_INTELLIGENCE,
         frequency: frequency as ReportFrequency,
         status: ProjectStatus.TRIAL,
@@ -76,16 +74,15 @@ router.post('/competitive', async (req: Request, res: Response) => {
       }
     })
 
-    // Crear Setup
     await prisma.competitiveIntelligenceSetup.create({
       data: {
         projectId: newProject.id,
-        companyName,
+        companyName: finalName,
         website: website || null,
-        industry,
+        industry: industry || '',
         mainProducts: mainProducts ? [mainProducts] : [],
         targetMarket: targetMarket || null,
-        linkedinUrl: socialMedia?.lin || null,
+        linkedinUrl: socialMedia?.li || null,
         instagramUrl: socialMedia?.ig || null,
         facebookUrl: socialMedia?.fb || null,
         twitterUrl: socialMedia?.x || null,
@@ -100,7 +97,6 @@ router.post('/competitive', async (req: Request, res: Response) => {
       }
     })
 
-    // Crear Subscription
     await prisma.subscription.create({
       data: {
         projectId: newProject.id,
