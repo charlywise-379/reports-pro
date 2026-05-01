@@ -1,4 +1,6 @@
 import { Router, Request, Response } from 'express'
+import path from 'path'
+import { generateReport } from '../lib/reportEngine'
 import { prisma } from '../lib/prisma'
 import { DeliveryChannel, ReportFrequency, ServiceType, ProjectStatus, SubscriptionStatus } from '@prisma/client'
 
@@ -109,11 +111,32 @@ if (!userId) {
       }
     })
 
+    // Generar primer reporte en background (no bloquea la respuesta)
+    const outputDir = path.join(__dirname, '../../outputs')
+    if (!require('fs').existsSync(outputDir)) {
+      require('fs').mkdirSync(outputDir, { recursive: true })
+    }
+    const filename = `report-${newProject.id}-${Date.now()}.pdf`
+    const outputPath = path.join(outputDir, filename)
+
+    const projectWithSetup = {
+      ...newProject,
+      setup: await prisma.competitiveIntelligenceSetup.findUnique({
+        where: { projectId: newProject.id }
+      })
+    }
+
+    // Lanzar generación en background
+    generateReport(projectWithSetup, outputPath)
+      .then(() => console.log(`✅ Primer reporte generado: ${filename}`))
+      .catch((err: any) => console.error('❌ Error generando reporte inicial:', err.message))
+
     res.status(201).json({
       success: true,
       projectId: newProject.id,
       message: 'Módulo activado correctamente',
       trialEndsAt,
+      firstReportIn: '~6 minutos',
     })
 
   } catch (error: any) {
