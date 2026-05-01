@@ -1,0 +1,919 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>PRO Reports · {{companyName}} · Sem {{weekNumber}} · {{year}}</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  body{font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;background:#fff;color:#1A1730;font-size:12px;line-height:1.4}
+  .page{width:297mm;min-height:210mm;padding:0;background:#fff;page-break-after:always;position:relative;overflow:hidden}
+  .page:last-child{page-break-after:auto}
+  @media print{.page{page-break-after:always;width:297mm;height:210mm}}
+  @page{size:A4 landscape;margin:0}
+
+  /* ── SHARED ── */
+  .lbl{font-size:8px;font-weight:700;letter-spacing:.15em;text-transform:uppercase}
+  .hdr{background:#1A1730;padding:10px 28px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid rgba(255,255,255,0.07)}
+  .hdr-logo{display:flex;align-items:center;gap:10px}
+  .hdr-badge{width:32px;height:32px;border-radius:8px;background:#534AB7;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:900;color:#fff}
+  .hdr-name{font-size:12px;font-weight:800;color:#F0F2FF}
+  .hdr-sub{font-size:8px;color:#8B7BFF;letter-spacing:.1em}
+  .hdr-right{display:flex;gap:16px;align-items:center}
+  .hdr-meta{font-size:10px;color:#5A627A}
+  .hdr-pag{font-size:8px;color:#5A627A;font-family:monospace;background:rgba(255,255,255,0.05);padding:3px 8px;border-radius:5px}
+  .title-band{background:linear-gradient(135deg,#F8F7FF,#F0EEFF);padding:14px 28px;border-bottom:2px solid #534AB7}
+  .title-bar{width:3px;height:18px;background:#534AB7;border-radius:2px;display:inline-block;margin-right:10px;vertical-align:middle}
+  .title-text{font-size:18px;font-weight:900;color:#1A1730;display:inline;vertical-align:middle}
+  .title-sub{font-size:10px;color:#888;margin-top:2px;margin-left:13px}
+  .footer{padding:8px 28px;background:#F4F2FF;display:flex;justify-content:space-between;align-items:center;border-top:2px solid #534AB7;white-space:nowrap;position:absolute;bottom:0;left:0;right:0}
+  .footer-l{font-size:8px;color:#8B7BFF;font-weight:600}
+  .footer-r{font-size:8px;color:#8B7BFF;font-family:monospace;font-weight:600}
+  .badge{display:inline-block;font-size:8px;font-weight:700;padding:2px 7px;border-radius:10px}
+  .body-wrap{padding:16px 28px 48px}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+  .grid4{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px}
+  .card{background:#fff;border:1.5px solid #EEEDFE;border-radius:12px;padding:14px}
+  .section-lbl{font-size:8px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;color:#8B7BFF;margin-bottom:10px;display:block}
+  .bar-track{height:4px;background:rgba(0,0,0,0.08);border-radius:2px;overflow:hidden;margin-top:5px}
+  .bar-fill{height:100%;border-radius:2px}
+  .insight-card{border-radius:0 8px 8px 0;overflow:hidden;margin-bottom:8px}
+  .insight-head{padding:5px 10px;font-size:8px;font-weight:700;color:#fff;letter-spacing:.08em}
+  .insight-body{padding:10px 12px;font-size:10px;color:#2C2C2A;line-height:1.5;border:1px solid;border-top:none;border-radius:0 0 8px 8px}
+  .comp-row{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:8px;margin-bottom:6px}
+  .comp-init{width:28px;height:28px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:900;color:#fff;flex-shrink:0}
+  .risk-row{display:flex;gap:0;border-radius:10px;overflow:hidden;border:1.5px solid;margin-bottom:8px}
+  .risk-bar{width:4px;flex-shrink:0}
+  .risk-body{padding:10px 12px;flex:1}
+  .alert-card{border:1.5px solid;border-radius:10px;padding:12px;margin-bottom:8px}
+  table{width:100%;border-collapse:collapse}
+  th{font-size:8px;font-weight:700;letter-spacing:.1em;color:#888;text-transform:uppercase;padding:8px 10px;text-align:left}
+  td{padding:8px 10px;font-size:10px;color:#2C2C2A;vertical-align:middle;border-bottom:1px solid #F0EEF8}
+  tr:nth-child(even){background:#FAFAFA}
+</style>
+</head>
+<body>
+
+<!-- ════════════════════════════════════════════════════
+     PÁGINA 1 — EXECUTIVE SUMMARY / PORTADA
+════════════════════════════════════════════════════ -->
+<div class="page">
+
+  <!-- Header oscuro -->
+  <div style="background:#1A1730;padding:14px 28px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid rgba(255,255,255,0.07)">
+    <div style="display:flex;align-items:center;gap:10px">
+      <div style="width:34px;height:34px;border-radius:8px;background:#534AB7;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:900;color:#fff">PR</div>
+      <div>
+        <div style="font-size:12px;font-weight:800;color:#F0F2FF">PRO Reports</div>
+        <div style="font-size:8px;color:#8B7BFF;letter-spacing:.1em">INTELIGENCIA COMPETITIVA</div>
+      </div>
+    </div>
+    <div style="display:flex;gap:22px;align-items:center">
+      <div style="text-align:center"><div style="font-size:8px;color:#5A627A;letter-spacing:.1em;font-weight:700">PERÍODO</div><div style="font-size:10px;font-weight:700;color:#C4C9E2">{{periodStart}} — {{periodEnd}}</div></div>
+      <div style="text-align:center"><div style="font-size:8px;color:#5A627A;letter-spacing:.1em;font-weight:700">EDICIÓN</div><div style="font-size:10px;font-weight:700;color:#C4C9E2">{{edition}} · Sem {{weekNumber}}</div></div>
+      <div style="text-align:center"><div style="font-size:8px;color:#5A627A;letter-spacing:.1em;font-weight:700">GENERADO</div><div style="font-size:10px;font-weight:700;color:#C4C9E2">{{generatedAt}}</div></div>
+      <div style="display:flex;align-items:center;gap:6px;background:rgba(110,231,164,0.12);border:1.5px solid rgba(110,231,164,0.35);border-radius:20px;padding:5px 12px">
+        <div style="width:6px;height:6px;border-radius:50%;background:#6EE7A4"></div>
+        <span style="font-size:9px;font-weight:700;color:#6EE7A4">{{generalTrend}}</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Hero empresa + scores -->
+  <div style="background:#1A1730;padding:20px 28px 0;display:flex;justify-content:space-between;align-items:flex-end">
+    <div style="padding-bottom:20px">
+      <div style="font-size:8px;font-weight:700;letter-spacing:.15em;color:#8B7BFF;margin-bottom:8px">REPORTE DE INTELIGENCIA COMPETITIVA · EDICIÓN {{edition}}</div>
+      <div style="font-size:36px;font-weight:900;color:#F0F2FF;line-height:1;letter-spacing:-.03em">{{companyName}}</div>
+      <div style="font-size:14px;font-weight:600;color:#8B7BFF;margin-top:5px">{{industry}} · {{targetMarket}}</div>
+      <div style="display:flex;gap:5px;margin-top:10px;flex-wrap:wrap">
+        {{#each tags}}<span style="font-size:9px;font-weight:700;padding:3px 8px;border-radius:20px;background:rgba(139,123,255,0.15);color:#C4C9E2;border:1px solid rgba(139,123,255,0.3)">{{this}}</span>{{/each}}
+      </div>
+    </div>
+    <div style="display:flex;gap:14px;align-items:flex-end;padding-bottom:20px">
+      <div style="text-align:center">
+        <svg viewBox="0 0 110 110" width="82" height="82">
+          <circle cx="55" cy="55" r="46" fill="none" stroke="rgba(139,123,255,0.2)" stroke-width="10"/>
+          <circle cx="55" cy="55" r="46" fill="none" stroke="#534AB7" stroke-width="10" stroke-dasharray="{{pressureDash}} 94" stroke-dashoffset="72" stroke-linecap="round" transform="rotate(-90 55 55)"/>
+          <text x="55" y="50" fill="#F0F2FF" font-size="20" font-weight="900" text-anchor="middle">{{competitivePressure}}</text>
+          <text x="55" y="63" fill="#8B7BFF" font-size="7" font-weight="700" text-anchor="middle">de 100</text>
+        </svg>
+        <div style="font-size:8px;font-weight:700;color:#8B7BFF;letter-spacing:.06em;margin-top:4px">COMPETITIVE</div>
+        <div style="font-size:8px;font-weight:700;color:#8B7BFF;letter-spacing:.06em">PRESSURE™</div>
+      </div>
+      <div style="text-align:center">
+        <svg viewBox="0 0 110 110" width="82" height="82">
+          <circle cx="55" cy="55" r="46" fill="none" stroke="rgba(29,158,117,0.2)" stroke-width="10"/>
+          <circle cx="55" cy="55" r="46" fill="none" stroke="#1D9E75" stroke-width="10" stroke-dasharray="{{opportunityDash}} 75" stroke-dashoffset="72" stroke-linecap="round" transform="rotate(-90 55 55)"/>
+          <text x="55" y="50" fill="#F0F2FF" font-size="20" font-weight="900" text-anchor="middle">{{opportunityScore}}</text>
+          <text x="55" y="63" fill="#1D9E75" font-size="7" font-weight="700" text-anchor="middle">de 100</text>
+        </svg>
+        <div style="font-size:8px;font-weight:700;color:#1D9E75;letter-spacing:.06em;margin-top:4px">OPPORTUNITY</div>
+        <div style="font-size:8px;font-weight:700;color:#1D9E75;letter-spacing:.06em">SCORE™</div>
+      </div>
+      <div style="padding:12px 16px;background:rgba(186,117,23,0.15);border:1.5px solid rgba(242,192,99,0.4);border-radius:12px;text-align:center">
+        <div style="font-size:8px;font-weight:700;color:#F2C063;letter-spacing:.1em;margin-bottom:5px">RIESGO MERCADO</div>
+        <div style="font-size:28px;font-weight:900;color:#F2C063;line-height:1">{{marketRisk}}%</div>
+        <div style="font-size:8px;color:#BA7517;margin-top:4px">pérdida estimada</div>
+        <div style="display:flex;justify-content:center;gap:3px;margin-top:7px">
+          <div style="width:9px;height:9px;border-radius:50%;background:#1D9E75"></div>
+          <div style="width:9px;height:9px;border-radius:50%;background:#BA7517"></div>
+          <div style="width:9px;height:9px;border-radius:50%;background:rgba(255,255,255,0.15)"></div>
+        </div>
+        <div style="font-size:9px;font-weight:700;color:#F2C063;margin-top:4px">{{riskLevel}}</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- KPI strip -->
+  <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr 1fr;background:#1A1730;border-top:1px solid rgba(255,255,255,0.07)">
+    <div style="padding:10px 18px;border-right:1px solid rgba(255,255,255,0.07)"><div style="font-size:8px;font-weight:700;letter-spacing:.1em;color:#5A627A;margin-bottom:3px">SEÑALES DETECTADAS</div><div style="font-size:20px;font-weight:900;color:#8B7BFF">{{signalsCount}}</div><div style="font-size:9px;color:#6EE7A4">↑ +{{signalsDelta}}% vs anterior</div></div>
+    <div style="padding:10px 18px;border-right:1px solid rgba(255,255,255,0.07)"><div style="font-size:8px;font-weight:700;letter-spacing:.1em;color:#5A627A;margin-bottom:3px">MOVIMIENTOS CLAVE</div><div style="font-size:20px;font-weight:900;color:#FF6B6B">{{movementsCount}}</div><div style="font-size:9px;color:#5A627A">{{criticalMovements}} críticos · {{minorMovements}} menores</div></div>
+    <div style="padding:10px 18px;border-right:1px solid rgba(255,255,255,0.07)"><div style="font-size:8px;font-weight:700;letter-spacing:.1em;color:#5A627A;margin-bottom:3px">ALERTAS ACTIVAS</div><div style="font-size:20px;font-weight:900;color:#F2C063">{{alertsCount}}</div><div style="font-size:9px;color:#5A627A">requieren atención hoy</div></div>
+    <div style="padding:10px 18px;border-right:1px solid rgba(255,255,255,0.07)"><div style="font-size:8px;font-weight:700;letter-spacing:.1em;color:#5A627A;margin-bottom:3px">COMPETIDORES</div><div style="font-size:20px;font-weight:900;color:#5DD4D4">{{competitorsCount}}</div><div style="font-size:9px;color:#5A627A">monitoreados activos</div></div>
+    <div style="padding:10px 18px"><div style="font-size:8px;font-weight:700;letter-spacing:.1em;color:#5A627A;margin-bottom:3px">NIVEL DE RIESGO</div><div style="font-size:20px;font-weight:900;color:#F2C063">{{riskLevel}}</div><div style="font-size:9px;color:#5A627A">monitoreo intensificado</div></div>
+  </div>
+
+  <!-- Cuerpo blanco 3 columnas -->
+  <div style="display:grid;grid-template-columns:1fr 1fr 1fr;background:#FAFAFA;border-bottom:1px solid #EEECF8">
+
+    <!-- Insights -->
+    <div style="padding:16px 20px;border-right:1px solid #EEECF8">
+      <div style="display:flex;align-items:center;gap:6px;margin-bottom:12px">
+        <div style="width:3px;height:14px;background:#534AB7;border-radius:2px"></div>
+        <span style="font-size:8px;font-weight:700;letter-spacing:.15em;color:#534AB7;text-transform:uppercase">3 Insights críticos</span>
+      </div>
+      {{#each insights}}
+      <div style="border-radius:0 8px 8px 0;overflow:hidden;margin-bottom:8px">
+        <div style="background:{{this.color}};padding:5px 10px;font-size:8px;font-weight:700;color:#fff;letter-spacing:.08em">{{this.category}}</div>
+        <div style="padding:9px 11px;font-size:10px;color:#2C2C2A;line-height:1.5;border:1px solid {{this.borderColor}};border-top:none;border-radius:0 0 8px 8px;background:#fff">{{this.text}}</div>
+      </div>
+      {{/each}}
+    </div>
+
+    <!-- Acciones -->
+    <div style="padding:16px 20px;border-right:1px solid #EEECF8">
+      <div style="display:flex;align-items:center;gap:6px;margin-bottom:12px">
+        <div style="width:3px;height:14px;background:#1D9E75;border-radius:2px"></div>
+        <span style="font-size:8px;font-weight:700;letter-spacing:.15em;color:#1D9E75;text-transform:uppercase">3 Acciones inmediatas</span>
+      </div>
+      {{#each actions}}
+      <div style="background:#fff;border-radius:8px;padding:10px 12px;border:1px solid {{this.borderColor}};display:flex;gap:8px;align-items:flex-start;margin-bottom:8px">
+        <div style="background:{{this.color}};color:#fff;font-size:8px;font-weight:700;padding:3px 6px;border-radius:6px;flex-shrink:0;white-space:nowrap">{{this.priority}}</div>
+        <div style="font-size:10px;color:#2C2C2A;line-height:1.5">{{this.text}}</div>
+      </div>
+      {{/each}}
+      <div style="margin-top:10px;background:#F8F7FF;border-radius:8px;border:1px solid #EEEDFE;padding:10px;text-align:center">
+        <div style="font-size:8px;font-weight:700;color:#534AB7;letter-spacing:.1em;margin-bottom:4px">TENDENCIA GENERAL</div>
+        <div style="font-size:18px;font-weight:900;color:#1D9E75">{{generalTrend}}</div>
+        <div style="font-size:9px;color:#888;margin-top:2px">vs semana anterior {{trendDelta}} pts</div>
+      </div>
+    </div>
+
+    <!-- Competidores -->
+    <div style="padding:16px 20px">
+      <div style="display:flex;align-items:center;gap:6px;margin-bottom:12px">
+        <div style="width:3px;height:14px;background:#E24B4A;border-radius:2px"></div>
+        <span style="font-size:8px;font-weight:700;letter-spacing:.15em;color:#E24B4A;text-transform:uppercase">Ranking de amenaza</span>
+      </div>
+      {{#each topCompetitors}}
+      <div style="background:#fff;border-radius:8px;padding:8px 10px;border:1px solid {{this.borderColor}};display:flex;align-items:center;gap:8px;margin-bottom:6px">
+        <div style="width:26px;height:26px;border-radius:6px;background:{{this.color}};display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:900;color:#fff;flex-shrink:0">{{this.initials}}</div>
+        <div style="flex:1;min-width:0">
+          <div style="font-size:11px;font-weight:700;color:#1A1730">{{this.name}}</div>
+          <div style="height:3px;background:{{this.trackColor}};border-radius:2px;margin-top:3px;overflow:hidden"><div style="height:100%;width:{{this.threatPct}}%;background:{{this.color}};border-radius:2px"></div></div>
+        </div>
+        <div style="font-size:12px;font-weight:900;color:{{this.color}};flex-shrink:0">{{this.threat}}/10</div>
+      </div>
+      {{/each}}
+      <div style="background:#1A1730;border-radius:8px;padding:10px 12px;margin-top:4px">
+        <div style="font-size:8px;font-weight:700;color:#8B7BFF;letter-spacing:.1em;margin-bottom:4px">⚠ EARLY WARNING™</div>
+        <div style="font-size:10px;color:#F0F2FF;line-height:1.5">{{earlyWarning}}</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer">
+    <div class="footer-l">PRO Reports · Confidencial · No distribuir</div>
+    <div class="footer-r">{{companyName}} · Sem {{weekNumber}} · {{year}} · Pág. 1 de 11</div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════
+     PÁGINA 2 — TERMÓMETRO DEL MERCADO
+════════════════════════════════════════════════════ -->
+<div class="page">
+  <div class="hdr">
+    <div class="hdr-logo"><div class="hdr-badge">PR</div><div><div class="hdr-name">PRO Reports</div><div class="hdr-sub">INTELIGENCIA COMPETITIVA</div></div></div>
+    <div class="hdr-right"><div class="hdr-meta">{{companyName}} · {{industry}} · Sem {{weekNumber}} · {{year}}</div><div class="hdr-pag">Pág. 2 de 11</div></div>
+  </div>
+
+  <div class="title-band">
+    <div><span class="title-bar"></span><span class="title-text">Termómetro del Mercado</span></div>
+    <div class="title-sub">Estado general del ecosistema competitivo · Semana {{weekNumber}} · {{year}}</div>
+  </div>
+
+  <div class="body-wrap">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;align-items:center;margin-bottom:16px">
+
+      <!-- Gauge principal -->
+      <div style="text-align:center">
+        <svg viewBox="0 0 340 210" style="width:100%;max-width:320px;height:auto;display:block;margin:0 auto">
+          <path d="M 40 180 A 140 140 0 0 1 320 180" fill="none" stroke="#F0EEF8" stroke-width="22" stroke-linecap="round"/>
+          <path d="M 40 180 A 140 140 0 0 1 120 60" fill="none" stroke="#1D9E75" stroke-width="22" stroke-linecap="round" opacity="0.2"/>
+          <path d="M 120 60 A 140 140 0 0 1 240 60" fill="none" stroke="#BA7517" stroke-width="22" stroke-linecap="round" opacity="0.2"/>
+          <path d="M 240 60 A 140 140 0 0 1 320 180" fill="none" stroke="#E24B4A" stroke-width="22" stroke-linecap="round" opacity="0.2"/>
+          <path d="M 40 180 A 140 140 0 0 1 {{gaugePath}}" fill="none" stroke="#534AB7" stroke-width="22" stroke-linecap="round"/>
+          <line x1="180" y1="180" x2="{{needleX}}" y2="{{needleY}}" stroke="#1A1730" stroke-width="3.5" stroke-linecap="round"/>
+          <circle cx="180" cy="180" r="12" fill="#534AB7" stroke="#fff" stroke-width="3"/>
+          <circle cx="180" cy="180" r="4" fill="#fff"/>
+          <text x="180" y="148" fill="#534AB7" font-size="38" font-weight="900" text-anchor="middle">{{competitivePressure}}</text>
+          <text x="180" y="164" fill="#8B7BFF" font-size="9" font-weight="700" text-anchor="middle">PRESIÓN COMPETITIVA</text>
+          <text x="24" y="200" fill="#1D9E75" font-size="10" font-weight="800">BAJO</text>
+          <text x="180" y="28" fill="#BA7517" font-size="10" font-weight="800" text-anchor="middle">MODERADO</text>
+          <text x="336" y="200" fill="#E24B4A" font-size="10" font-weight="800" text-anchor="end">ALTO</text>
+          <text x="40" y="200" fill="#bbb" font-size="8" text-anchor="middle" font-family="monospace">0</text>
+          <text x="110" y="196" fill="#bbb" font-size="8" text-anchor="middle" font-family="monospace">33</text>
+          <text x="180" y="193" fill="#bbb" font-size="8" text-anchor="middle" font-family="monospace">50</text>
+          <text x="250" y="196" fill="#bbb" font-size="8" text-anchor="middle" font-family="monospace">67</text>
+          <text x="320" y="200" fill="#bbb" font-size="8" text-anchor="middle" font-family="monospace">100</text>
+        </svg>
+        <div style="font-size:15px;font-weight:800;color:#534AB7;margin-top:4px">{{marketStatus}}</div>
+        <div style="font-size:10px;color:#888;margin-top:4px;line-height:1.5;max-width:280px;margin-left:auto;margin-right:auto">{{marketStatusDesc}}</div>
+      </div>
+
+      <!-- 4 gauges secundarios -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        {{#each gaugeMetrics}}
+        <div style="text-align:center;padding:14px 12px;background:{{this.bg}};border:2px solid {{this.border}};border-radius:12px">
+          <div style="font-size:8px;font-weight:700;color:{{this.labelColor}};letter-spacing:.1em;margin-bottom:8px">{{this.label}}</div>
+          <svg viewBox="0 0 88 88" style="width:68px;height:68px;display:block;margin:0 auto">
+            <circle cx="44" cy="44" r="36" fill="none" stroke="{{this.trackColor}}" stroke-width="9"/>
+            <circle cx="44" cy="44" r="36" fill="none" stroke="{{this.color}}" stroke-width="9" stroke-dasharray="{{this.dash}} {{this.gap}}" stroke-dashoffset="56" stroke-linecap="round" transform="rotate(-90 44 44)"/>
+            <text x="44" y="49" fill="{{this.textColor}}" font-size="18" font-weight="900" text-anchor="middle">{{this.value}}</text>
+          </svg>
+          <div style="font-size:9px;font-weight:800;color:{{this.color}};margin-top:6px">{{this.status}}</div>
+          <div style="height:3px;background:{{this.trackColor}};border-radius:2px;margin-top:6px;overflow:hidden"><div style="height:100%;width:{{this.value}}%;background:{{this.color}};border-radius:2px"></div></div>
+        </div>
+        {{/each}}
+      </div>
+    </div>
+
+    <!-- Indicadores sectoriales -->
+    <div style="background:#FAFAFA;border:1px solid #EEECF8;border-radius:12px;padding:14px;margin-bottom:14px">
+      <div class="section-lbl">Indicadores sectoriales · {{industry}}</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr 1fr;gap:10px">
+        {{#each sectorMetrics}}
+        <div style="background:#fff;border:1px solid #EEECF8;border-radius:8px;padding:10px 12px">
+          <div style="font-size:8px;font-weight:700;color:#5A627A;letter-spacing:.08em;margin-bottom:5px">{{this.label}}</div>
+          <div style="font-size:20px;font-weight:900;color:{{this.color}}">{{this.value}}</div>
+          <div style="font-size:9px;color:#888;margin-top:2px">{{this.sub}}</div>
+        </div>
+        {{/each}}
+      </div>
+    </div>
+
+    <!-- Alerta principal -->
+    <div style="background:#1A1730;border-radius:12px;padding:14px 18px;display:flex;align-items:center;gap:14px">
+      <div style="width:40px;height:40px;border-radius:10px;background:#534AB7;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:18px">⚠</div>
+      <div style="flex:1">
+        <div style="font-size:8px;font-weight:700;letter-spacing:.12em;color:#8B7BFF;margin-bottom:3px">ALERTA PRINCIPAL DE LA SEMANA</div>
+        <div style="font-size:12px;font-weight:700;color:#F0F2FF;margin-bottom:3px">{{mainAlertTitle}}</div>
+        <div style="font-size:10px;color:#9CA3AF;line-height:1.5">{{mainAlertDesc}}</div>
+      </div>
+      <div style="text-align:center;flex-shrink:0;padding:10px 14px;background:rgba(242,192,99,0.12);border:1.5px solid rgba(242,192,99,0.35);border-radius:8px">
+        <div style="font-size:8px;font-weight:700;color:#F2C063;letter-spacing:.1em;margin-bottom:3px">NIVEL ALERTA</div>
+        <div style="font-size:18px;font-weight:900;color:#F2C063">{{mainAlertLevel}}</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer">
+    <div class="footer-l">PRO Reports · Confidencial · No distribuir</div>
+    <div class="footer-r">{{companyName}} · Sem {{weekNumber}} · {{year}} · Pág. 2 de 11</div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════
+     PÁGINA 3 — RANKING DE COMPETIDORES
+════════════════════════════════════════════════════ -->
+<div class="page">
+  <div class="hdr">
+    <div class="hdr-logo"><div class="hdr-badge">PR</div><div><div class="hdr-name">PRO Reports</div><div class="hdr-sub">INTELIGENCIA COMPETITIVA</div></div></div>
+    <div class="hdr-right"><div class="hdr-meta">{{companyName}} · {{industry}} · Sem {{weekNumber}} · {{year}}</div><div class="hdr-pag">Pág. 3 de 11</div></div>
+  </div>
+  <div class="title-band">
+    <div><span class="title-bar"></span><span class="title-text">Competidores con más actividad (monitoreo)</span></div>
+    <div class="title-sub">Top 10 ordenados por amenaza real · Semana {{weekNumber}} · {{year}}</div>
+  </div>
+  <div class="body-wrap">
+    <table style="margin-bottom:16px">
+      <thead><tr style="background:#F4F2FF">
+        <th style="border-radius:8px 0 0 8px;width:30px">#</th>
+        <th>Empresa</th><th>Categoría</th><th>Amenaza</th><th>Crecimiento</th><th>Movimiento reciente</th>
+        <th style="border-radius:0 8px 8px 0;white-space:nowrap">Riesgo</th>
+      </tr></thead>
+      <tbody>
+        {{#each competitors}}
+        <tr>
+          <td style="font-weight:900;color:{{this.color}};font-size:14px">{{this.rank}}</td>
+          <td>
+            <div style="display:flex;align-items:center;gap:8px">
+              <div style="width:28px;height:28px;border-radius:6px;background:{{this.color}};display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:900;color:#fff;flex-shrink:0">{{this.initials}}</div>
+              <div><div style="font-weight:700;color:#1A1730;font-size:11px">{{this.name}}</div><div style="font-size:9px;color:#888">{{this.scope}} · {{this.category}}</div></div>
+            </div>
+          </td>
+          <td><span style="background:{{this.tagBg}};color:{{this.tagColor}};font-size:9px;font-weight:700;padding:2px 7px;border-radius:6px;white-space:nowrap">{{this.categoryLabel}}</span></td>
+          <td>
+            <div style="display:flex;align-items:center;gap:6px">
+              <div style="flex:1;height:5px;background:{{this.trackColor}};border-radius:2px;overflow:hidden;min-width:50px"><div style="height:100%;width:{{this.threatPct}}%;background:{{this.color}};border-radius:2px"></div></div>
+              <span style="font-weight:900;color:{{this.color}};font-size:11px;min-width:30px;text-align:right">{{this.threat}}/10</span>
+            </div>
+          </td>
+          <td style="white-space:nowrap"><span style="color:{{this.growthColor}};font-weight:700">{{this.growth}}</span></td>
+          <td style="font-size:10px;color:#555">{{this.recentMove}}</td>
+          <td><span style="background:{{this.riskBg}};color:{{this.riskColor}};font-size:8px;font-weight:700;padding:3px 8px;border-radius:20px;white-space:nowrap;border:1px solid {{this.riskBorder}}">{{this.riskLabel}}</span></td>
+        </tr>
+        {{/each}}
+      </tbody>
+    </table>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px">
+      <div style="background:#fff;border:1.5px solid #F7C1C1;border-radius:10px;padding:14px">
+        <div style="display:flex;align-items:center;gap:7px;margin-bottom:8px">
+          <div style="width:24px;height:24px;border-radius:6px;background:#E24B4A;display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0">🔴</div>
+          <div style="font-size:8px;font-weight:700;letter-spacing:.12em;color:#E24B4A;text-transform:uppercase">Más agresivo del mes</div>
+        </div>
+        <div style="font-size:13px;font-weight:800;color:#1A1730;margin-bottom:3px">{{mostAggressiveName}}</div>
+        <div style="font-size:10px;color:#555;line-height:1.5">{{mostAggressiveDesc}}</div>
+      </div>
+      <div style="background:#fff;border:1.5px solid #C0DD97;border-radius:10px;padding:14px">
+        <div style="display:flex;align-items:center;gap:7px;margin-bottom:8px">
+          <div style="width:24px;height:24px;border-radius:6px;background:#1D9E75;display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0">⬇️</div>
+          <div style="font-size:8px;font-weight:700;letter-spacing:.12em;color:#1D9E75;text-transform:uppercase">Competidor debilitado</div>
+        </div>
+        <div style="font-size:13px;font-weight:800;color:#1A1730;margin-bottom:3px">{{weakestName}}</div>
+        <div style="font-size:10px;color:#555;line-height:1.5">{{weakestDesc}}</div>
+      </div>
+      <div style="background:#fff;border:1.5px solid #CECBF6;border-radius:10px;padding:14px">
+        <div style="display:flex;align-items:center;gap:7px;margin-bottom:8px">
+          <div style="width:24px;height:24px;border-radius:6px;background:#534AB7;display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0">🚀</div>
+          <div style="font-size:8px;font-weight:700;letter-spacing:.12em;color:#534AB7;text-transform:uppercase">Competidor emergente</div>
+        </div>
+        <div style="font-size:13px;font-weight:800;color:#1A1730;margin-bottom:3px">{{emergingName}}</div>
+        <div style="font-size:10px;color:#555;line-height:1.5">{{emergingDesc}}</div>
+      </div>
+    </div>
+  </div>
+  <div class="footer">
+    <div class="footer-l">PRO Reports · Confidencial · No distribuir</div>
+    <div class="footer-r">{{companyName}} · Sem {{weekNumber}} · {{year}} · Pág. 3 de 11</div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════
+     PÁGINA 4 — EARLY WARNING ALERTS™
+════════════════════════════════════════════════════ -->
+<div class="page">
+  <div class="hdr">
+    <div class="hdr-logo"><div class="hdr-badge">PR</div><div><div class="hdr-name">PRO Reports</div><div class="hdr-sub">INTELIGENCIA COMPETITIVA</div></div></div>
+    <div class="hdr-right"><div class="hdr-meta">{{companyName}} · {{industry}} · Sem {{weekNumber}} · {{year}}</div><div class="hdr-pag">Pág. 4 de 11</div></div>
+  </div>
+  <div style="background:linear-gradient(135deg,#1A1730,#2D2550);padding:16px 28px;border-bottom:2px solid #534AB7">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+      <div style="width:3px;height:16px;background:#FF6B6B;border-radius:2px"></div>
+      <div style="font-size:8px;font-weight:700;letter-spacing:.15em;color:#FF6B6B;text-transform:uppercase">Página 4 · Early Warning Alerts™</div>
+    </div>
+    <div style="font-size:18px;font-weight:900;color:#F0F2FF;margin-left:11px">Señales antes que el mercado las vea</div>
+    <div style="display:flex;gap:8px;margin-top:10px;margin-left:11px">
+      <div style="display:flex;align-items:center;gap:5px;background:rgba(255,107,107,0.15);border:1px solid rgba(255,107,107,0.3);border-radius:20px;padding:4px 10px">
+        <div style="width:5px;height:5px;border-radius:50%;background:#FF6B6B"></div>
+        <span style="font-size:8px;font-weight:700;color:#FF6B6B">{{criticalAlertsCount}} ALERTAS CRÍTICAS</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:5px;background:rgba(242,192,99,0.15);border:1px solid rgba(242,192,99,0.3);border-radius:20px;padding:4px 10px">
+        <div style="width:5px;height:5px;border-radius:50%;background:#F2C063"></div>
+        <span style="font-size:8px;font-weight:700;color:#F2C063">{{mediumAlertsCount}} ALERTAS MEDIAS</span>
+      </div>
+    </div>
+  </div>
+  <div class="body-wrap">
+    <div style="font-size:8px;font-weight:700;letter-spacing:.15em;color:#FF6B6B;text-transform:uppercase;margin-bottom:10px">🔴 Alertas críticas — acción inmediata</div>
+    {{#each criticalAlerts}}
+    <div style="display:flex;gap:0;border:1.5px solid #F7C1C1;border-radius:10px;overflow:hidden;margin-bottom:8px">
+      <div style="width:4px;background:#E24B4A;flex-shrink:0"></div>
+      <div style="flex:1;padding:10px 12px">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px">
+          <div style="display:flex;align-items:center;gap:8px">
+            <div style="font-size:22px">{{this.icon}}</div>
+            <div><div style="font-size:11px;font-weight:800;color:#1A1730">{{this.title}}</div><div style="font-size:9px;color:#888">{{this.detected}}</div></div>
+          </div>
+          <span style="background:#E24B4A;color:#fff;font-size:8px;font-weight:700;padding:2px 7px;border-radius:10px;flex-shrink:0">CRÍTICO</span>
+        </div>
+        <div style="font-size:10px;color:#444;line-height:1.5;margin-bottom:7px">{{this.description}}</div>
+        <div style="background:#FFF5F5;border:1px solid #FAC7C7;border-radius:6px;padding:5px 10px;font-size:10px;color:#A32D2D;font-weight:600">💡 {{this.action}}</div>
+      </div>
+    </div>
+    {{/each}}
+
+    <div style="font-size:8px;font-weight:700;letter-spacing:.15em;color:#F2C063;text-transform:uppercase;margin-top:12px;margin-bottom:10px">🟡 Señales en vigilancia — monitoreo activo</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      {{#each mediumAlerts}}
+      <div style="background:#fff;border:1.5px solid #FAC775;border-radius:10px;padding:12px">
+        <div style="display:flex;align-items:center;gap:7px;margin-bottom:6px">
+          <div style="width:24px;height:24px;border-radius:5px;background:#FAEEDA;display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0">{{this.icon}}</div>
+          <div style="flex:1"><div style="font-size:11px;font-weight:700;color:#1A1730">{{this.title}}</div><div style="font-size:9px;color:#888">{{this.source}}</div></div>
+          <span style="background:#FAEEDA;color:#854F0B;font-size:8px;font-weight:700;padding:2px 6px;border-radius:8px;flex-shrink:0">MEDIA</span>
+        </div>
+        <div style="font-size:10px;color:#555;line-height:1.5">{{this.description}}</div>
+      </div>
+      {{/each}}
+    </div>
+  </div>
+  <div class="footer">
+    <div class="footer-l">PRO Reports · Confidencial · No distribuir</div>
+    <div class="footer-r">{{companyName}} · Sem {{weekNumber}} · {{year}} · Pág. 4 de 11</div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════
+     PÁGINA 5 — CAMBIOS DETECTADOS
+════════════════════════════════════════════════════ -->
+<div class="page">
+  <div class="hdr">
+    <div class="hdr-logo"><div class="hdr-badge">PR</div><div><div class="hdr-name">PRO Reports</div><div class="hdr-sub">INTELIGENCIA COMPETITIVA</div></div></div>
+    <div class="hdr-right"><div class="hdr-meta">{{companyName}} · {{industry}} · Sem {{weekNumber}} · {{year}}</div><div class="hdr-pag">Pág. 5 de 11</div></div>
+  </div>
+  <div class="title-band">
+    <div><span class="title-bar"></span><span class="title-text">Cambios Detectados Esta Semana</span></div>
+    <div class="title-sub">{{totalChanges}} movimientos registrados · Semana {{weekNumber}} · {{periodStart}} - {{periodEnd}}</div>
+  </div>
+  <div class="body-wrap">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px">
+      <div style="display:flex;flex-direction:column;gap:8px">
+        {{#each changesCol1}}
+        <div style="display:flex;gap:0;border-radius:10px;overflow:hidden;border:1.5px solid {{this.borderColor}}">
+          <div style="width:4px;background:{{this.color}};flex-shrink:0"></div>
+          <div style="padding:10px 12px;flex:1">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px">
+              <div style="display:flex;align-items:center;gap:7px">
+                <span style="font-size:15px">{{this.icon}}</span>
+                <span style="font-size:8px;font-weight:700;color:{{this.color}};letter-spacing:.08em">{{this.category}}</span>
+              </div>
+              <span style="font-size:8px;color:#aaa;font-family:monospace">{{this.date}}</span>
+            </div>
+            <div style="font-size:11px;font-weight:700;color:#1A1730;margin-bottom:3px">{{this.title}}</div>
+            <div style="font-size:10px;color:#555;line-height:1.4">{{this.description}}</div>
+            <div style="margin-top:6px;display:flex;align-items:center;gap:5px">
+              <div style="width:6px;height:6px;border-radius:50%;background:{{this.color}}"></div>
+              <span style="font-size:9px;font-weight:600;color:{{this.color}}">{{this.competitor}}</span>
+            </div>
+          </div>
+        </div>
+        {{/each}}
+      </div>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        {{#each changesCol2}}
+        <div style="display:flex;gap:0;border-radius:10px;overflow:hidden;border:1.5px solid {{this.borderColor}}">
+          <div style="width:4px;background:{{this.color}};flex-shrink:0"></div>
+          <div style="padding:10px 12px;flex:1">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px">
+              <div style="display:flex;align-items:center;gap:7px">
+                <span style="font-size:15px">{{this.icon}}</span>
+                <span style="font-size:8px;font-weight:700;color:{{this.color}};letter-spacing:.08em">{{this.category}}</span>
+              </div>
+              <span style="font-size:8px;color:#aaa;font-family:monospace">{{this.date}}</span>
+            </div>
+            <div style="font-size:11px;font-weight:700;color:#1A1730;margin-bottom:3px">{{this.title}}</div>
+            <div style="font-size:10px;color:#555;line-height:1.4">{{this.description}}</div>
+            <div style="margin-top:6px;display:flex;align-items:center;gap:5px">
+              <div style="width:6px;height:6px;border-radius:50%;background:{{this.color}}"></div>
+              <span style="font-size:9px;font-weight:600;color:{{this.color}}">{{this.competitor}}</span>
+            </div>
+          </div>
+        </div>
+        {{/each}}
+        <div style="background:#1A1730;border-radius:10px;padding:12px 14px">
+          <div style="font-size:8px;font-weight:700;letter-spacing:.1em;color:#8B7BFF;margin-bottom:8px">RESUMEN SEMANAL</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
+            <div style="text-align:center;padding:7px;background:rgba(255,255,255,0.05);border-radius:7px"><div style="font-size:18px;font-weight:900;color:#FF6B6B">{{criticalMovements}}</div><div style="font-size:8px;color:#5A627A">Movimientos críticos</div></div>
+            <div style="text-align:center;padding:7px;background:rgba(255,255,255,0.05);border-radius:7px"><div style="font-size:18px;font-weight:900;color:#F2C063">{{minorMovements}}</div><div style="font-size:8px;color:#5A627A">Movimientos medios</div></div>
+            <div style="text-align:center;padding:7px;background:rgba(255,255,255,0.05);border-radius:7px"><div style="font-size:18px;font-weight:900;color:#8B7BFF">{{activeCompetitors}}</div><div style="font-size:8px;color:#5A627A">Competidores activos</div></div>
+            <div style="text-align:center;padding:7px;background:rgba(255,255,255,0.05);border-radius:7px"><div style="font-size:18px;font-weight:900;color:#6EE7A4">↑{{signalsDelta}}%</div><div style="font-size:8px;color:#5A627A">vs sem anterior</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="footer">
+    <div class="footer-l">PRO Reports · Confidencial · No distribuir</div>
+    <div class="footer-r">{{companyName}} · Sem {{weekNumber}} · {{year}} · Pág. 5 de 11</div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════
+     PÁGINA 6 — INTELIGENCIA COMERCIAL
+════════════════════════════════════════════════════ -->
+<div class="page">
+  <div class="hdr">
+    <div class="hdr-logo"><div class="hdr-badge">PR</div><div><div class="hdr-name">PRO Reports</div><div class="hdr-sub">INTELIGENCIA COMPETITIVA</div></div></div>
+    <div class="hdr-right"><div class="hdr-meta">{{companyName}} · {{industry}} · Sem {{weekNumber}} · {{year}}</div><div class="hdr-pag">Pág. 6 de 11</div></div>
+  </div>
+  <div class="title-band">
+    <div><span class="title-bar"></span><span class="title-text">Inteligencia Comercial</span></div>
+    <div class="title-sub">Dónde están ganando dinero tus competidores · Semana {{weekNumber}} · {{year}}</div>
+  </div>
+  <div class="body-wrap">
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:14px">
+      <div style="border:1.5px solid #EEEDFE;border-radius:12px;overflow:hidden">
+        <div style="background:#534AB7;padding:10px 12px;display:flex;align-items:center;gap:7px"><span style="font-size:16px">💰</span><div style="font-size:8px;font-weight:700;letter-spacing:.1em;color:#fff;text-transform:uppercase">Tendencias de precios</div></div>
+        <div style="padding:12px">
+          {{#each priceTrends}}
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:7px 8px;background:#F8F7FF;border-radius:7px;margin-bottom:5px">
+            <span style="font-size:10px;color:#444;font-weight:600">{{this.name}}</span>
+            <span style="font-size:11px;font-weight:900;color:{{this.color}}">{{this.change}}</span>
+          </div>
+          {{/each}}
+          <div style="margin-top:8px;padding:7px;background:#FCEBEB;border-radius:7px;font-size:10px;color:#A32D2D;font-weight:600">{{priceTrendAlert}}</div>
+        </div>
+      </div>
+      <div style="border:1.5px solid #EEEDFE;border-radius:12px;overflow:hidden">
+        <div style="background:#1A1730;padding:10px 12px;display:flex;align-items:center;gap:7px"><span style="font-size:16px">📣</span><div style="font-size:8px;font-weight:700;letter-spacing:.1em;color:#8B7BFF;text-transform:uppercase">Mensajes dominantes</div></div>
+        <div style="padding:12px;display:flex;flex-direction:column;gap:7px">
+          {{#each dominantMessages}}
+          <div style="padding:8px 10px;background:#F8F7FF;border-left:3px solid {{this.color}};border-radius:0 7px 7px 0">
+            <div style="font-size:8px;font-weight:700;color:{{this.color}};margin-bottom:2px">{{this.competitor}}</div>
+            <div style="font-size:10px;color:#444;font-style:italic">"{{this.message}}"</div>
+          </div>
+          {{/each}}
+        </div>
+      </div>
+      <div style="border:1.5px solid #EEEDFE;border-radius:12px;overflow:hidden">
+        <div style="background:#1D9E75;padding:10px 12px;display:flex;align-items:center;gap:7px"><span style="font-size:16px">🎯</span><div style="font-size:8px;font-weight:700;letter-spacing:.1em;color:#fff;text-transform:uppercase">Segmentos atacados</div></div>
+        <div style="padding:12px;display:flex;flex-direction:column;gap:7px">
+          {{#each targetSegments}}
+          <div style="padding:7px 8px;background:{{this.bg}};border-radius:7px">
+            <div style="font-size:8px;font-weight:700;color:{{this.color}};margin-bottom:3px">{{this.name}}</div>
+            <div style="height:3px;background:{{this.trackColor}};border-radius:2px;overflow:hidden"><div style="height:100%;width:{{this.pct}}%;background:{{this.color}}"></div></div>
+            <div style="font-size:9px;color:#888;margin-top:2px">{{this.desc}}</div>
+          </div>
+          {{/each}}
+        </div>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+      <div style="border:1.5px solid #EEEDFE;border-radius:12px;overflow:hidden">
+        <div style="background:linear-gradient(135deg,#F8F7FF,#F0EEFF);padding:10px 12px;border-bottom:1px solid #EEEDFE"><div style="font-size:8px;font-weight:700;letter-spacing:.1em;color:#8B7BFF;text-transform:uppercase">Nuevos canales de venta detectados</div></div>
+        <div style="padding:12px;display:flex;flex-direction:column;gap:6px">
+          {{#each newChannels}}
+          <div style="display:flex;align-items:center;gap:8px;padding:7px;background:#fff;border:1px solid #F0EEF8;border-radius:7px">
+            <span style="font-size:15px">{{this.icon}}</span>
+            <div><div style="font-size:11px;font-weight:600;color:#1A1730">{{this.channel}}</div><div style="font-size:9px;color:#888">{{this.desc}}</div></div>
+          </div>
+          {{/each}}
+        </div>
+      </div>
+      <div style="border:1.5px solid #EEEDFE;border-radius:12px;overflow:hidden">
+        <div style="background:linear-gradient(135deg,#F8F7FF,#F0EEFF);padding:10px 12px;border-bottom:1px solid #EEEDFE"><div style="font-size:8px;font-weight:700;letter-spacing:.1em;color:#8B7BFF;text-transform:uppercase">Ventajas visibles del rival líder</div></div>
+        <div style="padding:12px;display:flex;flex-direction:column;gap:6px">
+          {{#each rivalAdvantages}}
+          <div style="display:flex;align-items:center;gap:7px;padding:7px;background:{{this.bg}};border:1px solid {{this.border}};border-radius:7px">
+            <span style="font-size:13px">{{this.icon}}</span>
+            <div style="font-size:10px;color:{{this.textColor}};font-weight:600">{{this.text}}</div>
+          </div>
+          {{/each}}
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="footer">
+    <div class="footer-l">PRO Reports · Confidencial · No distribuir</div>
+    <div class="footer-r">{{companyName}} · Sem {{weekNumber}} · {{year}} · Pág. 6 de 11</div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════
+     PÁGINA 7 — OPPORTUNITY SCORE™
+════════════════════════════════════════════════════ -->
+<div class="page">
+  <div class="hdr">
+    <div class="hdr-logo"><div class="hdr-badge">PR</div><div><div class="hdr-name">PRO Reports</div><div class="hdr-sub">INTELIGENCIA COMPETITIVA</div></div></div>
+    <div class="hdr-right"><div class="hdr-meta">{{companyName}} · {{industry}} · Sem {{weekNumber}} · {{year}}</div><div class="hdr-pag">Pág. 7 de 11</div></div>
+  </div>
+  <div style="background:linear-gradient(135deg,#0A3D2B,#1A1730);padding:16px 28px;border-bottom:2px solid #1D9E75">
+    <div style="display:flex;justify-content:space-between;align-items:center">
+      <div>
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px"><div style="width:3px;height:16px;background:#1D9E75;border-radius:2px"></div><div style="font-size:8px;font-weight:700;letter-spacing:.15em;color:#6EE7A4;text-transform:uppercase">Página 7 · Opportunity Score™</div></div>
+        <div style="font-size:18px;font-weight:900;color:#F0F2FF;margin-left:11px">Dónde ganar dinero rápido</div>
+        <div style="font-size:10px;color:#5A627A;margin-top:2px;margin-left:11px">{{opportunitiesCount}} oportunidades priorizadas · Ventana 30 días</div>
+      </div>
+      <div style="text-align:center;padding:12px 18px;background:rgba(29,158,117,0.15);border:2px solid rgba(29,158,117,0.4);border-radius:14px">
+        <div style="font-size:8px;font-weight:700;color:#6EE7A4;letter-spacing:.1em;margin-bottom:4px">Opportunity Score™</div>
+        <div style="font-size:40px;font-weight:900;color:#1D9E75;line-height:1">{{opportunityScore}}</div>
+        <div style="font-size:9px;color:#5A627A;margin-top:2px">de 100 · ALTO POTENCIAL</div>
+      </div>
+    </div>
+  </div>
+  <div class="body-wrap">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px">
+      {{#each opportunities}}
+      <div style="border:1.5px solid {{this.border}};border-radius:12px;overflow:hidden">
+        <div style="background:{{this.headerBg}};padding:9px 12px;display:flex;align-items:center;justify-content:space-between">
+          <div style="display:flex;align-items:center;gap:7px"><span style="font-size:15px">{{this.icon}}</span><div style="font-size:8px;font-weight:700;letter-spacing:.1em;color:#fff;text-transform:uppercase">{{this.type}}</div></div>
+          <span style="background:rgba(255,255,255,0.2);color:#fff;font-size:8px;font-weight:700;padding:2px 7px;border-radius:8px">Score: {{this.score}}</span>
+        </div>
+        <div style="padding:12px">
+          <div style="font-size:12px;font-weight:700;color:#1A1730;margin-bottom:5px">{{this.title}}</div>
+          <div style="font-size:10px;color:#555;line-height:1.5;margin-bottom:8px">{{this.description}}</div>
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <span style="font-size:9px;font-weight:700;color:{{this.accentColor}}">Ventana: {{this.window}}</span>
+            <span style="background:{{this.actionBg}};color:{{this.actionColor}};font-size:8px;font-weight:700;padding:2px 7px;border-radius:8px">{{this.actionLabel}}</span>
+          </div>
+        </div>
+      </div>
+      {{/each}}
+    </div>
+    <div style="background:#1A1730;border-radius:12px;padding:16px 18px">
+      <div style="font-size:8px;font-weight:700;letter-spacing:.15em;color:#6EE7A4;text-transform:uppercase;margin-bottom:10px">⚡ Debilidades visibles de competidores — explotar ahora</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px">
+        {{#each rivalWeaknesses}}
+        <div style="background:rgba(255,255,255,0.05);border-radius:8px;padding:10px">
+          <div style="font-size:8px;font-weight:700;color:{{this.color}};margin-bottom:4px;text-transform:uppercase">{{this.competitor}}</div>
+          <div style="font-size:10px;color:#C4C9E2;line-height:1.5">{{this.weakness}}</div>
+        </div>
+        {{/each}}
+      </div>
+    </div>
+  </div>
+  <div class="footer">
+    <div class="footer-l">PRO Reports · Confidencial · No distribuir</div>
+    <div class="footer-r">{{companyName}} · Sem {{weekNumber}} · {{year}} · Pág. 7 de 11</div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════
+     PÁGINA 8 — RIESGOS ESTRATÉGICOS
+════════════════════════════════════════════════════ -->
+<div class="page">
+  <div class="hdr">
+    <div class="hdr-logo"><div class="hdr-badge">PR</div><div><div class="hdr-name">PRO Reports</div><div class="hdr-sub">INTELIGENCIA COMPETITIVA</div></div></div>
+    <div class="hdr-right"><div class="hdr-meta">{{companyName}} · {{industry}} · Sem {{weekNumber}} · {{year}}</div><div class="hdr-pag">Pág. 8 de 11</div></div>
+  </div>
+  <div style="background:linear-gradient(135deg,#2D0A0A,#1A1730);padding:16px 28px;border-bottom:2px solid #E24B4A">
+    <div style="display:flex;justify-content:space-between;align-items:center">
+      <div>
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px"><div style="width:3px;height:16px;background:#FF6B6B;border-radius:2px"></div><div style="font-size:8px;font-weight:700;letter-spacing:.15em;color:#FF6B6B;text-transform:uppercase">Página 8 · Riesgos Estratégicos</div></div>
+        <div style="font-size:18px;font-weight:900;color:#F0F2FF;margin-left:11px">Qué puede golpear los ingresos</div>
+        <div style="font-size:10px;color:#5A627A;margin-top:2px;margin-left:11px">Matriz de riesgo · Probabilidad × Impacto · Semana {{weekNumber}}</div>
+      </div>
+      <div style="display:flex;gap:8px">
+        <div style="text-align:center;padding:8px 12px;background:rgba(226,75,74,0.15);border:1.5px solid rgba(226,75,74,0.4);border-radius:10px"><div style="font-size:8px;color:#FF6B6B;font-weight:700;margin-bottom:2px">RIESGOS ALTOS</div><div style="font-size:22px;font-weight:900;color:#FF6B6B">{{highRisksCount}}</div></div>
+        <div style="text-align:center;padding:8px 12px;background:rgba(242,192,99,0.15);border:1.5px solid rgba(242,192,99,0.4);border-radius:10px"><div style="font-size:8px;color:#F2C063;font-weight:700;margin-bottom:2px">RIESGOS MEDIOS</div><div style="font-size:22px;font-weight:900;color:#F2C063">{{mediumRisksCount}}</div></div>
+      </div>
+    </div>
+  </div>
+  <div class="body-wrap">
+    <div style="font-size:8px;font-weight:700;letter-spacing:.15em;color:#E24B4A;text-transform:uppercase;margin-bottom:10px">🔴 Riesgos de alto impacto — mitigación urgente</div>
+    {{#each highRisks}}
+    <div style="display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:center;padding:12px;background:#fff;border:1.5px solid #F7C1C1;border-radius:10px;margin-bottom:8px">
+      <div style="width:40px;height:40px;border-radius:10px;background:#FCEBEB;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0">{{this.icon}}</div>
+      <div>
+        <div style="display:flex;align-items:center;gap:7px;margin-bottom:4px">
+          <div style="font-size:12px;font-weight:800;color:#1A1730">{{this.title}}</div>
+          <span style="background:#E24B4A;color:#fff;font-size:8px;font-weight:700;padding:2px 6px;border-radius:8px">PROB. {{this.probability}}%</span>
+        </div>
+        <div style="font-size:10px;color:#555;line-height:1.5;margin-bottom:5px">{{this.description}}</div>
+        <div style="font-size:9px;font-weight:700;color:#A32D2D">💡 {{this.mitigation}}</div>
+      </div>
+      <div style="text-align:center;flex-shrink:0">
+        <div style="font-size:8px;color:#888;margin-bottom:3px">IMPACTO</div>
+        <svg viewBox="0 0 60 60" width="48" height="48">
+          <circle cx="30" cy="30" r="24" fill="none" stroke="#FCCFCF" stroke-width="7"/>
+          <circle cx="30" cy="30" r="24" fill="none" stroke="#E24B4A" stroke-width="7" stroke-dasharray="{{this.impactDash}} {{this.impactGap}}" stroke-dashoffset="37" stroke-linecap="round" transform="rotate(-90 30 30)"/>
+          <text x="30" y="35" fill="#E24B4A" font-size="12" font-weight="900" text-anchor="middle">{{this.impact}}</text>
+        </svg>
+        <div style="font-size:8px;color:#888">de 10</div>
+      </div>
+    </div>
+    {{/each}}
+    <div style="font-size:8px;font-weight:700;letter-spacing:.15em;color:#BA7517;text-transform:uppercase;margin-top:12px;margin-bottom:10px">🟡 Riesgos medios — monitoreo activo</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+      {{#each mediumRisks}}
+      <div style="padding:10px 12px;background:#FAEEDA;border:1.5px solid #FAC775;border-radius:8px">
+        <div style="display:flex;align-items:center;gap:7px;margin-bottom:5px"><span style="font-size:14px">{{this.icon}}</span><div style="font-size:11px;font-weight:700;color:#1A1730">{{this.title}}</div></div>
+        <div style="font-size:10px;color:#555;line-height:1.5">{{this.description}}</div>
+      </div>
+      {{/each}}
+    </div>
+  </div>
+  <div class="footer">
+    <div class="footer-l">PRO Reports · Confidencial · No distribuir</div>
+    <div class="footer-r">{{companyName}} · Sem {{weekNumber}} · {{year}} · Pág. 8 de 11</div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════
+     PÁGINA 9 — BENCHMARK ESTRATÉGICO
+════════════════════════════════════════════════════ -->
+<div class="page">
+  <div class="hdr">
+    <div class="hdr-logo"><div class="hdr-badge">PR</div><div><div class="hdr-name">PRO Reports</div><div class="hdr-sub">INTELIGENCIA COMPETITIVA</div></div></div>
+    <div class="hdr-right"><div class="hdr-meta">{{companyName}} · {{industry}} · Sem {{weekNumber}} · {{year}}</div><div class="hdr-pag">Pág. 9 de 11</div></div>
+  </div>
+  <div class="title-band">
+    <div><span class="title-bar"></span><span class="title-text">Benchmark Estratégico</span></div>
+    <div class="title-sub">Tu empresa vs el mercado · {{benchmarkFactors}} factores clave · Semana {{weekNumber}}</div>
+  </div>
+  <div class="body-wrap">
+    <div style="border:1.5px solid #EEEDFE;border-radius:12px;overflow:hidden;margin-bottom:16px">
+      <table>
+        <thead><tr style="background:#534AB7">
+          <th style="color:rgba(255,255,255,0.6)">FACTOR</th>
+          <th style="color:#fff;text-align:center">{{companyName}}</th>
+          {{#each benchmarkCompetitors}}<th style="color:rgba(255,255,255,0.6);text-align:center">{{this.name}}</th>{{/each}}
+          <th style="color:rgba(255,255,255,0.6);text-align:center">POSICIÓN</th>
+        </tr></thead>
+        <tbody>
+          <tbody>{{benchmarkRowsHTML}}</tbody>
+      </table>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+      <div style="background:#1A1730;border-radius:12px;padding:16px;text-align:center">
+        <div style="font-size:8px;font-weight:700;letter-spacing:.12em;color:#8B7BFF;margin-bottom:10px;text-transform:uppercase">Perfil competitivo · {{companyName}}</div>
+        <svg viewBox="0 0 240 200" style="width:100%;max-width:240px;height:auto;display:block;margin:0 auto">
+          <g transform="translate(120,105)">
+            <polygon points="0,-68 59,-34 59,34 0,68 -59,34 -59,-34" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="1"/>
+            <polygon points="0,-45 39,-23 39,23 0,45 -39,23 -39,-23" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="1"/>
+            <polygon points="0,-23 20,-12 20,12 0,23 -20,12 -20,-23" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="1"/>
+            <line x1="0" y1="0" x2="0" y2="-68" stroke="rgba(255,255,255,0.05)" stroke-width="1"/>
+            <line x1="0" y1="0" x2="59" y2="-34" stroke="rgba(255,255,255,0.05)" stroke-width="1"/>
+            <line x1="0" y1="0" x2="59" y2="34" stroke="rgba(255,255,255,0.05)" stroke-width="1"/>
+            <line x1="0" y1="0" x2="0" y2="68" stroke="rgba(255,255,255,0.05)" stroke-width="1"/>
+            <line x1="0" y1="0" x2="-59" y2="34" stroke="rgba(255,255,255,0.05)" stroke-width="1"/>
+            <line x1="0" y1="0" x2="-59" y2="-34" stroke="rgba(255,255,255,0.05)" stroke-width="1"/>
+            <polygon points="{{radarPoints}}" fill="rgba(29,158,117,0.2)" stroke="#1D9E75" stroke-width="1.5"/>
+            <text x="0" y="-80" fill="#C4C9E2" font-size="7" text-anchor="middle" font-weight="700">Precio</text>
+            <text x="72" y="-30" fill="#C4C9E2" font-size="7" text-anchor="start" font-weight="700">Servicio</text>
+            <text x="72" y="44" fill="#C4C9E2" font-size="7" text-anchor="start" font-weight="700">Velocidad</text>
+            <text x="0" y="82" fill="#C4C9E2" font-size="7" text-anchor="middle" font-weight="700">Retención</text>
+            <text x="-72" y="44" fill="#C4C9E2" font-size="7" text-anchor="end" font-weight="700">NPS</text>
+            <text x="-72" y="-30" fill="#C4C9E2" font-size="7" text-anchor="end" font-weight="700">Marca</text>
+          </g>
+        </svg>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:10px;justify-content:center">
+        <div style="background:#EAF3DE;border:1.5px solid #C0DD97;border-radius:10px;padding:12px">
+          <div style="font-size:8px;font-weight:700;color:#1D9E75;letter-spacing:.1em;text-transform:uppercase;margin-bottom:6px">✅ Fortalezas únicas</div>
+          {{#each strengths}}<div style="font-size:10px;color:#27500A;font-weight:600;margin-bottom:3px">🥇 {{this}}</div>{{/each}}
+        </div>
+        <div style="background:#FCEBEB;border:1.5px solid #F7C1C1;border-radius:10px;padding:12px">
+          <div style="font-size:8px;font-weight:700;color:#E24B4A;letter-spacing:.1em;text-transform:uppercase;margin-bottom:6px">⚠ Áreas de mejora urgente</div>
+          {{#each improvements}}<div style="font-size:10px;color:#A32D2D;font-weight:600;margin-bottom:3px">📉 {{this}}</div>{{/each}}
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="footer">
+    <div class="footer-l">PRO Reports · Confidencial · No distribuir</div>
+    <div class="footer-r">{{companyName}} · Sem {{weekNumber}} · {{year}} · Pág. 9 de 11</div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════
+     PÁGINA 10 — RECOMENDACIONES EJECUTABLES
+════════════════════════════════════════════════════ -->
+<div class="page">
+  <div class="hdr">
+    <div class="hdr-logo"><div class="hdr-badge">PR</div><div><div class="hdr-name">PRO Reports</div><div class="hdr-sub">INTELIGENCIA COMPETITIVA</div></div></div>
+    <div class="hdr-right"><div class="hdr-meta">{{companyName}} · {{industry}} · Sem {{weekNumber}} · {{year}}</div><div class="hdr-pag">Pág. 10 de 11</div></div>
+  </div>
+  <div class="title-band">
+    <div><span class="title-bar"></span><span class="title-text">Recomendaciones Ejecutables</span></div>
+    <div class="title-sub">No teoría. Acción inmediata. · Responsable + Plazo + Impacto estimado</div>
+  </div>
+  <div class="body-wrap">
+    <div style="font-size:8px;font-weight:700;letter-spacing:.15em;color:#E24B4A;text-transform:uppercase;margin-bottom:10px">🔴 Prioridad alta — ejecutar esta semana</div>
+    {{#each highPriorityRecs}}
+    <div style="border:1.5px solid #F7C1C1;border-radius:12px;overflow:hidden;margin-bottom:8px">
+      <div style="background:#E24B4A;padding:8px 14px;display:flex;justify-content:space-between;align-items:center">
+        <div style="display:flex;align-items:center;gap:8px">
+          <span style="background:rgba(255,255,255,0.2);color:#fff;font-size:10px;font-weight:900;width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0">{{this.number}}</span>
+          <div style="font-size:11px;font-weight:700;color:#fff">{{this.title}}</div>
+        </div>
+        <div style="display:flex;gap:6px;flex-shrink:0">
+          <span style="background:rgba(255,255,255,0.15);color:#fff;font-size:8px;font-weight:700;padding:2px 6px;border-radius:6px">{{this.owner}}</span>
+          <span style="background:rgba(255,255,255,0.15);color:#fff;font-size:8px;font-weight:700;padding:2px 6px;border-radius:6px">{{this.deadline}}</span>
+        </div>
+      </div>
+      <div style="padding:10px 14px;display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center">
+        <div style="font-size:10px;color:#444;line-height:1.5">{{this.description}}</div>
+        <div style="text-align:center;padding:8px 12px;background:#FAEEDA;border-radius:8px;flex-shrink:0">
+          <div style="font-size:8px;color:#854F0B;font-weight:700;margin-bottom:2px">IMPACTO EST.</div>
+          <div style="font-size:16px;font-weight:900;color:#BA7517">{{this.impact}}</div>
+        </div>
+      </div>
+    </div>
+    {{/each}}
+
+    <div style="font-size:8px;font-weight:700;letter-spacing:.15em;color:#BA7517;text-transform:uppercase;margin-top:12px;margin-bottom:10px">🟡 Prioridad media — ejecutar en 2 semanas</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px">
+      {{#each mediumPriorityRecs}}
+      <div style="border:1.5px solid #FAC775;border-radius:10px;overflow:hidden">
+        <div style="background:#BA7517;padding:7px 12px;display:flex;align-items:center;justify-content:space-between">
+          <div style="display:flex;align-items:center;gap:7px">
+            <span style="background:rgba(255,255,255,0.2);color:#fff;font-size:9px;font-weight:900;width:18px;height:18px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0">{{this.number}}</span>
+            <div style="font-size:10px;font-weight:700;color:#fff">{{this.title}}</div>
+          </div>
+          <span style="background:rgba(255,255,255,0.15);color:#fff;font-size:8px;font-weight:700;padding:2px 5px;border-radius:5px">{{this.deadline}}</span>
+        </div>
+        <div style="padding:10px 12px">
+          <div style="font-size:10px;color:#444;line-height:1.5;margin-bottom:6px">{{this.description}}</div>
+          <div style="font-size:9px;font-weight:700;color:#BA7517">Impacto est.: {{this.impact}}</div>
+        </div>
+      </div>
+      {{/each}}
+    </div>
+
+    <div style="font-size:8px;font-weight:700;letter-spacing:.15em;color:#1D9E75;text-transform:uppercase;margin-bottom:8px">🟢 Prioridad baja — planificar próximo mes</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+      {{#each lowPriorityRecs}}
+      <div style="border:1.5px solid #C0DD97;border-radius:8px;padding:10px 12px">
+        <div style="display:flex;align-items:center;gap:7px;margin-bottom:5px">
+          <span style="background:#1D9E75;color:#fff;font-size:9px;font-weight:900;width:18px;height:18px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0">{{this.number}}</span>
+          <div style="font-size:11px;font-weight:700;color:#1A1730">{{this.title}}</div>
+        </div>
+        <div style="font-size:10px;color:#444;line-height:1.5">{{this.description}}</div>
+      </div>
+      {{/each}}
+    </div>
+  </div>
+  <div class="footer">
+    <div class="footer-l">PRO Reports · Confidencial · No distribuir</div>
+    <div class="footer-r">{{companyName}} · Sem {{weekNumber}} · {{year}} · Pág. 10 de 11</div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════
+     PÁGINA 11 — PLAN PRÓXIMOS 30 DÍAS
+════════════════════════════════════════════════════ -->
+<div class="page">
+  <div class="hdr">
+    <div class="hdr-logo"><div class="hdr-badge">PR</div><div><div class="hdr-name">PRO Reports</div><div class="hdr-sub">INTELIGENCIA COMPETITIVA</div></div></div>
+    <div class="hdr-right"><div class="hdr-meta">{{companyName}} · {{industry}} · Sem {{weekNumber}} · {{year}}</div><div class="hdr-pag">Pág. 11 de 11</div></div>
+  </div>
+  <div style="background:linear-gradient(135deg,#1A1730,#2A1F4E);padding:16px 28px;border-bottom:2px solid #8B7BFF">
+    <div style="display:flex;justify-content:space-between;align-items:center">
+      <div>
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px"><div style="width:3px;height:16px;background:#8B7BFF;border-radius:2px"></div><div style="font-size:8px;font-weight:700;letter-spacing:.15em;color:#8B7BFF;text-transform:uppercase">Página 11 · Plan Próximos 30 Días</div></div>
+        <div style="font-size:18px;font-weight:900;color:#F0F2FF;margin-left:11px">Tu radar de monitoreo · {{nextMonth}}</div>
+        <div style="font-size:10px;color:#5A627A;margin-top:2px;margin-left:11px">Qué vigilar · Cuándo actuar · Cómo responder</div>
+      </div>
+      <div style="text-align:center;padding:12px 16px;background:rgba(139,123,255,0.15);border:1.5px solid rgba(139,123,255,0.4);border-radius:12px">
+        <div style="font-size:8px;font-weight:700;color:#8B7BFF;letter-spacing:.1em;margin-bottom:3px">PRÓXIMO REPORTE</div>
+        <div style="font-size:16px;font-weight:900;color:#F0F2FF">{{nextReportDate}}</div>
+        <div style="font-size:9px;color:#5A627A;margin-top:2px">{{nextReportTime}} · {{deliveryChannel}}</div>
+      </div>
+    </div>
+  </div>
+  <div class="body-wrap">
+    <div style="font-size:8px;font-weight:700;letter-spacing:.15em;color:#8B7BFF;text-transform:uppercase;margin-bottom:12px">Calendario de monitoreo · {{nextMonth}}</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:14px">
+      {{weeklyPlansHTML}}
+    </div>
+    <div style="background:#FAFAFA;border:1.5px solid #EEEDFE;border-radius:12px;padding:14px 16px;margin-bottom:12px">
+      <div style="font-size:8px;font-weight:700;letter-spacing:.15em;color:#8B7BFF;text-transform:uppercase;margin-bottom:12px">📡 Señales clave a vigilar este mes</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px">
+        <div style="background:#fff;border-radius:8px;padding:10px;border:1px solid #F0EEF8">
+          <div style="font-size:8px;font-weight:700;color:#E24B4A;margin-bottom:5px;text-transform:uppercase">🚨 CRÍTICO — Alertar inmediato</div>
+          {{#each criticalSignals}}<div style="font-size:10px;color:#444;line-height:1.6">{{this}}</div>{{/each}}
+        </div>
+        <div style="background:#fff;border-radius:8px;padding:10px;border:1px solid #F0EEF8">
+          <div style="font-size:8px;font-weight:700;color:#BA7517;margin-bottom:5px;text-transform:uppercase">⚠ IMPORTANTE — Revisar semanal</div>
+          {{#each importantSignals}}<div style="font-size:10px;color:#444;line-height:1.6">{{this}}</div>{{/each}}
+        </div>
+        <div style="background:#fff;border-radius:8px;padding:10px;border:1px solid #F0EEF8">
+          <div style="font-size:8px;font-weight:700;color:#534AB7;margin-bottom:5px;text-transform:uppercase">📊 INFORMATIVO — Seguimiento</div>
+          {{#each infoSignals}}<div style="font-size:10px;color:#444;line-height:1.6">{{this}}</div>{{/each}}
+        </div>
+      </div>
+    </div>
+    <div style="background:#1A1730;border-radius:12px;padding:14px 18px;display:flex;justify-content:space-between;align-items:center">
+      <div>
+        <div style="font-size:8px;font-weight:700;color:#8B7BFF;letter-spacing:.1em;text-transform:uppercase;margin-bottom:4px">Próxima entrega · Edición {{nextEdition}}</div>
+        <div style="font-size:14px;font-weight:800;color:#F0F2FF">Inteligencia {{frequency}} · {{companyName}}</div>
+        <div style="font-size:10px;color:#5A627A;margin-top:2px">{{nextReportDate}} · {{nextReportTime}} · {{deliveryChannel}}</div>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center">
+        <div style="text-align:center;padding:8px 12px;background:rgba(139,123,255,0.12);border:1px solid rgba(139,123,255,0.3);border-radius:8px"><div style="font-size:8px;color:#8B7BFF;font-weight:700;margin-bottom:2px">ÁREAS ACTIVAS</div><div style="font-size:18px;font-weight:900;color:#8B7BFF">{{activeAreas}}/9</div></div>
+        <div style="text-align:center;padding:8px 12px;background:rgba(29,158,117,0.12);border:1px solid rgba(29,158,117,0.3);border-radius:8px"><div style="font-size:8px;color:#1D9E75;font-weight:700;margin-bottom:2px">COMPETIDORES</div><div style="font-size:18px;font-weight:900;color:#1D9E75">{{competitorsCount}}</div></div>
+        <div style="text-align:center;padding:8px 12px;background:rgba(242,192,99,0.12);border:1px solid rgba(242,192,99,0.3);border-radius:8px"><div style="font-size:8px;color:#F2C063;font-weight:700;margin-bottom:2px">SEÑALES/SEM</div><div style="font-size:18px;font-weight:900;color:#F2C063">{{signalsCount}}</div></div>
+      </div>
+    </div>
+  </div>
+  <div class="footer">
+    <div class="footer-l">PRO Reports · Confidencial · No distribuir</div>
+    <div class="footer-r">{{companyName}} · Sem {{weekNumber}} · {{year}} · Pág. 11 de 11 · Fin del reporte</div>
+  </div>
+</div>
+
+</body>
+</html>
