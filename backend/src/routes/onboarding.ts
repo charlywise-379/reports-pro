@@ -128,7 +128,22 @@ if (!userId) {
 
     // Lanzar generación en background
     generateReport(projectWithSetup, outputPath)
-      .then(() => console.log(`✅ Primer reporte generado: ${filename}`))
+      .then(async () => {
+        console.log(`✅ Primer reporte generado: ${filename}`)
+        // Subir a R2
+        const { uploadPDFToR2 } = await import('../lib/r2')
+        const pdfUrl = await uploadPDFToR2(outputPath, filename)
+        console.log(`☁️ PDF disponible en: ${pdfUrl}`)
+        // Guardar URL en DB
+        await prisma.report.create({
+          data: {
+            projectId: newProject.id,
+            r2Url: pdfUrl,
+            r2Key: `reports/${filename}`,
+            status: 'COMPLETED',
+          }
+        }).catch((e: any) => console.log('DB report save:', e.message))
+      })
       .catch((err: any) => console.error('❌ Error generando reporte inicial:', err.message))
 
     res.status(201).json({
