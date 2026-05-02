@@ -1,4 +1,5 @@
-import puppeteer from 'puppeteer'
+import puppeteer from 'puppeteer-core'
+import chromium from 'chrome-aws-lambda'
 import fs from 'fs'
 import path from 'path'
 
@@ -539,8 +540,12 @@ export async function generateReport(project: any, outputPath: string): Promise<
 
   // 4. Generar PDF con Puppeteer
   const browser = await puppeteer.launch({
-    headless: true,
-    args: ['--no-sandbox', '--disable-setuid-sandbox'],
+    args: chromium.args,
+    defaultViewport: chromium.defaultViewport,
+    executablePath: process.env.NODE_ENV === 'production'
+      ? await chromium.executablePath
+      : '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
+    headless: chromium.headless,
   })
 
   try {
