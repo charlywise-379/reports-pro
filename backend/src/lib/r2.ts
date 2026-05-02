@@ -25,6 +25,6 @@ export async function uploadPDFToR2(localPath: string, filename: string): Promis
   console.log(`☁️ PDF subido a R2: ${key}`)
 
   // URL pública del archivo
-  const publicUrl = `https://${process.env.CLOUDFLARE_ACCOUNT_ID}.r2.cloudflarestorage.com/${process.env.R2_BUCKET_NAME}/${key}`
+  const publicUrl = `${process.env.R2_PUBLIC_URL}/${key}`
   return publicUrl
 }

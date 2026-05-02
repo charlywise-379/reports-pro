@@ -134,6 +134,7 @@ if (!userId) {
         const { uploadPDFToR2 } = await import('../lib/r2')
         const pdfUrl = await uploadPDFToR2(outputPath, filename)
         console.log(`☁️ PDF disponible en: ${pdfUrl}`)
+
         // Guardar URL en DB
         await prisma.report.create({
           data: {
@@ -143,6 +144,20 @@ if (!userId) {
             status: 'COMPLETED',
           }
         }).catch((e: any) => console.log('DB report save:', e.message))
+
+        // Enviar email si hay email configurado
+        if (deliveryEmail) {
+          const { sendReportEmail } = await import('../lib/email')
+          const now = new Date()
+          const weekNumber = Math.ceil(now.getDate() / 7) + (now.getMonth() * 4)
+          await sendReportEmail(
+            deliveryEmail,
+            finalName,
+            pdfUrl,
+            weekNumber,
+            1
+          )
+        }
       })
       .catch((err: any) => console.error('❌ Error generando reporte inicial:', err.message))
 
