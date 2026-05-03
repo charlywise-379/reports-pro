@@ -1053,7 +1053,7 @@ export default function OnboardingPage() {
     try {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) throw new Error('No hay sesión activa')
-      const response = await fetch('http://localhost:3001/api/onboarding/competitive', {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/onboarding/competitive`, {
         method:'POST',
         headers:{'Content-Type':'application/json'},
         body: JSON.stringify({
