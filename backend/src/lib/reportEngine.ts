@@ -1,4 +1,6 @@
 import fetch from 'node-fetch'
+import fs from 'fs'
+import path from 'path'
 
 // ─── Tipos ───────────────────────────────────────────
 interface ReportData {
@@ -535,31 +537,31 @@ export async function generateReport(project: any, outputPath: string): Promise<
   // 3. Renderizar HTML
   const html = renderTemplate(template, data)
 
+  // 4. Generar PDF via Browserless
   const response = await fetch(
-  `https://production-sfo.browserless.io/pdf?token=${process.env.BROWSERLESS_API_KEY}`,
-  {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      url: 'about:blank',
-      html,
-      options: {
-        format: 'A4',
-        landscape: true,
-        printBackground: true,
-        margin: { top: '0', right: '0', bottom: '0', left: '0' },
-      },
-    }),
-  }
-)
+    `https://production-sfo.browserless.io/pdf?token=${process.env.BROWSERLESS_API_KEY}`,
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        url: 'about:blank',
+        html,
+        options: {
+          format: 'A4',
+          landscape: true,
+          printBackground: true,
+          margin: { top: '0', right: '0', bottom: '0', left: '0' },
+        },
+      }),
+    }
+  )
 
-if (!response.ok) {
-  throw new Error(`Browserless error: ${response.status} ${await response.text()}`)
-}
-
-const pdfBuffer = await response.buffer()
-fs.writeFileSync(outputPath, pdfBuffer)
-console.log(`✅ PDF generado: ${outputPath}`)
-return outputPath
+  if (!response.ok) {
+    throw new Error(`Browserless error: ${response.status} ${await response.text()}`)
   }
-}
+
+  const pdfBuffer = await response.arrayBuffer()
+  fs.writeFileSync(outputPath, Buffer.from(pdfBuffer))
+  console.log(`✅ PDF generado: ${outputPath}`)
+  return outputPath
+}1
