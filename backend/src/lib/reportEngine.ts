@@ -538,22 +538,12 @@ export async function generateReport(project: any, outputPath: string): Promise<
   // 3. Renderizar HTML
   const html = renderTemplate(template, data)
 
-  // 4. Generar PDF con Puppeteer
   const browser = await puppeteer.launch({
-  args: chromium.args,
-  defaultViewport: chromium.defaultViewport,
-  executablePath: await chromium.executablePath(),
-  headless: true,
-})
-}
-console.log('🌐 Chromium path:', chromiumPath)
-
-const browser = await puppeteer.launch({
-  args: chromium.args,
-  defaultViewport: chromium.defaultViewport,
-  executablePath: await chromium.executablePath(),
-  headless: true,
-})
+    args: chromium.args,
+    defaultViewport: null,
+    executablePath: await chromium.executablePath(),
+    headless: true,
+  })
 
   try {
     const page = await browser.newPage()
