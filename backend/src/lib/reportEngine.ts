@@ -539,22 +539,39 @@ export async function generateReport(project: any, outputPath: string): Promise<
   const html = renderTemplate(template, data)
 
   // 4. Generar PDF con Puppeteer
-  const browser = await puppeteer.launch({
-    args: [
-      '--no-sandbox',
-      '--disable-setuid-sandbox',
-      '--disable-dev-shm-usage',
-      '--disable-gpu',
-      '--no-first-run',
-      '--no-zygote',
-      '--single-process',
-    ],
-    executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || 
-      process.env.CHROMIUM_PATH ||
-      '/usr/bin/chromium' ||
-      '/usr/bin/chromium-browser',
-    headless: true,
-  })
+  const { execSync } = require('child_process')
+let chromiumPath = '/usr/bin/chromium'
+try {
+  chromiumPath = execSync('which chromium || which chromium-browser || which google-chrome').toString().trim()
+} catch {
+  const paths = [
+    '/usr/bin/chromium',
+    '/usr/bin/chromium-browser',
+    '/run/current-system/sw/bin/chromium',
+    '/nix/var/nix/profiles/default/bin/chromium',
+  ]
+  for (const p of paths) {
+    if (require('fs').existsSync(p)) {
+      chromiumPath = p
+      break
+    }
+  }
+}
+console.log('🌐 Chromium path:', chromiumPath)
+
+const browser = await puppeteer.launch({
+  args: [
+    '--no-sandbox',
+    '--disable-setuid-sandbox',
+    '--disable-dev-shm-usage',
+    '--disable-gpu',
+    '--no-first-run',
+    '--no-zygote',
+    '--single-process',
+  ],
+  executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || chromiumPath,
+  headless: true,
+})
 
   try {
     const page = await browser.newPage()
