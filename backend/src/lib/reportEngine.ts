@@ -526,6 +526,7 @@ weeklyPlansHTML: `
 // ─── Función principal: generar PDF ──────────────────
 export async function generateReport(project: any, outputPath: string): Promise<string> {
   console.log(`📄 Generando reporte para: ${project.companyName || project.name || 'Sin nombre'}`)
+  console.log('🔑 BROWSERLESS KEY:', process.env.BROWSERLESS_API_KEY?.slice(0, 10) + '...')
 
   // 1. Cargar template
   const templatePath = path.join(__dirname, '../templates/competitive-report.html')
