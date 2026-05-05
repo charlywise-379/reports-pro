@@ -539,8 +539,9 @@ export async function generateReport(project: any, outputPath: string): Promise<
   const html = renderTemplate(template, data)
 
   // 4. Generar PDF via Browserless
+  const BLESS = process.env.BLESS_KEY || '2USURVP56XGJ4jt3d331ba66adbe68c94b9339f6a42b53507'
   const response = await fetch(
-    `https://production-sfo.browserless.io/pdf?token=${process.env.BLESS_KEY}`,
+  `https://production-sfo.browserless.io/pdf?token=${BLESS}`,
     {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
