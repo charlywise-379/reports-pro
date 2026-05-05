@@ -1,7 +1,4 @@
-import puppeteer from 'puppeteer-core'
-import chromium from '@sparticuz/chromium'
-import fs from 'fs'
-import path from 'path'
+import fetch from 'node-fetch'
 
 // ─── Tipos ───────────────────────────────────────────
 interface ReportData {
@@ -538,26 +535,31 @@ export async function generateReport(project: any, outputPath: string): Promise<
   // 3. Renderizar HTML
   const html = renderTemplate(template, data)
 
-  const browser = await puppeteer.launch({
-    args: chromium.args,
-    defaultViewport: null,
-    executablePath: await chromium.executablePath(),
-    headless: true,
-  })
+  const response = await fetch(
+  `https://production-sfo.browserless.io/pdf?token=${process.env.BROWSERLESS_API_KEY}`,
+  {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      url: 'about:blank',
+      html,
+      options: {
+        format: 'A4',
+        landscape: true,
+        printBackground: true,
+        margin: { top: '0', right: '0', bottom: '0', left: '0' },
+      },
+    }),
+  }
+)
 
-  try {
-    const page = await browser.newPage()
-    await page.setContent(html, { waitUntil: 'networkidle0' })
-    await page.pdf({
-      path: outputPath,
-      format: 'A4',
-      landscape: true,
-      printBackground: true,
-      margin: { top: '0', right: '0', bottom: '0', left: '0' },
-    })
-    console.log(`✅ PDF generado: ${outputPath}`)
-    return outputPath
-  } finally {
-    await browser.close()
+if (!response.ok) {
+  throw new Error(`Browserless error: ${response.status} ${await response.text()}`)
+}
+
+const pdfBuffer = await response.buffer()
+fs.writeFileSync(outputPath, pdfBuffer)
+console.log(`✅ PDF generado: ${outputPath}`)
+return outputPath
   }
 }
