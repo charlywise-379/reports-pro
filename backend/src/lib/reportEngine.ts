@@ -1,5 +1,5 @@
 import puppeteer from 'puppeteer-core'
-import chromium from 'chrome-aws-lambda'
+import chromium from '@sparticuz/chromium'
 import fs from 'fs'
 import path from 'path'
 
@@ -560,16 +560,9 @@ try {
 console.log('🌐 Chromium path:', chromiumPath)
 
 const browser = await puppeteer.launch({
-  args: [
-    '--no-sandbox',
-    '--disable-setuid-sandbox',
-    '--disable-dev-shm-usage',
-    '--disable-gpu',
-    '--no-first-run',
-    '--no-zygote',
-    '--single-process',
-  ],
-  executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || chromiumPath,
+  args: chromium.args,
+  defaultViewport: chromium.defaultViewport,
+  executablePath: await chromium.executablePath(),
   headless: true,
 })
 
