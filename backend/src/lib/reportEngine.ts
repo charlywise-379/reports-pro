@@ -539,23 +539,12 @@ export async function generateReport(project: any, outputPath: string): Promise<
   const html = renderTemplate(template, data)
 
   // 4. Generar PDF con Puppeteer
-  const { execSync } = require('child_process')
-let chromiumPath = '/usr/bin/chromium'
-try {
-  chromiumPath = execSync('which chromium || which chromium-browser || which google-chrome').toString().trim()
-} catch {
-  const paths = [
-    '/usr/bin/chromium',
-    '/usr/bin/chromium-browser',
-    '/run/current-system/sw/bin/chromium',
-    '/nix/var/nix/profiles/default/bin/chromium',
-  ]
-  for (const p of paths) {
-    if (require('fs').existsSync(p)) {
-      chromiumPath = p
-      break
-    }
-  }
+  const browser = await puppeteer.launch({
+  args: chromium.args,
+  defaultViewport: chromium.defaultViewport,
+  executablePath: await chromium.executablePath(),
+  headless: true,
+})
 }
 console.log('🌐 Chromium path:', chromiumPath)
 
