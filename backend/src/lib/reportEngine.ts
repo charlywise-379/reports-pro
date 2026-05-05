@@ -540,7 +540,7 @@ export async function generateReport(project: any, outputPath: string): Promise<
 
   // 4. Generar PDF via Browserless
   const response = await fetch(
-    `https://production-sfo.browserless.io/pdf?token=2USURVP56XGJ4jt3d331ba66adbe68c94b9339f6a42b53507`,
+    `https://production-sfo.browserless.io/pdf?token=${process.env.BLESS_KEY}`,
     {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
