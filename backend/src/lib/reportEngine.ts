@@ -546,15 +546,14 @@ export async function generateReport(project: any, outputPath: string): Promise<
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        url: 'about:blank',
-        html,
-        options: {
-          format: 'A4',
-          landscape: true,
-          printBackground: true,
-          margin: { top: '0', right: '0', bottom: '0', left: '0' },
-        },
-      }),
+  html,
+  options: {
+    format: 'A4',
+    landscape: true,
+    printBackground: true,
+    margin: { top: '0', right: '0', bottom: '0', left: '0' },
+  },
+}),
     }
   )
 
