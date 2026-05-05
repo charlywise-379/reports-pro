@@ -540,12 +540,20 @@ export async function generateReport(project: any, outputPath: string): Promise<
 
   // 4. Generar PDF con Puppeteer
   const browser = await puppeteer.launch({
-    args: chromium.args,
-    defaultViewport: chromium.defaultViewport,
-    executablePath: process.env.NODE_ENV === 'production'
-      ? await chromium.executablePath
-      : '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
-    headless: chromium.headless,
+    args: [
+      '--no-sandbox',
+      '--disable-setuid-sandbox',
+      '--disable-dev-shm-usage',
+      '--disable-gpu',
+      '--no-first-run',
+      '--no-zygote',
+      '--single-process',
+    ],
+    executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || 
+      process.env.CHROMIUM_PATH ||
+      '/usr/bin/chromium' ||
+      '/usr/bin/chromium-browser',
+    headless: true,
   })
 
   try {
