@@ -150,135 +150,330 @@ function extractSetupContext(setup: any) {
 
 // ─── Prompt para Claude ───────────────────────────────
 function buildPrompt(project: any, dateInfo: any): string {
-  const competitors = project.setup?.directCompetitors?.filter((c: any) => c.name) || []
-  const competitorNames = competitors.map((c: any) => c.name).join(', ') || 'competidores principales del sector'
-  const focusAreas = project.setup?.focusAreas?.join(', ') || 'precios, campañas, lanzamientos'
-  const keywords = project.setup?.keywords?.join(', ') || ''
-  const website = project.setup?.website || ''
+  const setup = project.setup || {}
+  const businessType = inferBusinessType(setup)
+  const { products, directComps, indirectComps, differentiators, pitch } = extractSetupContext(setup)
+  const focusAreas = (setup.focusAreas || []).join(', ') || 'precios, campanas, lanzamientos'
+  const geographicScope = (setup.geographicScope || ['MX']).join(', ')
+  const companyName = setup.companyName || project.companyName || project.name
+  const website = setup.website || ''
 
-  return `Eres el motor de inteligencia competitiva de Reports PRO, una plataforma B2B líder en LATAM.
+  let directCompetitorsList = ''
+  try {
+    const ctx = typeof setup.additionalContext === 'string' ? JSON.parse(setup.additionalContext) : (setup.additionalContext || {})
+    const dc = ctx.directCompetitors || []
+    directCompetitorsList = dc.map((c: any) => `- ${c.name} | URL: ${c.url} | Servicios: ${c.products}`).join('\n')
+    if (!directCompetitorsList) {
+      directCompetitorsList = [1,2,3,4,5]
+        .filter((i: number) => setup[`competitor${i}Name`])
+        .map((i: number) => `- ${setup[`competitor${i}Name`]} | URL: ${setup[`competitor${i}Website`] || 'N/A'}`)
+        .join('\n')
+    }
+  } catch { directCompetitorsList = 'No especificados' }
 
-## CONTEXTO DEL CLIENTE
-- **Empresa:** ${project.companyName || project.name}
-- **Sitio web:** ${website}
-- **Industria:** ${project.setup?.industry || 'No especificada'}
-- **Mercado objetivo:** ${project.setup?.targetMarket || 'LATAM'}
-- **Competidores monitoreados:** ${competitorNames}
-- **Áreas de enfoque:** ${focusAreas}
-- **Keywords clave:** ${keywords}
-- **Período del reporte:** ${dateInfo.periodStart} al ${dateInfo.periodEnd}
+  return `Eres el motor de inteligencia competitiva de Reports PRO, especializado en PYMES mexicanas.
 
-## TU TAREA
-Usa la herramienta de búsqueda web para investigar activamente:
-1. Movimientos recientes de cada competidor (precios, campañas, lanzamientos, contrataciones, expansión)
-2. Tendencias del sector ${project.setup?.industry} en México y LATAM esta semana
-3. Noticias relevantes que afecten al mercado del cliente
-4. Oportunidades o amenazas emergentes en el sector
+IDENTIDAD DEL CLIENTE:
+- Empresa: ${companyName}
+- Sitio web: ${website}
+- Giro REAL: ${businessType}
+- Pais/Alcance: ${setup.country || 'Mexico'} | ${geographicScope}
+- Mercado: ${setup.targetMarket || 'Mexico'}
+- Tamano: PYME regional — NO comparar con corporativos
 
-Luego genera un análisis competitivo REAL y ACTUAL basado en lo que encontraste.
+PRODUCTOS Y SERVICIOS CON PRECIOS:
+${products}
 
-## FORMATO DE RESPUESTA
-Responde ÚNICAMENTE con un JSON válido con esta estructura exacta (sin markdown, sin explicaciones):
+DESCRIPCION DEL NEGOCIO:
+${pitch}
+
+DIFERENCIADORES:
+${differentiators}
+
+COMPETIDORES REGISTRADOS — OBLIGATORIO INCLUIRLOS EN EL REPORTE:
+${directCompetitorsList}
+
+AREAS DE MONITOREO: ${focusAreas}
+PERIODO: ${dateInfo.periodStart} al ${dateInfo.periodEnd}
+
+---
+
+INSTRUCCIONES DE INVESTIGACION:
+
+PASO 1 — Busca CADA competidor registrado (OBLIGATORIO, uno por uno):
+- Visita su sitio web y redes sociales
+- Encuentra sus servicios actuales y precios visibles
+- Detecta campanas o promociones activas
+- Busca publicaciones recientes en Instagram, Facebook, LinkedIn
+- Busca resenas o menciones en Google
+- Busca vacantes publicadas en LinkedIn o Indeed
+- Busca noticias o lanzamientos recientes
+- Guarda la URL de cada fuente encontrada
+Si el competidor es pequeno y no tiene mucha presencia, DILO y busca agencias similares del sector como referencia comparativa.
+
+PASO 2 — Busca el mercado de ${businessType} en Mexico esta semana:
+- Tendencias del sector (nuevas herramientas, plataformas, tecnologias)
+- Cambios de precios en el mercado
+- Oportunidades de nicho desatendidas para PYMES
+- Amenazas emergentes
+
+PASO 3 — Para cada dato importante, guarda la URL o nombre del medio como fuente.
+
+---
+
+REGLAS ABSOLUTAS:
+1. Los competidores registrados SIEMPRE deben aparecer en el reporte
+2. Solo analizar empresas del mismo giro (${businessType}) y tamano PYME similar
+3. Cada alerta y movimiento DEBE tener fuente (URL o nombre del medio)
+4. Si un dato no es verificable, marcarlo como "Estimado" o "Sin datos publicos"
+5. La tabla benchmark SIEMPRE se completa — usar "N/A" si no hay datos
+6. Precios realistas para el mercado mexicano de ${businessType}
+7. Responde en espanol de Mexico
+
+---
+
+Responde UNICAMENTE con JSON valido comenzando con { sin texto previo:
 
 {
-  "competitivePressure": <número 0-100>,
-  "opportunityScore": <número 0-100>,
-  "marketRisk": <número 0-100>,
-  "riskLevel": "<BAJO|MEDIO|ALTO|CRÍTICO>",
-  "generalTrend": "<texto corto de tendencia>",
+  "competitivePressure": <0-100>,
+  "opportunityScore": <0-100>,
+  "marketRisk": <0-100>,
+  "riskLevel": "<BAJO|MEDIO|ALTO|CRITICO>",
+  "generalTrend": "<tendencia especifica para ${businessType} en Mexico esta semana>",
   "trendDelta": "<+N o -N>",
-  "signalsCount": "<número formateado ej: 1,240>",
-  "signalsDelta": <número entero>,
-  "movementsCount": <número entero>,
-  "criticalMovements": <número entero>,
-  "minorMovements": <número entero>,
-  "alertsCount": <número entero>,
-  "totalChanges": <número entero>,
+  "signalsCount": "<numero>",
+  "signalsDelta": <numero>,
+  "movementsCount": <numero>,
+  "criticalMovements": <numero>,
+  "minorMovements": <numero>,
+  "alertsCount": <numero>,
+  "totalChanges": <numero>,
   "insights": [
-    { "category": "<CATEGORÍA · NIVEL>", "text": "<insight real basado en búsqueda>" },
-    { "category": "<CATEGORÍA · NIVEL>", "text": "<insight real>" },
-    { "category": "<CATEGORÍA · NIVEL>", "text": "<insight real>" }
+    { "category": "<CATEGORIA · NIVEL>", "text": "<insight real con dato especifico y fuente>" },
+    { "category": "<CATEGORIA · NIVEL>", "text": "<insight real con fuente>" },
+    { "category": "<CATEGORIA · NIVEL>", "text": "<insight real con fuente>" }
   ],
   "actions": [
-    { "priority": "<ALTA|MED|BAJA>", "text": "<acción concreta y específica>" },
-    { "priority": "<ALTA|MED|BAJA>", "text": "<acción concreta>" },
-    { "priority": "<ALTA|MED|BAJA>", "text": "<acción concreta>" }
+    { "priority": "ALTA", "text": "<accion concreta con plazo para PYME de ${businessType}>" },
+    { "priority": "MED", "text": "<accion concreta>" },
+    { "priority": "BAJA", "text": "<accion concreta>" }
   ],
-  "earlyWarning": "<señal de alerta temprana específica basada en datos reales>",
-  "marketStatus": "<estado del mercado en frase corta>",
-  "marketStatusDesc": "<descripción del estado del mercado, 1-2 oraciones>",
-  "mainAlertTitle": "<alerta principal más urgente>",
-  "mainAlertDesc": "<descripción detallada de la alerta principal, 2-3 oraciones>",
-  "mainAlertLevel": "<BAJO|MEDIO|ALTO|CRÍTICO>",
+  "earlyWarning": "<alerta temprana con dato especifico y fuente>",
+  "marketStatus": "<estado del mercado de ${businessType} en Mexico>",
+  "marketStatusDesc": "<descripcion con datos reales, 2 oraciones>",
+  "mainAlertTitle": "<alerta principal mas urgente>",
+  "mainAlertDesc": "<2-3 oraciones con datos reales y fuente>",
+  "mainAlertLevel": "<BAJO|MEDIO|ALTO|CRITICO>",
   "competitors": [
     {
-      "name": "<nombre competidor>",
-      "scope": "<Local|Nacional|Regional|Internacional>",
+      "name": "<nombre — INCLUIR TODOS LOS COMPETIDORES REGISTRADOS PRIMERO>",
+      "scope": "<Local|Nacional|Regional>",
       "threat": <1-10>,
-      "growth": "<↑ +X% o → Estable o ↓ -X%>",
-      "recentMove": "<movimiento más reciente detectado>",
-      "riskLabel": "<BAJO|MEDIO|VIGILAR|CRÍTICO>"
+      "growth": "<subio +X% o Estable o bajo -X%>",
+      "recentMove": "<movimiento real con fecha, o Sin datos publicos disponibles>",
+      "riskLabel": "<BAJO|MEDIO|VIGILAR|CRITICO>",
+      "sourceUrl": "<URL donde encontraste info, o N/A>"
     }
   ],
   "mostAggressiveName": "<nombre>",
-  "mostAggressiveDesc": "<por qué es el más agresivo esta semana, dato específico>",
+  "mostAggressiveDesc": "<dato especifico con fecha y fuente>",
   "weakestName": "<nombre>",
-  "weakestDesc": "<por qué está débil esta semana>",
-  "emergingName": "<nombre>",
-  "emergingDesc": "<por qué es amenaza emergente>",
+  "weakestDesc": "<evidencia de debilidad>",
+  "emergingName": "<amenaza emergente real>",
+  "emergingDesc": "<dato especifico>",
   "criticalAlerts": [
-    { "icon": "<emoji>", "title": "<título alerta>", "detected": "<cuándo y fuente>", "description": "<descripción detallada>", "action": "<acción recomendada>" }
+    {
+      "icon": "<emoji>",
+      "title": "<alerta especifica para ${businessType}>",
+      "detected": "<fecha especifica · Fuente: nombre del medio o URL>",
+      "description": "<descripcion con datos verificados>",
+      "action": "<accion concreta accionable para PYME>"
+    }
   ],
   "mediumAlerts": [
-    { "icon": "<emoji>", "title": "<título>", "source": "<fuente>", "description": "<descripción>" }
+    {
+      "icon": "<emoji>",
+      "title": "<titulo>",
+      "source": "<nombre del medio o URL>",
+      "description": "<descripcion con dato especifico>"
+    }
   ],
   "changesCol1": [
-    { "icon": "<emoji>", "category": "<CAT · NIVEL>", "date": "<día>", "title": "<cambio>", "description": "<detalle>", "competitor": "<nombre>" }
+    {
+      "icon": "<emoji>",
+      "category": "<CAT · NIVEL>",
+      "date": "<dia especifico, ej: 2 may>",
+      "title": "<cambio real detectado>",
+      "description": "<detalle con fuente: URL o medio>",
+      "competitor": "<nombre del competidor o Mercado general>"
+    }
   ],
   "changesCol2": [
-    { "icon": "<emoji>", "category": "<CAT · NIVEL>", "date": "<día>", "title": "<cambio>", "description": "<detalle>", "competitor": "<nombre>" }
+    {
+      "icon": "<emoji>",
+      "category": "<CAT · NIVEL>",
+      "date": "<dia>",
+      "title": "<cambio>",
+      "description": "<detalle con fuente>",
+      "competitor": "<nombre>"
+    }
   ],
   "priceTrends": [
-    { "name": "<competidor>", "change": "<↑ +X% o → Estable o ↓ -X%>" }
+    { "name": "<competidor registrado>", "change": "<subio +X% o Estable o bajo -X% o Sin datos publicos>" }
   ],
-  "priceTrendAlert": "<alerta de precios si aplica>",
+  "priceTrendAlert": "<alerta de precios especifica con dato real>",
   "dominantMessages": [
-    { "competitor": "<NOMBRE MAYÚSCULAS>", "message": "<mensaje de posicionamiento que usan en sus campañas>" }
+    {
+      "competitor": "<NOMBRE MAYUSCULAS>",
+      "message": "<mensaje real de su web o redes, o mensaje estimado basado en su posicionamiento>"
+    }
   ],
   "opportunities": [
-    { "icon": "<emoji>", "type": "<tipo de oportunidad>", "title": "<título>", "description": "<descripción detallada>", "score": <0-100>, "window": "<ventana de tiempo>" }
+    {
+      "icon": "<emoji>",
+      "type": "<tipo de oportunidad>",
+      "title": "<titulo especifico para ${businessType} PYME>",
+      "description": "<descripcion con dato que la sustenta y fuente>",
+      "score": <0-100>,
+      "window": "<ventana de tiempo realista>"
+    }
   ],
   "rivalWeaknesses": [
-    { "competitor": "<NOMBRE>", "weakness": "<debilidad específica detectada>" }
+    {
+      "competitor": "<NOMBRE — preferir competidores registrados>",
+      "weakness": "<debilidad especifica con evidencia detectada>"
+    }
   ],
   "highRisks": [
-    { "icon": "<emoji>", "title": "<riesgo>", "probability": <0-100>, "description": "<descripción>", "mitigation": "<cómo mitigar>" }
+    {
+      "icon": "<emoji>",
+      "title": "<riesgo real para PYME de ${businessType}>",
+      "probability": <0-100>,
+      "description": "<descripcion con contexto real>",
+      "mitigation": "<accion concreta con recursos limitados de PYME>"
+    }
   ],
   "mediumRisks": [
-    { "icon": "<emoji>", "title": "<riesgo>", "description": "<descripción>" }
+    { "icon": "<emoji>", "title": "<riesgo>", "description": "<descripcion con dato>" }
   ],
-  "strengths": ["<fortaleza 1>", "<fortaleza 2>", "<fortaleza 3>"],
-  "improvements": ["<área de mejora 1>", "<área de mejora 2>", "<área de mejora 3>"],
+  "strengths": [
+    "<fortaleza basada en diferenciadores reales del cliente>",
+    "<fortaleza>",
+    "<fortaleza>"
+  ],
+  "improvements": [
+    "<area de mejora detectada vs competencia>",
+    "<area>",
+    "<area>"
+  ],
+  "benchmarkRows": [
+    {
+      "factor": "Precio / Tarifas",
+      "client": "<ALTO/MEDIO/BAJO o rango de precio>",
+      "comp1": "<evaluacion competidor 1 o N/A>",
+      "comp2": "<evaluacion competidor 2 o N/A>",
+      "comp3": "<evaluacion competidor 3 o N/A>",
+      "position": "<1er lugar / 2do lugar / etc>"
+    },
+    {
+      "factor": "Servicios ofrecidos",
+      "client": "<descripcion breve>",
+      "comp1": "<o N/A>",
+      "comp2": "<o N/A>",
+      "comp3": "<o N/A>",
+      "position": "<posicion>"
+    },
+    {
+      "factor": "Presencia digital",
+      "client": "<ALTA/MEDIA/BAJA>",
+      "comp1": "<o N/A>",
+      "comp2": "<o N/A>",
+      "comp3": "<o N/A>",
+      "position": "<posicion>"
+    },
+    {
+      "factor": "Redes sociales",
+      "client": "<activo/inactivo/seguidores estimados>",
+      "comp1": "<o N/A>",
+      "comp2": "<o N/A>",
+      "comp3": "<o N/A>",
+      "position": "<posicion>"
+    },
+    {
+      "factor": "Casos de exito / Portafolio",
+      "client": "<SI/NO/PARCIAL>",
+      "comp1": "<o N/A>",
+      "comp2": "<o N/A>",
+      "comp3": "<o N/A>",
+      "position": "<posicion>"
+    },
+    {
+      "factor": "Tiempo en el mercado",
+      "client": "<anos estimados>",
+      "comp1": "<o N/A>",
+      "comp2": "<o N/A>",
+      "comp3": "<o N/A>",
+      "position": "<posicion>"
+    },
+    {
+      "factor": "Especializacion",
+      "client": "<descripcion>",
+      "comp1": "<o N/A>",
+      "comp2": "<o N/A>",
+      "comp3": "<o N/A>",
+      "position": "<posicion>"
+    },
+    {
+      "factor": "Cobertura geografica",
+      "client": "<Local/Regional/Nacional>",
+      "comp1": "<o N/A>",
+      "comp2": "<o N/A>",
+      "comp3": "<o N/A>",
+      "position": "<posicion>"
+    }
+  ],
   "highPriorityRecs": [
-    { "number": 1, "title": "<recomendación>", "owner": "<responsable>", "deadline": "<plazo>", "description": "<detalle>", "impact": "<impacto esperado>" }
+    {
+      "number": 1,
+      "title": "<recomendacion concreta>",
+      "owner": "<responsable>",
+      "deadline": "<plazo>",
+      "description": "<detalle paso a paso accionable>",
+      "impact": "<impacto esperado con metrica>"
+    },
+    {
+      "number": 2,
+      "title": "<recomendacion>",
+      "owner": "<responsable>",
+      "deadline": "<plazo>",
+      "description": "<detalle>",
+      "impact": "<impacto>"
+    }
   ],
   "mediumPriorityRecs": [
-    { "number": 3, "title": "<recomendación>", "deadline": "<plazo>", "description": "<detalle>", "impact": "<impacto>" }
+    {
+      "number": 3,
+      "title": "<recomendacion>",
+      "deadline": "<plazo>",
+      "description": "<detalle>",
+      "impact": "<impacto>"
+    },
+    {
+      "number": 4,
+      "title": "<recomendacion>",
+      "deadline": "<plazo>",
+      "description": "<detalle>",
+      "impact": "<impacto>"
+    }
   ],
   "lowPriorityRecs": [
-    { "number": 5, "title": "<recomendación>", "description": "<detalle>" }
+    { "number": 5, "title": "<recomendacion>", "description": "<detalle>" },
+    { "number": 6, "title": "<recomendacion>", "description": "<detalle>" }
   ],
-  "criticalSignals": ["<señal 1>", "<señal 2>", "<señal 3>", "<señal 4>"],
-  "importantSignals": ["<señal 1>", "<señal 2>", "<señal 3>", "<señal 4>"],
-  "infoSignals": ["<señal 1>", "<señal 2>", "<señal 3>", "<señal 4>"]
-}
-
-IMPORTANTE:
-- Toda la información debe ser REAL y ACTUAL basada en lo que encontraste en web search
-- Si no encuentras datos específicos de un competidor, indícalo claramente en el texto
-- Usa fechas reales de esta semana
-- El idioma es español de México (es-MX)
-- NO incluyas comentarios, markdown ni texto fuera del JSON`
+  "criticalSignals": ["<senal critica 1>", "<senal 2>", "<senal 3>", "<senal 4>"],
+  "importantSignals": ["<senal 1>", "<senal 2>", "<senal 3>", "<senal 4>"],
+  "infoSignals": ["<senal 1>", "<senal 2>", "<senal 3>", "<senal 4>"]
+}`
 }
 
 
