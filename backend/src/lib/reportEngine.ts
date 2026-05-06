@@ -273,7 +273,7 @@ async function callClaudeWithSearch(project: any, dateInfo: any): Promise<any> {
   // Llamada a Claude con web search habilitado
   const response = await anthropic.messages.create({
     model: 'claude-sonnet-4-5',
-    max_tokens: 8000,
+    max_tokens: 16000,
     tools: [
       {
         type: 'web_search_20250305' as any,
@@ -281,11 +281,15 @@ async function callClaudeWithSearch(project: any, dateInfo: any): Promise<any> {
       },
     ],
     messages: [
-      {
-        role: 'user',
-        content: prompt,
-      },
-    ],
+  {
+    role: 'user',
+    content: prompt,
+  },
+  {
+    role: 'assistant',
+    content: '{',
+  },
+],
   })
 
   console.log(`✅ Claude respondió — stop_reason: ${response.stop_reason}`)
@@ -308,6 +312,7 @@ async function callClaudeWithSearch(project: any, dateInfo: any): Promise<any> {
     .replace(/```json\s*/g, '')
     .replace(/```\s*/g, '')
     .trim()
+    if (!jsonText.startsWith('{')) jsonText = '{' + jsonText
 
   try {
     const parsed = JSON.parse(jsonText)
