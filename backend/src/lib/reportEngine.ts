@@ -304,10 +304,13 @@ async function callClaudeWithSearch(project: any, dateInfo: any): Promise<any> {
   }
 
   const prompt = buildPrompt(project, dateInfo)
+  const businessType = inferBusinessType(project.setup || {})
+  const systemPrompt = `Eres un analista de inteligencia competitiva para PYMES mexicanas. REGLA ABSOLUTA: El negocio del cliente es una ${businessType}. PROHIBIDO analizar telecomunicaciones, 5G, Telcel, AT&T, Movistar, Izzi o cualquier empresa de telecom. SOLO analiza competidores del mismo giro y tamaño PYME. Responde en español de México.`
 
   // Llamada a Claude con web search habilitado
   const response = await anthropic.messages.create({
     model: 'claude-sonnet-4-5',
+    system: systemPrompt,
     max_tokens: 16000,
     tools: [
       {
@@ -315,8 +318,6 @@ async function callClaudeWithSearch(project: any, dateInfo: any): Promise<any> {
         name: 'web_search',
       },
     ],
-    const businessTypeForSystem = inferBusinessType(project.setup || {})
-    system: `Eres un analista de inteligencia competitiva especializado en PYMES mexicanas. REGLA ABSOLUTA: El giro real del negocio del cliente es ${businessTypeForSystem}. PROHIBIDO analizar telecomunicaciones, telefonía, 5G, Telcel, AT&T, Movistar, Izzi, Totalplay, Megacable o cualquier industria no relacionada. OBLIGATORIO: Solo analiza competidores del mismo giro y tamaño PYME. Si el cliente vende campañas digitales, branding, web, foto/video es una AGENCIA DE MARKETING DIGITAL. Responde en español de México.`,
     messages: [
   {
     role: 'user',
