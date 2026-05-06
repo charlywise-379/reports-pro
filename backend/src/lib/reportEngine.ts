@@ -272,7 +272,7 @@ async function callClaudeWithSearch(project: any, dateInfo: any): Promise<any> {
 
   // Llamada a Claude con web search habilitado
   const response = await anthropic.messages.create({
-    model: 'claude-sonnet-4-20250514',
+    model: 'claude-sonnet-4-5',
     max_tokens: 8000,
     tools: [
       {
