@@ -1,6 +1,6 @@
-import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3'
+import { S3Client, PutObjectCommand, GetObjectCommand } from '@aws-sdk/client-s3'
+import { getSignedUrl } from '@aws-sdk/s3-request-presigner'
 import fs from 'fs'
-import path from 'path'
 
 const r2 = new S3Client({
   region: 'auto',
@@ -24,7 +24,15 @@ export async function uploadPDFToR2(localPath: string, filename: string): Promis
 
   console.log(`☁️ PDF subido a R2: ${key}`)
 
-  // URL pública del archivo
-  const publicUrl = `${process.env.R2_PUBLIC_URL}/${key}`
-  return publicUrl
+  // Generar signed URL válida por 7 días
+  const signedUrl = await getSignedUrl(
+    r2,
+    new GetObjectCommand({
+      Bucket: process.env.R2_BUCKET_NAME || 'reports-pro-pdfs',
+      Key: key,
+    }),
+    { expiresIn: 60 * 60 * 24 * 7 } // 7 días
+  )
+
+  return signedUrl
 }
