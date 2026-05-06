@@ -254,6 +254,10 @@ IMPORTANTE:
 // ─── Llamar a Claude con web search ──────────────────
 async function callClaudeWithSearch(project: any, dateInfo: any): Promise<any> {
   console.log('🤖 Iniciando análisis con Claude AI + web search...')
+  console.log('🏭 Giro detectado:', inferBusinessType(project.setup || {}))
+  console.log('📦 Setup keys:', Object.keys(project.setup || {}))
+  console.log('🏢 companyName en setup:', project.setup?.companyName)
+  console.log('🔧 mainProducts:', project.setup?.mainProducts)
 
   const competitors = project.setup?.directCompetitors?.filter((c: any) => c.name) || []
 
