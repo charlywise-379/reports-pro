@@ -633,7 +633,7 @@ function buildReportData(project: any, aiData: any, dateInfo: any): ReportData {
       name: c.name,
       scope: c.scope || 'Nacional',
       category: 'Competidor directo',
-      categoryLabel: businessType,
+      categoryLabel: inferBusinessType(project.setup || {}),
       tagBg: '#FCEBEB',
       tagColor: '#A32D2D',
       ...palette,
