@@ -178,9 +178,13 @@ IDENTIDAD DEL CLIENTE:
 - Empresa: ${companyName}
 - Sitio web: ${website}
 - Giro REAL: ${businessType}
-- Pais/Alcance: ${setup.country || 'Mexico'} | ${geographicScope}
+- Ubicacion: ${setup.city || 'No especificada'}, ${setup.country || 'Mexico'}
+- Alcance: ${geographicScope}
 - Mercado: ${setup.targetMarket || 'Mexico'}
 - Tamano: PYME regional — NO comparar con corporativos
+
+INSTRUCCION DE GEOLOCALIZACION:
+TODA la inteligencia debe estar enfocada en ${setup.city || setup.country || 'Mexico'}. Competidores con presencia en esa ciudad/region. Noticias, campanas, movimientos de mercado locales. Si no hay info local especifica, menciona el contexto nacional de ${setup.country || 'Mexico'} pero siempre priorizando lo local.
 
 PRODUCTOS Y SERVICIOS CON PRECIOS:
 ${products}

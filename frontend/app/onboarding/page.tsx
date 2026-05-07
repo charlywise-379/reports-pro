@@ -153,6 +153,21 @@ function Step1({ data, set }: any) {
         </div>
       </div>
 
+        <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:14, marginTop:14 }}>
+          <div>
+            <label style={S.label}>Ciudad</label>
+            <input style={S.input} value={data.ciudad||''} onChange={e=>set('ciudad',e.target.value)} placeholder="Ej: Monterrey, Ciudad de México..." />
+          </div>
+          <div>
+            <label style={S.label}>País</label>
+            <select style={{...S.input, appearance:'none' as const}} value={data.pais||'México'} onChange={e=>set('pais',e.target.value)}>
+              {['México','Colombia','Argentina','Chile','Perú','Ecuador','Guatemala','Costa Rica','Panamá','República Dominicana','España','Estados Unidos','Otro'].map(p=>(
+                <option key={p}>{p}</option>
+              ))}
+            </select>
+          </div>
+        </div>
+      </div>
       {/* Presencia digital */}
       <div style={S.card}>
         <SectionNum n="02" label="Presencia digital" />
@@ -1032,7 +1047,7 @@ export default function OnboardingPage() {
   const [errorMsg, setErrorMsg] = useState('')
 
   const [data, setData] = useState<any>({
-    companyName:'', brand:'', website:'', industry:'', companySize:'', targetMarket:'',
+    companyName:'', brand:'', website:'', industry:'', companySize:'', targetMarket:'', ciudad:'', pais:'México',
     socialMedia:{ ig:'', fb:'', tt:'', yt:'', li:'', x:'' },
     mainProducts:'', tags:[], pitch:'',
     differentiators:[], products:[emptyProduct()], presenceScope:'Nacional', countries:[],

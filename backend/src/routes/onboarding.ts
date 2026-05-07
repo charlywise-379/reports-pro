@@ -11,7 +11,7 @@ router.post('/competitive', async (req: Request, res: Response) => {
     console.log('📦 PAYLOAD RECIBIDO:', JSON.stringify(req.body, null, 2))
 
     const {
-      userId, companyName, brand, website, industry, companySize,
+      userId, companyName, brand, website, industry, companySize, ciudad, pais,
       targetMarket, mainProducts, socialMedia, pitch, differentiators,
       products, presenceScope, countries, directCompetitors, indirectCompetitors,
       monitorAreas, areaDepth, frequency, deliveryChannel, deliveryEmail, deliveryPhone,
@@ -151,6 +151,8 @@ router.post('/competitive', async (req: Request, res: Response) => {
         industry: industry || '',
         mainProducts: cleanProducts.map((p: any) => p.name),
         targetMarket: typeof targetMarket === 'string' ? targetMarket.trim() : null,
+        city: typeof ciudad === 'string' ? ciudad.trim() : null,
+        country: typeof pais === 'string' ? pais.trim() : 'México',
         competitor1Name: cleanDirect[0]?.name || null,
         competitor1Website: cleanDirect[0]?.url || null,
         competitor2Name: cleanDirect[1]?.name || null,
