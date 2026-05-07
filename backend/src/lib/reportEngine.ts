@@ -440,7 +440,10 @@ Responde UNICAMENTE con JSON valido comenzando con { sin texto previo:
       "owner": "<responsable>",
       "deadline": "<plazo>",
       "description": "<detalle paso a paso accionable>",
-      "impact": "<impacto esperado con metrica>"
+      "impact": "<impacto esperado con metrica>",
+      "difficulty": "<FACIL|MEDIO|DIFICIL>",
+      "timeRequired": "<CORTO|MEDIO|LARGO>",
+      "costRequired": "<BAJO|MEDIO|ALTO>"
     },
     {
       "number": 2,
@@ -448,7 +451,10 @@ Responde UNICAMENTE con JSON valido comenzando con { sin texto previo:
       "owner": "<responsable>",
       "deadline": "<plazo>",
       "description": "<detalle>",
-      "impact": "<impacto>"
+      "impact": "<impacto>",
+      "difficulty": "<FACIL|MEDIO|DIFICIL>",
+      "timeRequired": "<CORTO|MEDIO|LARGO>",
+      "costRequired": "<BAJO|MEDIO|ALTO>"
     }
   ],
   "mediumPriorityRecs": [
@@ -627,7 +633,7 @@ function buildReportData(project: any, aiData: any, dateInfo: any): ReportData {
       name: c.name,
       scope: c.scope || 'Nacional',
       category: 'Competidor directo',
-      categoryLabel: industry,
+      categoryLabel: businessType,
       tagBg: '#FCEBEB',
       tagColor: '#A32D2D',
       ...palette,
@@ -839,7 +845,12 @@ function buildReportData(project: any, aiData: any, dateInfo: any): ReportData {
     companyName,
     industry,
     targetMarket: project.setup?.targetMarket || 'LATAM',
-    tags: project.setup?.tags?.slice(0, 4) || [industry, 'AI', 'B2B', 'SaaS'],
+    tags: (() => {
+      const bt = inferBusinessType(project.setup || {})
+      const country = project.setup?.country || 'México'
+      const scope = (project.setup?.geographicScope || ['Regional'])[0]
+      return [bt.split(' ')[0], 'Marketing Digital', country, scope]
+    })(),
     weekNumber: dateInfo.weekNumber,
     year: dateInfo.year,
     edition: 1,
@@ -940,7 +951,32 @@ function buildReportData(project: any, aiData: any, dateInfo: any): ReportData {
     improvements: (aiData.improvements || ['Presencia digital', 'Cobertura geográfica', 'Inversión publicitaria']).slice(0, 3),
 
     // Página 10
-    highPriorityRecs: aiData.highPriorityRecs || [],
+    highPriorityRecs: (aiData.highPriorityRecs || []).map((rec: any) => {
+      const diffMap: Record<string, {color: string, label: string}> = {
+        'FACIL': { color: '#1D9E75', label: 'Fácil de implementar' },
+        'MEDIO': { color: '#F2C063', label: 'Implementación media' },
+        'DIFICIL': { color: '#E24B4A', label: 'Complejo de implementar' },
+      }
+      const timeMap: Record<string, {color: string, label: string}> = {
+        'CORTO': { color: '#1D9E75', label: 'Tiempo corto' },
+        'MEDIO': { color: '#F2C063', label: 'Tiempo medio' },
+        'LARGO': { color: '#E24B4A', label: 'Tiempo largo' },
+      }
+      const costMap: Record<string, {color: string, label: string}> = {
+        'BAJO': { color: '#1D9E75', label: 'Bajo costo' },
+        'MEDIO': { color: '#F2C063', label: 'Inversión media' },
+        'ALTO': { color: '#E24B4A', label: 'Alta inversión' },
+      }
+      const diff = diffMap[rec.difficulty || 'MEDIO'] || diffMap['MEDIO']
+      const time = timeMap[rec.timeRequired || 'MEDIO'] || timeMap['MEDIO']
+      const cost = costMap[rec.costRequired || 'BAJO'] || costMap['BAJO']
+      return {
+        ...rec,
+        difficultyColor: diff.color, difficultyLabel: diff.label,
+        timeColor: time.color, timeLabel: time.label,
+        costColor: cost.color, costLabel: cost.label,
+      }
+    }),
     mediumPriorityRecs: aiData.mediumPriorityRecs || [],
     lowPriorityRecs: aiData.lowPriorityRecs || [],
 

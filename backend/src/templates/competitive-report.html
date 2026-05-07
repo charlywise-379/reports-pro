@@ -645,7 +645,7 @@
           {{#each benchmarkCompetitors}}<th style="color:rgba(255,255,255,0.7);text-align:center;font-size:9px">{{this.name}}</th>{{/each}}
           <th style="color:rgba(255,255,255,0.7);text-align:center;font-size:9px">POSICIÓN</th>
         </tr></thead>
-        <tbody>{{benchmarkRowsHTML}}</tbody>
+        <tbody style="font-size:8px">{{benchmarkRowsHTML}}</tbody>
       </table>
     </div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
@@ -725,20 +725,20 @@
       </div>
       <!-- Semáforo + Impacto en barra inferior -->
       <div style="padding:8px 14px 10px;display:flex;justify-content:space-between;align-items:center;margin-top:8px;border-top:1px solid #F7C1C1;background:#FFF8F8">
-        <!-- Semáforo 3 factores -->
+        <!-- Semáforo dinámico 3 factores -->
         <div style="display:flex;gap:12px;align-items:center">
           <div style="font-size:7px;font-weight:700;color:#888;letter-spacing:.08em;text-transform:uppercase">EVALUACIÓN</div>
           <div style="display:flex;align-items:center;gap:5px">
-            <div style="width:9px;height:9px;border-radius:50%;background:#1D9E75;box-shadow:0 0 4px rgba(29,158,117,0.5)"></div>
-            <span style="font-size:8px;color:#444;font-weight:600">Fácil de implementar</span>
+            <div style="width:9px;height:9px;border-radius:50%;background:{{this.difficultyColor}};box-shadow:0 0 4px {{this.difficultyColor}}88"></div>
+            <span style="font-size:8px;color:#444;font-weight:600">{{this.difficultyLabel}}</span>
           </div>
           <div style="display:flex;align-items:center;gap:5px">
-            <div style="width:9px;height:9px;border-radius:50%;background:#F2C063;box-shadow:0 0 4px rgba(242,192,99,0.5)"></div>
-            <span style="font-size:8px;color:#444;font-weight:600">Tiempo medio</span>
+            <div style="width:9px;height:9px;border-radius:50%;background:{{this.timeColor}};box-shadow:0 0 4px {{this.timeColor}}88"></div>
+            <span style="font-size:8px;color:#444;font-weight:600">{{this.timeLabel}}</span>
           </div>
           <div style="display:flex;align-items:center;gap:5px">
-            <div style="width:9px;height:9px;border-radius:50%;background:#1D9E75;box-shadow:0 0 4px rgba(29,158,117,0.5)"></div>
-            <span style="font-size:8px;color:#444;font-weight:600">Bajo costo</span>
+            <div style="width:9px;height:9px;border-radius:50%;background:{{this.costColor}};box-shadow:0 0 4px {{this.costColor}}88"></div>
+            <span style="font-size:8px;color:#444;font-weight:600">{{this.costLabel}}</span>
           </div>
         </div>
         <!-- Impacto horizontal -->
@@ -864,7 +864,35 @@
 
     <!-- Calendario de monitoreo -->
     <div style="font-size:7px;font-weight:700;letter-spacing:.15em;color:#8B7BFF;text-transform:uppercase;margin-bottom:6px">Calendario de monitoreo · {{nextMonth}}</div>
-    {{weeklyPlansHTML}}
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:8px">
+      <div style="border:1.5px solid #F7C1C1;border-radius:12px;overflow:hidden">
+        <div style="background:#E24B4A;padding:8px 12px">
+          <div style="font-size:7px;font-weight:700;color:rgba(255,255,255,0.7);letter-spacing:.1em;margin-bottom:1px;text-transform:uppercase">Semana 1 · Primeros 7 días</div>
+          <div style="font-size:11px;font-weight:800;color:#fff">Defensa activa</div>
+        </div>
+        <div style="padding:10px;display:flex;flex-direction:column;gap:5px">
+          {{#each criticalSignals}}<div style="display:flex;align-items:flex-start;gap:6px"><div style="width:12px;height:12px;border-radius:50%;background:#FCEBEB;border:2px solid #F7C1C1;flex-shrink:0;margin-top:1px"></div><div style="font-size:8px;color:#444;line-height:1.4">{{this}}</div></div>{{/each}}
+        </div>
+      </div>
+      <div style="border:1.5px solid #FAC775;border-radius:12px;overflow:hidden">
+        <div style="background:#BA7517;padding:8px 12px">
+          <div style="font-size:7px;font-weight:700;color:rgba(255,255,255,0.7);letter-spacing:.1em;margin-bottom:1px;text-transform:uppercase">Semana 2 · 8-14 días</div>
+          <div style="font-size:11px;font-weight:800;color:#fff">Expansión y respuesta</div>
+        </div>
+        <div style="padding:10px;display:flex;flex-direction:column;gap:5px">
+          {{#each importantSignals}}<div style="display:flex;align-items:flex-start;gap:6px"><div style="width:12px;height:12px;border-radius:50%;background:#FAEEDA;border:2px solid #FAC775;flex-shrink:0;margin-top:1px"></div><div style="font-size:8px;color:#444;line-height:1.4">{{this}}</div></div>{{/each}}
+        </div>
+      </div>
+      <div style="border:1.5px solid #CECBF6;border-radius:12px;overflow:hidden">
+        <div style="background:#534AB7;padding:8px 12px">
+          <div style="font-size:7px;font-weight:700;color:rgba(255,255,255,0.7);letter-spacing:.1em;margin-bottom:1px;text-transform:uppercase">Semanas 3-4 · 15-30 días</div>
+          <div style="font-size:11px;font-weight:800;color:#fff">Consolidación</div>
+        </div>
+        <div style="padding:10px;display:flex;flex-direction:column;gap:5px">
+          {{#each infoSignals}}<div style="display:flex;align-items:flex-start;gap:6px"><div style="width:12px;height:12px;border-radius:50%;background:#EEEDFE;border:2px solid #CECBF6;flex-shrink:0;margin-top:1px"></div><div style="font-size:8px;color:#444;line-height:1.4">{{this}}</div></div>{{/each}}
+        </div>
+      </div>
+    </div>
 
     <!-- Señales clave -->
     <div style="background:#FAFAFA;border:1.5px solid #EEEDFE;border-radius:10px;padding:9px 12px;margin-top:7px">
