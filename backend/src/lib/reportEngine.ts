@@ -706,8 +706,8 @@ function buildReportData(project: any, aiData: any, dateInfo: any): ReportData {
     return { ...changeColors[cat] || { color: '#888', borderColor: '#ddd' }, ...ch }
   }
 
-  const changesCol1 = (aiData.changesCol1 || []).slice(0, 5).map(enrichChange)
-  const changesCol2 = (aiData.changesCol2 || []).slice(0, 5).map(enrichChange)
+  const changesCol1 = (aiData.changesCol1 || []).slice(0, 6).map(enrichChange)
+  const changesCol2 = (aiData.changesCol2 || []).slice(0, 6).map(enrichChange)
 
   // Price trends con colores
   const priceTrends = (aiData.priceTrends || []).map((pt: any) => ({
@@ -801,10 +801,10 @@ function buildReportData(project: any, aiData: any, dateInfo: any): ReportData {
   const comp3 = competitors[2]?.name || 'Competidor C'
 
   const weeklyPlansHTML = `
-  <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:14px">
+  <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:8px">
     <div style="border:1.5px solid #F7C1C1;border-radius:12px;overflow:hidden">
       <div style="background:#E24B4A;padding:9px 12px">
-        <div style="font-size:8px;font-weight:700;color:rgba(255,255,255,0.7);letter-spacing:.1em;margin-bottom:2px;text-transform:uppercase">Semana 1 · Primeros 7 días</div>
+        <div style="font-size:7px;font-weight:700;color:rgba(255,255,255,0.7);letter-spacing:.08em;margin-bottom:1px;text-transform:uppercase">Semana 1 · Primeros 7 días</div>
         <div style="font-size:12px;font-weight:800;color:#fff">Defensa activa</div>
       </div>
       <div style="padding:12px;display:flex;flex-direction:column;gap:6px">
@@ -814,7 +814,7 @@ function buildReportData(project: any, aiData: any, dateInfo: any): ReportData {
     </div>
     <div style="border:1.5px solid #FAC775;border-radius:12px;overflow:hidden">
       <div style="background:#BA7517;padding:9px 12px">
-        <div style="font-size:8px;font-weight:700;color:rgba(255,255,255,0.7);letter-spacing:.1em;margin-bottom:2px;text-transform:uppercase">Semana 2 · 8-14 días</div>
+        <div style="font-size:7px;font-weight:700;color:rgba(255,255,255,0.7);letter-spacing:.08em;margin-bottom:1px;text-transform:uppercase">Semana 2 · 8-14 días</div>
         <div style="font-size:12px;font-weight:800;color:#fff">Expansión y respuesta</div>
       </div>
       <div style="padding:12px;display:flex;flex-direction:column;gap:6px">
@@ -824,7 +824,7 @@ function buildReportData(project: any, aiData: any, dateInfo: any): ReportData {
     </div>
     <div style="border:1.5px solid #CECBF6;border-radius:12px;overflow:hidden">
       <div style="background:#534AB7;padding:9px 12px">
-        <div style="font-size:8px;font-weight:700;color:rgba(255,255,255,0.7);letter-spacing:.1em;margin-bottom:2px;text-transform:uppercase">Semanas 3-4 · 15-30 días</div>
+        <div style="font-size:7px;font-weight:700;color:rgba(255,255,255,0.7);letter-spacing:.08em;margin-bottom:1px;text-transform:uppercase">Semanas 3-4 · 15-30 días</div>
         <div style="font-size:12px;font-weight:800;color:#fff">Consolidación</div>
       </div>
       <div style="padding:12px;display:flex;flex-direction:column;gap:6px">
@@ -936,8 +936,8 @@ function buildReportData(project: any, aiData: any, dateInfo: any): ReportData {
     benchmarkCompetitors: competitors.slice(0, 3).map((c: any) => ({ name: c.name })),
     benchmarkRowsHTML,
     radarPoints: '0,-56 49,-20 55,28 0,65 -55,28 -46,-24',
-    strengths: aiData.strengths || ['Servicio personalizado', 'Retención de clientes', 'Agilidad de respuesta'],
-    improvements: aiData.improvements || ['Presencia digital', 'Cobertura geográfica', 'Inversión publicitaria'],
+    strengths: (aiData.strengths || ['Servicio personalizado', 'Retención de clientes', 'Agilidad de respuesta']).slice(0, 3),
+    improvements: (aiData.improvements || ['Presencia digital', 'Cobertura geográfica', 'Inversión publicitaria']).slice(0, 3),
 
     // Página 10
     highPriorityRecs: aiData.highPriorityRecs || [],
