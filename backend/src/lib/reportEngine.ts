@@ -343,10 +343,11 @@ Responde UNICAMENTE con JSON valido comenzando con { sin texto previo:
   "priceTrendAlert": "<alerta de precios especifica con dato real>",
   "dominantMessages": [
     {
-      "competitor": "<NOMBRE MAYUSCULAS>",
-      "message": "<mensaje real de su web o redes, o mensaje estimado basado en su posicionamiento>"
+      "competitor": "<NOMBRE DEL COMPETIDOR EN MAYUSCULAS — solo el nombre, sin agregar ciudad ni plataforma>",
+      "message": "<mensaje real de su web o redes, o mensaje estimado basado en su posicionamiento. NO incluir nombre de ciudad en el mensaje a menos que sea parte literal del slogan>"
     }
   ],
+  IMPORTANTE: dominantMessages debe tener MAXIMO 3 entradas. Solo los 3 competidores mas relevantes.
   "opportunities": [
     {
       "icon": "<emoji>",
@@ -741,7 +742,7 @@ function buildReportData(project: any, aiData: any, dateInfo: any): ReportData {
 
   // Dominant messages con colores
   const msgColors = ['#534AB7', '#BA7517', '#1D9E75', '#E24B4A']
-  const dominantMessages = (aiData.dominantMessages || []).map((dm: any, i: number) => ({
+  const dominantMessages = (aiData.dominantMessages || []).slice(0, 3).map((dm: any, i: number) => ({
     ...dm,
     color: msgColors[i % msgColors.length],
   }))
