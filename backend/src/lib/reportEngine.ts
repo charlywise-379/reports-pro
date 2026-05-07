@@ -961,7 +961,7 @@ function buildReportData(project: any, aiData: any, dateInfo: any): ReportData {
     weeklyPlans: [],
     weeklyPlansHTML,
     criticalSignals: aiData.criticalSignals || ['Movimiento de precios rival', 'Lanzamiento de producto', 'Alianza estratégica', 'Nuevo jugador'],
-    importantSignals: aiData.importantSignals || ['CPL supera umbral', 'Viralización en redes', 'Contrataciones clave', 'Reseñas negativas'],
+    importantSignals: (aiData.importantSignals || ['CPL supera umbral', 'Viralización en redes', 'Contrataciones clave', 'Reseñas negativas']).slice(0, 5),
     infoSignals: aiData.infoSignals || ['Rankings App Store', 'Menciones en medios', 'Movimiento keywords SEO', 'Cambios regulatorios'],
   }
 }

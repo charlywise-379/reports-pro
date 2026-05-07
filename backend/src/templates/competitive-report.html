@@ -779,30 +779,7 @@
       {{/each}}
     </div>
 
-    <!-- PRIORIDAD BAJA -->
-    <div style="display:flex;align-items:center;gap:8px;margin-bottom:7px">
-      <div style="width:8px;height:8px;border-radius:50%;background:#1D9E75"></div>
-      <div style="font-size:7px;font-weight:700;letter-spacing:.15em;color:#1D9E75;text-transform:uppercase">Prioridad baja — planificar próximo mes</div>
-    </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px">
-      {{#each lowPriorityRecs}}
-      <div style="border:1.5px solid #C0DD97;border-radius:9px;overflow:hidden">
-        <div style="background:linear-gradient(135deg,#1D9E75,#158060);padding:6px 10px;display:flex;align-items:center;gap:6px">
-          <span style="background:rgba(255,255,255,0.2);color:#fff;font-size:8px;font-weight:900;width:16px;height:16px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0">{{this.number}}</span>
-          <div style="font-size:9px;font-weight:700;color:#fff">{{this.title}}</div>
-        </div>
-        <div style="padding:9px 11px">
-          <div style="font-size:9px;font-weight:600;color:#2C2C2A;line-height:1.5;margin-bottom:6px">{{this.description}}</div>
-          <!-- Semáforo mini -->
-          <div style="display:flex;gap:6px;align-items:center;padding-top:5px;border-top:1px solid #C0DD97">
-            <div style="display:flex;align-items:center;gap:3px"><div style="width:7px;height:7px;border-radius:50%;background:#1D9E75"></div><span style="font-size:7px;color:#888">Impl.</span></div>
-            <div style="display:flex;align-items:center;gap:3px"><div style="width:7px;height:7px;border-radius:50%;background:#1D9E75"></div><span style="font-size:7px;color:#888">Tiempo</span></div>
-            <div style="display:flex;align-items:center;gap:3px"><div style="width:7px;height:7px;border-radius:50%;background:#1D9E75"></div><span style="font-size:7px;color:#888">Costo</span></div>
-          </div>
-        </div>
-      </div>
-      {{/each}}
-    </div>
+
   </div>
   <div class="footer"><div class="footer-l">PRO Reports · Confidencial · No distribuir</div><div class="footer-r">{{companyName}} · Sem {{weekNumber}} · {{year}} · Pág. 10 de 11</div></div>
 </div>
