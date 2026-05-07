@@ -932,7 +932,7 @@ function buildReportData(project: any, aiData: any, dateInfo: any): ReportData {
     mediumRisks: aiData.mediumRisks || [],
 
     // Página 9
-    benchmarkFactors: benchmarkFactors.length,
+    benchmarkFactors: 8,
     benchmarkCompetitors: competitors.slice(0, 3).map((c: any) => ({ name: c.name })),
     benchmarkRowsHTML,
     radarPoints: '0,-56 49,-20 55,28 0,65 -55,28 -46,-24',
