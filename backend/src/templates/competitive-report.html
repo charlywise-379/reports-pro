@@ -694,22 +694,23 @@
     <div style="font-size:7px;font-weight:700;letter-spacing:.15em;color:#E24B4A;text-transform:uppercase;margin-bottom:8px">🔴 Prioridad alta — ejecutar esta semana</div>
     {{#each highPriorityRecs}}
     <div style="border:1.5px solid #F7C1C1;border-radius:10px;overflow:hidden;margin-bottom:7px">
+      <!-- Header rojo -->
       <div style="background:#E24B4A;padding:7px 12px;display:flex;justify-content:space-between;align-items:center">
         <div style="display:flex;align-items:center;gap:7px">
-          <span style="background:rgba(255,255,255,0.2);color:#fff;font-size:9px;font-weight:900;width:18px;height:18px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0">{{this.number}}</span>
-          <div style="font-size:10px;font-weight:700;color:#fff">{{this.title}}</div>
+          <span style="background:rgba(255,255,255,0.2);color:#fff;font-size:9px;font-weight:900;width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0">{{this.number}}</span>
+          <div style="font-size:11px;font-weight:800;color:#fff">{{this.title}}</div>
         </div>
         <div style="display:flex;gap:5px;flex-shrink:0">
-          <span style="background:rgba(255,255,255,0.15);color:#fff;font-size:7px;font-weight:700;padding:2px 6px;border-radius:5px">{{this.owner}}</span>
-          <!-- deadline ahora muestra días estimados -->
-          <span style="background:rgba(255,255,255,0.25);color:#fff;font-size:7px;font-weight:700;padding:2px 6px;border-radius:5px">⏱ {{this.deadline}}</span>
+          <span style="background:rgba(255,255,255,0.15);color:#fff;font-size:7px;font-weight:700;padding:2px 7px;border-radius:5px">👤 {{this.owner}}</span>
+          <span style="background:rgba(255,255,255,0.25);color:#fff;font-size:7px;font-weight:700;padding:2px 7px;border-radius:5px">⏱ {{this.deadline}}</span>
         </div>
       </div>
-      <div style="padding:9px 12px;display:grid;grid-template-columns:1fr auto;gap:9px;align-items:center">
-        <div style="font-size:9px;color:#444;line-height:1.6">{{this.description}}</div>
-        <div style="text-align:center;padding:7px 10px;background:#FAEEDA;border-radius:7px;flex-shrink:0;min-width:90px">
-          <div style="font-size:7px;color:#854F0B;font-weight:700;margin-bottom:1px">IMPACTO EST.</div>
-          <div style="font-size:10px;font-weight:900;color:#BA7517;line-height:1.3">{{this.impact}}</div>
+      <!-- Cuerpo: descripción + impacto en horizontal compacto -->
+      <div style="padding:9px 12px;display:grid;grid-template-columns:1fr 120px;gap:10px;align-items:start">
+        <div style="font-size:9px;color:#444;line-height:1.6;max-height:72px;overflow:hidden">{{this.description}}</div>
+        <div style="text-align:center;padding:8px 10px;background:#FAEEDA;border:1px solid #FAC775;border-radius:8px">
+          <div style="font-size:7px;color:#854F0B;font-weight:700;margin-bottom:3px;letter-spacing:.05em">IMPACTO EST.</div>
+          <div style="font-size:9px;font-weight:900;color:#BA7517;line-height:1.4">{{this.impact}}</div>
         </div>
       </div>
     </div>

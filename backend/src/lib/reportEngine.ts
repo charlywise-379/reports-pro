@@ -706,8 +706,8 @@ function buildReportData(project: any, aiData: any, dateInfo: any): ReportData {
     return { ...changeColors[cat] || { color: '#888', borderColor: '#ddd' }, ...ch }
   }
 
-  const changesCol1 = (aiData.changesCol1 || []).map(enrichChange)
-  const changesCol2 = (aiData.changesCol2 || []).map(enrichChange)
+  const changesCol1 = (aiData.changesCol1 || []).slice(0, 5).map(enrichChange)
+  const changesCol2 = (aiData.changesCol2 || []).slice(0, 5).map(enrichChange)
 
   // Price trends con colores
   const priceTrends = (aiData.priceTrends || []).map((pt: any) => ({
