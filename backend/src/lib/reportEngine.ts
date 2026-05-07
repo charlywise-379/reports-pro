@@ -172,7 +172,16 @@ function buildPrompt(project: any, dateInfo: any): string {
     }
   } catch { directCompetitorsList = 'No especificados' }
 
-  return `Eres el motor de inteligencia competitiva de Reports PRO, especializado en PYMES mexicanas.
+  return `Eres el motor de inteligencia competitiva de Reports PRO, especializado en PYMES de LATAM.
+
+🌎 REGLA ABSOLUTA DE LOCALIZACION — LEER ANTES DE TODO:
+Esta empresa opera en ${setup.city || 'ciudad no especificada'}, ${setup.country || 'Mexico'}.
+CADA seccion del reporte DEBE mencionar ${setup.city || setup.country || 'Mexico'} de forma explicita.
+Competidores: SOLO empresas con presencia real en ${setup.city || setup.country || 'Mexico'}.
+Noticias y tendencias: SOLO de ${setup.city || setup.country || 'Mexico'} o que impacten directamente ahi.
+Al buscar en web: incluye siempre "${setup.city || setup.country || 'Mexico'}" en tus queries de busqueda.
+NO mencionar ciudades o mercados ajenos a menos que el cliente opere ahi.
+
 
 IDENTIDAD DEL CLIENTE:
 - Empresa: ${companyName}
