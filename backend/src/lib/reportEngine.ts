@@ -87,6 +87,7 @@ interface ReportData {
   benchmarkFactors: number
   benchmarkCompetitors: any[]
   benchmarkRowsHTML?: string
+  secondaryCompetitors?: any[]
   radarPoints: string
   strengths: string[]
   improvements: string[]
@@ -470,6 +471,15 @@ Responde UNICAMENTE con JSON valido comenzando con { sin texto previo:
     { "number": 5, "title": "<recomendacion>", "description": "<detalle>" },
     { "number": 6, "title": "<recomendacion>", "description": "<detalle>" }
   ],
+  "secondaryCompetitors": [
+    {
+      "name": "<nombre competidor secundario — buscar agencias similares en el mercado>",
+      "category": "<tipo de agencia o servicio>",
+      "threat": 3,
+      "recentMove": "<movimiento reciente o Sin datos publicos>",
+      "sourceUrl": "<URL o N/A>"
+    }
+  ],
   "criticalSignals": ["<senal critica 1>", "<senal 2>", "<senal 3>", "<senal 4>"],
   "importantSignals": ["<senal 1>", "<senal 2>", "<senal 3>", "<senal 4>"],
   "infoSignals": ["<senal 1>", "<senal 2>", "<senal 3>", "<senal 4>"]
@@ -758,12 +768,32 @@ function buildReportData(project: any, aiData: any, dateInfo: any): ReportData {
   ]
 
   // Benchmark rows HTML — generado dinámicamente
-  const benchmarkFactors = ['💰 Precio', '⭐ Servicio', '💡 Innovación', '🚀 Velocidad', '🏆 Marca', '📊 Presencia digital', '🔄 Retención', '🌍 Cobertura']
-  const benchmarkRowsHTML = benchmarkFactors.map((factor, i) => {
-    const bg = i % 2 === 1 ? 'background:#FAFAFA;' : ''
-    const cells = competitors.slice(0, 3).map(() => `<td style="text-align:center;font-size:10px;color:#888;font-weight:700">—</td>`).join('')
-    return `<tr style="${bg}"><td style="font-size:11px;font-weight:600;color:#1A1730">${factor}</td><td style="text-align:center"><span style="background:#EAF3DE;color:#27500A;font-size:10px;font-weight:700;padding:2px 8px;border-radius:7px">—</span></td>${cells}<td style="text-align:center;font-size:9px;color:#BA7517;font-weight:700">—</td></tr>`
-  }).join('\n')
+  // Benchmark desde datos de Claude
+  const benchmarkData = aiData.benchmarkRows || []
+  const benchmarkRowsHTML = benchmarkData.length > 0
+    ? benchmarkData.map((row: any, i: number) => {
+        const bg = i % 2 === 1 ? 'background:#FAFAFA;' : ''
+        const clientVal = row.client || 'N/A'
+        const clientBg = clientVal === 'N/A' ? '#F5F5F5' : '#EAF3DE'
+        const clientColor = clientVal === 'N/A' ? '#888' : '#27500A'
+        const comp1 = row.comp1 || 'N/A'
+        const comp2 = row.comp2 || 'N/A'
+        const comp3 = row.comp3 || 'N/A'
+        const pos = row.position || '—'
+        const posColor = pos.includes('1') ? '#1D9E75' : pos.includes('2') ? '#BA7517' : '#888'
+        return `<tr style="${bg}">
+          <td style="font-size:10px;font-weight:600;color:#1A1730">${row.factor || ''}</td>
+          <td style="text-align:center"><span style="background:${clientBg};color:${clientColor};font-size:9px;font-weight:700;padding:2px 7px;border-radius:6px">${clientVal}</span></td>
+          <td style="text-align:center;font-size:9px;color:#555;font-weight:600">${comp1}</td>
+          <td style="text-align:center;font-size:9px;color:#555;font-weight:600">${comp2}</td>
+          <td style="text-align:center;font-size:9px;color:#555;font-weight:600">${comp3}</td>
+          <td style="text-align:center;font-size:9px;font-weight:700;color:${posColor}">${pos}</td>
+        </tr>`
+      }).join('\n')
+    : ['💰 Precio', '⭐ Servicios', '💡 Innovación', '🚀 Velocidad', '🏆 Marca', '📊 Presencia digital', '🔄 Retención', '🌍 Cobertura'].map((factor, i) => {
+        const bg = i % 2 === 1 ? 'background:#FAFAFA;' : ''
+        return `<tr style="${bg}"><td style="font-size:10px;font-weight:600;color:#1A1730">${factor}</td><td style="text-align:center"><span style="background:#EAF3DE;color:#27500A;font-size:9px;font-weight:700;padding:2px 7px;border-radius:6px">N/A</span></td><td style="text-align:center;font-size:9px;color:#888">N/A</td><td style="text-align:center;font-size:9px;color:#888">N/A</td><td style="text-align:center;font-size:9px;color:#888">N/A</td><td style="text-align:center;font-size:9px;color:#888">—</td></tr>`
+      }).join('\n')
 
   // Weekly plans HTML
   const comp1 = competitors[0]?.name || 'Competidor A'
@@ -913,6 +943,19 @@ function buildReportData(project: any, aiData: any, dateInfo: any): ReportData {
     highPriorityRecs: aiData.highPriorityRecs || [],
     mediumPriorityRecs: aiData.mediumPriorityRecs || [],
     lowPriorityRecs: aiData.lowPriorityRecs || [],
+
+    // Competidores secundarios
+    secondaryCompetitors: (aiData.secondaryCompetitors || []).slice(0, 8).map((c: any, i: number) => {
+      const palette = COMPETITOR_COLORS[i % COMPETITOR_COLORS.length]
+      return {
+        initials: (c.name || 'XX').slice(0, 2).toUpperCase(),
+        name: c.name || 'Desconocido',
+        category: c.category || 'Agencia Digital',
+        recentMove: c.recentMove || 'Sin datos públicos disponibles',
+        threat: c.threat || 3,
+        ...palette,
+      }
+    }),
 
     // Página 11
     weeklyPlans: [],
