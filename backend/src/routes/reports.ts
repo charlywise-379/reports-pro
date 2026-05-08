@@ -33,14 +33,30 @@ router.post('/generate/:projectId', async (req: Request, res: Response) => {
     const filename = `report-${projectId}-${Date.now()}.pdf`
     const outputPath = path.join(outputDir, filename)
 
-    // 4. Preparar datos del proyecto con setup
+    // 4. Crear registro en DB antes de generar
+    const reportRecord = await prisma.report.create({
+      data: {
+        projectId,
+        status: 'PROCESSING' as any,
+        r2Key: filename,
+      }
+    })
+
+    // 5. Preparar datos del proyecto con setup
     const projectWithSetup = {
       ...project,
       setup: (project as any).competitiveSetup,
+      reportId: reportRecord.id,
     }
 
-    // 5. Generar PDF
+    // 6. Generar PDF
     await generateReport(projectWithSetup, outputPath)
+
+    // 7. Marcar reporte como completado
+    await prisma.report.update({
+      where: { id: reportRecord.id },
+      data: { status: 'COMPLETED' as any, pdfSizeBytes: fs.statSync(outputPath).size }
+    })
 
     // 6. Verificar que el archivo existe
     if (!fs.existsSync(outputPath)) {

@@ -1135,5 +1135,60 @@ export async function generateReport(project: any, outputPath: string): Promise<
   const pdfBuffer = await response.arrayBuffer()
   fs.writeFileSync(outputPath, Buffer.from(pdfBuffer))
   console.log(`✅ PDF con datos reales generado: ${outputPath}`)
+
+  // 5. Guardar sectionsJson en DB para el dashboard
+  try {
+    const { prisma } = await import('../lib/prisma')
+    const sectionsJson = {
+      // Métricas principales
+      competitivePressure: data.competitivePressure,
+      opportunityScore: data.opportunityScore,
+      marketRisk: data.marketRisk,
+      riskLevel: data.riskLevel,
+      generalTrend: data.generalTrend,
+      trendDelta: data.trendDelta,
+      // Resumen ejecutivo
+      marketStatus: data.marketStatus,
+      marketStatusDesc: data.marketStatusDesc,
+      earlyWarning: data.earlyWarning,
+      // Alertas
+      criticalAlertsCount: data.criticalAlertsCount,
+      mediumAlertsCount: data.mediumAlertsCount,
+      criticalAlerts: data.criticalAlerts?.slice(0, 3),
+      mediumAlerts: data.mediumAlerts?.slice(0, 3),
+      // Competidores
+      competitors: data.competitors?.slice(0, 5),
+      mostAggressiveName: data.mostAggressiveName,
+      mostAggressiveDesc: data.mostAggressiveDesc,
+      weakestName: data.weakestName,
+      emergingName: data.emergingName,
+      // Oportunidades y riesgos
+      opportunities: data.opportunities?.slice(0, 4),
+      highRisks: data.highRisks?.slice(0, 3),
+      // Señales
+      criticalSignals: data.criticalSignals,
+      importantSignals: data.importantSignals,
+      // Periodo
+      periodStart: data.periodStart,
+      periodEnd: data.periodEnd,
+      weekNumber: data.weekNumber,
+    }
+
+    if (project.reportId) {
+      await prisma.report.update({
+        where: { id: project.reportId },
+        data: {
+          sectionsJson,
+          reportTitle: `Inteligencia Competitiva · Sem ${data.weekNumber} · ${data.year}`,
+          pdfSizeBytes: Buffer.from(pdfBuffer).length,
+          status: 'COMPLETED' as any,
+        }
+      })
+    }
+    console.log('✅ sectionsJson guardado en DB')
+  } catch(e) {
+    console.error('⚠️ Error guardando sectionsJson:', e)
+  }
+
   return outputPath
 }
