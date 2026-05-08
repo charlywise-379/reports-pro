@@ -151,8 +151,6 @@ function Step1({ data, set }: any) {
             <input style={S.input} value={data.targetMarket} onChange={e=>set('targetMarket',e.target.value)} placeholder="Ej: B2B mid-market LATAM" />
           </div>
         </div>
-      </div>
-
         <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:14, marginTop:14 }}>
           <div>
             <label style={S.label}>Ciudad</label>
