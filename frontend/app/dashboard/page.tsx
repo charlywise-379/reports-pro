@@ -233,6 +233,8 @@ export default function DashboardPage() {
           </div>
         )}
 
+
+
         {/* ZONA 6 — PRÓXIMO REPORTE */}
         <div style={{...S.card, background:'rgba(139,123,255,0.06)', borderColor:'rgba(139,123,255,0.2)'}}>
           <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center' }}>
