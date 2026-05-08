@@ -1,6 +1,7 @@
 import { Router, Request, Response } from 'express'
 import { prisma } from '../lib/prisma'
 import { generateReport } from '../lib/reportEngine'
+import { uploadPDFToR2 } from '../lib/r2'
 import path from 'path'
 import fs from 'fs'
 
@@ -52,10 +53,18 @@ router.post('/generate/:projectId', async (req: Request, res: Response) => {
     // 6. Generar PDF
     await generateReport(projectWithSetup, outputPath)
 
-    // 7. Marcar reporte como completado
+    // 7. Subir PDF a R2
+    const signedUrl = await uploadPDFToR2(outputPath, filename)
+
+    // 8. Marcar reporte como completado con URL de R2
     await prisma.report.update({
       where: { id: reportRecord.id },
-      data: { status: 'COMPLETED' as any, pdfSizeBytes: fs.statSync(outputPath).size }
+      data: {
+        status: 'COMPLETED' as any,
+        pdfSizeBytes: fs.statSync(outputPath).size,
+        r2Key: filename,
+        r2Url: signedUrl,
+      }
     })
 
     // 6. Verificar que el archivo existe
@@ -81,17 +90,31 @@ router.post('/generate/:projectId', async (req: Request, res: Response) => {
 })
 
 // GET /api/reports/download/:filename
-router.get('/download/:filename', (req: Request, res: Response) => {
+router.get('/download/:filename', async (req: Request, res: Response) => {
   const filename = req.params.filename as string
-  const filePath = path.join(__dirname, '../../outputs', filename)
 
-  if (!fs.existsSync(filePath)) {
+  try {
+    // Buscar en DB por r2Key
+    const report = await prisma.report.findFirst({
+      where: { r2Key: filename }
+    })
+
+    if (report?.r2Url) {
+      return res.redirect(report.r2Url)
+    }
+
+    // Fallback: buscar en disco local
+    const filePath = path.join(__dirname, '../../outputs', filename)
+    if (fs.existsSync(filePath)) {
+      res.setHeader('Content-Type', 'application/pdf')
+      res.setHeader('Content-Disposition', `attachment; filename="${filename}"`)
+      return fs.createReadStream(filePath).pipe(res)
+    }
+
     return res.status(404).json({ error: 'Archivo no encontrado' })
+  } catch(e: any) {
+    return res.status(500).json({ error: e.message })
   }
-
-  res.setHeader('Content-Type', 'application/pdf')
-  res.setHeader('Content-Disposition', `attachment; filename="${filename}"`)
-  fs.createReadStream(filePath).pipe(res)
 })
 
 export default router
