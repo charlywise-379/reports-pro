@@ -3,12 +3,11 @@ import { prisma } from '../lib/prisma'
 
 const router = Router()
 
-// GET /api/dashboard/:userId
 router.get('/:userId', async (req: Request, res: Response) => {
   try {
     const { userId } = req.params
 
-    const project = await prisma.project.findFirst({
+    const project = await (prisma.project as any).findFirst({
       where: { userId },
       include: {
         competitiveSetup: true,
@@ -56,11 +55,8 @@ router.get('/:userId', async (req: Request, res: Response) => {
         competitor5Name: project.competitiveSetup.competitor5Name,
         focusAreas: project.competitiveSetup.focusAreas,
       } : null,
-      subscription: project.subscription ? {
-        plan: project.subscription.stripePriceId,
-        status: project.subscription.status,
-      } : null,
-      reports: project.reports,
+      subscription: project.subscription || null,
+      reports: project.reports || [],
     })
   } catch (e: any) {
     res.status(500).json({ error: e.message })
