@@ -299,41 +299,7 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        {/* ZONA 6 — MÓDULOS */}
-        <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr 1fr', gap:12, marginBottom:14 }}>
-          <div style={{...S.card, margin:0, borderColor:'rgba(139,123,255,0.3)'}}>
-            <div style={{ display:'flex', alignItems:'center', gap:10, marginBottom:8 }}>
-              <div style={{ width:34, height:34, borderRadius:10, background:'rgba(139,123,255,0.2)', display:'flex', alignItems:'center', justifyContent:'center' }}>
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#8B7BFF" strokeWidth="2"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 010 18"/></svg>
-              </div>
-              <div>
-                <div style={{ fontSize:12, fontWeight:700, color:'#F0F2FF' }}>Inteligencia Competitiva</div>
-                <span style={{...S.badge, background:'rgba(110,231,164,0.12)', color:'#6EE7A4'}}>ACTIVO</span>
-              </div>
-            </div>
-            <div style={S.muted}>5 competidores · 6 áreas · Semanal</div>
-            <div style={S.bar}><BarFill pct={100} color="#8B7BFF"/></div>
-          </div>
-          {[
-            { icon:<path d="M17 21v-2a4 4 0 00-4-4H7a4 4 0 00-4 4v2"/>, title:'Salud Corporativa', sub:'Clima laboral, rotación y bienestar' },
-            { icon:<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>, title:'Radar Ciberseguridad', sub:'Vulnerabilidades y alertas digitales' },
-          ].map((m,i)=>(
-            <div key={i} style={{...S.card, margin:0, opacity:0.55}}>
-              <div style={{ display:'flex', alignItems:'center', gap:10, marginBottom:8 }}>
-                <div style={{ width:34, height:34, borderRadius:10, background:'rgba(255,255,255,0.05)', display:'flex', alignItems:'center', justifyContent:'center' }}>
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#5A627A" strokeWidth="2">{m.icon}</svg>
-                </div>
-                <div>
-                  <div style={{ fontSize:12, fontWeight:700, color:'#9CA3AF' }}>{m.title}</div>
-                  <span style={{...S.badge, background:'rgba(255,255,255,0.06)', color:'#5A627A'}}>PRÓXIMAMENTE</span>
-                </div>
-              </div>
-              <div style={S.muted}>{m.sub}</div>
-            </div>
-          ))}
-        </div>
-
-        {/* ZONA 7 — PRÓXIMO REPORTE */}
+        {/* ZONA 6 — PRÓXIMO REPORTE */}
         <div style={{...S.card, background:'rgba(139,123,255,0.06)', borderColor:'rgba(139,123,255,0.2)'}}>
           <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center' }}>
             <div>
@@ -354,23 +320,74 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        {/* ZONA 8 — QUICK ACTIONS */}
-        <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr 1fr 1fr', gap:10 }}>
-          {[
-            { label:'Editar configuración', color:'#8B7BFF', bg:'rgba(139,123,255,0.1)', border:'rgba(139,123,255,0.3)', href:'/onboarding',
-              icon:<path d="M12 20h9M16.5 3.5a2.12 2.12 0 113 3L7 19l-4 1 1-4z"/> },
-            { label:'Agregar competidor', color:'#9CA3AF', bg:'rgba(255,255,255,0.03)', border:'rgba(255,255,255,0.08)', href:'/onboarding',
-              icon:<><path d="M12 5v14M5 12h14"/></> },
-            { label:'Ver reportes', color:'#9CA3AF', bg:'rgba(255,255,255,0.03)', border:'rgba(255,255,255,0.08)', href:'#',
-              icon:<path d="M7 3h7l5 5v13a1 1 0 01-1 1H7a1 1 0 01-1-1V4a1 1 0 011-1z"/> },
-            { label:'Invitar colega', color:'#9CA3AF', bg:'rgba(255,255,255,0.03)', border:'rgba(255,255,255,0.08)', href:'#',
-              icon:<><path d="M17 21v-2a4 4 0 00-4-4H7a4 4 0 00-4 4v2"/><circle cx="10" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></> },
-          ].map((a,i)=>(
-            <a key={i} href={a.href} style={{ padding:'11px 14px', background:a.bg, border:`1px solid ${a.border}`, borderRadius:12, color:a.color, fontSize:11, fontWeight:700, cursor:'pointer', display:'flex', alignItems:'center', gap:7, textDecoration:'none' }}>
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke={a.color} strokeWidth="2">{a.icon}</svg>
-              {a.label}
-            </a>
-          ))}
+        {/* ZONA 7 — PANEL USUARIO */}
+        <div style={{ background:'linear-gradient(135deg,rgba(139,123,255,0.08),rgba(93,212,212,0.04))', border:'1px solid rgba(139,123,255,0.2)', borderRadius:16, padding:'20px 22px', marginBottom:14 }}>
+
+          {/* Usuario */}
+          <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', paddingBottom:14, borderBottom:'1px solid rgba(255,255,255,0.06)', marginBottom:14 }}>
+            <div style={{ display:'flex', alignItems:'center', gap:12 }}>
+              <div style={{ width:42, height:42, borderRadius:12, background:'linear-gradient(135deg,#8B7BFF,#5DD4D4)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:16, fontWeight:900, color:'#0D0F1A' }}>
+                {user?.email?.[0]?.toUpperCase() || 'U'}
+              </div>
+              <div>
+                <div style={{ fontSize:14, fontWeight:800, color:'#F0F2FF' }}>{user?.email || 'usuario@email.com'}</div>
+                <div style={{ display:'flex', alignItems:'center', gap:6, marginTop:3 }}>
+                  <span style={{...S.badge, background:'rgba(110,231,164,0.12)', color:'#6EE7A4'}}>Trial 7 días</span>
+                  <span style={{ fontSize:10, color:'#5A627A' }}>· Plan Semanal</span>
+                </div>
+              </div>
+            </div>
+            <div style={{ display:'flex', gap:8 }}>
+              <button style={{ fontSize:11, fontWeight:600, color:'#8B7BFF', background:'rgba(139,123,255,0.1)', border:'1px solid rgba(139,123,255,0.2)', borderRadius:20, padding:'6px 14px', cursor:'pointer' }}>Editar perfil</button>
+              <button style={{ fontSize:11, fontWeight:600, color:'#9CA3AF', background:'rgba(255,255,255,0.04)', border:'1px solid rgba(255,255,255,0.08)', borderRadius:20, padding:'6px 14px', cursor:'pointer' }}>Cambiar contraseña</button>
+            </div>
+          </div>
+
+          {/* Acciones principales */}
+          <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr 1fr 1fr', gap:10 }}>
+            {[
+              { label:'Editar Configuración para Reportes', color:'#8B7BFF', bg:'rgba(139,123,255,0.12)', border:'rgba(139,123,255,0.3)', href:'/onboarding',
+                icon:<path d="M12 20h9M16.5 3.5a2.12 2.12 0 113 3L7 19l-4 1 1-4z"/> },
+              { label:'Agregar / Editar Competidores', color:'#5DD4D4', bg:'rgba(93,212,212,0.08)', border:'rgba(93,212,212,0.2)', href:'/onboarding',
+                icon:<><path d="M12 5v14M5 12h14"/></> },
+              { label:'Ver Reportes', color:'#F2C063', bg:'rgba(242,192,99,0.08)', border:'rgba(242,192,99,0.2)', href:'#',
+                icon:<path d="M7 3h7l5 5v13a1 1 0 01-1 1H7a1 1 0 01-1-1V4a1 1 0 011-1z"/> },
+              { label:'Invitar Colegas', color:'#9CA3AF', bg:'rgba(255,255,255,0.04)', border:'rgba(255,255,255,0.1)', href:'#',
+                icon:<><path d="M17 21v-2a4 4 0 00-4-4H7a4 4 0 00-4 4v2"/><circle cx="10" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></> },
+            ].map((a,i)=>(
+              <a key={i} href={a.href} style={{ padding:'16px 14px', background:a.bg, border:`1px solid ${a.border}`, borderRadius:14, color:a.color, fontSize:12, fontWeight:700, cursor:'pointer', display:'flex', flexDirection:'column', alignItems:'flex-start', gap:10, textDecoration:'none' }}>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={a.color} strokeWidth="2">{a.icon}</svg>
+                {a.label}
+              </a>
+            ))}
+          </div>
+        </div>
+
+        {/* ZONA 8 — MOTORES IA */}
+        <div style={{ border:'1px solid rgba(255,255,255,0.07)', borderRadius:16, padding:'18px 20px', marginBottom:14 }}>
+          <div style={{ display:'flex', alignItems:'center', gap:8, marginBottom:14 }}>
+            <div style={{ width:6, height:6, borderRadius:'50%', background:'#8B7BFF' }}/>
+            <span style={{ fontSize:9, fontWeight:700, letterSpacing:'0.14em', color:'#5A627A', textTransform:'uppercase' }}>Motores IA — Automation Intelligence PRO Reports</span>
+          </div>
+          <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr 1fr 1fr', gap:10 }}>
+            {[
+              { icon:<><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 010 18"/></>, title:'Inteligencia Competitiva', sub:'Precios, campañas y movimientos', color:'#8B7BFF', active:true },
+              { icon:<path d="M17 21v-2a4 4 0 00-4-4H7a4 4 0 00-4 4v2"/>, title:'Salud Corporativa RRHH', sub:'Clima laboral y bienestar', color:'#6EE7A4', active:false },
+              { icon:<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>, title:'Radar Ciberseguridad', sub:'Vulnerabilidades y alertas', color:'#F2C063', active:false },
+              { icon:<><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></>, title:'Perfil Clave · Personality', sub:'Análisis de personalidad ejecutiva', color:'#5DD4D4', active:false },
+            ].map((m,i)=>(
+              <div key={i} style={{ padding:'14px 12px', background: m.active ? 'rgba(139,123,255,0.08)' : 'rgba(255,255,255,0.02)', border:`1px solid ${m.active ? 'rgba(139,123,255,0.25)' : 'rgba(255,255,255,0.06)'}`, borderRadius:12, opacity: m.active ? 1 : 0.5 }}>
+                <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:8 }}>
+                  <div style={{ width:30, height:30, borderRadius:8, background: m.active ? `${m.color}20` : 'rgba(255,255,255,0.04)', display:'flex', alignItems:'center', justifyContent:'center' }}>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={m.active ? m.color : '#5A627A'} strokeWidth="2">{m.icon}</svg>
+                  </div>
+                  <span style={{...S.badge, background: m.active ? 'rgba(110,231,164,0.12)' : 'rgba(255,255,255,0.05)', color: m.active ? '#6EE7A4' : '#5A627A'}}>{m.active ? 'ACTIVO' : 'PRÓXIMO'}</span>
+                </div>
+                <div style={{ fontSize:11, fontWeight:700, color: m.active ? '#F0F2FF' : '#9CA3AF', marginBottom:3 }}>{m.title}</div>
+                <div style={{ fontSize:10, color:'#5A627A' }}>{m.sub}</div>
+              </div>
+            ))}
+          </div>
         </div>
 
       </div>
