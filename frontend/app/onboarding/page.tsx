@@ -183,7 +183,7 @@ function Step1({ data, set }: any) {
 
       {/* Catálogo */}
       <div style={S.card}>
-        <SectionNum n="04" label="Catálogo y enfoque sectorial" />
+        <SectionNum n="03" label="Catálogo y enfoque sectorial" />
         <div style={{ marginBottom:14 }}>
           <label style={S.label}>Principales productos / servicios <span style={{ color:'#5A627A', fontWeight:400 }}>separados por coma</span></label>
           <textarea style={{...S.input, minHeight:80, resize:'vertical' as const}} value={data.mainProducts} onChange={e=>set('mainProducts',e.target.value)} placeholder="Roboadvisor Norte, Fondos institucionales, Cuenta Norte Premium..." />
@@ -882,7 +882,7 @@ function Step7({ data, loading, onActivate, errorMsg }: any) {
         </div>
         <button onClick={onActivate} disabled={loading} style={{ background:'linear-gradient(135deg,#8B7BFF,#5DD4D4)', border:'none', borderRadius:20, padding:'12px 24px', color:'#0D0F1A', fontSize:13, fontWeight:800, cursor: loading?'not-allowed':'pointer', display:'flex', alignItems:'center', gap:8, opacity: loading?0.7:1 }}>
           {loading ? <div style={{ width:16, height:16, borderRadius:'50%', border:'2px solid rgba(0,0,0,0.3)', borderTopColor:'#0D0F1A', animation:'spin 0.8s linear infinite' }} /> : null}
-          PRIMER REPORTE EN ≈ 6H
+          ACTIVAR INTELIGENCIA — Primer reporte en 5-10 min
         </button>
       </div>
 
@@ -1110,8 +1110,8 @@ export default function OnboardingPage() {
                   Continuar →
                 </button>
               ) : (
-                <button onClick={handleActivate} disabled={loading} style={{ background:'linear-gradient(135deg,#8B7BFF,#5DD4D4)', border:'none', borderRadius:20, padding:'10px 24px', color:'#0D0F1A', fontSize:13, fontWeight:800, cursor:'pointer', display:'flex', alignItems:'center', gap:6 }}>
-                  {loading?'Activando...':'Activar inteligencia →'}
+                <button onClick={()=>{}} disabled style={{ background:'rgba(139,123,255,0.1)', border:'1px solid rgba(139,123,255,0.2)', borderRadius:20, padding:'10px 24px', color:'#8B7BFF', fontSize:13, fontWeight:700, cursor:'default', display:'flex', alignItems:'center', gap:6 }}>
+                  ↑ Activa arriba
                 </button>
               )}
             </div>
