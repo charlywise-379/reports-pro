@@ -38,13 +38,20 @@ export default function DashboardPage() {
   const router = useRouter()
   const supabase = createClient()
   const [user, setUser] = useState<any>(null)
+  const [dashData, setDashData] = useState<any>(null)
   const [loading, setLoading] = useState(true)
+  const BACKEND = process.env.NEXT_PUBLIC_BACKEND_URL || 'https://reports-pro-production.up.railway.app'
 
   useEffect(() => {
     const getUser = async () => {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) { router.push('/login'); return }
       setUser(user)
+      try {
+        const res = await fetch(`${BACKEND}/api/dashboard/${user.id}`)
+        const data = await res.json()
+        setDashData(data)
+      } catch(e) { console.error('Dashboard data error:', e) }
       setLoading(false)
     }
     getUser()

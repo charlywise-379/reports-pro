@@ -3,6 +3,7 @@ import cors from 'cors'
 import dotenv from 'dotenv'
 import onboardingRouter from './routes/onboarding'
 import reportsRouter from './routes/reports'
+import dashboardRouter from './routes/dashboard'
 
 dotenv.config()
 
@@ -15,6 +16,7 @@ app.use(express.json())
 // Rutas
 app.use('/api/onboarding', onboardingRouter)
 app.use('/api/reports', reportsRouter)
+app.use('/api/dashboard', dashboardRouter)
 
 // Health check
 app.get('/health', (req, res) => {
