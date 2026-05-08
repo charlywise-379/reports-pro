@@ -23,6 +23,7 @@ router.get('/:userId', async (req: Request, res: Response) => {
             pdfSizeBytes: true,
             status: true,
             reportTitle: true,
+            sectionsJson: true,
           }
         }
       }
