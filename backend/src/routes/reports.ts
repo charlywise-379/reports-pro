@@ -37,7 +37,7 @@ router.post('/generate/:projectId', async (req: Request, res: Response) => {
     const reportRecord = await prisma.report.create({
       data: {
         projectId,
-        status: 'PROCESSING' as any,
+        status: 'GENERATING' as any,
         r2Key: filename,
       }
     })
