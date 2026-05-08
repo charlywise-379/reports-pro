@@ -183,12 +183,6 @@ function Step1({ data, set }: any) {
 
       
 
-      {/* Pitch */}
-      <div style={S.card}>
-        <SectionNum n="03" label="Propuesta de valor" />
-        <label style={S.label}>Una frase que define tu diferenciación <span style={{ color:'#5A627A', fontWeight:400 }}>{(data.pitch||'').length}/160 char.</span></label>
-        <textarea style={{...S.input, minHeight:80, resize:'vertical' as const}} maxLength={160} value={data.pitch} onChange={e=>set('pitch',e.target.value)} placeholder="Plataforma de wealth management automatizada para mid-market latinoamericano..." />
-      </div>
       {/* Catálogo */}
       <div style={S.card}>
         <SectionNum n="04" label="Catálogo y enfoque sectorial" />
@@ -199,12 +193,12 @@ function Step1({ data, set }: any) {
         <div>
           <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:10 }}>
             <label style={S.label}>Tags activos</label>
-            <span style={{ fontSize:10, color:'#5A627A' }}>{(data.tags||[]).length}/6</span>
+            <span style={{ fontSize:10, color:'#5A627A' }}>{(data.tags||[]).length}/10</span>
           </div>
           <div style={{ display:'flex', flexWrap:'wrap', gap:6 }}>
             {TAGS_LIB.map(tag=>{
               const on=(data.tags||[]).includes(tag)
-              return <button key={tag} onClick={()=>set('tags', on ? data.tags.filter((t:string)=>t!==tag) : data.tags?.length<6 ? [...(data.tags||[]),tag] : data.tags)} style={on?{...S.pillOn}:{...S.pill}}>{tag}{on&&' ×'}</button>
+              return <button key={tag} onClick={()=>set('tags', on ? data.tags.filter((t:string)=>t!==tag) : data.tags?.length<10 ? [...(data.tags||[]),tag] : data.tags)} style={on?{...S.pillOn}:{...S.pill}}>{tag}{on&&' ×'}</button>
             })}
           </div>
         </div>
@@ -1108,13 +1102,13 @@ export default function OnboardingPage() {
           {stepContent[step]}
           {/* Navegación */}
           <div style={{ position:'sticky', bottom:0, left:0, right:0, background:'linear-gradient(0deg, #0D0F1A 80%, transparent)', padding:'20px 0 0', display:'flex', justifyContent:'space-between', alignItems:'center', marginTop:32 }}>
-            <button onClick={()=>step>1?setStep(step-1):router.push('/dashboard')} style={{ display:'flex', alignItems:'center', gap:8, background:'rgba(255,255,255,0.05)', border:'1px solid rgba(255,255,255,0.1)', borderRadius:20, padding:'10px 20px', color:'#9CA3AF', fontSize:13, fontWeight:600, cursor:'pointer' }}>
+            <button onClick={()=>{if(step>1){setStep(step-1)}else{router.push('/dashboard')};window.scrollTo({top:0,behavior:'smooth'})}} style={{ display:'flex', alignItems:'center', gap:8, background:'rgba(255,255,255,0.05)', border:'1px solid rgba(255,255,255,0.1)', borderRadius:20, padding:'10px 20px', color:'#9CA3AF', fontSize:13, fontWeight:600, cursor:'pointer' }}>
               ← {step===1?'Cancelar':'Atrás'}
             </button>
             <div style={{ display:'flex', gap:10 }}>
               <button style={{ background:'transparent', border:'1px solid rgba(255,255,255,0.1)', borderRadius:20, padding:'10px 20px', color:'#9CA3AF', fontSize:13, fontWeight:600, cursor:'pointer' }}>Guardar borrador</button>
               {step<7 ? (
-                <button onClick={()=>setStep(step+1)} style={{ background:'#8B7BFF', border:'none', borderRadius:20, padding:'10px 24px', color:'#fff', fontSize:13, fontWeight:700, cursor:'pointer', display:'flex', alignItems:'center', gap:6 }}>
+                <button onClick={()=>{setStep(step+1);window.scrollTo({top:0,behavior:'smooth'})}} style={{ background:'#8B7BFF', border:'none', borderRadius:20, padding:'10px 24px', color:'#fff', fontSize:13, fontWeight:700, cursor:'pointer', display:'flex', alignItems:'center', gap:6 }}>
                   Continuar →
                 </button>
               ) : (
