@@ -113,43 +113,6 @@ export default function DashboardPage() {
 
       <div style={{ maxWidth:1200, margin:'0 auto', padding:'28px 28px 60px' }}>
 
-        {/* ZONA 1 — HEADER con datos reales */}
-        <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start', marginBottom:20 }}>
-          <div>
-            <span style={S.lbl}>DASHBOARD · INTELIGENCIA COMPETITIVA</span>
-            <div style={{ fontSize:26, fontWeight:900, color:'#F0F2FF', lineHeight:1.1 }}>
-              <span style={{ color:'#8B7BFF' }}>{companyName}</span>
-            </div>
-            <div style={{ fontSize:12, color:'#5A627A', marginTop:4 }}>
-              {industry}{city ? ` · ${city}, ${country}` : ` · ${country}`} · {new Date().toLocaleDateString('es-MX',{weekday:'long',day:'numeric',month:'long'})}
-            </div>
-            {selectedReport && (
-              <div style={{ display:'flex', alignItems:'center', gap:10, marginTop:8 }}>
-                <span style={{ fontSize:11, color:'#8B7BFF', fontWeight:600 }}>{selectedReport.reportTitle}</span>
-                <span style={{ fontSize:10, color:'#5A627A' }}>· {new Date(selectedReport.createdAt).toLocaleDateString('es-MX',{day:'numeric',month:'short',year:'numeric'})}</span>
-                {selectedReport.r2Key && (
-                  <a href={`${BACKEND}/api/reports/download/${selectedReport.r2Key}`} target="_blank"
-                    style={{ fontSize:10, fontWeight:700, color:'#0D0F1A', background:'#8B7BFF', borderRadius:20, padding:'3px 10px', textDecoration:'none' }}>
-                    ↓ PDF
-                  </a>
-                )}
-              </div>
-            )}
-          </div>
-          <div style={{ textAlign:'right' }}>
-            <div style={{ fontSize:10, fontWeight:700, color:'#5A627A', marginBottom:5 }}>
-              {status === 'TRIAL' ? `TRIAL: ${trialDaysLeft} DÍAS RESTANTES` : 'SUSCRIPCIÓN ACTIVA'}
-            </div>
-            <div style={{ width:160 }}>
-              <div style={S.bar}><BarFill pct={status === 'TRIAL' ? Math.round(((7-trialDaysLeft)/7)*100) : 100} color="#8B7BFF"/></div>
-            </div>
-            <div style={{ display:'flex', justifyContent:'space-between', marginTop:3 }}>
-              <span style={S.muted}>{status === 'TRIAL' ? `Día ${7-trialDaysLeft}` : '✓ Activo'}</span>
-              <span style={S.muted}>{status === 'TRIAL' ? 'Día 7' : frequency}</span>
-            </div>
-          </div>
-        </div>
-
         {/* ZONA 6 — PRÓXIMO REPORTE */}
         <div style={{...S.card, background:'rgba(139,123,255,0.06)', borderColor:'rgba(139,123,255,0.2)'}}>
           <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center' }}>
@@ -266,6 +229,43 @@ export default function DashboardPage() {
                 <div style={{ fontSize:10, color:'#5A627A' }}>{m.sub}</div>
               </div>
             ))}
+          </div>
+        </div>
+
+        {/* ZONA 1 — HEADER con datos reales */}
+        <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start', marginBottom:20 }}>
+          <div>
+            <span style={S.lbl}>DASHBOARD · INTELIGENCIA COMPETITIVA</span>
+            <div style={{ fontSize:26, fontWeight:900, color:'#F0F2FF', lineHeight:1.1 }}>
+              <span style={{ color:'#8B7BFF' }}>{companyName}</span>
+            </div>
+            <div style={{ fontSize:12, color:'#5A627A', marginTop:4 }}>
+              {industry}{city ? ` · ${city}, ${country}` : ` · ${country}`} · {new Date().toLocaleDateString('es-MX',{weekday:'long',day:'numeric',month:'long'})}
+            </div>
+            {selectedReport && (
+              <div style={{ display:'flex', alignItems:'center', gap:10, marginTop:8 }}>
+                <span style={{ fontSize:11, color:'#8B7BFF', fontWeight:600 }}>{selectedReport.reportTitle}</span>
+                <span style={{ fontSize:10, color:'#5A627A' }}>· {new Date(selectedReport.createdAt).toLocaleDateString('es-MX',{day:'numeric',month:'short',year:'numeric'})}</span>
+                {selectedReport.r2Key && (
+                  <a href={`${BACKEND}/api/reports/download/${selectedReport.r2Key}`} target="_blank"
+                    style={{ fontSize:10, fontWeight:700, color:'#0D0F1A', background:'#8B7BFF', borderRadius:20, padding:'3px 10px', textDecoration:'none' }}>
+                    ↓ PDF
+                  </a>
+                )}
+              </div>
+            )}
+          </div>
+          <div style={{ textAlign:'right' }}>
+            <div style={{ fontSize:10, fontWeight:700, color:'#5A627A', marginBottom:5 }}>
+              {status === 'TRIAL' ? `TRIAL: ${trialDaysLeft} DÍAS RESTANTES` : 'SUSCRIPCIÓN ACTIVA'}
+            </div>
+            <div style={{ width:160 }}>
+              <div style={S.bar}><BarFill pct={status === 'TRIAL' ? Math.round(((7-trialDaysLeft)/7)*100) : 100} color="#8B7BFF"/></div>
+            </div>
+            <div style={{ display:'flex', justifyContent:'space-between', marginTop:3 }}>
+              <span style={S.muted}>{status === 'TRIAL' ? `Día ${7-trialDaysLeft}` : '✓ Activo'}</span>
+              <span style={S.muted}>{status === 'TRIAL' ? 'Día 7' : frequency}</span>
+            </div>
           </div>
         </div>
 
