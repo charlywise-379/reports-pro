@@ -1166,11 +1166,11 @@ export default function OnboardingPage() {
       <TopNav />
       <div style={{ display:'flex', flex:1, overflow:'hidden', height:'calc(100vh - 56px)' }}>
         <Sidebar step={step} setStep={setStep} />
-        <main id='onboarding-main' style={{ flex:1, height:'100%', overflowY:'scroll', padding:'32px 36px', paddingBottom:120 }}>
+        <main id='onboarding-main' style={{ flex:1, height:'100%', overflowY:'scroll', padding:'32px 36px', paddingBottom:160 }}>
           <span id='step-top'/>
           {stepContent[step]}
           {/* Navegación */}
-          <div style={{ position:'sticky', bottom:0, left:0, right:0, background:'linear-gradient(0deg, #0D0F1A 80%, transparent)', padding:'20px 0 0', display:'flex', justifyContent:'space-between', alignItems:'center', marginTop:32 }}>
+          <div style={{ background:'linear-gradient(0deg, #0D0F1A 80%, transparent)', padding:'20px 0 0', display:'flex', justifyContent:'space-between', alignItems:'center', marginTop:32 }}>
             <button onClick={()=>{if(step>1){setStep(step-1)}else{router.push('/dashboard')};}} style={{ display:'flex', alignItems:'center', gap:8, background:'rgba(255,255,255,0.05)', border:'1px solid rgba(255,255,255,0.1)', borderRadius:20, padding:'10px 20px', color:'#9CA3AF', fontSize:13, fontWeight:600, cursor:'pointer' }}>
               ← {step===1?'Cancelar':'Atrás'}
             </button>
