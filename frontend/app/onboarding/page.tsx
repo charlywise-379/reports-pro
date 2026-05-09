@@ -1120,6 +1120,23 @@ export default function OnboardingPage() {
     loadExisting()
   }, [])
 
+  const saveProgress = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) return
+      await fetch(`${BACKEND}/api/onboarding/save`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userId: user.id,
+          ...data,
+          deliveryDay: DAYS[data.deliveryDay],
+          deliveryTime: TIMES[data.deliveryTime],
+        })
+      })
+    } catch(e) { console.error('Error guardando:', e) }
+  }
+
   const handleActivate = async () => {
     setLoading(true)
     setErrorMsg('')
@@ -1177,7 +1194,7 @@ export default function OnboardingPage() {
             <div style={{ display:'flex', gap:10 }}>
               <button style={{ background:'transparent', border:'1px solid rgba(255,255,255,0.1)', borderRadius:20, padding:'10px 20px', color:'#9CA3AF', fontSize:13, fontWeight:600, cursor:'pointer' }}>Guardar borrador</button>
               {step<7 ? (
-                <button onClick={()=>{setStep(step+1);}} style={{ background:'#8B7BFF', border:'none', borderRadius:20, padding:'10px 24px', color:'#fff', fontSize:13, fontWeight:700, cursor:'pointer', display:'flex', alignItems:'center', gap:6 }}>
+                <button onClick={async ()=>{await saveProgress();setStep(step+1);}} style={{ background:'#8B7BFF', border:'none', borderRadius:20, padding:'10px 24px', color:'#fff', fontSize:13, fontWeight:700, cursor:'pointer', display:'flex', alignItems:'center', gap:6 }}>
                   Continuar →
                 </button>
               ) : (

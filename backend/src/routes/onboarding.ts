@@ -265,4 +265,120 @@ router.post('/competitive', async (req: Request, res: Response) => {
   }
 })
 
+
+// POST /api/onboarding/save — guardar progreso por paso
+router.post('/save', async (req: Request, res: Response) => {
+  try {
+    const {
+      userId, companyName, brand, website, industry, ciudad, pais,
+      targetMarket, mainProducts, socialMedia, pitch, differentiators,
+      products, presenceScope, countries, directCompetitors, indirectCompetitors,
+      monitorAreas, areaDepth, frequency, deliveryEmail, deliveryPhone, tags,
+    } = req.body
+
+    if (!userId) return res.status(400).json({ error: 'No userId' })
+
+    const existingProject = await (prisma.project as any).findFirst({
+      where: { userId, serviceType: ServiceType.COMPETITIVE_INTELLIGENCE }
+    })
+    if (!existingProject) return res.status(404).json({ error: 'Proyecto no encontrado' })
+
+    const finalName = (typeof companyName === 'string' && companyName.trim())
+      ? companyName.trim()
+      : (typeof brand === 'string' && brand.trim())
+      ? brand.trim() : undefined
+
+    const cleanDirect = Array.isArray(directCompetitors)
+      ? directCompetitors.filter((c: any) => c?.name?.trim()).map((c: any) => ({
+          name: c.name?.trim(), url: c.url?.trim() || '', products: c.products?.trim() || '',
+          presence: c.presence || '', threat: Number(c.threat) || 5,
+          ig: c.ig || '', fb: c.fb || '', x: c.x || '', li: c.li || '',
+        })) : undefined
+
+    const cleanIndirect = Array.isArray(indirectCompetitors)
+      ? indirectCompetitors.filter((c: any) => c?.name?.trim()).map((c: any) => ({
+          name: c.name?.trim(), industry: c.industry?.trim() || '',
+          threat: Number(c.threat) || 5, relevance: Number(c.relevance) || 5,
+        })) : undefined
+
+    const cleanProducts = Array.isArray(products)
+      ? products.filter((p: any) => p?.name?.trim()).map((p: any) => ({
+          name: p.name?.trim(), category: p.category?.trim() || '',
+          priceFrom: p.priceFrom || '', priceTo: p.priceTo || '',
+        })) : undefined
+
+    const existing = await (prisma.competitiveIntelligenceSetup as any).findUnique({
+      where: { projectId: existingProject.id }
+    })
+    const existingCtx = existing?.additionalContext
+      ? (typeof existing.additionalContext === 'string'
+          ? JSON.parse(existing.additionalContext) : existing.additionalContext)
+      : {}
+
+    const newCtx = {
+      ...existingCtx,
+      ...(pitch !== undefined && { pitch }),
+      ...(tags !== undefined && { tags }),
+      ...(Array.isArray(differentiators) && { differentiators }),
+      ...(cleanProducts && { products: cleanProducts }),
+      ...(cleanDirect && { directCompetitors: cleanDirect }),
+      ...(cleanIndirect && { indirectCompetitors: cleanIndirect }),
+      ...(areaDepth !== undefined && { areaDepth }),
+      ...(countries !== undefined && { countries }),
+      ...(presenceScope !== undefined && { presenceScope }),
+    }
+
+    const setupUpdate: any = {
+      additionalContext: JSON.stringify(newCtx),
+      ...(finalName && { companyName: finalName }),
+      ...(website !== undefined && { website: website?.trim() || null }),
+      ...(industry !== undefined && { industry }),
+      ...(ciudad !== undefined && { city: ciudad?.trim() || null }),
+      ...(pais !== undefined && { country: pais }),
+      ...(targetMarket !== undefined && { targetMarket }),
+      ...(typeof mainProducts === 'string' && mainProducts && { mainProducts: mainProducts.split(',').map((s: string) => s.trim()).filter(Boolean) }),
+      ...(Array.isArray(mainProducts) && { mainProducts }),
+      ...(socialMedia?.li !== undefined && { linkedinUrl: socialMedia.li || null }),
+      ...(socialMedia?.ig !== undefined && { instagramUrl: socialMedia.ig || null }),
+      ...(socialMedia?.fb !== undefined && { facebookUrl: socialMedia.fb || null }),
+      ...(socialMedia?.x !== undefined && { twitterUrl: socialMedia.x || null }),
+      ...(socialMedia?.tt !== undefined && { tiktokUrl: socialMedia.tt || null }),
+      ...(Array.isArray(monitorAreas) && { focusAreas: monitorAreas }),
+      ...(cleanDirect && {
+        competitor1Name: cleanDirect[0]?.name || null,
+        competitor1Website: cleanDirect[0]?.url || null,
+        competitor2Name: cleanDirect[1]?.name || null,
+        competitor2Website: cleanDirect[1]?.url || null,
+        competitor3Name: cleanDirect[2]?.name || null,
+        competitor3Website: cleanDirect[2]?.url || null,
+        competitor4Name: cleanDirect[3]?.name || null,
+        competitor4Website: cleanDirect[3]?.url || null,
+        competitor5Name: cleanDirect[4]?.name || null,
+        competitor5Website: cleanDirect[4]?.url || null,
+      }),
+    }
+
+    await (prisma.competitiveIntelligenceSetup as any).update({
+      where: { projectId: existingProject.id },
+      data: setupUpdate,
+    })
+
+    if (frequency || deliveryEmail) {
+      const cleanFrequency = (['DAILY','WEEKLY','BIWEEKLY','MONTHLY'].includes(frequency))
+        ? frequency as ReportFrequency : undefined
+      await (prisma.project as any).update({
+        where: { id: existingProject.id },
+        data: {
+          ...(cleanFrequency && { frequency: cleanFrequency }),
+          ...(deliveryEmail && { deliveryEmail }),
+        }
+      })
+    }
+
+    res.json({ success: true })
+  } catch (e: any) {
+    res.status(500).json({ error: e.message })
+  }
+})
+
 export default router
