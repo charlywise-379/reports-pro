@@ -39,7 +39,7 @@ router.post('/generate/:projectId', async (req: Request, res: Response) => {
       data: {
         projectId,
         status: 'GENERATING' as any,
-        r2Key: filename,
+        r2Key: `reports/${filename}`,
       }
     })
 
@@ -62,7 +62,7 @@ router.post('/generate/:projectId', async (req: Request, res: Response) => {
       data: {
         status: 'COMPLETED' as any,
         pdfSizeBytes: fs.statSync(outputPath).size,
-        r2Key: filename,
+        r2Key: `reports/${filename}`,
         r2Url: signedUrl,
       }
     })
@@ -96,7 +96,7 @@ router.get('/download/:filename', async (req: Request, res: Response) => {
   try {
     // Buscar en DB por r2Key
     const report = await prisma.report.findFirst({
-      where: { r2Key: filename }
+      where: { OR: [{ r2Key: filename }, { r2Key: `reports/${filename}` }] }
     })
 
     if (report?.r2Url) {
