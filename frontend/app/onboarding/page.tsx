@@ -743,7 +743,7 @@ function Step6({ data, set }: any) {
 // ──────────────────────────────────────────
 // PASO 7
 // ──────────────────────────────────────────
-function Step7({ data, loading, onActivate, errorMsg }: any) {
+function Step7({ data, loading, onActivate, errorMsg, isEditing }: any) {
   const plan = PLANS.find(p=>p.id===(data.frequency||'WEEKLY'))!
   const price = data.annualBilling ? plan.priceAnnual : plan.price
   const directCount = (data.directCompetitors||[]).filter((c:any)=>c.name).length
@@ -874,17 +874,30 @@ function Step7({ data, loading, onActivate, errorMsg }: any) {
         </div>
       </div>
 
-      {/* Botón activar grande */}
+      {/* Botón activar grande — solo si no tiene suscripción */}
+      {!isEditing && (
       <div style={{ background:'linear-gradient(135deg, rgba(139,123,255,0.2), rgba(93,212,212,0.1))', border:'1px solid rgba(139,123,255,0.3)', borderRadius:16, padding:'24px 28px', display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:16 }}>
         <div>
-          <div style={{ fontSize:18, fontWeight:800, color:'#F0F2FF' }}>Activar inteligencia competitiva →</div>
-          <div style={{ fontSize:12, color:'#9CA3AF', marginTop:4 }}>7 días gratis · Sin tarjeta requerida · Cancela cuando quieras</div>
+          <div style={{ fontSize:18, fontWeight:800, color:'#F0F2FF' }}>Tu primer reporte está listo — actívalo en 5 minutos</div>
+          <div style={{ fontSize:12, color:'#9CA3AF', marginTop:4 }}>Sin cargo hoy · Cancela cuando quieras</div>
         </div>
         <button onClick={onActivate} disabled={loading} style={{ background:'linear-gradient(135deg,#8B7BFF,#5DD4D4)', border:'none', borderRadius:20, padding:'12px 24px', color:'#0D0F1A', fontSize:13, fontWeight:800, cursor: loading?'not-allowed':'pointer', display:'flex', alignItems:'center', gap:8, opacity: loading?0.7:1 }}>
           {loading ? <div style={{ width:16, height:16, borderRadius:'50%', border:'2px solid rgba(0,0,0,0.3)', borderTopColor:'#0D0F1A', animation:'spin 0.8s linear infinite' }} /> : null}
           ACTIVAR INTELIGENCIA — Primer reporte en 5-10 min
         </button>
       </div>
+      )}
+      {isEditing && (
+      <div style={{ background:'rgba(110,231,164,0.06)', border:'1px solid rgba(110,231,164,0.2)', borderRadius:16, padding:'20px 28px', display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:16 }}>
+        <div>
+          <div style={{ fontSize:16, fontWeight:800, color:'#6EE7A4' }}>✓ Suscripción activa</div>
+          <div style={{ fontSize:12, color:'#9CA3AF', marginTop:4 }}>Los cambios se guardarán y aplicarán al próximo reporte</div>
+        </div>
+        <button onClick={onActivate} disabled={loading} style={{ background:'#1D9E75', border:'none', borderRadius:20, padding:'12px 24px', color:'#fff', fontSize:13, fontWeight:800, cursor: loading?'not-allowed':'pointer', opacity: loading?0.7:1 }}>
+          {loading ? 'Guardando...' : 'Guardar cambios →'}
+        </button>
+      </div>
+      )}
 
       {errorMsg && (
         <div style={{ background:'rgba(255,107,107,0.1)', border:'1px solid rgba(255,107,107,0.2)', borderRadius:12, padding:'12px 16px', color:'#FF6B6B', fontSize:13 }}>⚠️ {errorMsg}</div>
@@ -1138,7 +1151,7 @@ export default function OnboardingPage() {
     4: <Step4 data={data} set={set} />,
     5: <Step5 data={data} set={set} />,
     6: <Step6 data={data} set={set} />,
-    7: <Step7 data={data} loading={loading} onActivate={handleActivate} errorMsg={errorMsg} />,
+    7: <Step7 data={data} loading={loading} onActivate={handleActivate} errorMsg={errorMsg} isEditing={isEditing} />,
   }
 
   return (
@@ -1152,13 +1165,13 @@ export default function OnboardingPage() {
           {stepContent[step]}
           {/* Navegación */}
           <div style={{ position:'sticky', bottom:0, left:0, right:0, background:'linear-gradient(0deg, #0D0F1A 80%, transparent)', padding:'20px 0 0', display:'flex', justifyContent:'space-between', alignItems:'center', marginTop:32 }}>
-            <button onClick={()=>{if(step>1){setStep(step-1)}else{router.push('/dashboard')};document.getElementById('onboarding-main')?.scrollTo({top:0,behavior:'smooth'})}} style={{ display:'flex', alignItems:'center', gap:8, background:'rgba(255,255,255,0.05)', border:'1px solid rgba(255,255,255,0.1)', borderRadius:20, padding:'10px 20px', color:'#9CA3AF', fontSize:13, fontWeight:600, cursor:'pointer' }}>
+            <button onClick={()=>{if(step>1){setStep(step-1)}else{router.push('/dashboard')};setTimeout(()=>document.getElementById('onboarding-main')?.scrollTo({top:0,behavior:'smooth'}),50)}} style={{ display:'flex', alignItems:'center', gap:8, background:'rgba(255,255,255,0.05)', border:'1px solid rgba(255,255,255,0.1)', borderRadius:20, padding:'10px 20px', color:'#9CA3AF', fontSize:13, fontWeight:600, cursor:'pointer' }}>
               ← {step===1?'Cancelar':'Atrás'}
             </button>
             <div style={{ display:'flex', gap:10 }}>
               <button style={{ background:'transparent', border:'1px solid rgba(255,255,255,0.1)', borderRadius:20, padding:'10px 20px', color:'#9CA3AF', fontSize:13, fontWeight:600, cursor:'pointer' }}>Guardar borrador</button>
               {step<7 ? (
-                <button onClick={()=>{setStep(step+1);document.getElementById('onboarding-main')?.scrollTo({top:0,behavior:'smooth'})}} style={{ background:'#8B7BFF', border:'none', borderRadius:20, padding:'10px 24px', color:'#fff', fontSize:13, fontWeight:700, cursor:'pointer', display:'flex', alignItems:'center', gap:6 }}>
+                <button onClick={()=>{setStep(step+1);setTimeout(()=>document.getElementById('onboarding-main')?.scrollTo({top:0,behavior:'smooth'}),50)}} style={{ background:'#8B7BFF', border:'none', borderRadius:20, padding:'10px 24px', color:'#fff', fontSize:13, fontWeight:700, cursor:'pointer', display:'flex', alignItems:'center', gap:6 }}>
                   Continuar →
                 </button>
               ) : (
