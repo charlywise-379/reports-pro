@@ -85,9 +85,7 @@ router.post('/webhook', async (req: Request, res: Response) => {
             stripePriceId: sub.items.data[0].price.id,
             status: 'TRIALING',
             trialEndsAt: new Date(sub.trial_end! * 1000),
-            currentPeriodStart: new Date(sub.current_period_start * 1000),
-            currentPeriodEnd: new Date(sub.current_period_end * 1000),
-          },
+                      },
           update: {
             stripeCustomerId: session.customer,
             stripeSubscriptionId: session.subscription,
