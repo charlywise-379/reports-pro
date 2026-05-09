@@ -26,7 +26,12 @@ export default function LoginPage() {
         const BACKEND = process.env.NEXT_PUBLIC_BACKEND_URL || 'https://reports-pro-production.up.railway.app'
         const res = await fetch(`${BACKEND}/api/dashboard/${data.user?.id}`)
         const dashData = await res.json()
-        if (dashData?.project) {
+        // Ir al dashboard solo si tiene proyecto con nombre real y setup completo
+        const hasRealProject = dashData?.project && 
+          dashData?.setup?.companyName && 
+          dashData.setup.companyName !== 'Sin nombre' &&
+          dashData.setup.companyName.trim() !== ''
+        if (hasRealProject) {
           router.push('/dashboard')
         } else {
           router.push('/onboarding')
