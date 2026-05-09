@@ -358,9 +358,10 @@ router.post('/save', async (req: Request, res: Response) => {
       }),
     }
 
-    await (prisma.competitiveIntelligenceSetup as any).update({
+    await (prisma.competitiveIntelligenceSetup as any).upsert({
       where: { projectId: existingProject.id },
-      data: setupUpdate,
+      create: { projectId: existingProject.id, industry: '', ...setupUpdate },
+      update: setupUpdate,
     })
 
     if (frequency || deliveryEmail) {
