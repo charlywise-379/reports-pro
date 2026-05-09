@@ -114,24 +114,40 @@ router.post('/competitive', async (req: Request, res: Response) => {
       })
     }
 
-    // ── Crear proyecto ─────────────────────────────────
-    const newProject = await prisma.project.create({
-      data: {
-        userId: user.id,
-        name: `${finalName} — Inteligencia Competitiva`,
-        serviceType: ServiceType.COMPETITIVE_INTELLIGENCE,
-        frequency: cleanFrequency,
-        status: ProjectStatus.TRIAL,
-        deliveryChannels,
-        deliveryEmail: deliveryEmail || null,
-        deliveryPhone: deliveryPhone || null,
-        trialStartedAt,
-        trialEndsAt,
-        nextReportAt,
-      }
+    // ── Upsert proyecto ─────────────────────────────────
+    const existingProject = await (prisma.project as any).findFirst({
+      where: { userId: user.id, serviceType: ServiceType.COMPETITIVE_INTELLIGENCE }
     })
 
-    // ── Crear setup ────────────────────────────────────
+    const projectData = {
+      name: `${finalName} — Inteligencia Competitiva`,
+      frequency: cleanFrequency,
+      deliveryChannels,
+      deliveryEmail: deliveryEmail || null,
+      deliveryPhone: deliveryPhone || null,
+      nextReportAt,
+    }
+
+    let newProject: any
+    if (existingProject) {
+      newProject = await (prisma.project as any).update({
+        where: { id: existingProject.id },
+        data: projectData
+      })
+    } else {
+      newProject = await (prisma.project as any).create({
+        data: {
+          userId: user.id,
+          serviceType: ServiceType.COMPETITIVE_INTELLIGENCE,
+          status: ProjectStatus.TRIAL,
+          trialStartedAt,
+          trialEndsAt,
+          ...projectData,
+        }
+      })
+    }
+
+    // ── Upsert setup ────────────────────────────────────
     const additionalContext = JSON.stringify({
       pitch,
       differentiators: cleanDifferentiators,
@@ -143,40 +159,44 @@ router.post('/competitive', async (req: Request, res: Response) => {
       presenceScope,
     })
 
-    await prisma.competitiveIntelligenceSetup.create({
-      data: {
-        projectId: newProject.id,
-        companyName: finalName,
-        website: website?.trim() || null,
-        industry: industry || '',
-        mainProducts: cleanProducts.map((p: any) => p.name),
-        targetMarket: typeof targetMarket === 'string' ? targetMarket.trim() : null,
-        city: typeof ciudad === 'string' ? ciudad.trim() : null,
-        country: typeof pais === 'string' ? pais.trim() : 'México',
-        competitor1Name: cleanDirect[0]?.name || null,
-        competitor1Website: cleanDirect[0]?.url || null,
-        competitor2Name: cleanDirect[1]?.name || null,
-        competitor2Website: cleanDirect[1]?.url || null,
-        competitor3Name: cleanDirect[2]?.name || null,
-        competitor3Website: cleanDirect[2]?.url || null,
-        competitor4Name: cleanDirect[3]?.name || null,
-        competitor4Website: cleanDirect[3]?.url || null,
-        competitor5Name: cleanDirect[4]?.name || null,
-        competitor5Website: cleanDirect[4]?.url || null,
-        linkedinUrl: socialMedia?.li || null,
-        instagramUrl: socialMedia?.ig || null,
-        facebookUrl: socialMedia?.fb || null,
-        twitterUrl: socialMedia?.x || null,
-        tiktokUrl: socialMedia?.tt || null,
-        focusAreas: cleanMonitorAreas,
-        geographicScope: Array.isArray(countries) ? countries : [],
-        additionalContext,
-      }
+    const setupData = {
+      companyName: finalName,
+      website: website?.trim() || null,
+      industry: industry || '',
+      mainProducts: cleanProducts.map((p: any) => p.name),
+      targetMarket: typeof targetMarket === 'string' ? targetMarket.trim() : null,
+      city: typeof ciudad === 'string' ? ciudad.trim() : null,
+      country: typeof pais === 'string' ? pais.trim() : 'México',
+      competitor1Name: cleanDirect[0]?.name || null,
+      competitor1Website: cleanDirect[0]?.url || null,
+      competitor2Name: cleanDirect[1]?.name || null,
+      competitor2Website: cleanDirect[1]?.url || null,
+      competitor3Name: cleanDirect[2]?.name || null,
+      competitor3Website: cleanDirect[2]?.url || null,
+      competitor4Name: cleanDirect[3]?.name || null,
+      competitor4Website: cleanDirect[3]?.url || null,
+      competitor5Name: cleanDirect[4]?.name || null,
+      competitor5Website: cleanDirect[4]?.url || null,
+      linkedinUrl: socialMedia?.li || null,
+      instagramUrl: socialMedia?.ig || null,
+      facebookUrl: socialMedia?.fb || null,
+      twitterUrl: socialMedia?.x || null,
+      tiktokUrl: socialMedia?.tt || null,
+      focusAreas: cleanMonitorAreas,
+      geographicScope: Array.isArray(countries) ? countries : [],
+      additionalContext,
+    }
+
+    await (prisma.competitiveIntelligenceSetup as any).upsert({
+      where: { projectId: newProject.id },
+      create: { projectId: newProject.id, ...setupData },
+      update: setupData,
     })
 
-    // ── Crear suscripción ──────────────────────────────
-    await prisma.subscription.create({
-      data: {
+    // ── Upsert suscripción ──────────────────────────────
+    await (prisma.subscription as any).upsert({
+      where: { projectId: newProject.id },
+      create: {
         projectId: newProject.id,
         userId: user.id,
         status: SubscriptionStatus.TRIALING,
@@ -184,6 +204,10 @@ router.post('/competitive', async (req: Request, res: Response) => {
         pricePerMonth: prices[cleanFrequency] || 25.00,
         trialStartedAt,
         trialEndsAt,
+      },
+      update: {
+        frequency: cleanFrequency,
+        pricePerMonth: prices[cleanFrequency] || 25.00,
       }
     })
 
