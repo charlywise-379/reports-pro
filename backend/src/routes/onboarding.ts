@@ -226,21 +226,36 @@ router.post('/competitive', async (req: Request, res: Response) => {
       })
     }
 
-    generateReport(projectWithSetup, outputPath)
+    // Crear registro en DB antes de generar para tener reportId
+    const reportRecord = await prisma.report.create({
+      data: {
+        projectId: newProject.id,
+        r2Key: `reports/${filename}`,
+        status: 'GENERATING' as any,
+      }
+    })
+
+    const projectWithSetupAndId = {
+      ...projectWithSetup,
+      reportId: reportRecord.id,
+    }
+
+    generateReport(projectWithSetupAndId, outputPath)
       .then(async () => {
         console.log(`✅ Primer reporte generado: ${filename}`)
         const { uploadPDFToR2 } = await import('../lib/r2')
         const pdfUrl = await uploadPDFToR2(outputPath, filename)
         console.log(`☁️ PDF disponible en: ${pdfUrl}`)
 
-        await prisma.report.create({
+        await prisma.report.update({
+          where: { id: reportRecord.id },
           data: {
-            projectId: newProject.id,
             r2Url: pdfUrl,
             r2Key: `reports/${filename}`,
-            status: 'COMPLETED',
+            status: 'COMPLETED' as any,
+            pdfSizeBytes: require('fs').statSync(outputPath).size,
           }
-        }).catch((e: any) => console.log('DB report save:', e.message))
+        }).catch((e: any) => console.log('DB report update:', e.message))
 
         if (deliveryEmail) {
           const { sendReportEmail } = await import('../lib/email')
