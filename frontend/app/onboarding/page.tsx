@@ -1161,12 +1161,12 @@ export default function OnboardingPage() {
   }
 
   return (
-    <div style={{ display:'flex', flexDirection:'column', minHeight:'100vh', background:'#0D0F1A', color:'#F0F2FF', fontFamily:'"Plus Jakarta Sans", system-ui, sans-serif' }}>
-      <style>{`* { box-sizing: border-box; margin:0; padding:0; } input, textarea, select, button { font-family: inherit; } @keyframes spin { to { transform: rotate(360deg); } }`}</style>
+    <div style={{ display:'flex', flexDirection:'column', height:'100vh', background:'#0D0F1A', color:'#F0F2FF', fontFamily:'"Plus Jakarta Sans", system-ui, sans-serif' }}>
+      <style>{`* { box-sizing: border-box; margin:0; padding:0; } input, textarea, select, button { font-family: inherit; } @keyframes spin { to { transform: rotate(360deg); } } #onboarding-main::-webkit-scrollbar { display: none; } #onboarding-main { -ms-overflow-style: none; scrollbar-width: none; }`}</style>
       <TopNav />
-      <div style={{ display:'flex', flex:1, overflow:'hidden' }}>
+      <div style={{ display:'flex', flex:1, overflow:'hidden', height:'calc(100vh - 56px)' }}>
         <Sidebar step={step} setStep={setStep} />
-        <main id='onboarding-main' style={{ flex:1, overflowY:'auto', padding:'32px 36px', paddingBottom:120 }}>
+        <main id='onboarding-main' style={{ flex:1, height:'100%', overflowY:'scroll', padding:'32px 36px', paddingBottom:120 }}>
           <span id='step-top'/>
           {stepContent[step]}
           {/* Navegación */}
