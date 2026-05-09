@@ -6,10 +6,10 @@ export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
 
 export const PLANS = {
   monthly: {
-    daily:     { monthly: 'price_1TQLWqRmWEBJMGXdLPsZF7qh', annual: 'price_1TUz5NRmWEBJMGXd5OMtqmBo', price: 29.99, label: 'Diario' },
-    weekly:    { monthly: 'price_1TQLY8RmWEBJMGXdsJo09MzL', annual: 'price_1TUz73RmWEBJMGXdaBTjdOrV', price: 25.00, label: 'Semanal' },
-    biweekly:  { monthly: 'price_1TQLZ3RmWEBJMGXdSbnQMd4e', annual: 'price_1TUz8aRmWEBJMGXdeOvCsaYW', price: 22.00, label: 'Quincenal' },
-    monthly:   { monthly: 'price_1TQLZWRmWEBJMGXdCTlq4DtZ', annual: 'price_1TUz9MRmWEBJMGXdRlPkchYV', price: 20.00, label: 'Mensual' },
+    daily:     { monthly: 'price_1TUzqgRmWEBJMGXdhWXTQFM9', annual: 'price_1TUzqjRmWEBJMGXdvziIFflY', price: 29.99, label: 'Diario' },
+    weekly:    { monthly: 'price_1TUzqgRmWEBJMGXd126CDFtd', annual: 'price_1TUzqkRmWEBJMGXdVJa88pIE', price: 25.00, label: 'Semanal' },
+    biweekly:  { monthly: 'price_1TUzqhRmWEBJMGXdSqv4IxKQ', annual: 'price_1TUzqlRmWEBJMGXdkIQKXZqq', price: 22.00, label: 'Quincenal' },
+    monthly:   { monthly: 'price_1TUzqiRmWEBJMGXdssJJTmry', annual: 'price_1TUzqmRmWEBJMGXdeUrqvLpc', price: 20.00, label: 'Mensual' },
   }
 }
 
