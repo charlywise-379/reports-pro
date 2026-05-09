@@ -1037,6 +1037,8 @@ export default function OnboardingPage() {
   const [step, setStep] = useState(1)
   const [loading, setLoading] = useState(false)
   const [errorMsg, setErrorMsg] = useState('')
+  const [isEditing, setIsEditing] = useState(false)
+  const BACKEND = process.env.NEXT_PUBLIC_BACKEND_URL || 'https://reports-pro-production.up.railway.app'
 
   const [data, setData] = useState<any>({
     companyName:'', brand:'', website:'', industry:'', companySize:'', targetMarket:'', ciudad:'', pais:'México',
@@ -1053,6 +1055,46 @@ export default function OnboardingPage() {
   })
 
   const set = (key: string, val: any) => setData((prev: any) => ({ ...prev, [key]: val }))
+
+  // Cargar datos existentes del proyecto y step inicial de URL
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search)
+    const initialStep = params.get('step')
+    if (initialStep) setStep(parseInt(initialStep))
+
+    const loadExisting = async () => {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) return
+      try {
+        const res = await fetch(`${BACKEND}/api/dashboard/${user.id}`)
+        const dash = await res.json()
+        if (!dash?.project) return
+        setIsEditing(true)
+        const s = dash.setup || {}
+        const ctx = typeof s.additionalContext === 'string' ? JSON.parse(s.additionalContext || '{}') : (s.additionalContext || {})
+        setData((prev: any) => ({
+          ...prev,
+          companyName: s.companyName || prev.companyName,
+          website: s.website || prev.website,
+          industry: s.industry || prev.industry,
+          ciudad: s.city || prev.ciudad,
+          pais: s.country || prev.pais,
+          mainProducts: (s.mainProducts || []).join(', ') || prev.mainProducts,
+          tags: ctx.tags || prev.tags,
+          pitch: ctx.pitch || prev.pitch,
+          differentiators: ctx.differentiators || prev.differentiators,
+          products: ctx.products?.length ? ctx.products : prev.products,
+          presenceScope: ctx.presenceScope || prev.presenceScope,
+          countries: ctx.countries || prev.countries,
+          directCompetitors: ctx.directCompetitors?.length ? ctx.directCompetitors : prev.directCompetitors,
+          indirectCompetitors: ctx.indirectCompetitors?.length ? ctx.indirectCompetitors : prev.indirectCompetitors,
+          deliveryEmail: dash.project.deliveryEmail || prev.deliveryEmail,
+          frequency: dash.project.frequency || prev.frequency,
+        }))
+      } catch(e) { console.error('Error cargando datos:', e) }
+    }
+    loadExisting()
+  }, [])
 
   const handleActivate = async () => {
     setLoading(true)
@@ -1073,7 +1115,11 @@ export default function OnboardingPage() {
       })
       const res = await response.json()
       if (!response.ok) throw new Error(res.error || 'Error al activar')
-      router.push('/dashboard')
+      if (isEditing) {
+        router.push('/dashboard')
+      } else {
+        router.push('/checkout')
+      }
     } catch (err: any) {
       setErrorMsg(err.message)
       setLoading(false)

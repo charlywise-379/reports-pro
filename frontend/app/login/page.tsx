@@ -16,12 +16,24 @@ export default function LoginPage() {
   const handleLogin = async () => {
     setLoading(true)
     setError('')
-    const { error } = await supabase.auth.signInWithPassword({ email, password })
+    const { error, data } = await supabase.auth.signInWithPassword({ email, password })
     if (error) {
       setError('Email o contraseña incorrectos')
       setLoading(false)
     } else {
-      router.push('/dashboard')
+      // Verificar si el usuario ya tiene proyecto configurado
+      try {
+        const BACKEND = process.env.NEXT_PUBLIC_BACKEND_URL || 'https://reports-pro-production.up.railway.app'
+        const res = await fetch(`${BACKEND}/api/dashboard/${data.user?.id}`)
+        const dashData = await res.json()
+        if (dashData?.project) {
+          router.push('/dashboard')
+        } else {
+          router.push('/onboarding')
+        }
+      } catch {
+        router.push('/dashboard')
+      }
     }
   }
 
