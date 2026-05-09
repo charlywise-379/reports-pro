@@ -1070,7 +1070,11 @@ export default function OnboardingPage() {
         const res = await fetch(`${BACKEND}/api/dashboard/${user.id}`)
         const dash = await res.json()
         if (!dash?.project) return
-        setIsEditing(true)
+        // Solo es edición si tiene setup completo con nombre real
+        const hasRealSetup = dash?.setup?.companyName && 
+          dash.setup.companyName !== 'Sin nombre' && 
+          dash.setup.companyName.trim() !== ''
+        if (hasRealSetup) setIsEditing(true)
         const s = dash.setup || {}
         const ctx = typeof s.additionalContext === 'string' ? JSON.parse(s.additionalContext || '{}') : (s.additionalContext || {})
         setData((prev: any) => ({
@@ -1143,18 +1147,18 @@ export default function OnboardingPage() {
       <TopNav />
       <div style={{ display:'flex', flex:1, overflow:'hidden' }}>
         <Sidebar step={step} setStep={setStep} />
-        <main style={{ flex:1, overflowY:'auto', padding:'32px 36px', paddingBottom:120 }}>
-          <span ref={mainRef as any} id='step-top'/>
+        <main id='onboarding-main' style={{ flex:1, overflowY:'auto', padding:'32px 36px', paddingBottom:120 }}>
+          <span id='step-top'/>
           {stepContent[step]}
           {/* Navegación */}
           <div style={{ position:'sticky', bottom:0, left:0, right:0, background:'linear-gradient(0deg, #0D0F1A 80%, transparent)', padding:'20px 0 0', display:'flex', justifyContent:'space-between', alignItems:'center', marginTop:32 }}>
-            <button onClick={()=>{if(step>1){setStep(step-1)}else{router.push('/dashboard')};document.getElementById('step-top')?.scrollIntoView({behavior:'smooth'})}} style={{ display:'flex', alignItems:'center', gap:8, background:'rgba(255,255,255,0.05)', border:'1px solid rgba(255,255,255,0.1)', borderRadius:20, padding:'10px 20px', color:'#9CA3AF', fontSize:13, fontWeight:600, cursor:'pointer' }}>
+            <button onClick={()=>{if(step>1){setStep(step-1)}else{router.push('/dashboard')};document.getElementById('onboarding-main')?.scrollTo({top:0,behavior:'smooth'})}} style={{ display:'flex', alignItems:'center', gap:8, background:'rgba(255,255,255,0.05)', border:'1px solid rgba(255,255,255,0.1)', borderRadius:20, padding:'10px 20px', color:'#9CA3AF', fontSize:13, fontWeight:600, cursor:'pointer' }}>
               ← {step===1?'Cancelar':'Atrás'}
             </button>
             <div style={{ display:'flex', gap:10 }}>
               <button style={{ background:'transparent', border:'1px solid rgba(255,255,255,0.1)', borderRadius:20, padding:'10px 20px', color:'#9CA3AF', fontSize:13, fontWeight:600, cursor:'pointer' }}>Guardar borrador</button>
               {step<7 ? (
-                <button onClick={()=>{setStep(step+1);document.getElementById('step-top')?.scrollIntoView({behavior:'smooth'})}} style={{ background:'#8B7BFF', border:'none', borderRadius:20, padding:'10px 24px', color:'#fff', fontSize:13, fontWeight:700, cursor:'pointer', display:'flex', alignItems:'center', gap:6 }}>
+                <button onClick={()=>{setStep(step+1);document.getElementById('onboarding-main')?.scrollTo({top:0,behavior:'smooth'})}} style={{ background:'#8B7BFF', border:'none', borderRadius:20, padding:'10px 24px', color:'#fff', fontSize:13, fontWeight:700, cursor:'pointer', display:'flex', alignItems:'center', gap:6 }}>
                   Continuar →
                 </button>
               ) : (
