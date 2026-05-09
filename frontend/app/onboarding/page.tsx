@@ -1070,6 +1070,12 @@ export default function OnboardingPage() {
 
   const set = (key: string, val: any) => setData((prev: any) => ({ ...prev, [key]: val }))
 
+  // Scroll al top cuando cambia el step
+  useEffect(() => {
+    const el = document.getElementById('onboarding-main')
+    if (el) el.scrollTop = 0
+  }, [step])
+
   // Cargar datos existentes del proyecto y step inicial de URL
   useEffect(() => {
     const params = new URLSearchParams(window.location.search)
@@ -1165,13 +1171,13 @@ export default function OnboardingPage() {
           {stepContent[step]}
           {/* Navegación */}
           <div style={{ position:'sticky', bottom:0, left:0, right:0, background:'linear-gradient(0deg, #0D0F1A 80%, transparent)', padding:'20px 0 0', display:'flex', justifyContent:'space-between', alignItems:'center', marginTop:32 }}>
-            <button onClick={()=>{if(step>1){setStep(step-1)}else{router.push('/dashboard')};setTimeout(()=>document.getElementById('onboarding-main')?.scrollTo({top:0,behavior:'smooth'}),50)}} style={{ display:'flex', alignItems:'center', gap:8, background:'rgba(255,255,255,0.05)', border:'1px solid rgba(255,255,255,0.1)', borderRadius:20, padding:'10px 20px', color:'#9CA3AF', fontSize:13, fontWeight:600, cursor:'pointer' }}>
+            <button onClick={()=>{if(step>1){setStep(step-1)}else{router.push('/dashboard')};}} style={{ display:'flex', alignItems:'center', gap:8, background:'rgba(255,255,255,0.05)', border:'1px solid rgba(255,255,255,0.1)', borderRadius:20, padding:'10px 20px', color:'#9CA3AF', fontSize:13, fontWeight:600, cursor:'pointer' }}>
               ← {step===1?'Cancelar':'Atrás'}
             </button>
             <div style={{ display:'flex', gap:10 }}>
               <button style={{ background:'transparent', border:'1px solid rgba(255,255,255,0.1)', borderRadius:20, padding:'10px 20px', color:'#9CA3AF', fontSize:13, fontWeight:600, cursor:'pointer' }}>Guardar borrador</button>
               {step<7 ? (
-                <button onClick={()=>{setStep(step+1);setTimeout(()=>document.getElementById('onboarding-main')?.scrollTo({top:0,behavior:'smooth'}),50)}} style={{ background:'#8B7BFF', border:'none', borderRadius:20, padding:'10px 24px', color:'#fff', fontSize:13, fontWeight:700, cursor:'pointer', display:'flex', alignItems:'center', gap:6 }}>
+                <button onClick={()=>{setStep(step+1);}} style={{ background:'#8B7BFF', border:'none', borderRadius:20, padding:'10px 24px', color:'#fff', fontSize:13, fontWeight:700, cursor:'pointer', display:'flex', alignItems:'center', gap:6 }}>
                   Continuar →
                 </button>
               ) : (
