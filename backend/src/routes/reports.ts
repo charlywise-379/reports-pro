@@ -96,7 +96,11 @@ router.get('/download/:filename', async (req: Request, res: Response) => {
   try {
     // Buscar en DB por r2Key
     const report = await prisma.report.findFirst({
-      where: { OR: [{ r2Key: filename }, { r2Key: `reports/${filename}` }] }
+      where: { OR: [
+        { r2Key: filename },
+        { r2Key: `reports/${filename}` },
+        { r2Key: filename.replace('reports/', '') },
+      ]}
     })
 
     if (report?.r2Url) {
