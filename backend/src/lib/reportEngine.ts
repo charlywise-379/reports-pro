@@ -2,6 +2,7 @@ import Anthropic from '@anthropic-ai/sdk'
 import fetch from 'node-fetch'
 import fs from 'fs'
 import path from 'path'
+import { prisma } from './prisma'
 
 // ─── Cliente Anthropic ────────────────────────────────
 const anthropic = new Anthropic({
@@ -1138,7 +1139,6 @@ export async function generateReport(project: any, outputPath: string): Promise<
 
   // 5. Guardar sectionsJson en DB para el dashboard
   try {
-    const { prisma } = await import('../lib/prisma')
     const sectionsJson = {
       // Métricas principales
       competitivePressure: data.competitivePressure,

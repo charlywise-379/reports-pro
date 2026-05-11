@@ -1114,6 +1114,15 @@ export default function OnboardingPage() {
           indirectCompetitors: ctx.indirectCompetitors?.length ? ctx.indirectCompetitors : prev.indirectCompetitors,
           deliveryEmail: dash.project.deliveryEmail || prev.deliveryEmail,
           frequency: dash.project.frequency || prev.frequency,
+          monitorAreas: s.focusAreas?.length ? s.focusAreas : prev.monitorAreas,
+          socialMedia: {
+            ig: s.instagramUrl || '',
+            fb: s.facebookUrl || '',
+            tt: s.tiktokUrl || '',
+            yt: '',
+            li: s.linkedinUrl || '',
+            x: s.twitterUrl || '',
+          },
         }))
       } catch(e) { console.error('Error cargando datos:', e) }
     }
