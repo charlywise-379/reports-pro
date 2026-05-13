@@ -285,10 +285,11 @@ router.post('/competitive', async (req: Request, res: Response) => {
 router.post('/save', async (req: Request, res: Response) => {
   try {
     const {
-      userId, companyName, brand, website, industry, ciudad, pais,
+      userId, companyName, brand, website, industry, companySize, ciudad, pais,
       targetMarket, mainProducts, socialMedia, pitch, differentiators,
       products, presenceScope, countries, directCompetitors, indirectCompetitors,
-      monitorAreas, areaDepth, frequency, deliveryEmail, deliveryPhone, tags,
+      monitorAreas, areaDepth, frequency, deliveryEmail, deliveryPhone,
+      deliveryChannel, deliveryDay, deliveryTime, tags,
     } = req.body
 
     if (!userId) return res.status(400).json({ error: 'No userId' })
@@ -333,7 +334,12 @@ router.post('/save', async (req: Request, res: Response) => {
     const newCtx = {
       ...existingCtx,
       ...(pitch !== undefined && { pitch }),
-      ...(tags !== undefined && { tags }),
+      ...(tags !== undefined && Array.isArray(tags) && tags.length > 0 && { tags }),
+      ...(brand !== undefined && typeof brand === 'string' && brand.trim() !== '' && { brand }),
+      ...(companySize !== undefined && typeof companySize === 'string' && companySize.trim() !== '' && { companySize }),
+      ...(deliveryChannel !== undefined && deliveryChannel !== '' && { deliveryChannel }),
+      ...(deliveryDay !== undefined && { deliveryDay }),
+      ...(deliveryTime !== undefined && { deliveryTime }),
       ...(Array.isArray(differentiators) && { differentiators }),
       ...(cleanProducts && { products: cleanProducts }),
       ...(cleanDirect && { directCompetitors: cleanDirect }),
