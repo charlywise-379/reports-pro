@@ -89,9 +89,9 @@ router.post('/generate/:projectId', async (req: Request, res: Response) => {
   }
 })
 
-// GET /api/reports/download/:filename
-router.get('/download/:filename', async (req: Request, res: Response) => {
-  const filename = req.params.filename as string
+// GET /api/reports/download/:filename (soporta paths con /)
+router.get('/download/*', async (req: Request, res: Response) => {
+  const filename = (req.params as any)[0] as string
 
   try {
     // Buscar en DB por r2Key
