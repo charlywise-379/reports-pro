@@ -128,7 +128,7 @@ export default function DashboardPage() {
                 <span style={{ fontSize:11, color:'#8B7BFF', fontWeight:600 }}>{selectedReport.reportTitle}</span>
                 <span style={{ fontSize:10, color:'#5A627A' }}>· {new Date(selectedReport.createdAt).toLocaleDateString('es-MX',{day:'numeric',month:'short',year:'numeric'})}</span>
                 {selectedReport.r2Key && (
-                  <a href={`${BACKEND}/api/reports/download/${selectedReport.r2Key}`} target="_blank"
+                  <a href={`${BACKEND}/api/reports/download/${selectedReport.r2Key?.replace("reports/", "")}`} target="_blank"
                     style={{ fontSize:10, fontWeight:700, color:'#0D0F1A', background:'#8B7BFF', borderRadius:20, padding:'3px 10px', textDecoration:'none' }}>
                     ↓ PDF
                   </a>
@@ -277,7 +277,7 @@ export default function DashboardPage() {
             {selectedReport && <span style={{ fontSize:10, color:'#5A627A' }}>· {new Date(selectedReport.createdAt).toLocaleDateString('es-MX', { day:'2-digit', month:'short', year:'numeric' })} {new Date(selectedReport.createdAt).toLocaleTimeString('es-MX', { hour:'2-digit', minute:'2-digit' })}</span>}
           </div>
           {selectedReport?.r2Key && (
-            <a href={`${BACKEND}/api/reports/download/${selectedReport.r2Key}`} target="_blank"
+            <a href={`${BACKEND}/api/reports/download/${selectedReport.r2Key?.replace("reports/", "")}`} target="_blank"
               style={{ fontSize:11, fontWeight:700, color:'#0D0F1A', background:'#8B7BFF', borderRadius:20, padding:'5px 14px', textDecoration:'none', display:'flex', alignItems:'center', gap:5 }}>
               ↓ PDF
             </a>
