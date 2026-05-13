@@ -229,7 +229,7 @@ export default function DashboardPage() {
                   <div style={{ display:'flex', gap:8, alignItems:'center' }}>
                     {selectedReport?.id === r.id && <span style={{ fontSize:10, color:'#8B7BFF', fontWeight:700 }}>← Viendo</span>}
                     {r.r2Key && (
-                      <a href={`${BACKEND}/api/reports/download/${r.r2Key}`} target="_blank"
+                      <a href={`${BACKEND}/api/reports/download/${r.r2Key?.replace("reports/", "")}`} target="_blank"
                         onClick={e => e.stopPropagation()}
                         style={{ fontSize:11, fontWeight:700, color:'#8B7BFF', background:'rgba(139,123,255,0.1)', border:'1px solid rgba(139,123,255,0.2)', borderRadius:20, padding:'5px 12px', textDecoration:'none' }}>
                         ↓ PDF
