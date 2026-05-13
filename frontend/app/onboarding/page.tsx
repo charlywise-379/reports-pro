@@ -1096,15 +1096,24 @@ export default function OnboardingPage() {
         if (hasRealSetup) setIsEditing(true)
         const s = dash.setup || {}
         const ctx = typeof s.additionalContext === 'string' ? JSON.parse(s.additionalContext || '{}') : (s.additionalContext || {})
+        // DAYS y TIMES para convertir strings a índices
+        const DAYS_LIST = ['Lun','Mar','Mié','Jue','Vie','Sáb','Dom']
+        const TIMES_LIST = ['06:00','07:00','08:00','09:00','12:00','15:00','18:00','21:00']
+        const dayIdx = ctx.deliveryDay ? DAYS_LIST.indexOf(ctx.deliveryDay) : -1
+        const timeIdx = ctx.deliveryTime ? TIMES_LIST.indexOf(ctx.deliveryTime) : -1
+
         setData((prev: any) => ({
           ...prev,
           companyName: s.companyName || prev.companyName,
+          brand: ctx.brand || prev.brand,
           website: s.website || prev.website,
           industry: s.industry || prev.industry,
+          companySize: ctx.companySize || prev.companySize,
+          targetMarket: s.targetMarket || ctx.targetMarket || prev.targetMarket,
           ciudad: s.city || prev.ciudad,
           pais: s.country || prev.pais,
           mainProducts: (s.mainProducts || []).join(', ') || prev.mainProducts,
-          tags: ctx.tags || prev.tags,
+          tags: (ctx.tags && ctx.tags.length > 0) ? ctx.tags : prev.tags,
           pitch: ctx.pitch || prev.pitch,
           differentiators: ctx.differentiators || prev.differentiators,
           products: ctx.products?.length ? ctx.products : prev.products,
@@ -1115,13 +1124,17 @@ export default function OnboardingPage() {
           deliveryEmail: dash.project.deliveryEmail || prev.deliveryEmail,
           frequency: dash.project.frequency || prev.frequency,
           monitorAreas: s.focusAreas?.length ? s.focusAreas : prev.monitorAreas,
+          deliveryChannel: ctx.deliveryChannel || prev.deliveryChannel,
+          deliveryDay: dayIdx >= 0 ? dayIdx : prev.deliveryDay,
+          deliveryTime: timeIdx >= 0 ? timeIdx : prev.deliveryTime,
+          deliveryPhone: ctx.deliveryPhone || prev.deliveryPhone,
           socialMedia: {
-            ig: s.instagramUrl || '',
-            fb: s.facebookUrl || '',
-            tt: s.tiktokUrl || '',
-            yt: '',
-            li: s.linkedinUrl || '',
-            x: s.twitterUrl || '',
+            ig: s.instagramUrl || prev.socialMedia?.ig || '',
+            fb: s.facebookUrl || prev.socialMedia?.fb || '',
+            tt: s.tiktokUrl || prev.socialMedia?.tt || '',
+            yt: prev.socialMedia?.yt || '',
+            li: s.linkedinUrl || prev.socialMedia?.li || '',
+            x: s.twitterUrl || prev.socialMedia?.x || '',
           },
         }))
       } catch(e) { console.error('Error cargando datos:', e) }
