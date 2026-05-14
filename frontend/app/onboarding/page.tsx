@@ -918,7 +918,7 @@ function Sidebar({ step, setStep }: { step: number; setStep: (n: number) => void
         <div style={{ fontSize:22, fontWeight:800, color:'#F0F2FF', lineHeight:1.2, letterSpacing:'-0.02em' }}>Inteligencia<br />Competitiva Sectorial</div>
         <div style={{ fontSize:16, fontWeight:700, color:'#8B7BFF', marginTop:2 }}>AI Automated</div>
       </div>
-      <nav style={{ display:'flex', flexDirection:'column', gap:4, flex:1 }}>
+      <nav style={{ display:'flex', flexDirection:'column', gap:4, marginBottom:20 }}>
         {STEPS.map(s=>{
           const done=step>s.id, active=step===s.id
           return (
