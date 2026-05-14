@@ -1118,6 +1118,7 @@ export default function OnboardingPage() {
           differentiators: ctx.differentiators || prev.differentiators,
           products: ctx.products?.length ? ctx.products : prev.products,
           presenceScope: ctx.presenceScope || prev.presenceScope,
+          areaDepth: (ctx.areaDepth && Object.keys(ctx.areaDepth).length > 0) ? ctx.areaDepth : prev.areaDepth,
           countries: ctx.countries || prev.countries,
           directCompetitors: ctx.directCompetitors?.length ? ctx.directCompetitors : prev.directCompetitors,
           indirectCompetitors: ctx.indirectCompetitors?.length ? ctx.indirectCompetitors : prev.indirectCompetitors,
