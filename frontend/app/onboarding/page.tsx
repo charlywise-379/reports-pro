@@ -1178,6 +1178,14 @@ export default function OnboardingPage() {
     try {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) throw new Error('No hay sesión activa')
+
+      // Si ya tiene proyecto real, solo guardar sin generar reporte
+      if (isEditing) {
+        await saveProgress()
+        router.push('/dashboard')
+        return
+      }
+
       const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/onboarding/competitive`, {
         method:'POST',
         headers:{'Content-Type':'application/json'},
