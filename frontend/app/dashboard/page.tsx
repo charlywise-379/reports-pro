@@ -65,11 +65,10 @@ export default function DashboardPage() {
       const res = await fetch(`${BACKEND}/api/reports/generate/${dashData.project.id}`, { method: 'POST' })
       const data = await res.json()
       if (data.success) {
-        // Recargar dashboard después de 30 segundos
-        setTimeout(() => window.location.reload(), 30000)
-        alert('Reporte generando... estará listo en ~5 minutos. El dashboard se actualizará automáticamente.')
+        // Recargar dashboard después de 5 minutos
+        setTimeout(() => window.location.reload(), 300000)
       }
-    } catch(e) { alert('Error generando reporte') }
+    } catch(e) { console.error('Error generando reporte:', e) }
     setGenerating(false)
   }
 
