@@ -340,6 +340,7 @@ router.post('/save', async (req: Request, res: Response) => {
       ...(deliveryChannel !== undefined && deliveryChannel !== '' && { deliveryChannel }),
       ...(deliveryDay !== undefined && { deliveryDay }),
       ...(deliveryTime !== undefined && { deliveryTime }),
+      ...(deliveryPhone !== undefined && deliveryPhone !== '' && { deliveryPhone }),
       ...(Array.isArray(differentiators) && { differentiators }),
       ...(cleanProducts && { products: cleanProducts }),
       ...(cleanDirect && { directCompetitors: cleanDirect }),
