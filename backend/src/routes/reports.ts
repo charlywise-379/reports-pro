@@ -75,6 +75,23 @@ router.post('/generate/:projectId', async (req: Request, res: Response) => {
     const fileSize = fs.statSync(outputPath).size
     console.log(`📦 PDF generado: ${filename} (${Math.round(fileSize / 1024)}KB)`)
 
+    // 9. Enviar email con el reporte
+    try {
+      const deliveryEmail = project.deliveryEmail
+      if (deliveryEmail) {
+        const { sendReportEmail } = await import('../lib/email')
+        const setup = (project as any).competitiveSetup
+        const companyName = setup?.companyName || project.name?.replace(' — Inteligencia Competitiva', '') || 'Tu empresa'
+        const now = new Date()
+        const weekNumber = Math.ceil((now.getDate() + new Date(now.getFullYear(), now.getMonth(), 1).getDay()) / 7)
+        const reportCount = await prisma.report.count({ where: { projectId, status: 'COMPLETED' as any } })
+        await sendReportEmail(deliveryEmail, companyName, signedUrl, weekNumber, reportCount)
+        console.log(`📧 Email enviado a: ${deliveryEmail}`)
+      }
+    } catch(emailErr: any) {
+      console.error('⚠️ Error enviando email:', emailErr.message)
+    }
+
     res.status(200).json({
       success: true,
       message: 'Reporte generado correctamente',
