@@ -379,9 +379,13 @@ router.post('/save', async (req: Request, res: Response) => {
       }),
     }
 
+    // Obtener nombre actual si no viene en el request
+    const currentSetup = existing || await (prisma.competitiveIntelligenceSetup as any).findUnique({ where: { projectId: existingProject.id } })
+    const safeCompanyName = setupUpdate.companyName || currentSetup?.companyName || existingProject.name?.replace(' — Inteligencia Competitiva', '') || 'Sin nombre'
+
     await (prisma.competitiveIntelligenceSetup as any).upsert({
       where: { projectId: existingProject.id },
-      create: { projectId: existingProject.id, industry: '', ...setupUpdate },
+      create: { projectId: existingProject.id, industry: '', companyName: safeCompanyName, ...setupUpdate },
       update: setupUpdate,
     })
 
