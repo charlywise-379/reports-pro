@@ -37,6 +37,7 @@ export default function DashboardPage() {
   const [dashData, setDashData] = useState<any>(null)
   const [selectedReport, setSelectedReport] = useState<any>(null)
   const [loading, setLoading] = useState(true)
+  const [generating, setGenerating] = useState(false)
   const BACKEND = process.env.NEXT_PUBLIC_BACKEND_URL || 'https://reports-pro-production.up.railway.app'
 
   useEffect(() => {
@@ -56,6 +57,21 @@ export default function DashboardPage() {
     }
     getUser()
   }, [])
+
+  const handleGenerateReport = async () => {
+    if (!dashData?.project?.id) return
+    setGenerating(true)
+    try {
+      const res = await fetch(`${BACKEND}/api/reports/generate/${dashData.project.id}`, { method: 'POST' })
+      const data = await res.json()
+      if (data.success) {
+        // Recargar dashboard después de 30 segundos
+        setTimeout(() => window.location.reload(), 30000)
+        alert('Reporte generando... estará listo en ~5 minutos. El dashboard se actualizará automáticamente.')
+      }
+    } catch(e) { alert('Error generando reporte') }
+    setGenerating(false)
+  }
 
   const handleLogout = async () => {
     await supabase.auth.signOut()
@@ -196,14 +212,14 @@ export default function DashboardPage() {
             {[
               { label:'Editar Configuración para Reportes', color:'#8B7BFF', bg:'rgba(139,123,255,0.12)', border:'rgba(139,123,255,0.3)', href:'/onboarding',
                 icon:<path d="M12 20h9M16.5 3.5a2.12 2.12 0 113 3L7 19l-4 1 1-4z"/> },
-              { label:'Agregar / Editar Competidores', color:'#5DD4D4', bg:'rgba(93,212,212,0.08)', border:'rgba(93,212,212,0.2)', href:'/onboarding',
-                icon:<><path d="M12 5v14M5 12h14"/></> },
+              { label: generating ? 'Generando...' : 'Generar Reporte', color:'#6EE7A4', bg:'rgba(110,231,164,0.08)', border:'rgba(110,231,164,0.2)', href:'#', onClick: handleGenerateReport,
+                icon:<><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></> },
               { label:'Ver Reportes', color:'#F2C063', bg:'rgba(242,192,99,0.08)', border:'rgba(242,192,99,0.2)', href:'#',
                 icon:<path d="M7 3h7l5 5v13a1 1 0 01-1 1H7a1 1 0 01-1-1V4a1 1 0 011-1z"/> },
               { label:'Invitar Colegas', color:'#9CA3AF', bg:'rgba(255,255,255,0.04)', border:'rgba(255,255,255,0.1)', href:'#',
                 icon:<><path d="M17 21v-2a4 4 0 00-4-4H7a4 4 0 00-4 4v2"/><circle cx="10" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></> },
-            ].map((a,i)=>(
-              <a key={i} href={a.href} style={{ padding:'16px 14px', background:a.bg, border:`1px solid ${a.border}`, borderRadius:14, color:a.color, fontSize:12, fontWeight:700, cursor:'pointer', display:'flex', flexDirection:'column', alignItems:'flex-start', gap:10, textDecoration:'none' }}>
+            ].map((a: any,i: number)=>(
+              <a key={i} href={a.href} onClick={a.onClick ? (e)=>{e.preventDefault();a.onClick()} : undefined} style={{ padding:'16px 14px', background:a.bg, border:`1px solid ${a.border}`, borderRadius:14, color:a.color, fontSize:12, fontWeight:700, cursor:'pointer', display:'flex', flexDirection:'column', alignItems:'flex-start', gap:10, textDecoration:'none' }}>
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={a.color} strokeWidth="2">{a.icon}</svg>
                 {a.label}
               </a>
