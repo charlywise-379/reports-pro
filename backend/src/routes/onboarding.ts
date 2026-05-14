@@ -385,7 +385,7 @@ router.post('/save', async (req: Request, res: Response) => {
       update: setupUpdate,
     })
 
-    if (frequency || deliveryEmail) {
+    if (frequency || deliveryEmail || deliveryPhone || deliveryChannel) {
       const cleanFrequency = (['DAILY','WEEKLY','BIWEEKLY','MONTHLY'].includes(frequency))
         ? frequency as ReportFrequency : undefined
       await (prisma.project as any).update({
@@ -393,10 +393,11 @@ router.post('/save', async (req: Request, res: Response) => {
         data: {
           ...(cleanFrequency && { frequency: cleanFrequency }),
           ...(deliveryEmail && { deliveryEmail }),
+          ...(deliveryPhone && { deliveryPhone }),
+          ...(deliveryChannel && { deliveryChannels: deliveryChannel === 'BOTH' ? ['EMAIL','WHATSAPP'] : deliveryChannel === 'WHATSAPP' ? ['WHATSAPP'] : ['EMAIL'] }),
         }
       })
     }
-
     res.json({ success: true })
   } catch (e: any) {
     res.status(500).json({ error: e.message })
