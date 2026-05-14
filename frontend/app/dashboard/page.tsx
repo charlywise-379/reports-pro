@@ -220,10 +220,14 @@ export default function DashboardPage() {
                 <div key={i} onClick={() => r.sectionsJson && setSelectedReport(r)}
                   style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'8px 12px', background: selectedReport?.id === r.id ? 'rgba(139,123,255,0.1)' : 'rgba(255,255,255,0.02)', border:`1px solid ${selectedReport?.id === r.id ? 'rgba(139,123,255,0.3)' : 'rgba(255,255,255,0.06)'}`, borderRadius:10, cursor: r.sectionsJson ? 'pointer' : 'default' }}>
                   <div style={{ display:'flex', alignItems:'center', gap:10 }}>
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={selectedReport?.id === r.id ? '#8B7BFF' : '#5A627A'} strokeWidth="2"><path d="M7 3h7l5 5v13a1 1 0 01-1 1H7a1 1 0 01-1-1V4a1 1 0 011-1z"/></svg>
+                    {!r.reportTitle ? (
+                      <div style={{ width:14, height:14, borderRadius:'50%', border:'2px solid rgba(139,123,255,0.3)', borderTopColor:'#8B7BFF', animation:'spin 0.8s linear infinite', flexShrink:0 }} />
+                    ) : (
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={selectedReport?.id === r.id ? '#8B7BFF' : '#5A627A'} strokeWidth="2"><path d="M7 3h7l5 5v13a1 1 0 01-1 1H7a1 1 0 01-1-1V4a1 1 0 011-1z"/></svg>
+                    )}
                     <div>
-                      <div style={{ fontSize:12, fontWeight:700, color:'#F0F2FF' }}>{r.reportTitle || 'Reporte de Inteligencia Competitiva'}</div>
-                      <div style={{ fontSize:10, color:'#5A627A' }}>{new Date(r.createdAt).toLocaleDateString('es-MX', { day:'2-digit', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' })} · {r.pdfSizeBytes ? Math.round(r.pdfSizeBytes/1024)+'KB' : ''}</div>
+                      <div style={{ fontSize:12, fontWeight:700, color: r.reportTitle ? '#F0F2FF' : '#8B7BFF' }}>{r.reportTitle || '⏳ Generando reporte IA... ~5 min'}</div>
+                      <div style={{ fontSize:10, color:'#5A627A' }}>{new Date(r.createdAt).toLocaleDateString('es-MX', { day:'2-digit', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' })} · {r.pdfSizeBytes ? Math.round(r.pdfSizeBytes/1024)+'KB' : 'Procesando...'}</div>
                     </div>
                   </div>
                   <div style={{ display:'flex', gap:8, alignItems:'center' }}>

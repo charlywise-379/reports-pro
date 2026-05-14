@@ -743,7 +743,7 @@ function Step6({ data, set }: any) {
 // ──────────────────────────────────────────
 // PASO 7
 // ──────────────────────────────────────────
-function Step7({ data, loading, onActivate, errorMsg, isEditing }: any) {
+function Step7({ data, loading, onActivate, onSave, errorMsg, isEditing }: any) {
   const plan = PLANS.find(p=>p.id===(data.frequency||'WEEKLY'))!
   const price = data.annualBilling ? plan.priceAnnual : plan.price
   const directCount = (data.directCompetitors||[]).filter((c:any)=>c.name).length
@@ -893,7 +893,7 @@ function Step7({ data, loading, onActivate, errorMsg, isEditing }: any) {
           <div style={{ fontSize:16, fontWeight:800, color:'#6EE7A4' }}>✓ Suscripción activa</div>
           <div style={{ fontSize:12, color:'#9CA3AF', marginTop:4 }}>Los cambios se guardarán y aplicarán al próximo reporte</div>
         </div>
-        <button onClick={onActivate} disabled={loading} style={{ background:'#1D9E75', border:'none', borderRadius:20, padding:'12px 24px', color:'#fff', fontSize:13, fontWeight:800, cursor: loading?'not-allowed':'pointer', opacity: loading?0.7:1 }}>
+        <button onClick={onSave} disabled={loading} style={{ background:'#1D9E75', border:'none', borderRadius:20, padding:'12px 24px', color:'#fff', fontSize:13, fontWeight:800, cursor: loading?'not-allowed':'pointer', opacity: loading?0.7:1 }}>
           {loading ? 'Guardando...' : 'Guardar cambios →'}
         </button>
       </div>
@@ -1159,6 +1159,19 @@ export default function OnboardingPage() {
     } catch(e) { console.error('Error guardando:', e) }
   }
 
+  const handleSave = async () => {
+    setLoading(true)
+    setErrorMsg('')
+    try {
+      await saveProgress()
+      router.push('/dashboard')
+    } catch(e: any) {
+      setErrorMsg(e.message)
+    } finally {
+      setLoading(false)
+    }
+  }
+
   const handleActivate = async () => {
     setLoading(true)
     setErrorMsg('')
@@ -1196,7 +1209,7 @@ export default function OnboardingPage() {
     4: <Step4 data={data} set={set} />,
     5: <Step5 data={data} set={set} />,
     6: <Step6 data={data} set={set} />,
-    7: <Step7 data={data} loading={loading} onActivate={handleActivate} errorMsg={errorMsg} isEditing={isEditing} />,
+    7: <Step7 data={data} loading={loading} onActivate={handleActivate} onSave={handleSave} errorMsg={errorMsg} isEditing={isEditing} />,
   }
 
   return (
