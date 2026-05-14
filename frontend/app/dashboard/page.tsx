@@ -60,13 +60,31 @@ export default function DashboardPage() {
 
   const handleGenerateReport = async () => {
     if (!dashData?.project?.id) return
+
+    // Verificar si ya hay un reporte generándose (sin título = en proceso)
+    const reporteEnProceso = (dashData?.reports || []).some((r: any) => !r.reportTitle)
+    if (reporteEnProceso) {
+      alert('Ya hay un reporte en proceso. Espera ~5 minutos a que termine.')
+      return
+    }
+
+    // Verificar si el último reporte tiene menos de 10 minutos
+    const ultimoReporte = dashData?.reports?.[0]
+    if (ultimoReporte) {
+      const minutos = (Date.now() - new Date(ultimoReporte.createdAt).getTime()) / 60000
+      if (minutos < 10) {
+        alert(`Acabas de generar un reporte hace ${Math.round(minutos)} min. Espera un momento antes de generar otro.`)
+        return
+      }
+    }
+
     setGenerating(true)
     try {
       const res = await fetch(`${BACKEND}/api/reports/generate/${dashData.project.id}`, { method: 'POST' })
       const data = await res.json()
       if (data.success) {
-        // Recargar dashboard después de 5 minutos
         setTimeout(() => window.location.reload(), 300000)
+        window.location.reload()
       }
     } catch(e) { console.error('Error generando reporte:', e) }
     setGenerating(false)
