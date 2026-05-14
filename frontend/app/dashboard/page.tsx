@@ -249,7 +249,7 @@ export default function DashboardPage() {
           <div style={{...S.card, marginBottom:14}}>
             <span style={S.lbl}>REPORTES GENERADOS</span>
             <div style={{ display:'flex', flexDirection:'column', gap:6, marginTop:8 }}>
-              {dashData.reports.map((r: any, i: number) => (
+              {dashData.reports.filter((r: any) => r.status !== 'FAILED').map((r: any, i: number) => (
                 <div key={i} onClick={() => r.sectionsJson && setSelectedReport(r)}
                   style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'8px 12px', background: selectedReport?.id === r.id ? 'rgba(139,123,255,0.1)' : 'rgba(255,255,255,0.02)', border:`1px solid ${selectedReport?.id === r.id ? 'rgba(139,123,255,0.3)' : 'rgba(255,255,255,0.06)'}`, borderRadius:10, cursor: r.sectionsJson ? 'pointer' : 'default' }}>
                   <div style={{ display:'flex', alignItems:'center', gap:10 }}>
