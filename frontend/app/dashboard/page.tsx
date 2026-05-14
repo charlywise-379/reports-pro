@@ -83,12 +83,31 @@ export default function DashboardPage() {
       const res = await fetch(`${BACKEND}/api/reports/generate/${dashData.project.id}`, { method: 'POST' })
       const data = await res.json()
       if (data.success) {
-        setTimeout(() => window.location.reload(), 300000)
+        // Recargar inmediatamente para mostrar indicador
         window.location.reload()
       }
     } catch(e) { console.error('Error generando reporte:', e) }
     setGenerating(false)
   }
+
+  // Auto-refresh cada 30s si hay reporte generándose
+  useEffect(() => {
+    if (!dashData) return
+    const hayGenerando = (dashData?.reports || []).some((r: any) => !r.reportTitle && r.status !== 'FAILED')
+    if (!hayGenerando) return
+    const interval = setInterval(async () => {
+      try {
+        const res = await fetch(`${BACKEND}/api/dashboard/${user?.id}`)
+        const data = await res.json()
+        const sigueGenerando = (data?.reports || []).some((r: any) => !r.reportTitle && r.status !== 'FAILED')
+        setDashData(data)
+        const latest = (data.reports || []).find((r: any) => r.sectionsJson)
+        if (latest) setSelectedReport(latest)
+        if (!sigueGenerando) clearInterval(interval)
+      } catch(e) {}
+    }, 30000)
+    return () => clearInterval(interval)
+  }, [dashData?.reports?.length])
 
   const handleLogout = async () => {
     await supabase.auth.signOut()

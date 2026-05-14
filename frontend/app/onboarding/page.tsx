@@ -83,7 +83,7 @@ const emptyProduct    = () => ({ name:'', category:'', priceFrom:'', priceTo:'' 
 const S: Record<string, React.CSSProperties> = {
   card:    { background:'rgba(255,255,255,0.03)', border:'1px solid rgba(255,255,255,0.07)', borderRadius:16, padding:'22px 20px', marginBottom:16 },
   label:   { fontSize:10, fontWeight:700, letterSpacing:'0.1em', color:'#5A627A', display:'block', marginBottom:6 },
-  input:   { width:'100%', background:'rgba(255,255,255,0.04)', border:'1px solid rgba(255,255,255,0.1)', borderRadius:10, padding:'10px 14px', color:'#F0F2FF', fontSize:13, outline:'none', boxSizing:'border-box' as const },
+  input:   { width:'100%', background:'rgba(255,255,255,0.04)', border:'1px solid rgba(255,255,255,0.1)', borderRadius:10, padding:'10px 14px', color:'#F0F2FF', fontSize:13, outline:'none', boxSizing:'border-box' as const, scrollbarWidth:'none' as const },
   section: { fontSize:13, fontWeight:700, color:'#F0F2FF', marginBottom:16, display:'flex', alignItems:'center', gap:10 },
   pill:    { fontSize:11, fontWeight:600, padding:'5px 12px', borderRadius:20, border:'1px solid rgba(255,255,255,0.1)', background:'rgba(255,255,255,0.04)', color:'#9CA3AF', cursor:'pointer' },
   pillOn:  { fontSize:11, fontWeight:600, padding:'5px 12px', borderRadius:20, border:'1px solid rgba(139,123,255,0.5)', background:'rgba(139,123,255,0.15)', color:'#8B7BFF', cursor:'pointer' },
@@ -1224,7 +1224,7 @@ export default function OnboardingPage() {
 
   return (
     <div style={{ display:'flex', flexDirection:'column', height:'100vh', background:'#0D0F1A', color:'#F0F2FF', fontFamily:'"Plus Jakarta Sans", system-ui, sans-serif' }}>
-      <style>{`* { box-sizing: border-box; margin:0; padding:0; } input, textarea, select, button { font-family: inherit; } @keyframes spin { to { transform: rotate(360deg); } } #onboarding-main::-webkit-scrollbar { display: none; } #onboarding-main { -ms-overflow-style: none; scrollbar-width: none; }`}</style>
+      <style>{`* { box-sizing: border-box; margin:0; padding:0; } input, textarea, select, button { font-family: inherit; } @keyframes spin { to { transform: rotate(360deg); } } #onboarding-main::-webkit-scrollbar { display: none; } #onboarding-main { -ms-overflow-style: none; scrollbar-width: none; } textarea::-webkit-scrollbar { display: none; } textarea { -ms-overflow-style: none; scrollbar-width: none; }`}</style>
       <TopNav />
       <div style={{ display:'flex', flex:1, overflow:'hidden', height:'calc(100vh - 56px)' }}>
         <Sidebar step={step} setStep={setStep} />
