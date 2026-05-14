@@ -939,6 +939,15 @@ function Sidebar({ step, setStep }: { step: number; setStep: (n: number) => void
           <div style={{ height:'100%', width:`${progress}%`, background:'linear-gradient(90deg,#8B7BFF,#5DD4D4)', borderRadius:4, transition:'width 0.4s' }} />
         </div>
       </div>
+      <div style={{ borderTop:'1px solid rgba(255,255,255,0.06)', marginTop:16, paddingTop:16 }}>
+        <a href="/dashboard" style={{ display:'flex', alignItems:'center', gap:10, padding:'12px 14px', borderRadius:12, background:'rgba(255,255,255,0.04)', border:'1px solid rgba(255,255,255,0.08)', textDecoration:'none', transition:'all 0.2s' }}>
+          <div style={{ width:28, height:28, borderRadius:8, background:'rgba(139,123,255,0.15)', display:'flex', alignItems:'center', justifyContent:'center' }}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#8B7BFF" strokeWidth="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+          </div>
+          <span style={{ fontSize:12, fontWeight:700, color:'#8B7BFF' }}>Dashboard</span>
+          <span style={{ marginLeft:'auto', color:'#5A627A', fontSize:14 }}>→</span>
+        </a>
+      </div>
     </aside>
   )
 }
