@@ -40,7 +40,7 @@ export async function sendReportEmail(
         </div>
       </div>
       <div style="font-size:22px;font-weight:900;color:#F0F2FF;line-height:1.2">
-        Tu reporte semanal<br/>está listo 📊
+        Tu reporte está listo 📊
       </div>
       <div style="font-size:12px;color:#5A627A;margin-top:6px">
         ${companyName} · Edición ${edition} · Semana ${weekNumber}
@@ -49,7 +49,7 @@ export async function sendReportEmail(
 
     <div class="body">
       <p style="font-size:14px;color:#444;line-height:1.6;margin-bottom:20px">
-        Hola, tu reporte de inteligencia competitiva de esta semana ya está generado. 
+        Hola, tu reporte de inteligencia competitiva ya está generado. 
         Incluye análisis de competidores, alertas tempranas, oportunidades detectadas y recomendaciones ejecutables.
       </p>
 
