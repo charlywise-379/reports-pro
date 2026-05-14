@@ -1051,6 +1051,7 @@ export default function OnboardingPage() {
   const [loading, setLoading] = useState(false)
   const [errorMsg, setErrorMsg] = useState('')
   const [isEditing, setIsEditing] = useState(false)
+  const [dataLoaded, setDataLoaded] = useState(false)
   const mainRef = React.useRef<HTMLElement>(null)
   const BACKEND = process.env.NEXT_PUBLIC_BACKEND_URL || 'https://reports-pro-production.up.railway.app'
 
