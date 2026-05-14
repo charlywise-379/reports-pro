@@ -1088,7 +1088,7 @@ export default function OnboardingPage() {
       try {
         const res = await fetch(`${BACKEND}/api/dashboard/${user.id}`)
         const dash = await res.json()
-        if (!dash?.project) return
+        if (!dash?.project) { setDataLoaded(true); return }
         // Solo es edición si tiene setup completo con nombre real
         const hasRealSetup = dash?.setup?.companyName && 
           dash.setup.companyName !== 'Sin nombre' && 
