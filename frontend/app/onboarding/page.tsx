@@ -53,7 +53,21 @@ const TAGS_LIB = [
   // Entretenimiento
   'Entretenimiento','Deportes','GameTech','eSports','Eventos',
 ]
-const INDUSTRIES = ['Manufactura','Comercio / Retail','Tecnología','Finanzas','Salud','Educación','Alimentos y Bebidas','Construcción / Inmobiliario','Logística / Transporte','Turismo / Hospitalidad','Servicios Profesionales','Automotriz / Movilidad','Energía / Recursos Naturales','Telecomunicaciones / Medios','Farmacéutica / Biotech','Agroindustria','Gobierno / ONG','Moda / Consumo','Entretenimiento / Deportes','Otro']
+const INDUSTRY_GROUPS = [
+  { group: 'Marketing & Medios', options: ['Agencia de Marketing Digital','Publicidad y Medios Tradicionales','Relaciones Públicas y Comunicación','Producción de Contenido y Video','Diseño Gráfico y Branding','SEO / SEM / Performance'] },
+  { group: 'Tecnología', options: ['Software y SaaS','Desarrollo Web y Apps','Inteligencia Artificial y Machine Learning','Ciberseguridad','Cloud Computing','E-commerce y Plataformas Digitales','Fintech','Edtech','Healthtech','Proptech'] },
+  { group: 'Comercio & Retail', options: ['Retail y Tiendas Físicas','E-commerce y Ventas Online','Distribución y Mayoreo','Importación y Exportación','Franquicias'] },
+  { group: 'Servicios Profesionales', options: ['Consultoría de Negocios','Consultoría Legal','Contabilidad y Finanzas','Recursos Humanos y Reclutamiento','Capacitación y Desarrollo','Arquitectura y Diseño de Interiores'] },
+  { group: 'Salud & Bienestar', options: ['Clínicas y Consultorios Médicos','Farmacéutica y Biotecnología','Bienestar y Fitness','Nutrición y Salud Natural','Odontología','Salud Mental y Psicología'] },
+  { group: 'Educación', options: ['Educación Básica y Media','Educación Superior','Cursos Online y E-learning','Idiomas y Certificaciones','Tutorías y Clases Particulares'] },
+  { group: 'Alimentos & Bebidas', options: ['Restaurantes y Cafeterías','Bares y Entretenimiento Nocturno','Catering y Eventos','Producción de Alimentos','Bebidas y Licores','Franquicias de Comida'] },
+  { group: 'Manufactura & Industria', options: ['Manufactura General','Industria Automotriz','Plásticos y Empaques','Textil y Moda','Construcción y Materiales','Maquinaria e Industria Pesada','Energía y Petróleo'] },
+  { group: 'Finanzas & Seguros', options: ['Banca y Servicios Financieros','Seguros','Inversiones y Fondos','Bienes Raíces e Inmobiliaria','Crédito y Financiamiento'] },
+  { group: 'Turismo & Hospitalidad', options: ['Hoteles y Hospedaje','Agencias de Viaje','Turismo y Experiencias','Aerolíneas y Transporte','Renta de Autos'] },
+  { group: 'Logística & Transporte', options: ['Logística y Cadena de Suministro','Transporte de Carga','Última Milla y Delivery','Almacenamiento y Bodegas'] },
+  { group: 'Entretenimiento & Cultura', options: ['Entretenimiento y Eventos','Música y Artes','Deportes y Recreación','Medios de Comunicación','Videojuegos y Gaming'] },
+  { group: 'Gobierno & Social', options: ['Gobierno y Sector Público','ONG y Organizaciones Sociales','Fundaciones y Filantropía'] },
+]
 const DIFFS_LIB = ['Precio competitivo','Alta calidad','Servicio al cliente excepcional','Entrega rápida','Atención personalizada','Innovación constante','Tecnología avanzada','Experiencia comprobada','Especialización en el sector','Soluciones a medida','Rapidez de respuesta','Confianza y reputación','Garantía y respaldo','Cobertura nacional','Cobertura internacional','Procesos eficientes','Flexibilidad operativa','Personal altamente capacitado','Cumplimiento normativo','Seguridad y protección de datos','Sustentabilidad / enfoque ecológico','Soporte postventa','Excelente relación calidad-precio','Atención 24/7','Resultados medibles']
 const AREAS = [
   { id:'industries', code:'A.01', label:'Industrias a monitorear', desc:'Movimientos macro de los sectores que elegiste como foco.', meta:'12 sources', on:true },
@@ -131,9 +145,14 @@ function Step1({ data, set }: any) {
           <div>
             <label style={S.label}>Industria</label>
             <select style={{...S.input, appearance:'none' as const}} value={data.industry} onChange={e=>set('industry',e.target.value)}>
-  <option value="">Seleccionar...</option>
-  {INDUSTRIES.map(i=><option key={i}>{i}</option>)}
-</select>
+              <option value="">Seleccionar industria...</option>
+              {INDUSTRY_GROUPS.map(g=>(
+                <optgroup key={g.group} label={`── ${g.group} ──`}>
+                  {g.options.map(o=><option key={o} value={o}>{o}</option>)}
+                </optgroup>
+              ))}
+              <option value="Otro">Otro (especificar)</option>
+            </select>
 {data.industry === 'Otro' && (
   <input style={{...S.input, marginTop:8}} value={data.industryCustom||''} onChange={e=>set('industryCustom',e.target.value)} placeholder="Describe el giro de tu negocio..." />
 )}
