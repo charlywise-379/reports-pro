@@ -107,7 +107,7 @@ export async function sendReportEmail(
   `
 
   await resend.emails.send({
-    from: 'PRO Reports <onboarding@resend.dev>',
+    from: 'PRO Reports <reportes@flow11.mx>',
     to,
     subject,
     html,

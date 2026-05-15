@@ -77,7 +77,7 @@ router.post('/generate/:projectId', async (req: Request, res: Response) => {
 
     // 9. Enviar email con el reporte
     try {
-      const deliveryEmail = project.deliveryEmail ? 'charlywise@gmail.com' : null // TODO: cambiar a project.deliveryEmail cuando tengamos dominio verificado
+      const deliveryEmail = project.deliveryEmail
       if (deliveryEmail) {
         const { sendReportEmail } = await import('../lib/email')
         const setup = (project as any).competitiveSetup
