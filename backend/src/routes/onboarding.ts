@@ -157,6 +157,13 @@ router.post('/competitive', async (req: Request, res: Response) => {
       areaDepth,
       countries,
       presenceScope,
+      brand: typeof brand === 'string' ? brand.trim() : null,
+      companySize: companySize || null,
+      tags: Array.isArray(tags) ? tags : [],
+      deliveryChannel: deliveryChannel || null,
+      deliveryDay: deliveryDay || null,
+      deliveryTime: deliveryTime || null,
+      deliveryPhone: deliveryPhone || null,
     })
 
     const setupData = {
