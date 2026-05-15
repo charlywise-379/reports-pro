@@ -15,6 +15,7 @@ router.post('/competitive', async (req: Request, res: Response) => {
       targetMarket, mainProducts, socialMedia, pitch, differentiators,
       products, presenceScope, countries, directCompetitors, indirectCompetitors,
       monitorAreas, areaDepth, frequency, deliveryChannel, deliveryEmail, deliveryPhone,
+      deliveryDay, deliveryTime, tags,
       presenceRegional, presenceNational, presenceInternational,
     } = req.body
 
