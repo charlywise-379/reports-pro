@@ -56,7 +56,7 @@ const TAGS_LIB = [
 const INDUSTRY_GROUPS = [
   { group: 'Marketing & Medios', options: ['Agencia de Marketing Digital','Publicidad y Medios Tradicionales','Relaciones Públicas y Comunicación','Producción de Contenido y Video','Diseño Gráfico y Branding','SEO / SEM / Performance'] },
   { group: 'Tecnología', options: ['Software y SaaS','Desarrollo Web y Apps','Inteligencia Artificial y Machine Learning','Ciberseguridad','Cloud Computing','E-commerce y Plataformas Digitales','Fintech','Edtech','Healthtech','Proptech'] },
-  { group: 'Comercio & Retail', options: ['Retail y Tiendas Físicas','E-commerce y Ventas Online','Distribución y Mayoreo','Importación y Exportación','Franquicias'] },
+  { group: 'Comercio & Retail', options: ['Retail y Tiendas Físicas','E-commerce y Ventas Online','Distribución y Mayoreo','Importación y Exportación','Franquicias','Comercialización de Productos y/o Servicios'] },
   { group: 'Servicios Profesionales', options: ['Consultoría de Negocios','Consultoría Legal','Contabilidad y Finanzas','Recursos Humanos y Reclutamiento','Capacitación y Desarrollo','Arquitectura y Diseño de Interiores'] },
   { group: 'Salud & Bienestar', options: ['Clínicas y Consultorios Médicos','Farmacéutica y Biotecnología','Bienestar y Fitness','Nutrición y Salud Natural','Odontología','Salud Mental y Psicología'] },
   { group: 'Educación', options: ['Educación Básica y Media','Educación Superior','Cursos Online y E-learning','Idiomas y Certificaciones','Tutorías y Clases Particulares'] },
