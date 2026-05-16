@@ -16,9 +16,9 @@ export async function requireAuth(req: Request, res: Response, next: NextFunctio
       return res.status(401).json({ error: 'No autorizado — token requerido' })
     }
 
-    const secret = process.env.SUPABASE_JWT_SECRET
+    const secret = process.env.RPO_JWT_SECRET
     if (!secret) {
-      console.error('❌ Missing SUPABASE_JWT_SECRET')
+      console.error('❌ Missing RPO_JWT_SECRET')
       return res.status(500).json({ error: 'Configuración de servidor incompleta' })
     }
 
