@@ -8,6 +8,16 @@ import stripeRouter from './routes/stripe'
 
 dotenv.config()
 
+// Startup diagnostics — removed in production once stable
+console.log('🔧 ENV CHECK:', {
+  SUPABASE_URL: !!process.env.SUPABASE_URL,
+  SUPABASE_SERVICE_ROLE_KEY: !!process.env.SUPABASE_SERVICE_ROLE_KEY,
+  DATABASE_URL: !!process.env.DATABASE_URL,
+  DIRECT_URL: !!process.env.DIRECT_URL,
+  STRIPE_SECRET_KEY: !!process.env.STRIPE_SECRET_KEY,
+  ANTHROPIC_API_KEY: !!process.env.ANTHROPIC_API_KEY,
+})
+
 const app = express()
 const PORT = process.env.PORT || 3001
 

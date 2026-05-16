@@ -1,11 +1,6 @@
 import { Request, Response, NextFunction } from 'express'
 import { createClient } from '@supabase/supabase-js'
 
-const supabase = createClient(
-  process.env.SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-)
-
 declare global {
   namespace Express {
     interface Request {
@@ -16,6 +11,14 @@ declare global {
 
 export async function requireAuth(req: Request, res: Response, next: NextFunction) {
   try {
+    const supabaseUrl = process.env.SUPABASE_URL
+    const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+    if (!supabaseUrl || !supabaseKey) {
+      console.error('❌ Missing SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY')
+      return res.status(500).json({ error: 'Configuración de servidor incompleta' })
+    }
+    const supabase = createClient(supabaseUrl, supabaseKey)
+
     const authHeader = req.headers.authorization
     if (!authHeader?.startsWith('Bearer ')) {
       return res.status(401).json({ error: 'No autorizado — token requerido' })
