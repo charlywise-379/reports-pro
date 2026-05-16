@@ -32,11 +32,27 @@ app.use('/api/dashboard', dashboardRouter)
 app.use('/api/stripe', stripeRouter)
 
 // Health check
-app.get('/health', (req, res) => {
+app.get('/health', async (req, res) => {
+  const { prisma } = await import('./lib/prisma')
+  let dbStatus = 'unknown'
+  let userCount = 0
+  try {
+    userCount = await prisma.user.count()
+    dbStatus = 'ok'
+  } catch (e: any) {
+    dbStatus = e.message
+  }
   res.json({
-    status: 'ok',
-    message: 'Reports PRO Backend funcionando correctamente',
-    timestamp: new Date().toISOString()
+    status: dbStatus === 'ok' ? 'ok' : 'db_error',
+    message: 'Reports PRO Backend',
+    timestamp: new Date().toISOString(),
+    db: dbStatus,
+    users: userCount,
+    env: {
+      supabaseUrl: !!process.env.SUPABASE_URL,
+      supabaseKey: !!process.env.SUPABASE_SERVICE_ROLE_KEY,
+      directUrl: !!process.env.DIRECT_URL,
+    }
   })
 })
 
