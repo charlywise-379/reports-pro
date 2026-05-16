@@ -1,16 +1,11 @@
 import { Router, Request, Response } from 'express'
 import { prisma } from '../lib/prisma'
-import { requireAuth } from '../middleware/auth'
 
 const router = Router()
 
-router.get('/:userId', requireAuth, async (req: Request, res: Response) => {
+router.get('/:userId', async (req: Request, res: Response) => {
   try {
     const { userId } = req.params
-
-    if (userId !== req.userId) {
-      return res.status(403).json({ error: 'No tienes permiso para ver este dashboard' })
-    }
 
     const project = await (prisma.project as any).findFirst({
       where: { userId },
