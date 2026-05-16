@@ -8,15 +8,6 @@ import stripeRouter from './routes/stripe'
 
 dotenv.config()
 
-// Startup diagnostics — removed in production once stable
-console.log('🔧 ENV CHECK:', {
-  RPO_JWT_SECRET: !!process.env.RPO_JWT_SECRET,
-  DATABASE_URL: !!process.env.DATABASE_URL,
-  DIRECT_URL: !!process.env.DIRECT_URL,
-  STRIPE_SECRET_KEY: !!process.env.STRIPE_SECRET_KEY,
-  ANTHROPIC_API_KEY: !!process.env.ANTHROPIC_API_KEY,
-})
-
 const app = express()
 const PORT = process.env.PORT || 3001
 
@@ -31,26 +22,11 @@ app.use('/api/dashboard', dashboardRouter)
 app.use('/api/stripe', stripeRouter)
 
 // Health check
-app.get('/health', async (req, res) => {
-  const { prisma } = await import('./lib/prisma')
-  let dbStatus = 'unknown'
-  let userCount = 0
-  try {
-    userCount = await prisma.user.count()
-    dbStatus = 'ok'
-  } catch (e: any) {
-    dbStatus = e.message
-  }
+app.get('/health', (req, res) => {
   res.json({
-    status: dbStatus === 'ok' ? 'ok' : 'db_error',
-    message: 'Reports PRO Backend',
-    timestamp: new Date().toISOString(),
-    db: dbStatus,
-    users: userCount,
-    env: {
-      jwtSecret: !!process.env.RPO_JWT_SECRET,
-      directUrl: !!process.env.DIRECT_URL,
-    }
+    status: 'ok',
+    message: 'Reports PRO Backend funcionando correctamente',
+    timestamp: new Date().toISOString()
   })
 })
 
