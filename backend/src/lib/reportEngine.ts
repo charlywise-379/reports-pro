@@ -538,28 +538,38 @@ async function callClaudeWithSearch(project: any, dateInfo: any): Promise<any> {
   const businessType = inferBusinessType(project.setup || {})
   const systemPrompt = `Eres un analista de inteligencia competitiva para PYMES mexicanas. REGLA ABSOLUTA: El negocio del cliente es una ${businessType}. PROHIBIDO analizar telecomunicaciones, 5G, Telcel, AT&T, Movistar, Izzi o cualquier empresa de telecom. SOLO analiza competidores del mismo giro y tamaño PYME. Responde en español de México.`
 
-  // Llamada a Claude con web search habilitado
-  const response = await anthropic.messages.create({
-    model: 'claude-sonnet-4-5',
-    system: systemPrompt,
-    max_tokens: 16000,
-    tools: [
-      {
-        type: 'web_search_20250305' as any,
-        name: 'web_search',
-      },
-    ],
-    messages: [
-  {
-    role: 'user',
-    content: prompt,
-  },
-  {
-    role: 'assistant',
-    content: '{',
-  },
-],
-  })
+  // Llamada a Claude con web search habilitado — reintentos automáticos en 529
+  const MAX_RETRIES = 3
+  let response: any
+  for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
+    try {
+      response = await anthropic.messages.create({
+        model: 'claude-sonnet-4-5',
+        system: systemPrompt,
+        max_tokens: 16000,
+        tools: [
+          {
+            type: 'web_search_20250305' as any,
+            name: 'web_search',
+          },
+        ],
+        messages: [
+          { role: 'user', content: prompt },
+          { role: 'assistant', content: '{' },
+        ],
+      })
+      break // Éxito — salir del loop
+    } catch (err: any) {
+      const is529 = err?.status === 529 || err?.message?.includes('529') || err?.message?.includes('overloaded')
+      if (is529 && attempt < MAX_RETRIES) {
+        const waitMs = attempt * 15000 // 15s, 30s entre reintentos
+        console.log(`⏳ Claude sobrecargado (529) — reintento ${attempt}/${MAX_RETRIES} en ${waitMs/1000}s...`)
+        await new Promise(resolve => setTimeout(resolve, waitMs))
+        continue
+      }
+      throw err // Si no es 529 o agotamos reintentos, lanzar el error
+    }
+  }
 
   console.log(`✅ Claude respondió — stop_reason: ${response.stop_reason}`)
 
