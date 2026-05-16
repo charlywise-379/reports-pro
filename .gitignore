@@ -1,22 +1,8 @@
-# Variables de entorno
+node_modules/
 .env
 .env.local
 .env.production
-credenciales-privadas/
-
-# Dependencias — NUNCA subir
-node_modules/
-**/node_modules/
-
-# Archivos de build
-frontend/.next/
-backend/dist/
-
-# Logs
+dist/
+.next/
+.vercel/
 *.log
-
-# Mac
-.DS_Store
-
-# Prisma migrations SQL
-backend/prisma/migrations/*.sql
