@@ -38,6 +38,9 @@ export default function DashboardPage() {
   const [selectedReport, setSelectedReport] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [generating, setGenerating] = useState(false)
+  const [showInviteModal, setShowInviteModal] = useState(false)
+  const [inviteEmails, setInviteEmails] = useState('')
+  const [inviteSent, setInviteSent] = useState(false)
   const BACKEND = process.env.NEXT_PUBLIC_BACKEND_URL || 'https://reports-pro-production.up.railway.app'
 
   useEffect(() => {
@@ -250,9 +253,9 @@ export default function DashboardPage() {
                 icon:<path d="M12 20h9M16.5 3.5a2.12 2.12 0 113 3L7 19l-4 1 1-4z"/> },
               { label: generating ? 'Generando...' : 'Generar Reporte', color:'#6EE7A4', bg:'rgba(110,231,164,0.08)', border:'rgba(110,231,164,0.2)', href:'#', onClick: handleGenerateReport,
                 icon:<><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></> },
-              { label:'Ver Reportes', color:'#F2C063', bg:'rgba(242,192,99,0.08)', border:'rgba(242,192,99,0.2)', href:'#',
+              { label:`${(dashData?.reports || []).filter((r: any) => r.status !== 'FAILED').length} Reportes`, color:'#F2C063', bg:'rgba(242,192,99,0.08)', border:'rgba(242,192,99,0.2)', href:'#',
                 icon:<path d="M7 3h7l5 5v13a1 1 0 01-1 1H7a1 1 0 01-1-1V4a1 1 0 011-1z"/> },
-              { label:'Invitar Colegas', color:'#9CA3AF', bg:'rgba(255,255,255,0.04)', border:'rgba(255,255,255,0.1)', href:'#',
+              { label:'Invitar Colegas', color:'#9CA3AF', bg:'rgba(255,255,255,0.04)', border:'rgba(255,255,255,0.1)', href:'#', onClick: ()=>setShowInviteModal(true),
                 icon:<><path d="M17 21v-2a4 4 0 00-4-4H7a4 4 0 00-4 4v2"/><circle cx="10" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></> },
             ].map((a: any,i: number)=>(
               <a key={i} href={a.href} onClick={a.onClick ? (e)=>{e.preventDefault();a.onClick()} : undefined} style={{ padding:'16px 14px', background:a.bg, border:`1px solid ${a.border}`, borderRadius:14, color:a.color, fontSize:12, fontWeight:700, cursor:'pointer', display:'flex', flexDirection:'column', alignItems:'flex-start', gap:10, textDecoration:'none' }}>
@@ -425,5 +428,43 @@ export default function DashboardPage() {
 
       </div>
     </main>
+
+    {/* Modal Invitar Colegas */}
+    {showInviteModal && (
+      <div style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.7)', display:'flex', alignItems:'center', justifyContent:'center', zIndex:1000 }}>
+        <div style={{ background:'#1A1730', border:'1px solid rgba(255,255,255,0.1)', borderRadius:20, padding:32, width:420, maxWidth:'90vw' }}>
+          <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:20 }}>
+            <div style={{ fontSize:16, fontWeight:800, color:'#F0F2FF' }}>Invitar Colegas</div>
+            <button onClick={()=>{setShowInviteModal(false);setInviteSent(false);setInviteEmails('')}} style={{ background:'none', border:'none', color:'#5A627A', cursor:'pointer', fontSize:20 }}>×</button>
+          </div>
+          {!inviteSent ? (
+            <>
+              <p style={{ fontSize:13, color:'#9CA3AF', marginBottom:16, lineHeight:1.6 }}>
+                Agrega los emails de tus colegas para que también reciban el reporte de inteligencia competitiva.
+              </p>
+              <label style={{ fontSize:10, fontWeight:700, color:'#5A627A', letterSpacing:'0.1em', display:'block', marginBottom:6 }}>EMAILS (separados por coma)</label>
+              <textarea
+                value={inviteEmails}
+                onChange={e=>setInviteEmails(e.target.value)}
+                placeholder="colega1@empresa.com, colega2@empresa.com"
+                style={{ width:'100%', background:'rgba(255,255,255,0.04)', border:'1px solid rgba(255,255,255,0.1)', borderRadius:10, padding:'10px 14px', color:'#F0F2FF', fontSize:13, outline:'none', boxSizing:'border-box', resize:'none', height:80, scrollbarWidth:'none' as const }}
+              />
+              <button
+                onClick={()=>setInviteSent(true)}
+                style={{ width:'100%', marginTop:16, background:'linear-gradient(135deg,#8B7BFF,#5DD4D4)', border:'none', borderRadius:20, padding:'12px', color:'#0D0F1A', fontSize:13, fontWeight:800, cursor:'pointer' }}>
+                Enviar invitación →
+              </button>
+            </>
+          ) : (
+            <div style={{ textAlign:'center', padding:'20px 0' }}>
+              <div style={{ fontSize:32, marginBottom:12 }}>✅</div>
+              <div style={{ fontSize:15, fontWeight:700, color:'#6EE7A4', marginBottom:8 }}>Invitaciones enviadas</div>
+              <div style={{ fontSize:13, color:'#9CA3AF' }}>Tus colegas recibirán el próximo reporte automáticamente.</div>
+              <button onClick={()=>{setShowInviteModal(false);setInviteSent(false);setInviteEmails('')}} style={{ marginTop:20, background:'rgba(255,255,255,0.06)', border:'1px solid rgba(255,255,255,0.1)', borderRadius:20, padding:'10px 24px', color:'#F0F2FF', fontSize:13, fontWeight:700, cursor:'pointer' }}>Cerrar</button>
+            </div>
+          )}
+        </div>
+      </div>
+    )}
   )
 }
