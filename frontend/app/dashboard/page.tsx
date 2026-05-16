@@ -39,6 +39,9 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true)
   const [generating, setGenerating] = useState(false)
   const [showInviteModal, setShowInviteModal] = useState(false)
+  const [showEditProfile, setShowEditProfile] = useState(false)
+  const [editName, setEditName] = useState('')
+  const [passwordSent, setPasswordSent] = useState(false)
   const [inviteEmails, setInviteEmails] = useState('')
   const [inviteSent, setInviteSent] = useState(false)
   const BACKEND = process.env.NEXT_PUBLIC_BACKEND_URL || 'https://reports-pro-production.up.railway.app'
@@ -111,6 +114,15 @@ export default function DashboardPage() {
     }, 30000)
     return () => clearInterval(interval)
   }, [dashData?.reports?.length])
+
+  const handlePasswordReset = async () => {
+    if (!user?.email) return
+    await supabase.auth.resetPasswordForEmail(user.email, {
+      redirectTo: 'https://reports-pro.vercel.app/reset-password'
+    })
+    setPasswordSent(true)
+    setTimeout(() => setPasswordSent(false), 5000)
+  }
 
   const handleLogout = async () => {
     await supabase.auth.signOut()
@@ -243,8 +255,8 @@ export default function DashboardPage() {
               </div>
             </div>
             <div style={{ display:'flex', gap:8 }}>
-              <button style={{ fontSize:11, fontWeight:600, color:'#8B7BFF', background:'rgba(139,123,255,0.1)', border:'1px solid rgba(139,123,255,0.2)', borderRadius:20, padding:'6px 14px', cursor:'pointer' }}>Editar perfil</button>
-              <button style={{ fontSize:11, fontWeight:600, color:'#9CA3AF', background:'rgba(255,255,255,0.04)', border:'1px solid rgba(255,255,255,0.08)', borderRadius:20, padding:'6px 14px', cursor:'pointer' }}>Cambiar contraseña</button>
+              <button onClick={()=>{setEditName(dashData?.setup?.companyName||'');setShowEditProfile(true)}} style={{ fontSize:11, fontWeight:600, color:'#8B7BFF', background:'rgba(139,123,255,0.1)', border:'1px solid rgba(139,123,255,0.2)', borderRadius:20, padding:'6px 14px', cursor:'pointer' }}>Editar perfil</button>
+              <button onClick={handlePasswordReset} style={{ fontSize:11, fontWeight:600, color: passwordSent ? '#6EE7A4' : '#9CA3AF', background:'rgba(255,255,255,0.04)', border:'1px solid rgba(255,255,255,0.08)', borderRadius:20, padding:'6px 14px', cursor:'pointer' }}>{passwordSent ? '✓ Email enviado' : 'Cambiar contraseña'}</button>
             </div>
           </div>
           <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr 1fr 1fr', gap:10 }}>
@@ -427,6 +439,33 @@ export default function DashboardPage() {
 
 
       </div>
+
+    {/* Modal Editar Perfil */}
+    {showEditProfile && (
+      <div style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.7)', display:'flex', alignItems:'center', justifyContent:'center', zIndex:1000 }}>
+        <div style={{ background:'#1A1730', border:'1px solid rgba(255,255,255,0.1)', borderRadius:20, padding:32, width:400, maxWidth:'90vw' }}>
+          <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:20 }}>
+            <div style={{ fontSize:16, fontWeight:800, color:'#F0F2FF' }}>Editar perfil</div>
+            <button onClick={()=>setShowEditProfile(false)} style={{ background:'none', border:'none', color:'#5A627A', cursor:'pointer', fontSize:20 }}>×</button>
+          </div>
+          <label style={{ fontSize:10, fontWeight:700, color:'#5A627A', letterSpacing:'0.1em', display:'block', marginBottom:6 }}>NOMBRE DE EMPRESA</label>
+          <input
+            value={editName}
+            onChange={e=>setEditName(e.target.value)}
+            style={{ width:'100%', background:'rgba(255,255,255,0.04)', border:'1px solid rgba(255,255,255,0.1)', borderRadius:10, padding:'10px 14px', color:'#F0F2FF', fontSize:13, outline:'none', boxSizing:'border-box' as const }}
+          />
+          <button
+            onClick={async()=>{
+              await fetch(`${BACKEND}/api/onboarding/save`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({userId:user?.id,companyName:editName})})
+              setShowEditProfile(false)
+              window.location.reload()
+            }}
+            style={{ width:'100%', marginTop:16, background:'linear-gradient(135deg,#8B7BFF,#5DD4D4)', border:'none', borderRadius:20, padding:'12px', color:'#0D0F1A', fontSize:13, fontWeight:800, cursor:'pointer' }}>
+            Guardar cambios →
+          </button>
+        </div>
+      </div>
+    )}
 
     {/* Modal Invitar Colegas */}
     {showInviteModal && (
