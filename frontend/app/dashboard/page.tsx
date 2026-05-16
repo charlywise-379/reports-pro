@@ -70,33 +70,21 @@ export default function DashboardPage() {
 
   const handleGenerateReport = async () => {
     if (!dashData?.project?.id) return
-
     const reporteEnProceso = (dashData?.reports || []).some((r: any) => !r.reportTitle)
-    if (reporteEnProceso) {
-      alert('Ya hay un reporte en proceso. Espera ~5 minutos a que termine.')
-      return
-    }
-
+    if (reporteEnProceso) { alert('Ya hay un reporte en proceso. Espera ~5 minutos.'); return }
     const ultimoReporte = dashData?.reports?.[0]
     if (ultimoReporte) {
       const minutos = (Date.now() - new Date(ultimoReporte.createdAt).getTime()) / 60000
-      if (minutos < 10) {
-        alert('Acabas de generar un reporte hace ' + Math.round(minutos) + ' min. Espera un momento antes de generar otro.')
-        return
-      }
+      if (minutos < 10) { alert('Espera ' + Math.round(10 - minutos) + ' min antes de generar otro.'); return }
     }
-
     setGenerating(true)
     try {
       const res = await fetch(`${BACKEND}/api/reports/generate/${dashData.project.id}`, {
-        method: 'POST',
-        headers: { 'Authorization': `Bearer ${token}` }
+        method: 'POST', headers: { 'Authorization': `Bearer ${token}` }
       })
       const data = await res.json()
-      if (data.success) {
-        window.location.reload()
-      }
-    } catch(e) { console.error('Error generando reporte:', e) }
+      if (data.success) window.location.reload()
+    } catch(e) { console.error(e) }
     setGenerating(false)
   }
 
@@ -124,30 +112,21 @@ export default function DashboardPage() {
 
   const handlePasswordReset = async () => {
     if (!user?.email) return
-    await supabase.auth.resetPasswordForEmail(user.email, {
-      redirectTo: 'https://reports-pro.vercel.app/reset-password'
-    })
+    await supabase.auth.resetPasswordForEmail(user.email, { redirectTo: 'https://reports-pro.vercel.app/reset-password' })
     setPasswordSent(true)
     setTimeout(() => setPasswordSent(false), 5000)
   }
 
-  const handleLogout = async () => {
-    await supabase.auth.signOut()
-    router.push('/login')
-  }
+  const handleLogout = async () => { await supabase.auth.signOut(); router.push('/login') }
 
   const s = selectedReport?.sectionsJson || {}
   const companyName = dashData?.setup?.companyName || 'Tu Empresa'
   const industry = dashData?.setup?.industry || 'Tu industria'
   const city = dashData?.setup?.city || ''
   const country = dashData?.setup?.country || 'Mexico'
-  const frequency = dashData?.project?.frequency || 'WEEKLY'
   const status = dashData?.project?.status || 'TRIAL'
-
   const trialDaysLeft = dashData?.project?.trialEndsAt
-    ? Math.max(0, Math.ceil((new Date(dashData.project.trialEndsAt).getTime() - Date.now()) / (1000 * 60 * 60 * 24)))
-    : 5
-
+    ? Math.max(0, Math.ceil((new Date(dashData.project.trialEndsAt).getTime() - Date.now()) / (1000*60*60*24))) : 5
   const setupCompetitors = [1,2,3,4,5]
     .filter(i => dashData?.setup?.[`competitor${i}Name`])
     .map(i => dashData.setup[`competitor${i}Name`])
@@ -163,7 +142,7 @@ export default function DashboardPage() {
   const hayGenerando = reports.some((r: any) => !r.reportTitle && r.status !== 'FAILED')
 
   return (
-    <main style={{ minHeight:'100vh', background:'#0D0F1A', color:'#F0F2FF', fontFamily:'"Plus Jakarta Sans", system-ui, sans-serif', padding:'24px 20px', paddingBottom:60 }}>
+    <main style={{ minHeight:'100vh', background:'#0D0F1A', color:'#F0F2FF', fontFamily:'system-ui, sans-serif', padding:'24px 20px', paddingBottom:60 }}>
       <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
 
       {/* HEADER */}
@@ -173,15 +152,16 @@ export default function DashboardPage() {
             <div style={{ width:32, height:32, background:'#534AB7', borderRadius:8, display:'flex', alignItems:'center', justifyContent:'center', fontSize:11, fontWeight:900, color:'#fff' }}>PR</div>
             <span style={{ fontSize:11, fontWeight:700, color:'#8B7BFF', letterSpacing:'0.1em' }}>PRO REPORTS</span>
           </div>
-          <h1 style={{ fontSize:22, fontWeight:900, color:'#F0F2FF', letterSpacing:'-0.02em' }}>{companyName}</h1>
-          <div style={{ fontSize:11, color:'#5A627A', marginTop:2 }}>{industry} {city ? '· ' + city : ''} · {country}</div>
+          <h1 style={{ fontSize:22, fontWeight:900, margin:0, letterSpacing:'-0.02em' }}>{companyName}</h1>
+          <div style={{ fontSize:11, color:'#5A627A', marginTop:2 }}>{industry}{city ? ' · ' + city : ''} · {country}</div>
         </div>
         <div style={{ display:'flex', gap:8, flexWrap:'wrap' }}>
           <button onClick={()=>router.push('/onboarding')} style={{ background:'rgba(255,255,255,0.04)', border:'1px solid rgba(255,255,255,0.08)', borderRadius:20, padding:'8px 16px', color:'#9CA3AF', fontSize:12, fontWeight:600, cursor:'pointer' }}>
             Editar perfil
           </button>
-          <button onClick={handleGenerateReport} disabled={generating || hayGenerando} style={{ background: generating || hayGenerando ? 'rgba(139,123,255,0.2)' : 'linear-gradient(135deg,#8B7BFF,#5DD4D4)', border:'none', borderRadius:20, padding:'8px 18px', color: generating || hayGenerando ? '#8B7BFF' : '#0D0F1A', fontSize:12, fontWeight:800, cursor: generating || hayGenerando ? 'default' : 'pointer' }}>
-            {hayGenerando ? 'Generando...' : generating ? 'Iniciando...' : 'Generar Reporte (' + reports.length + ')'}
+          <button onClick={handleGenerateReport} disabled={generating || hayGenerando}
+            style={{ background: generating||hayGenerando ? 'rgba(139,123,255,0.2)' : 'linear-gradient(135deg,#8B7BFF,#5DD4D4)', border:'none', borderRadius:20, padding:'8px 18px', color: generating||hayGenerando ? '#8B7BFF' : '#0D0F1A', fontSize:12, fontWeight:800, cursor: generating||hayGenerando ? 'default':'pointer' }}>
+            {hayGenerando ? 'Generando...' : generating ? 'Iniciando...' : `Generar Reporte (${reports.filter((r:any)=>r.reportTitle).length})`}
           </button>
           <button onClick={handleLogout} style={{ background:'rgba(255,255,255,0.03)', border:'1px solid rgba(255,255,255,0.07)', borderRadius:20, padding:'8px 16px', color:'#5A627A', fontSize:12, fontWeight:600, cursor:'pointer' }}>
             Salir
@@ -192,9 +172,7 @@ export default function DashboardPage() {
       {/* TRIAL BANNER */}
       {status === 'TRIAL' && (
         <div style={{ background:'rgba(242,192,99,0.08)', border:'1px solid rgba(242,192,99,0.2)', borderRadius:12, padding:'12px 16px', marginBottom:20, display:'flex', justifyContent:'space-between', alignItems:'center', flexWrap:'wrap', gap:8 }}>
-          <div style={{ fontSize:12, color:'#F2C063', fontWeight:600 }}>
-            Trial activo — {trialDaysLeft} dias restantes
-          </div>
+          <div style={{ fontSize:12, color:'#F2C063', fontWeight:600 }}>Trial activo — {trialDaysLeft} dias restantes</div>
           <button onClick={()=>router.push('/checkout')} style={{ background:'#F2C063', border:'none', borderRadius:20, padding:'6px 16px', color:'#0D0F1A', fontSize:11, fontWeight:800, cursor:'pointer' }}>
             Activar plan →
           </button>
@@ -210,12 +188,12 @@ export default function DashboardPage() {
       )}
 
       {/* SELECTOR REPORTES */}
-      {reports.length > 1 && (
+      {reports.filter((r:any)=>r.reportTitle).length > 1 && (
         <div style={{ display:'flex', gap:8, marginBottom:20, overflowX:'auto', paddingBottom:4 }}>
-          {reports.filter((r: any) => r.reportTitle).map((r: any, i: number) => (
+          {reports.filter((r: any) => r.reportTitle).map((r: any) => (
             <button key={r.id} onClick={()=>setSelectedReport(r)}
-              style={{ flexShrink:0, background: selectedReport?.id === r.id ? 'rgba(139,123,255,0.15)' : 'rgba(255,255,255,0.03)', border: selectedReport?.id === r.id ? '1px solid rgba(139,123,255,0.4)' : '1px solid rgba(255,255,255,0.07)', borderRadius:20, padding:'6px 14px', color: selectedReport?.id === r.id ? '#8B7BFF' : '#5A627A', fontSize:11, fontWeight:700, cursor:'pointer', whiteSpace:'nowrap' }}>
-              {selectedReport?.id === r.id ? 'Viendo · ' : ''}{new Date(r.createdAt).toLocaleDateString('es-MX', { day:'numeric', month:'short' })}
+              style={{ flexShrink:0, background: selectedReport?.id===r.id ? 'rgba(139,123,255,0.15)':'rgba(255,255,255,0.03)', border: selectedReport?.id===r.id ? '1px solid rgba(139,123,255,0.4)':'1px solid rgba(255,255,255,0.07)', borderRadius:20, padding:'6px 14px', color: selectedReport?.id===r.id ? '#8B7BFF':'#5A627A', fontSize:11, fontWeight:700, cursor:'pointer', whiteSpace:'nowrap' }}>
+              {selectedReport?.id===r.id ? 'Viendo · ':''}{new Date(r.createdAt).toLocaleDateString('es-MX',{day:'numeric',month:'short'})}
             </button>
           ))}
         </div>
@@ -224,10 +202,10 @@ export default function DashboardPage() {
       {/* KPIs */}
       <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit, minmax(140px, 1fr))', gap:10, marginBottom:16 }}>
         {[
-          { label:'SCORE COMPETITIVO', value: s.competitiveScore ? s.competitiveScore + '/10' : '--', sub: s.marketPosition || 'Sin datos', color:'#8B7BFF', pct: s.competitiveScore ? s.competitiveScore * 10 : 0 },
-          { label:'OPORTUNIDADES', value: s.opportunities?.length || '--', sub: 'Detectadas este periodo', color:'#6EE7A4', pct: s.opportunities?.length ? Math.min(s.opportunities.length * 20, 100) : 0 },
-          { label:'ALERTAS CRITICAS', value: s.criticalAlerts?.length || '--', sub: 'Requieren atencion', color:'#FF6B6B', pct: s.criticalAlerts?.length ? Math.min(s.criticalAlerts.length * 25, 100) : 0 },
-          { label:'RIESGO DE MERCADO', value: s.marketRisk ? s.marketRisk + '%' : '--', sub: s.riskLevel || 'Sin datos', color:'#F2C063', pct: s.marketRisk || 0 },
+          { label:'SCORE COMPETITIVO', value: s.competitiveScore ? s.competitiveScore+'/10':'--', sub: s.marketPosition||'Sin datos', color:'#8B7BFF', pct: s.competitiveScore ? s.competitiveScore*10:0 },
+          { label:'OPORTUNIDADES', value: s.opportunities?.length||'--', sub:'Detectadas este periodo', color:'#6EE7A4', pct: s.opportunities?.length ? Math.min(s.opportunities.length*20,100):0 },
+          { label:'ALERTAS CRITICAS', value: s.criticalAlerts?.length||'--', sub:'Requieren atencion', color:'#FF6B6B', pct: s.criticalAlerts?.length ? Math.min(s.criticalAlerts.length*25,100):0 },
+          { label:'RIESGO DE MERCADO', value: s.marketRisk ? s.marketRisk+'%':'--', sub: s.riskLevel||'Sin datos', color:'#F2C063', pct: s.marketRisk||0 },
         ].map((k,i)=>(
           <div key={i} style={{...S.card, margin:0}}>
             <span style={S.lbl}>{k.label}</span>
@@ -245,7 +223,7 @@ export default function DashboardPage() {
           <div style={{ display:'flex', flexDirection:'column', gap:8 }}>
             {s.criticalAlerts.map((a: any, i: number) => (
               <div key={i} style={{ display:'flex', gap:10, padding:'10px 12px', background:'rgba(255,107,107,0.05)', border:'1px solid rgba(255,107,107,0.2)', borderRadius:10 }}>
-                <span style={{ fontSize:18, flexShrink:0 }}>{a.icon || '!'}</span>
+                <span style={{ fontSize:18, flexShrink:0 }}>{a.icon||'!'}</span>
                 <div style={{ flex:1 }}>
                   <div style={{ fontSize:12, fontWeight:700, color:'#F0F2FF', marginBottom:2 }}>{a.title}</div>
                   <div style={{ fontSize:11, color:'#9CA3AF' }}>{a.description}</div>
@@ -268,17 +246,17 @@ export default function DashboardPage() {
             {setupCompetitors.map((name: string, i: number) => {
               const colors = ['#FF6B6B','#F2C063','#8B7BFF','#6EE7A4','#5DD4D4']
               const labels = ['CRITICO','VIGILAR','MEDIO','BAJO','BAJO']
-              const comp = (s.competitors || []).find((c: any) => c.name?.toLowerCase().includes(name.toLowerCase().split(' ')[0]))
-              const threat = comp?.threat || (5 - i)
+              const comp = (s.competitors||[]).find((c:any)=>c.name?.toLowerCase().includes(name.toLowerCase().split(' ')[0]))
+              const threat = comp?.threat||(5-i)
               return (
                 <div key={i} style={{ display:'flex', alignItems:'center', gap:10, padding:'10px 12px', background:'rgba(255,255,255,0.02)', border:'1px solid rgba(255,255,255,0.06)', borderRadius:10 }}>
-                  <GaugeCircle value={threat} color={colors[i % colors.length]}/>
+                  <GaugeCircle value={threat} color={colors[i%colors.length]}/>
                   <div style={{ flex:1, minWidth:0 }}>
                     <div style={{ fontSize:12, fontWeight:700, color:'#F0F2FF' }}>{name}</div>
-                    <div style={S.muted}>{city ? city + ' · ' : ''}{industry}</div>
-                    <div style={S.bar}><BarFill pct={threat*10} color={colors[i % colors.length]}/></div>
+                    <div style={S.muted}>{city ? city+' · ':''}{industry}</div>
+                    <div style={S.bar}><BarFill pct={threat*10} color={colors[i%colors.length]}/></div>
                   </div>
-                  <span style={{...S.badge, background:colors[i % colors.length] + '20', color:colors[i % colors.length]}}>{labels[i % labels.length]}</span>
+                  <span style={{...S.badge, background:colors[i%colors.length]+'20', color:colors[i%colors.length]}}>{labels[i%labels.length]}</span>
                 </div>
               )
             })}
@@ -294,7 +272,7 @@ export default function DashboardPage() {
             {s.opportunities.slice(0,4).map((o: any, i: number) => (
               <div key={i} style={{ padding:'10px 12px', background:'rgba(110,231,164,0.04)', border:'1px solid rgba(110,231,164,0.15)', borderRadius:10 }}>
                 <div style={{ display:'flex', alignItems:'center', gap:6, marginBottom:4 }}>
-                  <span style={{ fontSize:16 }}>{o.icon || '+'}</span>
+                  <span style={{ fontSize:16 }}>{o.icon||'+'}</span>
                   <div style={{ fontSize:11, fontWeight:700, color:'#F0F2FF' }}>{o.title}</div>
                 </div>
                 <div style={{ fontSize:10, color:'#9CA3AF', lineHeight:1.4 }}>{o.description}</div>
@@ -304,7 +282,7 @@ export default function DashboardPage() {
         </div>
       )}
 
-      {/* PDF LINK */}
+      {/* PDF */}
       {selectedReport?.r2Url && (
         <div style={{...S.card, marginBottom:14}}>
           <span style={S.lbl}>REPORTE PDF</span>
@@ -330,12 +308,10 @@ export default function DashboardPage() {
               const { data: { session } } = await supabase.auth.getSession()
               if (!session) return
               await fetch(`${BACKEND}/api/onboarding/save`, {
-                method:'POST',
-                headers:{ 'Content-Type':'application/json', 'Authorization': 'Bearer ' + session.access_token },
-                body:JSON.stringify({ userId:user?.id, companyName:editName })
+                method:'POST', headers:{'Content-Type':'application/json','Authorization':'Bearer '+session.access_token},
+                body:JSON.stringify({userId:user?.id,companyName:editName})
               })
-              setShowEditProfile(false)
-              window.location.reload()
+              setShowEditProfile(false); window.location.reload()
             }} style={{ width:'100%', marginTop:16, background:'linear-gradient(135deg,#8B7BFF,#5DD4D4)', border:'none', borderRadius:20, padding:'12px', color:'#0D0F1A', fontSize:13, fontWeight:800, cursor:'pointer' }}>
               Guardar cambios
             </button>
@@ -355,11 +331,9 @@ export default function DashboardPage() {
               <>
                 <p style={{ fontSize:13, color:'#9CA3AF', marginBottom:16, lineHeight:1.6 }}>Agrega los emails de tus colegas para que tambien reciban el reporte.</p>
                 <label style={{ fontSize:10, fontWeight:700, color:'#5A627A', letterSpacing:'0.1em', display:'block', marginBottom:6 }}>EMAILS (separados por coma)</label>
-                <textarea value={inviteEmails} onChange={e=>setInviteEmails(e.target.value)}
-                  placeholder="colega1@empresa.com, colega2@empresa.com"
+                <textarea value={inviteEmails} onChange={e=>setInviteEmails(e.target.value)} placeholder="colega1@empresa.com, colega2@empresa.com"
                   style={{ width:'100%', background:'rgba(255,255,255,0.04)', border:'1px solid rgba(255,255,255,0.1)', borderRadius:10, padding:'10px 14px', color:'#F0F2FF', fontSize:13, outline:'none', boxSizing:'border-box' as const, resize:'none', height:80 }}/>
-                <button onClick={()=>setInviteSent(true)}
-                  style={{ width:'100%', marginTop:16, background:'linear-gradient(135deg,#8B7BFF,#5DD4D4)', border:'none', borderRadius:20, padding:'12px', color:'#0D0F1A', fontSize:13, fontWeight:800, cursor:'pointer' }}>
+                <button onClick={()=>setInviteSent(true)} style={{ width:'100%', marginTop:16, background:'linear-gradient(135deg,#8B7BFF,#5DD4D4)', border:'none', borderRadius:20, padding:'12px', color:'#0D0F1A', fontSize:13, fontWeight:800, cursor:'pointer' }}>
                   Enviar invitacion
                 </button>
               </>
