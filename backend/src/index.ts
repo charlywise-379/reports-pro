@@ -10,8 +10,7 @@ dotenv.config()
 
 // Startup diagnostics — removed in production once stable
 console.log('🔧 ENV CHECK:', {
-  SUPABASE_URL: !!process.env.SUPABASE_URL,
-  SUPABASE_SRK: !!process.env.SUPABASE_SRK,
+  SUPABASE_JWT_SECRET: !!process.env.SUPABASE_JWT_SECRET,
   DATABASE_URL: !!process.env.DATABASE_URL,
   DIRECT_URL: !!process.env.DIRECT_URL,
   STRIPE_SECRET_KEY: !!process.env.STRIPE_SECRET_KEY,
@@ -49,8 +48,7 @@ app.get('/health', async (req, res) => {
     db: dbStatus,
     users: userCount,
     env: {
-      supabaseUrl: !!process.env.SUPABASE_URL,
-      supabaseKey: !!process.env.SUPABASE_SRK,
+      jwtSecret: !!process.env.SUPABASE_JWT_SECRET,
       directUrl: !!process.env.DIRECT_URL,
     }
   })
