@@ -427,7 +427,6 @@ export default function DashboardPage() {
 
 
       </div>
-    </main>
 
     {/* Modal Invitar Colegas */}
     {showInviteModal && (
@@ -466,5 +465,6 @@ export default function DashboardPage() {
         </div>
       </div>
     )}
+    </main>
   )
 }
