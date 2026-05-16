@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express'
-import { createClient } from '@supabase/supabase-js'
+import jwt from 'jsonwebtoken'
 
 declare global {
   namespace Express {
@@ -16,25 +16,17 @@ export async function requireAuth(req: Request, res: Response, next: NextFunctio
       return res.status(401).json({ error: 'No autorizado — token requerido' })
     }
 
-    const supabaseUrl = process.env.SUPABASE_URL
-    const supabaseKey = process.env.SUPABASE_ANON_KEY
-
-    if (!supabaseUrl || !supabaseKey) {
-      console.error('❌ Missing SUPABASE_URL or SUPABASE_ANON_KEY')
+    const secret = process.env.SUPABASE_JWT_SECRET
+    if (!secret) {
+      console.error('❌ Missing SUPABASE_JWT_SECRET')
       return res.status(500).json({ error: 'Configuración de servidor incompleta' })
     }
 
     const token = authHeader.split(' ')[1]
-    const supabase = createClient(supabaseUrl, supabaseKey)
-    const { data: { user }, error } = await supabase.auth.getUser(token)
-
-    if (error || !user) {
-      return res.status(401).json({ error: 'Token inválido o expirado' })
-    }
-
-    req.userId = user.id
+    const decoded = jwt.verify(token, secret) as any
+    req.userId = decoded.sub
     next()
   } catch (e: any) {
-    return res.status(401).json({ error: 'Error de autenticación' })
+    return res.status(401).json({ error: 'Token inválido o expirado' })
   }
 }
