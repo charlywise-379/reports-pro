@@ -106,6 +106,20 @@ router.post('/generate/:projectId', async (req: Request, res: Response) => {
   }
 })
 
+// Cleanup: marcar como FAILED reportes atascados en GENERATING por más de 15 min
+async function cleanupStuckReports() {
+  try {
+    const cutoff = new Date(Date.now() - 15 * 60 * 1000)
+    const stuck = await prisma.report.updateMany({
+      where: { status: 'GENERATING' as any, createdAt: { lt: cutoff } },
+      data: { status: 'FAILED' as any, reportTitle: 'Error — Tiempo de espera agotado' }
+    })
+    if (stuck.count > 0) console.log(`🧹 ${stuck.count} reportes atascados marcados como FAILED`)
+  } catch(e) {}
+}
+// Correr cleanup cada 5 minutos
+setInterval(cleanupStuckReports, 5 * 60 * 1000)
+
 // GET /api/reports/download/:filename
 router.get('/download/:filename', async (req: Request, res: Response) => {
   const filename = req.params.filename as string
