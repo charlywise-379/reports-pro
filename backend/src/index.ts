@@ -5,6 +5,8 @@ import onboardingRouter from './routes/onboarding'
 import reportsRouter from './routes/reports'
 import dashboardRouter from './routes/dashboard'
 import stripeRouter from './routes/stripe'
+import { startReportWorker } from './workers/reportWorker'
+import { scheduleReports } from './jobs/scheduleReports'
 
 dotenv.config()
 
@@ -20,6 +22,24 @@ app.use('/api/onboarding', onboardingRouter)
 app.use('/api/reports', reportsRouter)
 app.use('/api/dashboard', dashboardRouter)
 app.use('/api/stripe', stripeRouter)
+
+// Iniciar worker de BullMQ
+startReportWorker()
+console.log('Worker de reportes activo')
+
+// Scheduler: revisar reportes pendientes cada hora
+scheduleReports()
+setInterval(scheduleReports, 60 * 60 * 1000)
+console.log('Scheduler de reportes activo — ejecutando cada hora')
+
+// Iniciar worker de BullMQ
+startReportWorker()
+console.log('Worker de reportes activo')
+
+// Scheduler: revisar reportes pendientes cada hora
+scheduleReports()
+setInterval(scheduleReports, 60 * 60 * 1000)
+console.log('Scheduler de reportes activo — ejecutando cada hora')
 
 // Health check
 app.get('/health', (req, res) => {
