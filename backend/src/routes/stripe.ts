@@ -34,13 +34,17 @@ router.post('/create-checkout-session', async (req: Request, res: Response) => {
 
     const FRONTEND_URL = process.env.FRONTEND_URL || 'https://reports-pro.vercel.app'
 
+    // Verificar si el usuario ya uso su trial
+    const existingSubCheck = await (prisma.subscription as any).findFirst({ where: { projectId: project.id } })
+    const yaUsoTrial = existingSubCheck?.trialStartedAt != null
+
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
       payment_method_types: ['card'],
       line_items: [{ price: priceId, quantity: 1 }],
       mode: 'subscription',
       subscription_data: {
-        trial_period_days: 7,
+        ...(yaUsoTrial ? {} : { trial_period_days: 7 }),
         metadata: { userId, projectId: project.id, billingCycle: billingCycle || 'monthly' }
       },
       success_url: `${FRONTEND_URL}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,

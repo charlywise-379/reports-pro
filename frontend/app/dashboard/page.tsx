@@ -315,18 +315,8 @@ export default function DashboardPage() {
               <button onClick={()=>{setEditName(dashData?.setup?.companyName||'');setShowEditProfile(true)}} style={{ fontSize:11, fontWeight:600, color:'#8B7BFF', background:'rgba(139,123,255,0.1)', border:'1px solid rgba(139,123,255,0.2)', borderRadius:20, padding:'6px 14px', cursor:'pointer' }}>Editar perfil</button>
               <button onClick={handlePasswordReset} style={{ fontSize:11, fontWeight:600, color: passwordSent ? '#6EE7A4' : '#9CA3AF', background:'rgba(255,255,255,0.04)', border:'1px solid rgba(255,255,255,0.08)', borderRadius:20, padding:'6px 14px', cursor:'pointer' }}>{passwordSent ? '✓ Email enviado' : 'Cambiar contraseña'}</button>
               {tieneStripe && (
-                <button onClick={async () => {
-                  const { data: { session } } = await supabase.auth.getSession()
-                  if (!session) return
-                  const res = await fetch(BACKEND + '/api/stripe/portal', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + session.access_token },
-                    body: JSON.stringify({ userId: session.user.id })
-                  })
-                  const data = await res.json()
-                  if (data.url) window.location.href = data.url
-                  else alert('Error: ' + data.error)
-                }} style={{ fontSize:11, fontWeight:600, color:'#6EE7A4', background:'rgba(110,231,164,0.1)', border:'1px solid rgba(110,231,164,0.2)', borderRadius:20, padding:'6px 14px', cursor:'pointer' }}>
+                <button onClick={() => router.push('/upgrade')}
+                  style={{ fontSize:11, fontWeight:600, color:'#6EE7A4', background:'rgba(110,231,164,0.1)', border:'1px solid rgba(110,231,164,0.2)', borderRadius:20, padding:'6px 14px', cursor:'pointer' }}>
                   Gestionar suscripcion
                 </button>
               )}
