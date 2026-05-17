@@ -2,16 +2,17 @@ import { Router, Request, Response } from 'express'
 import path from 'path'
 import { generateReport } from '../lib/reportEngine'
 import { prisma } from '../lib/prisma'
+import { requireAuth } from '../middleware/auth'
 import { DeliveryChannel, ReportFrequency, ServiceType, ProjectStatus, SubscriptionStatus } from '@prisma/client'
 
 const router = Router()
 
-router.post('/competitive', async (req: Request, res: Response) => {
+router.post('/competitive', requireAuth, async (req: Request, res: Response) => {
   try {
     console.log('📦 PAYLOAD RECIBIDO:', JSON.stringify(req.body, null, 2))
 
     const {
-      userId, companyName, brand, website, industry, companySize, ciudad, pais,
+      companyName, brand, website, industry, companySize, ciudad, pais,
       targetMarket, mainProducts, socialMedia, pitch, differentiators,
       products, presenceScope, countries, directCompetitors, indirectCompetitors,
       monitorAreas, areaDepth, frequency, deliveryChannel, deliveryEmail, deliveryPhone,
@@ -19,9 +20,8 @@ router.post('/competitive', async (req: Request, res: Response) => {
       presenceRegional, presenceNational, presenceInternational,
     } = req.body
 
-    if (!userId) {
-      return res.status(400).json({ error: 'No hay sesión activa' })
-    }
+    // userId siempre viene del token JWT — nunca del body
+    const userId = req.userId!
 
     // ── Limpiar datos ──────────────────────────────────
     const finalName = (typeof companyName === 'string' && companyName.trim())
@@ -313,17 +313,18 @@ router.post('/competitive', async (req: Request, res: Response) => {
 
 
 // POST /api/onboarding/save — guardar progreso por paso
-router.post('/save', async (req: Request, res: Response) => {
+router.post('/save', requireAuth, async (req: Request, res: Response) => {
   try {
     const {
-      userId, companyName, brand, website, industry, companySize, ciudad, pais,
+      companyName, brand, website, industry, companySize, ciudad, pais,
       targetMarket, mainProducts, socialMedia, pitch, differentiators,
       products, presenceScope, countries, directCompetitors, indirectCompetitors,
       monitorAreas, areaDepth, frequency, deliveryEmail, deliveryPhone,
       deliveryChannel, deliveryDay, deliveryTime, tags,
     } = req.body
 
-    if (!userId) return res.status(400).json({ error: 'No userId' })
+    // userId siempre viene del token JWT — nunca del body
+    const userId = req.userId!
 
     const existingProject = await (prisma.project as any).findFirst({
       where: { userId, serviceType: ServiceType.COMPETITIVE_INTELLIGENCE }
