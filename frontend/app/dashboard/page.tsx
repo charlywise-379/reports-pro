@@ -79,15 +79,7 @@ export default function DashboardPage() {
       return
     }
 
-    // Verificar si el último reporte tiene menos de 10 minutos
-    const ultimoReporte = dashData?.reports?.[0]
-    if (ultimoReporte) {
-      const minutos = (Date.now() - new Date(ultimoReporte.createdAt).getTime()) / 60000
-      if (minutos < 10) {
-        alert(`Acabas de generar un reporte hace ${Math.round(minutos)} min. Espera un momento antes de generar otro.`)
-        return
-      }
-    }
+    // El backend maneja los limites de frecuencia y trial
 
     setGenerating(true)
     try {
