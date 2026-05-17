@@ -14,6 +14,7 @@ router.get('/:userId', requireAuth, async (req: Request, res: Response) => {
 
     const project = await (prisma.project as any).findFirst({
       where: { userId },
+      orderBy: { createdAt: 'desc' },
       include: {
         competitiveSetup: true,
         subscription: true,
