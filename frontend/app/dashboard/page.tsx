@@ -61,7 +61,7 @@ export default function DashboardPage() {
         const data = await res.json()
         setDashData(data)
         // Seleccionar el reporte más reciente con JSON por defecto
-        const latest = (data.reports || []).find((r: any) => r.sectionsJson)
+        const latest = (data.reports || []).find((r: any) => r.sectionsJson) || (data.reports || []).find((r: any) => r.status === 'COMPLETED')
         if (latest) setSelectedReport(latest)
       } catch(e) { console.error('Dashboard data error:', e) }
       setLoading(false)
@@ -104,7 +104,7 @@ export default function DashboardPage() {
   // Auto-refresh cada 30s si hay reporte generándose
   useEffect(() => {
     if (!dashData) return
-    const hayGenerando = (dashData?.reports || []).some((r: any) => !r.reportTitle && r.status !== 'FAILED')
+    const hayGenerando = (dashData?.reports || []).some((r: any) => r.status === 'GENERATING')
     if (!hayGenerando) return
     const interval = setInterval(async () => {
       try {
@@ -114,9 +114,9 @@ export default function DashboardPage() {
           headers: { 'Authorization': 'Bearer ' + s2.access_token }
         })
         const data = await res.json()
-        const sigueGenerando = (data?.reports || []).some((r: any) => !r.reportTitle && r.status !== 'FAILED')
+        const sigueGenerando = (data?.reports || []).some((r: any) => r.status === 'GENERATING')
         setDashData(data)
-        const latest = (data.reports || []).find((r: any) => r.sectionsJson)
+        const latest = (data.reports || []).find((r: any) => r.sectionsJson) || (data.reports || []).find((r: any) => r.status === 'COMPLETED')
         if (latest) setSelectedReport(latest)
         if (!sigueGenerando) clearInterval(interval)
       } catch(e) {}
