@@ -94,6 +94,39 @@ async function cleanupStuckReports() {
 }
 setInterval(cleanupStuckReports, 5 * 60 * 1000)
 
+// GET /api/reports/signed-url/:reportId — genera URL fresca on-demand
+router.get('/signed-url/:reportId', requireAuth, async (req: Request, res: Response) => {
+  try {
+    const { reportId } = req.params
+    const userId = req.userId!
+
+    const report = await prisma.report.findUnique({
+      where: { id: reportId },
+      include: { project: true } as any
+    })
+
+    if (!report) return res.status(404).json({ error: 'Reporte no encontrado' })
+
+    if ((report as any).project?.userId !== userId) {
+      return res.status(403).json({ error: 'No tienes permiso para descargar este reporte' })
+    }
+
+    if (!report.r2Key) return res.status(404).json({ error: 'PDF no disponible' })
+
+    const { getSignedDownloadUrl } = await import('../lib/r2')
+    const signedUrl = await getSignedDownloadUrl(report.r2Key)
+
+    await prisma.report.update({
+      where: { id: reportId },
+      data: { r2Url: signedUrl }
+    })
+
+    res.json({ url: signedUrl })
+  } catch(e: any) {
+    res.status(500).json({ error: e.message })
+  }
+})
+
 router.get('/download/:filename', async (req: Request, res: Response) => {
   const filename = req.params.filename as string
   try {

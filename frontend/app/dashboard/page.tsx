@@ -138,6 +138,19 @@ export default function DashboardPage() {
     router.push('/login')
   }
 
+  const handleDownload = async (reportId: string) => {
+    try {
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session) return
+      const res = await fetch(BACKEND + '/api/reports/signed-url/' + reportId, {
+        headers: { 'Authorization': 'Bearer ' + session.access_token }
+      })
+      const data = await res.json()
+      if (data.url) window.open(data.url, '_blank')
+      else alert('Error al descargar: ' + (data.error || 'intenta de nuevo'))
+    } catch(e) { console.error('Error descargando:', e) }
+  }
+
   // Datos del reporte seleccionado o vacíos
   const s = selectedReport?.sectionsJson || {}
   const companyName = dashData?.setup?.companyName || 'Tu Empresa'
@@ -231,10 +244,10 @@ export default function DashboardPage() {
                 <span style={{ fontSize:11, color:'#8B7BFF', fontWeight:600 }}>{selectedReport.reportTitle}</span>
                 <span style={{ fontSize:10, color:'#5A627A' }}>· {new Date(selectedReport.createdAt).toLocaleDateString('es-MX',{day:'numeric',month:'short',year:'numeric'})}</span>
                 {selectedReport.r2Key && (
-                  <a href={`${BACKEND}/api/reports/download/${selectedReport.r2Key?.replace("reports/", "")}`} target="_blank"
-                    style={{ fontSize:10, fontWeight:700, color:'#0D0F1A', background:'#8B7BFF', borderRadius:20, padding:'3px 10px', textDecoration:'none' }}>
+                  <button onClick={() => handleDownload(selectedReport.id)}
+                    style={{ fontSize:10, fontWeight:700, color:'#0D0F1A', background:'#8B7BFF', borderRadius:20, padding:'3px 10px', border:'none', cursor:'pointer' }}>
                     ↓ PDF
-                  </a>
+                  </button>
                 )}
               </div>
             )}
@@ -363,11 +376,10 @@ export default function DashboardPage() {
                   <div style={{ display:'flex', gap:8, alignItems:'center' }}>
                     {selectedReport?.id === r.id && <span style={{ fontSize:10, color:'#8B7BFF', fontWeight:700 }}>← Viendo</span>}
                     {r.r2Key && (
-                      <a href={`${BACKEND}/api/reports/download/${r.r2Key?.replace("reports/", "")}`} target="_blank"
-                        onClick={e => e.stopPropagation()}
-                        style={{ fontSize:11, fontWeight:700, color:'#8B7BFF', background:'rgba(139,123,255,0.1)', border:'1px solid rgba(139,123,255,0.2)', borderRadius:20, padding:'5px 12px', textDecoration:'none' }}>
+                      <button onClick={e => { e.stopPropagation(); handleDownload(r.id) }}
+                        style={{ fontSize:11, fontWeight:700, color:'#8B7BFF', background:'rgba(139,123,255,0.1)', border:'1px solid rgba(139,123,255,0.2)', borderRadius:20, padding:'5px 12px', cursor:'pointer' }}>
                         ↓ PDF
-                      </a>
+                      </button>
                     )}
                   </div>
                 </div>
@@ -411,10 +423,10 @@ export default function DashboardPage() {
             {selectedReport && <span style={{ fontSize:10, color:'#5A627A' }}>· {new Date(selectedReport.createdAt).toLocaleDateString('es-MX', { day:'2-digit', month:'short', year:'numeric' })} {new Date(selectedReport.createdAt).toLocaleTimeString('es-MX', { hour:'2-digit', minute:'2-digit' })}</span>}
           </div>
           {selectedReport?.r2Key && (
-            <a href={`${BACKEND}/api/reports/download/${selectedReport.r2Key?.replace("reports/", "")}`} target="_blank"
-              style={{ fontSize:11, fontWeight:700, color:'#0D0F1A', background:'#8B7BFF', borderRadius:20, padding:'5px 14px', textDecoration:'none', display:'flex', alignItems:'center', gap:5 }}>
+            <button onClick={() => handleDownload(selectedReport.id)}
+              style={{ fontSize:11, fontWeight:700, color:'#0D0F1A', background:'#8B7BFF', borderRadius:20, padding:'5px 14px', border:'none', cursor:'pointer', display:'flex', alignItems:'center', gap:5 }}>
               ↓ PDF
-            </a>
+            </button>
           )}
         </div>
         <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr 1fr 1fr', gap:10, marginBottom:14 }}>

@@ -11,6 +11,20 @@ const r2 = new S3Client({
   },
 })
 
+// Regenerar URL firmada para un PDF ya subido (on-demand, expira en 7 dias)
+export async function getSignedDownloadUrl(r2Key: string): Promise<string> {
+  const key = r2Key.startsWith('reports/') ? r2Key : `reports/${r2Key}`
+  const signedUrl = await getSignedUrl(
+    r2,
+    new GetObjectCommand({
+      Bucket: process.env.R2_BUCKET_NAME || 'reports-pro-pdfs',
+      Key: key,
+    }),
+    { expiresIn: 60 * 60 * 24 * 7 } // 7 dias
+  )
+  return signedUrl
+}
+
 export async function uploadPDFToR2(localPath: string, filename: string): Promise<string> {
   const fileBuffer = fs.readFileSync(localPath)
   const key = `reports/${filename}`
