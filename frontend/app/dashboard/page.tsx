@@ -241,15 +241,20 @@ export default function DashboardPage() {
           </div>
           <div style={{ textAlign:'right' }}>
             <div style={{ fontSize:10, fontWeight:700, color:'#5A627A', marginBottom:5 }}>
-              {status === 'TRIAL' ? `TRIAL: ${trialDaysLeft} DÍAS RESTANTES` : 'SUSCRIPCIÓN ACTIVA'}
+              {tieneStripe ? 'SUSCRIPCIÓN ACTIVA' : `TRIAL: ${trialDaysLeft} DÍAS RESTANTES`}
             </div>
-            <div style={{ width:160 }}>
-              <div style={S.bar}><BarFill pct={status === 'TRIAL' ? Math.round(((7-trialDaysLeft)/7)*100) : 100} color="#8B7BFF"/></div>
-            </div>
-            <div style={{ display:'flex', justifyContent:'space-between', marginTop:3 }}>
-              <span style={S.muted}>{status === 'TRIAL' ? `Día ${7-trialDaysLeft}` : '✓ Activo'}</span>
-              <span style={S.muted}>{status === 'TRIAL' ? 'Día 7' : frequency}</span>
-            </div>
+            {!tieneStripe && (
+              <div style={{ width:160 }}>
+                <div style={S.bar}><BarFill pct={Math.round(((7-trialDaysLeft)/7)*100)} color="#8B7BFF"/></div>
+                <div style={{ display:'flex', justifyContent:'space-between', marginTop:3 }}>
+                  <span style={S.muted}>Día {7-trialDaysLeft}</span>
+                  <span style={S.muted}>Día 7</span>
+                </div>
+              </div>
+            )}
+            {tieneStripe && (
+              <div style={{ fontSize:11, color:'#6EE7A4', marginTop:4, fontWeight:700 }}>✓ Plan {frequency} activo</div>
+            )}
           </div>
         </div>
 
@@ -268,8 +273,22 @@ export default function DashboardPage() {
             </div>
             <div style={{ textAlign:'right', flexShrink:0, paddingLeft:20 }}>
               <span style={S.lbl}>GENERACIÓN AUTOMÁTICA</span>
-              <div style={{ fontSize:28, fontWeight:900, color:'#8B7BFF' }}>Próx.</div>
-              <div style={S.muted}>Según frecuencia configurada</div>
+              {(() => {
+                const freqDays: Record<string,number> = { DAILY:1, WEEKLY:7, BIWEEKLY:15, MONTHLY:30 }
+                const lastReport = (dashData?.reports || []).find((r:any) => r.status === 'COMPLETED')
+                const diasFreq = freqDays[frequency] || 7
+                if (!lastReport) return <div style={{ fontSize:18, fontWeight:900, color:'#8B7BFF' }}>Pronto</div>
+                const diasDesde = Math.floor((Date.now() - new Date(lastReport.createdAt).getTime()) / (1000*60*60*24))
+                const diasFaltan = Math.max(0, diasFreq - diasDesde)
+                return (
+                  <div>
+                    <div style={{ fontSize:22, fontWeight:900, color:'#8B7BFF' }}>
+                      {diasFaltan === 0 ? 'Hoy' : `${diasFaltan} día${diasFaltan === 1 ? '' : 's'}`}
+                    </div>
+                    <div style={S.muted}>{diasFaltan === 0 ? 'Listo para generar' : 'para tu próximo reporte'}</div>
+                  </div>
+                )
+              })()}
             </div>
           </div>
         </div>
@@ -284,7 +303,9 @@ export default function DashboardPage() {
               <div>
                 <div style={{ fontSize:14, fontWeight:800, color:'#F0F2FF' }}>{user?.email || 'usuario@email.com'}</div>
                 <div style={{ display:'flex', alignItems:'center', gap:6, marginTop:3 }}>
-                  <span style={{...S.badge, background:'rgba(110,231,164,0.12)', color:'#6EE7A4'}}>{status === 'TRIAL' ? `Trial · ${trialDaysLeft} días` : 'Activo'}</span>
+                  <span style={{...S.badge, background: tieneStripe ? 'rgba(110,231,164,0.12)' : 'rgba(242,192,99,0.12)', color: tieneStripe ? '#6EE7A4' : '#F2C063'}}>
+                    {tieneStripe ? 'Activo' : `Trial · ${trialDaysLeft} días`}
+                  </span>
                   <span style={{ fontSize:10, color:'#5A627A' }}>· Plan {frequency}</span>
                   {city && <span style={{ fontSize:10, color:'#5A627A' }}>· {city}, {country}</span>}
                 </div>
