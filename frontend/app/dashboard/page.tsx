@@ -164,6 +164,33 @@ export default function DashboardPage() {
     </main>
   )
 
+  // Bloqueo trial vencido sin suscripcion activa
+  const trialVencido = dashData?.project?.status === 'TRIAL' &&
+    dashData?.project?.trialEndsAt &&
+    new Date(dashData.project.trialEndsAt) < new Date() &&
+    (!dashData?.subscription || !['ACTIVE','TRIALING'].includes(dashData?.subscription?.status))
+
+  if (trialVencido) return (
+    <main style={{ minHeight:'100vh', background:'#0D0F1A', color:'#F0F2FF', fontFamily:'system-ui,sans-serif', display:'flex', alignItems:'center', justifyContent:'center', padding:24 }}>
+      <div style={{ maxWidth:480, width:'100%', textAlign:'center' }}>
+        <div style={{ width:64, height:64, background:'rgba(139,123,255,0.1)', border:'1px solid rgba(139,123,255,0.3)', borderRadius:20, display:'flex', alignItems:'center', justifyContent:'center', fontSize:28, margin:'0 auto 24px' }}>🔒</div>
+        <h1 style={{ fontSize:24, fontWeight:900, marginBottom:12 }}>Tu periodo de prueba ha terminado</h1>
+        <p style={{ fontSize:14, color:'#9CA3AF', lineHeight:1.6, marginBottom:28 }}>
+          Activa tu plan para seguir recibiendo inteligencia competitiva automatizada.
+          Desde <strong style={{ color:'#8B7BFF' }}>$20 USD/mes</strong>. Sin compromisos, cancela cuando quieras.
+        </p>
+        <button onClick={() => router.push('/checkout')}
+          style={{ background:'linear-gradient(135deg,#8B7BFF,#5DD4D4)', border:'none', borderRadius:20, padding:'14px 36px', color:'#0D0F1A', fontSize:14, fontWeight:900, cursor:'pointer', marginBottom:16, width:'100%' }}>
+          Ver planes y activar
+        </button>
+        <button onClick={handleLogout}
+          style={{ background:'transparent', border:'1px solid rgba(255,255,255,0.1)', borderRadius:20, padding:'10px 24px', color:'#5A627A', fontSize:12, fontWeight:600, cursor:'pointer', width:'100%' }}>
+          Cerrar sesion
+        </button>
+      </div>
+    </main>
+  )
+
   return (
     <main style={{ minHeight:'100vh', background:'#0D0F1A', color:'#F0F2FF', fontFamily:'"Plus Jakarta Sans",system-ui,sans-serif' }}>
       <style>{`*{box-sizing:border-box;margin:0;padding:0} @keyframes spin{to{transform:rotate(360deg)}}`}</style>
