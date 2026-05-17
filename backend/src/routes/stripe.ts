@@ -158,4 +158,40 @@ router.post('/webhook', async (req: Request, res: Response) => {
   }
 })
 
+// POST /api/stripe/portal — genera link al portal de Stripe para gestionar suscripcion
+router.post('/portal', async (req: Request, res: Response) => {
+  try {
+    const { userId } = req.body
+    if (!userId) return res.status(400).json({ error: 'userId requerido' })
+
+    const project = await (prisma.project as any).findFirst({
+      where: { userId },
+      orderBy: { createdAt: 'desc' }
+    })
+    if (!project) return res.status(404).json({ error: 'Proyecto no encontrado' })
+
+    const sub = await (prisma.subscription as any).findFirst({
+      where: { projectId: project.id }
+    })
+    if (!sub?.stripeSubscriptionId) {
+      return res.status(400).json({ error: 'No tienes una suscripcion activa en Stripe' })
+    }
+
+    // Obtener customerId desde Stripe usando el subscriptionId
+    const stripeSub = await stripe.subscriptions.retrieve(sub.stripeSubscriptionId)
+    const customerId = stripeSub.customer as string
+
+    const FRONTEND_URL = process.env.FRONTEND_URL || 'https://reports-pro.vercel.app'
+
+    const portalSession = await stripe.billingPortal.sessions.create({
+      customer: customerId,
+      return_url: `${FRONTEND_URL}/dashboard`,
+    })
+
+    res.json({ url: portalSession.url })
+  } catch (e: any) {
+    res.status(500).json({ error: e.message })
+  }
+})
+
 export default router
