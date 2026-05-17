@@ -97,7 +97,7 @@ setInterval(cleanupStuckReports, 5 * 60 * 1000)
 // GET /api/reports/signed-url/:reportId — genera URL fresca on-demand
 router.get('/signed-url/:reportId', requireAuth, async (req: Request, res: Response) => {
   try {
-    const { reportId } = req.params
+    const reportId = req.params.reportId as string
     const userId = req.userId!
 
     const report = await prisma.report.findUnique({
