@@ -34,6 +34,7 @@ export default function DashboardPage() {
   const router = useRouter()
   const supabase = createClient()
   const [user, setUser] = useState<any>(null)
+  const [token, setToken] = useState<string>('')
   const [dashData, setDashData] = useState<any>(null)
   const [selectedReport, setSelectedReport] = useState<any>(null)
   const [loading, setLoading] = useState(true)
@@ -48,11 +49,15 @@ export default function DashboardPage() {
 
   useEffect(() => {
     const getUser = async () => {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) { router.push('/login'); return }
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session) { router.push('/login'); return }
+      const user = session.user
       setUser(user)
+      setToken(session.access_token)
       try {
-        const res = await fetch(`${BACKEND}/api/dashboard/${user.id}`)
+        const res = await fetch(`${BACKEND}/api/dashboard/${user.id}`, {
+          headers: { 'Authorization': 'Bearer ' + session.access_token }
+        })
         const data = await res.json()
         setDashData(data)
         // Seleccionar el reporte más reciente con JSON por defecto
@@ -86,7 +91,10 @@ export default function DashboardPage() {
 
     setGenerating(true)
     try {
-      const res = await fetch(`${BACKEND}/api/reports/generate/${dashData.project.id}`, { method: 'POST' })
+      const res = await fetch(`${BACKEND}/api/reports/generate/${dashData.project.id}`, {
+        method: 'POST',
+        headers: { 'Authorization': 'Bearer ' + token }
+      })
       const data = await res.json()
       if (data.success) {
         // Recargar inmediatamente para mostrar indicador
@@ -103,7 +111,11 @@ export default function DashboardPage() {
     if (!hayGenerando) return
     const interval = setInterval(async () => {
       try {
-        const res = await fetch(`${BACKEND}/api/dashboard/${user?.id}`)
+        const { data: { session: s2 } } = await supabase.auth.getSession()
+        if (!s2) return
+        const res = await fetch(`${BACKEND}/api/dashboard/${s2.user.id}`, {
+          headers: { 'Authorization': 'Bearer ' + s2.access_token }
+        })
         const data = await res.json()
         const sigueGenerando = (data?.reports || []).some((r: any) => !r.reportTitle && r.status !== 'FAILED')
         setDashData(data)

@@ -1112,10 +1112,14 @@ export default function OnboardingPage() {
     if (initialStep) setStep(parseInt(initialStep))
 
     const loadExisting = async () => {
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session) return
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) return
       try {
-        const res = await fetch(`${BACKEND}/api/dashboard/${user.id}`)
+        const res = await fetch(`${BACKEND}/api/dashboard/${session.user.id}`, {
+          headers: { 'Authorization': 'Bearer ' + session.access_token }
+        })
         const dash = await res.json()
         if (!dash?.project) { setDataLoaded(true); return }
         // Solo es edición si tiene setup completo con nombre real
@@ -1174,13 +1178,13 @@ export default function OnboardingPage() {
 
   const saveProgress = async () => {
     try {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) return
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session) return
       await fetch(`${BACKEND}/api/onboarding/save`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + session.access_token },
         body: JSON.stringify({
-          userId: user.id,
+          userId: session.user.id,
           ...data,
           deliveryDay: DAYS[data.deliveryDay],
           deliveryTime: TIMES[data.deliveryTime],
@@ -1206,8 +1210,9 @@ export default function OnboardingPage() {
     setLoading(true)
     setErrorMsg('')
     try {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) throw new Error('No hay sesión activa')
+      const { data: { session } } = await supabase.auth.getSession()
+      const user = session?.user
+      if (!session || !user) throw new Error('No hay sesión activa')
 
       // Si ya tiene proyecto real, solo guardar sin generar reporte
       if (isEditing) {
@@ -1218,7 +1223,7 @@ export default function OnboardingPage() {
 
       const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/onboarding/competitive`, {
         method:'POST',
-        headers:{'Content-Type':'application/json'},
+        headers:{'Content-Type':'application/json', 'Authorization': 'Bearer ' + session.access_token},
         body: JSON.stringify({
           userId: user.id,
           companyName: data.companyName || data.brand,
