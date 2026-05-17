@@ -164,11 +164,11 @@ export default function DashboardPage() {
     </main>
   )
 
-  // Bloqueo trial vencido sin suscripcion activa
-  const trialVencido = dashData?.project?.status === 'TRIAL' &&
+  // Bloqueo trial vencido: si trialEndsAt ya paso Y no hay stripeSubscriptionId activo
+  const tieneStripe = dashData?.subscription?.stripeSubscriptionId != null
+  const trialVencido = !tieneStripe &&
     dashData?.project?.trialEndsAt &&
-    new Date(dashData.project.trialEndsAt) < new Date() &&
-    (!dashData?.subscription || !['ACTIVE','TRIALING'].includes(dashData?.subscription?.status))
+    new Date(dashData.project.trialEndsAt) < new Date()
 
   if (trialVencido) return (
     <main style={{ minHeight:'100vh', background:'#0D0F1A', color:'#F0F2FF', fontFamily:'system-ui,sans-serif', display:'flex', alignItems:'center', justifyContent:'center', padding:24 }}>
