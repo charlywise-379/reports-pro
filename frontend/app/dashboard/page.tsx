@@ -72,8 +72,8 @@ export default function DashboardPage() {
   const handleGenerateReport = async () => {
     if (!dashData?.project?.id) return
 
-    // Verificar si ya hay un reporte generándose (sin título = en proceso)
-    const reporteEnProceso = (dashData?.reports || []).some((r: any) => !r.reportTitle)
+    // Verificar si hay reporte con status GENERATING
+    const reporteEnProceso = (dashData?.reports || []).some((r: any) => r.status === 'GENERATING')
     if (reporteEnProceso) {
       alert('Ya hay un reporte en proceso. Espera ~5 minutos a que termine.')
       return
