@@ -76,16 +76,22 @@ router.post('/webhook', async (req: Request, res: Response) => {
         const { userId, projectId } = session.metadata
         const sub = await stripe.subscriptions.retrieve(session.subscription)
 
+        // Obtener frecuencia del proyecto para el campo requerido
+        const proj = await (prisma.project as any).findUnique({ where: { id: projectId } })
+        const freq = proj?.frequency || 'WEEKLY'
+
         await (prisma.subscription as any).upsert({
           where: { projectId },
           create: {
             projectId,
+            userId,
             stripeCustomerId: session.customer,
             stripeSubscriptionId: session.subscription,
             stripePriceId: sub.items.data[0].price.id,
             status: 'TRIALING',
+            frequency: freq,
             trialEndsAt: new Date(sub.trial_end! * 1000),
-                      },
+          },
           update: {
             stripeCustomerId: session.customer,
             stripeSubscriptionId: session.subscription,
