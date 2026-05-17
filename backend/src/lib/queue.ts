@@ -3,10 +3,26 @@ import IORedis from 'ioredis'
 
 const redisUrl = process.env.REDIS_URL || ''
 
-export const connection = new IORedis(redisUrl, {
-  maxRetriesPerRequest: null,
-  tls: redisUrl.startsWith('rediss://') ? {} : undefined,
-})
+if (!redisUrl) {
+  console.error('REDIS_URL no configurada')
+}
+
+// Parsear URL de Upstash para IORedis
+function createRedisConnection() {
+  if (!redisUrl) {
+    return new IORedis({ host: 'localhost', port: 6379, maxRetriesPerRequest: null })
+  }
+  return new IORedis(redisUrl, {
+    maxRetriesPerRequest: null,
+    enableReadyCheck: false,
+    tls: redisUrl.startsWith('rediss://') ? { rejectUnauthorized: false } : undefined,
+  })
+}
+
+export const connection = createRedisConnection()
+
+connection.on('connect', () => console.log('Redis conectado a Upstash'))
+connection.on('error', (err) => console.error('Redis error:', err.message))
 
 export const reportQueue = new Queue('report-generation', {
   connection,
