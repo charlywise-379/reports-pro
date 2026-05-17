@@ -19,6 +19,34 @@ router.post('/generate/:projectId', requireAuth, async (req: Request, res: Respo
     })
     if (!project) return res.status(404).json({ error: 'Proyecto no encontrado' })
     if ((project as any).userId !== userId) return res.status(403).json({ error: 'No tienes permiso para generar este reporte' })
+
+    // 🔒 RESTRICCION TRIAL: max 1 reporte gratis
+    if ((project as any).status === 'TRIAL') {
+      const reportCount = await prisma.report.count({
+        where: { projectId, status: 'COMPLETED' as any }
+      })
+      if (reportCount >= 1) {
+        return res.status(403).json({ error: 'trial_limit', message: 'Has usado tu reporte gratuito. Activa tu plan para continuar.' })
+      }
+    }
+
+    // 🔒 RESTRICCION POR FRECUENCIA
+    const lastReport = await prisma.report.findFirst({
+      where: { projectId, status: 'COMPLETED' as any },
+      orderBy: { createdAt: 'desc' }
+    })
+    if (lastReport && (project as any).status !== 'TRIAL') {
+      const frecuencyHours: Record<string, number> = {
+        DAILY: 24, WEEKLY: 168, BIWEEKLY: 336, MONTHLY: 720
+      }
+      const freq = (project as any).frequency || 'WEEKLY'
+      const horasMinimas = frecuencyHours[freq] || 168
+      const horasTranscurridas = (Date.now() - new Date(lastReport.createdAt).getTime()) / (1000 * 60 * 60)
+      if (horasTranscurridas < horasMinimas) {
+        const horasRestantes = Math.ceil(horasMinimas - horasTranscurridas)
+        return res.status(429).json({ error: 'frequency_limit', message: 'Tu plan ' + freq + ' permite un reporte cada ' + horasMinimas + 'h. Faltan ' + horasRestantes + 'h para tu proximo reporte.' })
+      }
+    }
     const outputDir = path.join(__dirname, '../../outputs')
     if (!fs.existsSync(outputDir)) fs.mkdirSync(outputDir, { recursive: true })
     const filename = 'report-' + projectId + '-' + Date.now() + '.pdf'

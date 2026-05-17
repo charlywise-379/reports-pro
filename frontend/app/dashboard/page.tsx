@@ -97,8 +97,13 @@ export default function DashboardPage() {
       })
       const data = await res.json()
       if (data.success) {
-        // Recargar inmediatamente para mostrar indicador
         window.location.reload()
+      } else if (data.error === 'trial_limit') {
+        router.push('/checkout')
+      } else if (data.error === 'frequency_limit') {
+        alert(data.message)
+      } else if (data.error) {
+        alert(data.message || data.error)
       }
     } catch(e) { console.error('Error generando reporte:', e) }
     setGenerating(false)

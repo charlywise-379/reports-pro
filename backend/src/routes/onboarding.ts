@@ -219,7 +219,30 @@ router.post('/competitive', async (req: Request, res: Response) => {
       }
     })
 
-    // ── Generar primer reporte en background ───────────
+    // ── Generar primer reporte SOLO si es proyecto nuevo ──
+    // Si ya existia proyecto, no generar reporte automatico
+    if (existingProject) {
+      return res.status(201).json({
+        success: true,
+        projectId: newProject.id,
+        message: 'Configuracion actualizada correctamente',
+        trialEndsAt,
+      })
+    }
+
+    // Verificar limite trial: max 1 reporte gratis
+    const reportCount = await prisma.report.count({
+      where: { projectId: newProject.id, status: 'COMPLETED' as any }
+    })
+    if (reportCount >= 1 && newProject.status === 'TRIAL') {
+      return res.status(201).json({
+        success: true,
+        projectId: newProject.id,
+        message: 'trial_limit',
+        trialEndsAt,
+      })
+    }
+
     const outputDir = path.join(__dirname, '../../outputs')
     if (!require('fs').existsSync(outputDir)) {
       require('fs').mkdirSync(outputDir, { recursive: true })
