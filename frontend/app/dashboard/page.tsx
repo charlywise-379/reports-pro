@@ -242,17 +242,26 @@ export default function DashboardPage() {
       <div style={{ maxWidth:1200, margin:'0 auto', padding:'28px 28px 60px' }}>
 
         {/* ZONA 1 — HEADER con datos reales */}
-        <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start', marginBottom:20 }}>
-          <div>
-            <span style={S.lbl}>DASHBOARD · INTELIGENCIA COMPETITIVA</span>
-            <div style={{ fontSize:26, fontWeight:900, color:'#F0F2FF', lineHeight:1.1 }}>
-              <span style={{ color:'#8B7BFF' }}>{companyName}</span>
-            </div>
-            <div style={{ fontSize:12, color:'#5A627A', marginTop:4 }}>
-              {industry}{city ? ` · ${city}, ${country}` : ` · ${country}`} · {new Date().toLocaleDateString('es-MX',{weekday:'long',day:'numeric',month:'long'})}
+        <div style={{ marginBottom:20 }}>
+          <span style={S.lbl}>DASHBOARD · INTELIGENCIA COMPETITIVA</span>
+          <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start', flexWrap:'wrap', gap:8 }}>
+            <div>
+              <div style={{ fontSize: isMobile ? 22 : 26, fontWeight:900, color:'#F0F2FF', lineHeight:1.1 }}>
+                <span style={{ color:'#8B7BFF' }}>{companyName}</span>
+              </div>
+              <div style={{ fontSize:12, color:'#5A627A', marginTop:4 }}>
+                {industry}{city ? ` · ${city}, ${country}` : ` · ${country}`} · {new Date().toLocaleDateString('es-MX',{weekday:'long',day:'numeric',month:'long'})}
+              </div>
+              <div style={{ display:'flex', alignItems:'center', gap:8, marginTop:6, flexWrap:'wrap' }}>
+                {tieneStripe ? (
+                  <span style={{ fontSize:11, color:'#6EE7A4', fontWeight:700, background:'rgba(110,231,164,0.1)', border:'1px solid rgba(110,231,164,0.2)', borderRadius:20, padding:'3px 10px' }}>✓ Plan {frequency} activo</span>
+                ) : (
+                  <span style={{ fontSize:11, color:'#F2C063', fontWeight:700, background:'rgba(242,192,99,0.1)', border:'1px solid rgba(242,192,99,0.2)', borderRadius:20, padding:'3px 10px' }}>Trial · {trialDaysLeft} días restantes</span>
+                )}
+              </div>
             </div>
             {selectedReport && (
-              <div style={{ display:'flex', alignItems:'center', gap:10, marginTop:8 }}>
+              <div style={{ display:'flex', alignItems:'center', gap:8, flexWrap:'wrap' }}>
                 <span style={{ fontSize:11, color:'#8B7BFF', fontWeight:600 }}>{selectedReport.reportTitle}</span>
                 <span style={{ fontSize:10, color:'#5A627A' }}>· {new Date(selectedReport.createdAt).toLocaleDateString('es-MX',{day:'numeric',month:'short',year:'numeric'})}</span>
                 {selectedReport.r2Key && (
@@ -264,28 +273,11 @@ export default function DashboardPage() {
               </div>
             )}
           </div>
-          <div style={{ textAlign:'right' }}>
-            <div style={{ fontSize:10, fontWeight:700, color:'#5A627A', marginBottom:5 }}>
-              {tieneStripe ? 'SUSCRIPCIÓN ACTIVA' : `TRIAL: ${trialDaysLeft} DÍAS RESTANTES`}
-            </div>
-            {!tieneStripe && (
-              <div style={{ width:160 }}>
-                <div style={S.bar}><BarFill pct={Math.round(((7-trialDaysLeft)/7)*100)} color="#8B7BFF"/></div>
-                <div style={{ display:'flex', justifyContent:'space-between', marginTop:3 }}>
-                  <span style={S.muted}>Día {7-trialDaysLeft}</span>
-                  <span style={S.muted}>Día 7</span>
-                </div>
-              </div>
-            )}
-            {tieneStripe && (
-              <div style={{ fontSize:11, color:'#6EE7A4', marginTop:4, fontWeight:700 }}>✓ Plan {frequency} activo</div>
-            )}
-          </div>
         </div>
 
         {/* ZONA 6 — PRÓXIMO REPORTE */}
         <div style={{...S.card, background:'rgba(139,123,255,0.06)', borderColor:'rgba(139,123,255,0.2)'}}>
-          <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center' }}>
+          <div style={{ display:'flex', justifyContent:'space-between', alignItems: isMobile ? 'flex-start' : 'center', flexDirection: isMobile ? 'column' : 'row', gap: isMobile ? 12 : 0 }}>
             <div>
               <span style={{...S.lbl, color:'#8B7BFF'}}>PRÓXIMO REPORTE · {dashData?.project?.frequency || 'SEMANAL'}</span>
               <div style={{ fontSize:16, fontWeight:800, color:'#F0F2FF' }}>Inteligencia Competitiva · {companyName}</div>
@@ -336,8 +328,8 @@ export default function DashboardPage() {
                 </div>
               </div>
             </div>
-            <div style={{ display:'flex', gap:8, flexWrap:'wrap' }}>
-              <button onClick={()=>{setEditName(dashData?.setup?.companyName||'');setShowEditProfile(true)}} style={{ fontSize:11, fontWeight:600, color:'#8B7BFF', background:'rgba(139,123,255,0.1)', border:'1px solid rgba(139,123,255,0.2)', borderRadius:20, padding:'6px 14px', cursor:'pointer' }}>Editar perfil</button>
+            <div style={{ display:'flex', gap:6, flexWrap:'wrap', justifyContent: isMobile ? 'flex-start' : 'flex-end', marginTop: isMobile ? 8 : 0 }}>
+              <button onClick={()=>{setEditName(dashData?.setup?.companyName||'');setShowEditProfile(true)}} style={{ fontSize:11, fontWeight:600, color:'#8B7BFF', background:'rgba(139,123,255,0.1)', border:'1px solid rgba(139,123,255,0.2)', borderRadius:20, padding:'6px 12px', cursor:'pointer' }}>Editar perfil</button>
               <button onClick={handlePasswordReset} style={{ fontSize:11, fontWeight:600, color: passwordSent ? '#6EE7A4' : '#9CA3AF', background:'rgba(255,255,255,0.04)', border:'1px solid rgba(255,255,255,0.08)', borderRadius:20, padding:'6px 14px', cursor:'pointer' }}>{passwordSent ? '✓ Email enviado' : 'Cambiar contraseña'}</button>
               {tieneStripe && (
                 <button onClick={() => router.push('/upgrade')}
@@ -428,18 +420,20 @@ export default function DashboardPage() {
         </div>
 
         {/* ZONA 2 — KPIs con datos reales */}
-        <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:10 }}>
-          <div style={{ display:'flex', alignItems:'center', gap:8 }}>
-            <div style={{ width:3, height:16, background:'#8B7BFF', borderRadius:2 }}/>
-            <span style={{ fontSize:11, fontWeight:800, color:'#F0F2FF', letterSpacing:'0.05em' }}>RESUMEN DEL REPORTE</span>
-            {selectedReport && <span style={{ fontSize:10, color:'#5A627A' }}>· {new Date(selectedReport.createdAt).toLocaleDateString('es-MX', { day:'2-digit', month:'short', year:'numeric' })} {new Date(selectedReport.createdAt).toLocaleTimeString('es-MX', { hour:'2-digit', minute:'2-digit' })}</span>}
+        <div style={{ borderTop:'1px solid rgba(255,255,255,0.06)', marginTop:4, marginBottom:16, paddingTop:16 }}>
+          <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', flexWrap:'wrap', gap:8 }}>
+            <div style={{ display:'flex', alignItems:'center', gap:8 }}>
+              <div style={{ width:3, height:18, background:'linear-gradient(180deg,#8B7BFF,#5DD4D4)', borderRadius:2 }}/>
+              <span style={{ fontSize:13, fontWeight:800, color:'#F0F2FF', letterSpacing:'0.05em' }}>RESUMEN DEL REPORTE</span>
+              {selectedReport && <span style={{ fontSize:10, color:'#5A627A' }}>· {new Date(selectedReport.createdAt).toLocaleDateString('es-MX', { day:'2-digit', month:'short', year:'numeric' })} {new Date(selectedReport.createdAt).toLocaleTimeString('es-MX', { hour:'2-digit', minute:'2-digit' })}</span>}
+            </div>
+            {selectedReport?.r2Key && (
+              <button onClick={() => handleDownload(selectedReport.id)}
+                style={{ fontSize:11, fontWeight:700, color:'#0D0F1A', background:'#8B7BFF', borderRadius:20, padding:'5px 14px', border:'none', cursor:'pointer', display:'flex', alignItems:'center', gap:5 }}>
+                ↓ PDF
+              </button>
+            )}
           </div>
-          {selectedReport?.r2Key && (
-            <button onClick={() => handleDownload(selectedReport.id)}
-              style={{ fontSize:11, fontWeight:700, color:'#0D0F1A', background:'#8B7BFF', borderRadius:20, padding:'5px 14px', border:'none', cursor:'pointer', display:'flex', alignItems:'center', gap:5 }}>
-              ↓ PDF
-            </button>
-          )}
         </div>
         <div style={{ display:'grid', gridTemplateColumns: isMobile ? '1fr 1fr' : '1fr 1fr 1fr 1fr', gap:10, marginBottom:14 }}>
           {[
