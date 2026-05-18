@@ -308,14 +308,14 @@ export default function DashboardPage() {
 
         {/* ZONA 7 — PANEL USUARIO */}
         <div style={{ background:'linear-gradient(135deg,rgba(139,123,255,0.08),rgba(93,212,212,0.04))', border:'1px solid rgba(139,123,255,0.2)', borderRadius:16, padding:'20px 22px', marginBottom:14 }}>
-          <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', paddingBottom:14, borderBottom:'1px solid rgba(255,255,255,0.06)', marginBottom:14 }}>
-            <div style={{ display:'flex', alignItems:'center', gap:12 }}>
-              <div style={{ width:42, height:42, borderRadius:12, background:'linear-gradient(135deg,#8B7BFF,#5DD4D4)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:16, fontWeight:900, color:'#0D0F1A' }}>
+          <div style={{ paddingBottom:14, borderBottom:'1px solid rgba(255,255,255,0.06)', marginBottom:14 }}>
+            <div style={{ display:'flex', alignItems:'center', gap:12, marginBottom: isMobile ? 12 : 0 }}>
+              <div style={{ width:42, height:42, borderRadius:12, background:'linear-gradient(135deg,#8B7BFF,#5DD4D4)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:16, fontWeight:900, color:'#0D0F1A', flexShrink:0 }}>
                 {user?.email?.[0]?.toUpperCase() || 'U'}
               </div>
-              <div>
-                <div style={{ fontSize:14, fontWeight:800, color:'#F0F2FF' }}>{user?.email || 'usuario@email.com'}</div>
-                <div style={{ display:'flex', alignItems:'center', gap:6, marginTop:3 }}>
+              <div style={{ flex:1, minWidth:0 }}>
+                <div style={{ fontSize:14, fontWeight:800, color:'#F0F2FF', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{user?.email || 'usuario@email.com'}</div>
+                <div style={{ display:'flex', alignItems:'center', gap:6, marginTop:3, flexWrap:'wrap' }}>
                   <span style={{...S.badge, background: tieneStripe ? 'rgba(110,231,164,0.12)' : 'rgba(242,192,99,0.12)', color: tieneStripe ? '#6EE7A4' : '#F2C063'}}>
                     {tieneStripe ? 'Activo' : `Trial · ${trialDaysLeft} días`}
                   </span>
@@ -324,7 +324,7 @@ export default function DashboardPage() {
                 </div>
               </div>
             </div>
-            <div style={{ display:'flex', gap:6, flexWrap:'nowrap', overflowX:'auto', justifyContent:'flex-start', marginTop: isMobile ? 8 : 0, paddingBottom:2 }}>
+            <div style={{ display:'flex', gap:6, flexWrap:'nowrap', overflowX:'auto', paddingBottom:2 }}>
               <button onClick={()=>{setEditName(dashData?.setup?.companyName||'');setShowEditProfile(true)}} style={{ fontSize:11, fontWeight:600, color:'#8B7BFF', background:'rgba(139,123,255,0.1)', border:'1px solid rgba(139,123,255,0.2)', borderRadius:20, padding:'6px 12px', cursor:'pointer', whiteSpace:'nowrap', flexShrink:0 }}>Editar perfil</button>
               <button onClick={handlePasswordReset} style={{ fontSize:11, fontWeight:600, color: passwordSent ? '#6EE7A4' : '#9CA3AF', background:'rgba(255,255,255,0.04)', border:'1px solid rgba(255,255,255,0.08)', borderRadius:20, padding:'6px 12px', cursor:'pointer', whiteSpace:'nowrap', flexShrink:0 }}>{passwordSent ? '✓ Email enviado' : 'Cambiar contraseña'}</button>
               {tieneStripe && (
