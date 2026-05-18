@@ -1072,6 +1072,17 @@ function TopNav() {
 // ──────────────────────────────────────────
 // MAIN
 // ──────────────────────────────────────────
+function useIsMobile() {
+  const [isMobile, setIsMobile] = useState(false)
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < 768)
+    check()
+    window.addEventListener('resize', check)
+    return () => window.removeEventListener('resize', check)
+  }, [])
+  return isMobile
+}
+
 export default function OnboardingPage() {
   const router = useRouter()
   const supabase = createClient()
@@ -1080,6 +1091,7 @@ export default function OnboardingPage() {
   const [errorMsg, setErrorMsg] = useState('')
   const [isEditing, setIsEditing] = useState(false)
   const [dataLoaded, setDataLoaded] = useState(false)
+  const isMobile = useIsMobile()
   const mainRef = React.useRef<HTMLElement>(null)
   const BACKEND = process.env.NEXT_PUBLIC_BACKEND_URL || 'https://reports-pro-production.up.railway.app'
 
@@ -1260,8 +1272,19 @@ export default function OnboardingPage() {
       <style>{`* { box-sizing: border-box; margin:0; padding:0; } input, textarea, select, button { font-family: inherit; } @keyframes spin { to { transform: rotate(360deg); } } #onboarding-main::-webkit-scrollbar { display: none; } #onboarding-main { -ms-overflow-style: none; scrollbar-width: none; } textarea::-webkit-scrollbar { display: none; } textarea { -ms-overflow-style: none; scrollbar-width: none; }`}</style>
       <TopNav />
       <div style={{ display:'flex', flex:1, overflow:'hidden', height:'calc(100vh - 56px)' }}>
-        <Sidebar step={step} setStep={setStep} />
-        <main id='onboarding-main' style={{ flex:1, height:'100%', overflowY:'scroll', padding:'32px 36px', paddingBottom:160 }}>
+        {!isMobile && <Sidebar step={step} setStep={setStep} />}
+        {isMobile && (
+          <div style={{ position:'fixed', top:56, left:0, right:0, zIndex:40, background:'#0D0F1A', borderBottom:'1px solid rgba(255,255,255,0.06)', padding:'10px 16px' }}>
+            <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:6 }}>
+              <span style={{ fontSize:12, fontWeight:700, color:'#F0F2FF' }}>{STEPS[step-1]?.label}</span>
+              <span style={{ fontSize:11, fontWeight:700, color:'#8B7BFF', background:'rgba(139,123,255,0.1)', border:'1px solid rgba(139,123,255,0.2)', borderRadius:20, padding:'3px 10px' }}>Paso {step} de 7</span>
+            </div>
+            <div style={{ height:3, background:'rgba(255,255,255,0.06)', borderRadius:4, overflow:'hidden' }}>
+              <div style={{ height:'100%', width:`${Math.round(((step-1)/6)*100)}%`, background:'linear-gradient(90deg,#8B7BFF,#5DD4D4)', borderRadius:4, transition:'width 0.4s' }} />
+            </div>
+          </div>
+        )}
+        <main id='onboarding-main' style={{ flex:1, height:'100%', overflowY:'scroll', padding: isMobile ? '70px 16px 160px' : '32px 36px', paddingBottom:160 }}>
           <span id='step-top'/>
           {stepContent[step]}
           {/* Navegación */}
