@@ -242,7 +242,7 @@ export default function DashboardPage() {
         </div>
       </nav>
 
-      <div style={{ maxWidth:1200, margin:'0 auto', padding:'28px 28px 60px' }}>
+      <div style={{ maxWidth:1200, margin:'0 auto', padding: isMobile ? '16px 16px 60px' : '28px 28px 60px' }}>
 
         {/* ZONA 1 — HEADER con datos reales */}
         <div style={{ marginBottom:20 }}>
