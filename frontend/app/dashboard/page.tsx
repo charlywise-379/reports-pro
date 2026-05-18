@@ -158,8 +158,18 @@ export default function DashboardPage() {
         headers: { 'Authorization': 'Bearer ' + session.access_token }
       })
       const data = await res.json()
-      if (data.url) window.open(data.url, '_blank')
-      else alert('Error al descargar: ' + (data.error || 'intenta de nuevo'))
+      if (data.url) {
+        // En mobile Safari, window.open no funciona — usamos link directo
+        const a = document.createElement('a')
+        a.href = data.url
+        a.target = '_blank'
+        a.rel = 'noopener noreferrer'
+        document.body.appendChild(a)
+        a.click()
+        document.body.removeChild(a)
+      } else {
+        alert('Error al descargar: ' + (data.error || 'intenta de nuevo'))
+      }
     } catch(e) { console.error('Error descargando:', e) }
   }
 
@@ -235,7 +245,7 @@ export default function DashboardPage() {
             <span style={{ fontSize:10, fontWeight:700, letterSpacing:'0.08em', color:'#6EE7A4' }}>SISTEMA ACTIVO</span>
           </div>
           {!isMobile && <span style={{ fontSize:12, color:'#5A627A' }}>{user?.email}</span>}
-          <button onClick={handleLogout} style={{ fontSize:11, color:'#5A627A', background:'none', border:'none', cursor:'pointer', fontWeight:600 }}>Salir →</button>
+          <button onClick={handleLogout} style={{ fontSize:11, color:'#5A627A', background:'none', border:'none', cursor:'pointer', fontWeight:600, marginTop: isMobile ? 4 : 0 }}>Salir →</button>
         </div>
       </nav>
 
@@ -266,8 +276,9 @@ export default function DashboardPage() {
                 <span style={{ fontSize:10, color:'#5A627A' }}>· {new Date(selectedReport.createdAt).toLocaleDateString('es-MX',{day:'numeric',month:'short',year:'numeric'})}</span>
                 {selectedReport.r2Key && (
                   <button onClick={() => handleDownload(selectedReport.id)}
-                    style={{ fontSize:10, fontWeight:700, color:'#0D0F1A', background:'#8B7BFF', borderRadius:20, padding:'3px 10px', border:'none', cursor:'pointer' }}>
-                    ↓ PDF
+                    style={{ display:'flex', alignItems:'center', gap:8, fontSize:11, fontWeight:700, color:'#0D0F1A', background:'#8B7BFF', borderRadius:20, padding:'8px 16px', border:'none', cursor:'pointer' }}>
+                    <span>↓ PDF</span>
+                    {isMobile && <span style={{ fontSize:10, fontWeight:600 }}>Descarga tu reporte de Inteligencia Competitiva</span>}
                   </button>
                 )}
               </div>
@@ -298,7 +309,7 @@ export default function DashboardPage() {
                 const diasFaltan = Math.max(0, diasFreq - diasDesde)
                 return (
                   <span style={{ fontSize:11, color:'#8B7BFF', fontWeight:600, background:'rgba(139,123,255,0.1)', border:'1px solid rgba(139,123,255,0.2)', borderRadius:20, padding:'4px 12px' }}>
-                    {diasFaltan === 0 ? 'Listo para generar' : `Próximo en ${diasFaltan} día${diasFaltan === 1 ? '' : 's'}`}
+                    {diasFaltan === 0 ? 'Tu próximo reporte está listo para generar' : `Tu próximo reporte estará disponible en ${diasFaltan} día${diasFaltan === 1 ? '' : 's'}`}
                   </span>
                 )
               })()}
@@ -325,7 +336,7 @@ export default function DashboardPage() {
               </div>
             </div>
             <div style={{ display:'flex', gap:6, flexWrap:'nowrap', overflowX:'auto', paddingBottom:2 }}>
-              <button onClick={()=>{setEditName(dashData?.setup?.companyName||'');setShowEditProfile(true)}} style={{ fontSize:11, fontWeight:600, color:'#8B7BFF', background:'rgba(139,123,255,0.1)', border:'1px solid rgba(139,123,255,0.2)', borderRadius:20, padding:'6px 14px', cursor:'pointer', whiteSpace:'nowrap', flexShrink:0 }}>Editar perfil</button>
+              <button onClick={()=>{setEditName(dashData?.setup?.companyName||'');setShowEditProfile(true)}} style={{ fontSize:11, fontWeight:600, color:'#8B7BFF', background:'rgba(139,123,255,0.1)', border:'1px solid rgba(139,123,255,0.2)', borderRadius:20, padding:'6px 14px', cursor:'pointer', whiteSpace:'nowrap', flexShrink:0 }}>Editar Perfil (Empresa)</button>
               <button onClick={handlePasswordReset} style={{ fontSize:11, fontWeight:600, color: passwordSent ? '#6EE7A4' : '#9CA3AF', background:'rgba(255,255,255,0.04)', border:'1px solid rgba(255,255,255,0.08)', borderRadius:20, padding:'6px 14px', cursor:'pointer', whiteSpace:'nowrap', flexShrink:0 }}>{passwordSent ? '✓ Email enviado' : 'Cambiar contraseña'}</button>
             </div>
             {tieneStripe && (
@@ -426,8 +437,9 @@ export default function DashboardPage() {
             </div>
             {selectedReport?.r2Key && (
               <button onClick={() => handleDownload(selectedReport.id)}
-                style={{ fontSize:11, fontWeight:700, color:'#0D0F1A', background:'#8B7BFF', borderRadius:20, padding:'5px 14px', border:'none', cursor:'pointer', display:'flex', alignItems:'center', gap:5 }}>
-                ↓ PDF
+                style={{ display:'flex', alignItems:'center', gap:8, fontSize:11, fontWeight:700, color:'#0D0F1A', background:'#8B7BFF', borderRadius:20, padding:'8px 16px', border:'none', cursor:'pointer' }}>
+                <span>↓ PDF</span>
+                {isMobile && <span style={{ fontSize:10, fontWeight:600 }}>Descarga tu reporte de Inteligencia Competitiva</span>}
               </button>
             )}
           </div>
