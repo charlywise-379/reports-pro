@@ -447,9 +447,12 @@ function Step3({ data, set }: any) {
       <p style={{ fontSize:14, color:'#9CA3AF', marginBottom:28, lineHeight:1.6 }}>Hasta 10 competidores directos. Asigna un nivel de amenaza — el motor pondera la cobertura de cada uno en el reporte.</p>
 
       <div style={S.card}>
-        <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:16 }}>
-          <SectionNum n="01" label="Mapa de amenaza - Competidores Nivel 1" />
-          <button onClick={add} style={{ display:'flex', alignItems:'center', gap:6, background:'rgba(139,123,255,0.1)', border:'1px solid rgba(139,123,255,0.3)', borderRadius:20, padding:'6px 14px', color:'#8B7BFF', fontSize:12, fontWeight:600, cursor:'pointer' }}>+ Competidor</button>
+        <div style={{ marginBottom:16 }}>
+          <div style={{ fontSize:13, fontWeight:800, color:'#F0F2FF', marginBottom:4 }}>Mapa de amenaza</div>
+          <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center' }}>
+            <div style={{ fontSize:11, fontWeight:700, color:'#8B7BFF', letterSpacing:'0.08em' }}>COMPETIDORES NIVEL 1 — ALTA PRIORIDAD</div>
+            <button onClick={add} style={{ display:'flex', alignItems:'center', gap:6, background:'rgba(139,123,255,0.1)', border:'1px solid rgba(139,123,255,0.3)', borderRadius:20, padding:'6px 14px', color:'#8B7BFF', fontSize:12, fontWeight:600, cursor:'pointer', flexShrink:0, marginLeft:12 }}>+ Competidor</button>
+          </div>
         </div>
 
         <div style={{ display:'flex', flexDirection:'column', gap:14 }}>
