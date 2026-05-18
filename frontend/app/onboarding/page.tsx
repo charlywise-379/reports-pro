@@ -294,10 +294,10 @@ function Step2({ data, set }: any) {
       {/* Presencia */}
 <div style={S.card}>
   <SectionNum n="03" label="Presencia geográfica" />
-  <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:20, alignItems:'start' }}>
+  <div style={{ display:'grid', gridTemplateColumns: typeof window !== 'undefined' && window.innerWidth < 768 ? '1fr' : '1fr 1fr', gap:20, alignItems:'start' }}>
     
     {/* Controles izquierda */}
-<div style={{ paddingTop:28 }}>
+<div style={{ paddingTop:8 }}>
       <div style={{ marginBottom:16 }}>
         <label style={S.label}>Alcance</label>
         <div style={{ display:'flex', gap:8, flexWrap:'wrap' }}>
@@ -463,18 +463,18 @@ function Step3({ data, set }: any) {
                 {list.length>1&&<button onClick={()=>remove(i)} style={{ background:'rgba(255,107,107,0.1)', border:'1px solid rgba(255,107,107,0.2)', borderRadius:8, width:28, height:28, cursor:'pointer', color:'#FF6B6B', fontSize:14 }}>×</button>}
               </div>
 
-<div style={{ display:'grid', gridTemplateColumns:'auto 1fr auto', gap:14, alignItems:'center', marginBottom:14 }}>
-                <span style={{ fontSize:11, fontWeight:700, color:'#5A627A' }}>PRESENCIA</span>
-                <div style={{ display:'flex', gap:6, flexWrap:'wrap' }}>
+<div style={{ display:'flex', flexDirection:'column', gap:10, marginBottom:14 }}>
+                <div style={{ display:'flex', alignItems:'center', gap:8, flexWrap:'wrap' }}>
+                  <span style={{ fontSize:11, fontWeight:700, color:'#5A627A', flexShrink:0 }}>PRESENCIA</span>
                   {['Local','Regional','Nacional','Internacional'].map(v=>(
                     <button key={v} onClick={()=>update(i,'presence',v)} style={{ padding:'5px 10px', borderRadius:16, border:'1px solid', fontSize:11, fontWeight:600, cursor:'pointer', background: c.presence===v ? 'rgba(139,123,255,0.2)' : 'transparent', borderColor: c.presence===v ? 'rgba(139,123,255,0.5)' : 'rgba(255,255,255,0.1)', color: c.presence===v ? '#8B7BFF' : '#5A627A' }}>{v}</button>
                   ))}
                 </div>
-                <div style={{ display:'flex', gap:10 }}>
+                <div style={{ display:'flex', flexWrap:'wrap', gap:6 }}>
                   {[['IG','ig'],['FB','fb'],['X','x'],['LI','li']].map(([icon,key])=>(
-                    <div key={key} style={{ display:'flex', alignItems:'center', gap:6, background:'rgba(255,255,255,0.04)', border:'1px solid rgba(255,255,255,0.08)', borderRadius:10, padding:'6px 12px' }}>
-                      <span style={{ fontSize:10, fontWeight:800, color:'#8B7BFF' }}>{icon}</span>
-                      <input style={{ width:72, background:'transparent', border:'none', outline:'none', color:'#F0F2FF', fontSize:12 }} value={c[key]||''} onChange={e=>update(i,key,e.target.value)} placeholder="@usuario" />
+                    <div key={key} style={{ display:'flex', alignItems:'center', gap:6, background:'rgba(255,255,255,0.04)', border:'1px solid rgba(255,255,255,0.08)', borderRadius:10, padding:'6px 10px', flex:1, minWidth:100 }}>
+                      <span style={{ fontSize:10, fontWeight:800, color:'#8B7BFF', flexShrink:0 }}>{icon}</span>
+                      <input style={{ width:'100%', background:'transparent', border:'none', outline:'none', color:'#F0F2FF', fontSize:12 }} value={c[key]||''} onChange={e=>update(i,key,e.target.value)} placeholder="@usuario" />
                     </div>
                   ))}
                 </div>
@@ -507,7 +507,7 @@ function Step4({ data, set }: any) {
   return (
     <div>
       <div style={{ fontSize:11, fontWeight:700, letterSpacing:'0.12em', color:'#8B7BFF', marginBottom:10 }}>04 / 07 · DISRUPTORES ADYACENTES</div>
-      <h1 style={{ fontSize:38, fontWeight:900, letterSpacing:'-0.03em', color:'#F0F2FF', lineHeight:1.1, marginBottom:8 }}>
+      <h1 style={{ fontSize:24, fontWeight:900, letterSpacing:'-0.02em', color:'#F0F2FF', lineHeight:1.2, marginBottom:8 }}>
         Competidores Nivel 2, <span style={{ color:'#8B7BFF' }}>menos participación, los tenemos a la vista</span>
       </h1>
       <p style={{ fontSize:14, color:'#9CA3AF', marginBottom:28, lineHeight:1.6 }}>Sustitutos, adyacentes y disruptores potenciales. El sistema los pondera con menor frecuencia pero alta sensibilidad a movimientos atípicos.</p>
