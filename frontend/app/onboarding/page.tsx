@@ -1268,7 +1268,7 @@ export default function OnboardingPage() {
   }
 
   return (
-    <div style={{ display:'flex', flexDirection:'column', minHeight:'100vh', background:'#0D0F1A', color:'#F0F2FF', fontFamily:'"Plus Jakarta Sans", system-ui, sans-serif' }}>
+    <div style={{ display:'flex', flexDirection:'column', minHeight:'100vh', background:'#0D0F1A', color:'#F0F2FF', fontFamily:'"Plus Jakarta Sans", system-ui, sans-serif', overflowX:'hidden', maxWidth:'100vw' }}>
       <style>{`* { box-sizing: border-box; margin:0; padding:0; } input, textarea, select, button { font-family: inherit; } @keyframes spin { to { transform: rotate(360deg); } } #onboarding-main::-webkit-scrollbar { display: none; } #onboarding-main { -ms-overflow-style: none; scrollbar-width: none; } textarea::-webkit-scrollbar { display: none; } textarea { -ms-overflow-style: none; scrollbar-width: none; }`}</style>
       <TopNav />
       <div style={{ display:'flex', flex:1, flexDirection: isMobile ? 'column' : 'row', overflow: isMobile ? 'visible' : 'hidden', height: isMobile ? 'auto' : 'calc(100vh - 56px)' }}>
@@ -1295,7 +1295,15 @@ export default function OnboardingPage() {
             <div style={{ display:'flex', gap:10 }}>
 
               {step<7 ? (
-                <button onClick={async ()=>{await saveProgress();setStep(step+1);}} style={{ background:'#8B7BFF', border:'none', borderRadius:20, padding:'10px 24px', color:'#fff', fontSize:13, fontWeight:700, cursor:'pointer', display:'flex', alignItems:'center', gap:6 }}>
+                <button onClick={async ()=>{
+                  await saveProgress();
+                  setStep(step+1);
+                  setTimeout(()=>{
+                    document.getElementById('step-top')?.scrollIntoView({behavior:'smooth'});
+                    document.getElementById('onboarding-main')?.scrollTo({top:0,behavior:'smooth'});
+                    window.scrollTo({top:0,behavior:'smooth'});
+                  },50)
+                }} style={{ background:'#8B7BFF', border:'none', borderRadius:20, padding:'10px 24px', color:'#fff', fontSize:13, fontWeight:700, cursor:'pointer', display:'flex', alignItems:'center', gap:6 }}>
                   Continuar →
                 </button>
               ) : (
