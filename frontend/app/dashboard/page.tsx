@@ -159,14 +159,7 @@ export default function DashboardPage() {
       })
       const data = await res.json()
       if (data.url) {
-        // En mobile Safari, window.open no funciona — usamos link directo
-        const a = document.createElement('a')
-        a.href = data.url
-        a.target = '_blank'
-        a.rel = 'noopener noreferrer'
-        document.body.appendChild(a)
-        a.click()
-        document.body.removeChild(a)
+        window.location.href = data.url
       } else {
         alert('Error al descargar: ' + (data.error || 'intenta de nuevo'))
       }
@@ -270,18 +263,12 @@ export default function DashboardPage() {
                 )}
               </div>
             </div>
-            {selectedReport && (
-              <div style={{ display:'flex', alignItems:'center', gap:8, flexWrap:'wrap' }}>
-                <span style={{ fontSize:11, color:'#8B7BFF', fontWeight:600 }}>{selectedReport.reportTitle}</span>
-                <span style={{ fontSize:10, color:'#5A627A' }}>· {new Date(selectedReport.createdAt).toLocaleDateString('es-MX',{day:'numeric',month:'short',year:'numeric'})}</span>
-                {selectedReport.r2Key && (
-                  <button onClick={() => handleDownload(selectedReport.id)}
-                    style={{ display:'flex', alignItems:'center', gap:8, fontSize:11, fontWeight:700, color:'#0D0F1A', background:'#8B7BFF', borderRadius:20, padding:'8px 16px', border:'none', cursor:'pointer' }}>
-                    <span>↓ PDF</span>
-                    {isMobile && <span style={{ fontSize:10, fontWeight:600 }}>Descarga tu reporte de Inteligencia Competitiva</span>}
-                  </button>
-                )}
-              </div>
+            {selectedReport && selectedReport.r2Key && (
+              <button onClick={() => handleDownload(selectedReport.id)}
+                style={{ display:'flex', alignItems:'center', gap:8, fontSize:11, fontWeight:700, color:'#0D0F1A', background:'#8B7BFF', borderRadius:20, padding:'8px 16px', border:'none', cursor:'pointer', marginTop: isMobile ? 8 : 0, alignSelf:'flex-start' }}>
+                <span>↓ PDF</span>
+                {isMobile && <span style={{ fontSize:10, fontWeight:600 }}>Descarga tu reporte de Inteligencia Competitiva</span>}
+              </button>
             )}
           </div>
         </div>
@@ -336,8 +323,8 @@ export default function DashboardPage() {
               </div>
             </div>
             <div style={{ display:'flex', gap:6, flexWrap:'nowrap', overflowX:'auto', paddingBottom:2 }}>
-              <button onClick={()=>{setEditName(dashData?.setup?.companyName||'');setShowEditProfile(true)}} style={{ fontSize:11, fontWeight:600, color:'#8B7BFF', background:'rgba(139,123,255,0.1)', border:'1px solid rgba(139,123,255,0.2)', borderRadius:20, padding:'6px 14px', cursor:'pointer', whiteSpace:'nowrap', flexShrink:0 }}>Editar Perfil (Empresa)</button>
-              <button onClick={handlePasswordReset} style={{ fontSize:11, fontWeight:600, color: passwordSent ? '#6EE7A4' : '#9CA3AF', background:'rgba(255,255,255,0.04)', border:'1px solid rgba(255,255,255,0.08)', borderRadius:20, padding:'6px 14px', cursor:'pointer', whiteSpace:'nowrap', flexShrink:0 }}>{passwordSent ? '✓ Email enviado' : 'Cambiar contraseña'}</button>
+              <button onClick={()=>{setEditName(dashData?.setup?.companyName||'');setShowEditProfile(true)}} style={{ fontSize:10, fontWeight:600, color:'#8B7BFF', background:'rgba(139,123,255,0.1)', border:'1px solid rgba(139,123,255,0.2)', borderRadius:20, padding:'6px 12px', cursor:'pointer', whiteSpace:'nowrap', flexShrink:0 }}>Editar Perfil (Empresa)</button>
+              <button onClick={handlePasswordReset} style={{ fontSize:10, fontWeight:600, color: passwordSent ? '#6EE7A4' : '#9CA3AF', background:'rgba(255,255,255,0.04)', border:'1px solid rgba(255,255,255,0.08)', borderRadius:20, padding:'6px 12px', cursor:'pointer', whiteSpace:'nowrap', flexShrink:0 }}>{passwordSent ? '✓ Email enviado' : 'Cambiar contraseña'}</button>
             </div>
             {tieneStripe && (
               <button onClick={() => router.push('/upgrade')}
