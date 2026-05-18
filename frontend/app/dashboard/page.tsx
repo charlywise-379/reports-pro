@@ -280,7 +280,7 @@ export default function DashboardPage() {
           <div style={{ display:'flex', justifyContent:'space-between', alignItems: isMobile ? 'flex-start' : 'center', flexDirection: isMobile ? 'column' : 'row', gap: isMobile ? 12 : 0 }}>
             <div>
               <span style={{...S.lbl, color:'#8B7BFF'}}>PRÓXIMO REPORTE · {dashData?.project?.frequency || 'SEMANAL'}</span>
-              <div style={{ fontSize:16, fontWeight:800, color:'#F0F2FF' }}>Inteligencia Competitiva · {companyName}</div>
+              <div style={{ fontSize:16, fontWeight:800, color:'#F0F2FF', lineHeight:1.3 }}>Inteligencia Competitiva<br/><span style={{ color:'#8B7BFF' }}>{companyName}</span></div>
               <div style={{...S.muted, marginTop:3}}>{dashData?.project?.deliveryEmail || 'Email'} · {(dashData?.setup?.focusAreas || []).length} áreas activas</div>
               <div style={{ display:'flex', gap:5, marginTop:8, flexWrap:'wrap' }}>
                 {(dashData?.setup?.focusAreas || ['Precios','Campañas','Lanzamientos']).map((a: string) => (
@@ -288,22 +288,18 @@ export default function DashboardPage() {
                 ))}
               </div>
             </div>
-            <div style={{ textAlign:'right', flexShrink:0, paddingLeft:20 }}>
-              <span style={S.lbl}>GENERACIÓN AUTOMÁTICA</span>
+            <div style={{ flexShrink:0, paddingLeft: isMobile ? 0 : 20 }}>
               {(() => {
                 const freqDays: Record<string,number> = { DAILY:1, WEEKLY:7, BIWEEKLY:15, MONTHLY:30 }
                 const lastReport = (dashData?.reports || []).find((r:any) => r.status === 'COMPLETED')
                 const diasFreq = freqDays[frequency] || 7
-                if (!lastReport) return <div style={{ fontSize:18, fontWeight:900, color:'#8B7BFF' }}>Pronto</div>
+                if (!lastReport) return <span style={{ fontSize:11, color:'#8B7BFF', fontWeight:600, background:'rgba(139,123,255,0.1)', border:'1px solid rgba(139,123,255,0.2)', borderRadius:20, padding:'4px 12px' }}>Pronto</span>
                 const diasDesde = Math.floor((Date.now() - new Date(lastReport.createdAt).getTime()) / (1000*60*60*24))
                 const diasFaltan = Math.max(0, diasFreq - diasDesde)
                 return (
-                  <div>
-                    <div style={{ fontSize:22, fontWeight:900, color:'#8B7BFF' }}>
-                      {diasFaltan === 0 ? 'Hoy' : `${diasFaltan} día${diasFaltan === 1 ? '' : 's'}`}
-                    </div>
-                    <div style={S.muted}>{diasFaltan === 0 ? 'Listo para generar' : 'para tu próximo reporte'}</div>
-                  </div>
+                  <span style={{ fontSize:11, color:'#8B7BFF', fontWeight:600, background:'rgba(139,123,255,0.1)', border:'1px solid rgba(139,123,255,0.2)', borderRadius:20, padding:'4px 12px' }}>
+                    {diasFaltan === 0 ? 'Listo para generar' : `Próximo en ${diasFaltan} día${diasFaltan === 1 ? '' : 's'}`}
+                  </span>
                 )
               })()}
             </div>
@@ -328,12 +324,12 @@ export default function DashboardPage() {
                 </div>
               </div>
             </div>
-            <div style={{ display:'flex', gap:6, flexWrap:'wrap', justifyContent: isMobile ? 'flex-start' : 'flex-end', marginTop: isMobile ? 8 : 0 }}>
-              <button onClick={()=>{setEditName(dashData?.setup?.companyName||'');setShowEditProfile(true)}} style={{ fontSize:11, fontWeight:600, color:'#8B7BFF', background:'rgba(139,123,255,0.1)', border:'1px solid rgba(139,123,255,0.2)', borderRadius:20, padding:'6px 12px', cursor:'pointer' }}>Editar perfil</button>
-              <button onClick={handlePasswordReset} style={{ fontSize:11, fontWeight:600, color: passwordSent ? '#6EE7A4' : '#9CA3AF', background:'rgba(255,255,255,0.04)', border:'1px solid rgba(255,255,255,0.08)', borderRadius:20, padding:'6px 14px', cursor:'pointer' }}>{passwordSent ? '✓ Email enviado' : 'Cambiar contraseña'}</button>
+            <div style={{ display:'flex', gap:6, flexWrap:'nowrap', overflowX:'auto', justifyContent:'flex-start', marginTop: isMobile ? 8 : 0, paddingBottom:2 }}>
+              <button onClick={()=>{setEditName(dashData?.setup?.companyName||'');setShowEditProfile(true)}} style={{ fontSize:11, fontWeight:600, color:'#8B7BFF', background:'rgba(139,123,255,0.1)', border:'1px solid rgba(139,123,255,0.2)', borderRadius:20, padding:'6px 12px', cursor:'pointer', whiteSpace:'nowrap', flexShrink:0 }}>Editar perfil</button>
+              <button onClick={handlePasswordReset} style={{ fontSize:11, fontWeight:600, color: passwordSent ? '#6EE7A4' : '#9CA3AF', background:'rgba(255,255,255,0.04)', border:'1px solid rgba(255,255,255,0.08)', borderRadius:20, padding:'6px 12px', cursor:'pointer', whiteSpace:'nowrap', flexShrink:0 }}>{passwordSent ? '✓ Email enviado' : 'Cambiar contraseña'}</button>
               {tieneStripe && (
                 <button onClick={() => router.push('/upgrade')}
-                  style={{ fontSize:11, fontWeight:600, color:'#6EE7A4', background:'rgba(110,231,164,0.1)', border:'1px solid rgba(110,231,164,0.2)', borderRadius:20, padding:'6px 14px', cursor:'pointer' }}>
+                  style={{ fontSize:11, fontWeight:600, color:'#6EE7A4', background:'rgba(110,231,164,0.1)', border:'1px solid rgba(110,231,164,0.2)', borderRadius:20, padding:'6px 12px', cursor:'pointer', whiteSpace:'nowrap', flexShrink:0 }}>
                   Gestionar suscripcion
                 </button>
               )}
