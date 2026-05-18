@@ -1268,13 +1268,13 @@ export default function OnboardingPage() {
   }
 
   return (
-    <div style={{ display:'flex', flexDirection:'column', height:'100vh', background:'#0D0F1A', color:'#F0F2FF', fontFamily:'"Plus Jakarta Sans", system-ui, sans-serif' }}>
+    <div style={{ display:'flex', flexDirection:'column', minHeight:'100vh', background:'#0D0F1A', color:'#F0F2FF', fontFamily:'"Plus Jakarta Sans", system-ui, sans-serif' }}>
       <style>{`* { box-sizing: border-box; margin:0; padding:0; } input, textarea, select, button { font-family: inherit; } @keyframes spin { to { transform: rotate(360deg); } } #onboarding-main::-webkit-scrollbar { display: none; } #onboarding-main { -ms-overflow-style: none; scrollbar-width: none; } textarea::-webkit-scrollbar { display: none; } textarea { -ms-overflow-style: none; scrollbar-width: none; }`}</style>
       <TopNav />
-      <div style={{ display:'flex', flex:1, overflow: isMobile ? 'auto' : 'hidden', height: isMobile ? 'auto' : 'calc(100vh - 56px)', flexDirection: isMobile ? 'column' : 'row' }}>
+      <div style={{ display:'flex', flex:1, flexDirection: isMobile ? 'column' : 'row', overflow: isMobile ? 'visible' : 'hidden', height: isMobile ? 'auto' : 'calc(100vh - 56px)' }}>
         {!isMobile && <Sidebar step={step} setStep={setStep} />}
         {isMobile && (
-          <div style={{ position:'fixed', top:56, left:0, right:0, zIndex:40, background:'#0D0F1A', borderBottom:'1px solid rgba(255,255,255,0.06)', padding:'10px 16px' }}>
+          <div style={{ position:'sticky', top:56, zIndex:40, background:'#0D0F1A', borderBottom:'1px solid rgba(255,255,255,0.06)', padding:'10px 16px' }}>
             <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:6 }}>
               <span style={{ fontSize:12, fontWeight:700, color:'#F0F2FF' }}>{STEPS[step-1]?.label}</span>
               <span style={{ fontSize:11, fontWeight:700, color:'#8B7BFF', background:'rgba(139,123,255,0.1)', border:'1px solid rgba(139,123,255,0.2)', borderRadius:20, padding:'3px 10px' }}>Paso {step} de 7</span>
@@ -1284,7 +1284,7 @@ export default function OnboardingPage() {
             </div>
           </div>
         )}
-        <main id='onboarding-main' style={{ flex:1, height:'100%', overflowY:'scroll', padding: isMobile ? '70px 16px 160px' : '32px 36px', paddingBottom:160 }}>
+        <main id='onboarding-main' style={{ flex:1, height: isMobile ? 'auto' : '100%', overflowY: isMobile ? 'visible' : 'scroll', padding: isMobile ? '20px 16px 160px' : '32px 36px' }}>
           <span id='step-top'/>
           {stepContent[step]}
           {/* Navegación */}
