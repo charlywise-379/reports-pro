@@ -311,7 +311,7 @@ function Step2({ data, set }: any) {
         <div style={{ display:'flex', flexWrap:'wrap', gap:6 }}>
           {COUNTRIES.map(c=>{
             const on=(data.countries||[]).includes(c)
-            return <button key={c} onClick={()=>set('countries', on ? (data.countries||[]).filter((x:string)=>x!==c) : [...(data.countries||[]),c])} style={{ padding:'6px 14px', borderRadius:20, border:'1px solid', fontSize:12, fontWeight:700, cursor:'pointer', transition:'all 0.2s', background: on ? 'rgba(139,123,255,0.2)' : 'rgba(255,255,255,0.04)', borderColor: on ? 'rgba(139,123,255,0.5)' : 'rgba(255,255,255,0.1)', color: on ? '#8B7BFF' : '#9CA3AF' }}>{on?`${c} ×`:c}</button>
+            return <button key={c} onClick={()=>set('countries', on ? (data.countries||[]).filter((x:string)=>x!==c) : [...(data.countries||[]),c])} style={{ padding:'5px 10px', borderRadius:20, border:'1px solid', fontSize:11, fontWeight:700, cursor:'pointer', transition:'all 0.2s', background: on ? 'rgba(139,123,255,0.2)' : 'rgba(255,255,255,0.04)', borderColor: on ? 'rgba(139,123,255,0.5)' : 'rgba(255,255,255,0.1)', color: on ? '#8B7BFF' : '#9CA3AF' }}>{on?`${c} ×`:c}</button>
           })}
         </div>
       </div>
@@ -465,9 +465,9 @@ function Step3({ data, set }: any) {
 
 <div style={{ display:'grid', gridTemplateColumns:'auto 1fr auto', gap:14, alignItems:'center', marginBottom:14 }}>
                 <span style={{ fontSize:11, fontWeight:700, color:'#5A627A' }}>PRESENCIA</span>
-                <div style={{ display:'flex', gap:8 }}>
+                <div style={{ display:'flex', gap:6, flexWrap:'wrap' }}>
                   {['Local','Regional','Nacional','Internacional'].map(v=>(
-                    <button key={v} onClick={()=>update(i,'presence',v)} style={{ padding:'6px 14px', borderRadius:16, border:'1px solid', fontSize:12, fontWeight:600, cursor:'pointer', background: c.presence===v ? 'rgba(139,123,255,0.2)' : 'transparent', borderColor: c.presence===v ? 'rgba(139,123,255,0.5)' : 'rgba(255,255,255,0.1)', color: c.presence===v ? '#8B7BFF' : '#5A627A' }}>{v}</button>
+                    <button key={v} onClick={()=>update(i,'presence',v)} style={{ padding:'5px 10px', borderRadius:16, border:'1px solid', fontSize:11, fontWeight:600, cursor:'pointer', background: c.presence===v ? 'rgba(139,123,255,0.2)' : 'transparent', borderColor: c.presence===v ? 'rgba(139,123,255,0.5)' : 'rgba(255,255,255,0.1)', color: c.presence===v ? '#8B7BFF' : '#5A627A' }}>{v}</button>
                   ))}
                 </div>
                 <div style={{ display:'flex', gap:10 }}>
@@ -671,7 +671,7 @@ function Step5({ data, set }: any) {
 // ──────────────────────────────────────────
 // PASO 6
 // ──────────────────────────────────────────
-function Step6({ data, set }: any) {
+function Step6({ data, set, isMobile }: any) {
   const annual = data.annualBilling || false
   const planId = data.frequency || 'WEEKLY'
   const plan = PLANS.find(p=>p.id===planId)!
@@ -711,12 +711,12 @@ function Step6({ data, set }: any) {
       </div>
 
       {/* Día + Hora */}
-      <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:16, marginBottom:16 }}>
+      <div style={{ display:'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap:16, marginBottom:16 }}>
         <div style={S.card}>
           <SectionNum n="02" label="Día de entrega" />
-          <div style={{ display:'flex', gap:6 }}>
+          <div style={{ display:'grid', gridTemplateColumns:'repeat(4,1fr)', gap:4 }}>
             {DAYS.map((d,i)=>(
-              <button key={i} onClick={()=>set('deliveryDay',i)} style={{ flex:1, padding:'10px 0', borderRadius:10, border:'1px solid', fontSize:12, fontWeight:700, cursor:'pointer', background: data.deliveryDay===i ? '#8B7BFF' : 'rgba(255,255,255,0.04)', borderColor: data.deliveryDay===i ? '#8B7BFF' : 'rgba(255,255,255,0.08)', color: data.deliveryDay===i ? '#fff' : '#5A627A' }}>{d}</button>
+              <button key={i} onClick={()=>set('deliveryDay',i)} style={{ padding:'8px 4px', borderRadius:10, border:'1px solid', fontSize:11, fontWeight:700, cursor:'pointer', textAlign:'center' as const, background: data.deliveryDay===i ? '#8B7BFF' : 'rgba(255,255,255,0.04)', borderColor: data.deliveryDay===i ? '#8B7BFF' : 'rgba(255,255,255,0.08)', color: data.deliveryDay===i ? '#fff' : '#5A627A' }}>{d}</button>
             ))}
           </div>
         </div>
@@ -762,7 +762,7 @@ function Step6({ data, set }: any) {
 // ──────────────────────────────────────────
 // PASO 7
 // ──────────────────────────────────────────
-function Step7({ data, loading, onActivate, onSave, errorMsg, isEditing }: any) {
+function Step7({ data, loading, onActivate, onSave, errorMsg, isEditing, isMobile }: any) {
   const plan = PLANS.find(p=>p.id===(data.frequency||'WEEKLY'))!
   const price = data.annualBilling ? plan.priceAnnual : plan.price
   const directCount = (data.directCompetitors||[]).filter((c:any)=>c.name).length
@@ -812,7 +812,7 @@ function Step7({ data, loading, onActivate, onSave, errorMsg, isEditing }: any) 
 
       <div style={S.card}>
         <SectionNum n="02" label="Vista previa del reporte" />
-        <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:16 }}>
+        <div style={{ display:'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap:16 }}>
 
           {/* Portada */}
           <div style={{ background:'#080A12', border:'1px solid rgba(139,123,255,0.2)', borderRadius:12, overflow:'hidden' }}>
@@ -845,7 +845,7 @@ function Step7({ data, loading, onActivate, onSave, errorMsg, isEditing }: any) 
           </div>
 
           {/* Benchmark */}
-          <div style={{ background:'#080A12', border:'1px solid rgba(255,255,255,0.07)', borderRadius:12, padding:20 }}>
+          <div style={{ background:'#080A12', border:'1px solid rgba(255,255,255,0.07)', borderRadius:12, padding:20, marginTop: isMobile ? 12 : 0 }}>
             <div style={{ fontSize:9, fontWeight:700, letterSpacing:'0.12em', color:'#5A627A', marginBottom:4 }}>SECCIÓN · BENCHMARK COMPETITIVO</div>
             <div style={{ fontSize:15, fontWeight:700, color:'#F0F2FF', marginBottom:16 }}>Movimientos clave de la semana</div>
 
@@ -1263,8 +1263,8 @@ export default function OnboardingPage() {
     3: <Step3 data={data} set={set} />,
     4: <Step4 data={data} set={set} />,
     5: <Step5 data={data} set={set} />,
-    6: <Step6 data={data} set={set} />,
-    7: <Step7 data={data} loading={loading} onActivate={handleActivate} onSave={handleSave} errorMsg={errorMsg} isEditing={isEditing} />,
+    6: <Step6 data={data} set={set} isMobile={isMobile} />,
+    7: <Step7 data={data} loading={loading} onActivate={handleActivate} onSave={handleSave} errorMsg={errorMsg} isEditing={isEditing} isMobile={isMobile} />,
   }
 
   return (
