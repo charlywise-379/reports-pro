@@ -1050,21 +1050,28 @@ function BriefingPanel({ step, isMobile }: { step: number; isMobile: boolean }) 
 // TOP NAV
 // ──────────────────────────────────────────
 function TopNav() {
+  const [isMobile, setIsMobile] = useState(false)
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < 768)
+    check()
+    window.addEventListener('resize', check)
+    return () => window.removeEventListener('resize', check)
+  }, [])
   return (
-    <div style={{ height:56, borderBottom:'1px solid rgba(255,255,255,0.06)', display:'flex', alignItems:'center', justifyContent:'space-between', padding:'0 24px', background:'#0D0F1A', flexShrink:0 }}>
-      <div style={{ display:'flex', alignItems:'center', gap:12 }}>
-        <div style={{ width:36, height:36, borderRadius:10, background:'linear-gradient(135deg,#8B7BFF,#5DD4D4)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:12, fontWeight:900, color:'#0D0F1A' }}>PR</div>
+    <div style={{ borderBottom:'1px solid rgba(255,255,255,0.06)', background:'#0D0F1A', flexShrink:0, padding: isMobile ? '10px 16px' : '0 24px', height: isMobile ? 'auto' : 56, display:'flex', alignItems:'center', justifyContent:'space-between', flexWrap: isMobile ? 'wrap' : 'nowrap', gap: isMobile ? 8 : 0 }}>
+      <div style={{ display:'flex', alignItems:'center', gap:10 }}>
+        <div style={{ width:34, height:34, borderRadius:10, background:'linear-gradient(135deg,#8B7BFF,#5DD4D4)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:11, fontWeight:900, color:'#0D0F1A', flexShrink:0 }}>PR</div>
         <div>
-          <div style={{ fontSize:14, fontWeight:800, color:'#F0F2FF' }}>PRO Reports</div>
-          <div style={{ fontSize:11, color:'#5A627A' }}>Inteligencia Competitiva · AI</div>
+          <div style={{ fontSize:13, fontWeight:800, color:'#F0F2FF' }}>PRO Reports</div>
+          <div style={{ fontSize:10, color:'#5A627A' }}>Inteligencia Competitiva · AI</div>
         </div>
       </div>
-      <div style={{ display:'flex', alignItems:'center', gap:12 }}>
-        <div style={{ display:'flex', alignItems:'center', gap:6, background:'rgba(110,231,164,0.1)', border:'1px solid rgba(110,231,164,0.2)', borderRadius:20, padding:'5px 12px' }}>
-          <div style={{ width:6, height:6, borderRadius:'50%', background:'#6EE7A4' }} />
-          <span style={{ fontSize:11, fontWeight:700, letterSpacing:'0.08em', color:'#6EE7A4' }}>SETUP · LIVE</span>
+      <div style={{ display:'flex', flexDirection: isMobile ? 'column' : 'row', alignItems: isMobile ? 'flex-end' : 'center', gap: isMobile ? 4 : 12 }}>
+        <div style={{ display:'flex', alignItems:'center', gap:6, background:'rgba(110,231,164,0.1)', border:'1px solid rgba(110,231,164,0.2)', borderRadius:20, padding:'4px 10px' }}>
+          <div style={{ width:6, height:6, borderRadius:'50%', background:'#6EE7A4', flexShrink:0 }} />
+          <span style={{ fontSize:10, fontWeight:700, letterSpacing:'0.08em', color:'#6EE7A4' }}>SETUP · LIVE</span>
         </div>
-        <div style={{ display:'flex', gap:4, background:'rgba(255,255,255,0.05)', borderRadius:20, padding:4 }}>
+        <div style={{ display:'flex', gap:4, background:'rgba(255,255,255,0.05)', borderRadius:20, padding:4, marginTop: isMobile ? 4 : 0 }}>
           <button style={{ padding:'4px 10px', borderRadius:16, border:'none', background:'#8B7BFF', color:'#fff', fontSize:11, fontWeight:700, cursor:'pointer' }}>ES</button>
           <button style={{ padding:'4px 10px', borderRadius:16, border:'none', background:'transparent', color:'#5A627A', fontSize:11, fontWeight:700, cursor:'pointer' }}>EN</button>
         </div>
@@ -1273,7 +1280,7 @@ export default function OnboardingPage() {
 
   return (
     <div style={{ display:'flex', flexDirection:'column', minHeight:'100vh', background:'#0D0F1A', color:'#F0F2FF', fontFamily:'"Plus Jakarta Sans", system-ui, sans-serif', overflowX:'hidden', maxWidth:'100vw' }}>
-      <style>{`* { box-sizing: border-box; margin:0; padding:0; } input, textarea, select, button { font-family: inherit; } @keyframes spin { to { transform: rotate(360deg); } } #onboarding-main::-webkit-scrollbar { display: none; } #onboarding-main { -ms-overflow-style: none; scrollbar-width: none; } textarea::-webkit-scrollbar { display: none; } textarea { -ms-overflow-style: none; scrollbar-width: none; }`}</style>
+      <style>{`* { box-sizing: border-box; margin:0; padding:0; } input, textarea, select, button { font-family: inherit; } @keyframes spin { to { transform: rotate(360deg); } } #onboarding-main::-webkit-scrollbar { display: none; } #onboarding-main { -ms-overflow-style: none; scrollbar-width: none; } textarea::-webkit-scrollbar { display: none; } textarea { -ms-overflow-style: none; scrollbar-width: none; } button:active { opacity: 0.7 !important; transform: scale(0.97); transition: opacity 0.1s, transform 0.1s; } a:active { opacity: 0.7 !important; transform: scale(0.97); }`}</style>
       <TopNav />
       <div style={{ display:'flex', flex:1, flexDirection: isMobile ? 'column' : 'row', overflow: isMobile ? 'visible' : 'hidden', height: isMobile ? 'auto' : 'calc(100vh - 56px)' }}>
         {!isMobile && <Sidebar step={step} setStep={setStep} />}

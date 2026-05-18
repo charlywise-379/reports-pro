@@ -221,7 +221,7 @@ export default function DashboardPage() {
 
   return (
     <main style={{ minHeight:'100vh', background:'#0D0F1A', color:'#F0F2FF', fontFamily:'"Plus Jakarta Sans",system-ui,sans-serif', overflowX:'hidden' }}>
-      <style>{`*{box-sizing:border-box;margin:0;padding:0} @keyframes spin{to{transform:rotate(360deg)}}`}</style>
+      <style>{`*{box-sizing:border-box;margin:0;padding:0} @keyframes spin{to{transform:rotate(360deg)}} button:active{opacity:0.7!important;transform:scale(0.97);transition:opacity 0.1s,transform 0.1s} a:active{opacity:0.7!important;transform:scale(0.97)}`}</style>
 
       {/* NAVBAR */}
       <nav style={{ borderBottom:'1px solid rgba(255,255,255,0.06)', background:'#0D0F1A', position:'sticky', top:0, zIndex:50, padding: isMobile ? '10px 16px' : '0 28px', height: isMobile ? 'auto' : 56, display:'flex', alignItems:'center', justifyContent:'space-between', flexWrap: isMobile ? 'wrap' : 'nowrap', gap: isMobile ? 8 : 0 }}>
