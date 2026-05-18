@@ -127,7 +127,7 @@ function Step1({ data, set }: any) {
       {/* Identidad */}
       <div style={S.card}>
         <SectionNum n="01" label="Identidad" />
-        <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr 1fr', gap:14, marginBottom:14 }}>
+        <div style={{ display:'grid', gridTemplateColumns:'1fr', gap:14, marginBottom:14 }}>
           <div>
             <label style={S.label}>Nombre legal</label>
             <input style={S.input} value={data.companyName} onChange={e=>set('companyName',e.target.value)} placeholder="Empresa S.A. de C.V." />
@@ -188,7 +188,7 @@ function Step1({ data, set }: any) {
       {/* Presencia digital */}
       <div style={S.card}>
         <SectionNum n="02" label="Presencia digital" />
-        <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr 1fr', gap:10 }}>
+        <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:10 }}>
           {[['IG','ig','instagram.com/...'],['FB','fb','facebook.com/...'],['TT','tt','tiktok.com/@...'],['YT','yt','youtube.com/@...'],['LI','li','linkedin.com/co...'],['X','x','x.com/...']].map(([icon,key,ph])=>(
             <div key={key} style={{ display:'flex', alignItems:'center', gap:8, background:'rgba(255,255,255,0.03)', border:'1px solid rgba(255,255,255,0.07)', borderRadius:10, padding:'8px 12px' }}>
               <span style={{ fontSize:10, fontWeight:800, color:'#8B7BFF', width:20, flexShrink:0 }}>{icon}</span>
@@ -266,10 +266,13 @@ function Step2({ data, set }: any) {
           <SectionNum n="02" label="Catálogo Clave (Productos / Servicios)" />
         </div>
         {products.map((p:any, i:number)=>(
-          <div key={i} style={{ display:'grid', gridTemplateColumns:'auto 1fr 1fr 1fr auto', gap:10, alignItems:'center', padding:'10px 0', borderBottom:'1px solid rgba(255,255,255,0.05)' }}>
-            <span style={{ fontSize:10, fontWeight:800, color:'#5A627A', fontFamily:'monospace' }}>P{String(i+1).padStart(2,'0')}</span>
-<input style={S.input} value={p.name} onChange={e=>updateProduct(i,'name',e.target.value)} placeholder="Nombre del producto o servicio" />
-<input style={S.input} value={p.category} onChange={e=>updateProduct(i,'category',e.target.value)} placeholder="Detalle" />
+          <div key={i} style={{ display:'flex', flexDirection:'column', gap:8, padding:'10px 0', borderBottom:'1px solid rgba(255,255,255,0.05)' }}>
+            <div style={{ display:'flex', alignItems:'center', gap:8 }}>
+              <span style={{ fontSize:10, fontWeight:800, color:'#5A627A', fontFamily:'monospace', flexShrink:0 }}>P{String(i+1).padStart(2,'0')}</span>
+              <input style={{...S.input, flex:1}} value={p.name} onChange={e=>updateProduct(i,'name',e.target.value)} placeholder="Nombre del producto o servicio" />
+              {products.length>1&&<button onClick={()=>removeProduct(i)} style={{ background:'rgba(255,107,107,0.1)', border:'1px solid rgba(255,107,107,0.2)', borderRadius:8, width:28, height:28, cursor:'pointer', color:'#FF6B6B', fontSize:14, flexShrink:0 }}>×</button>}
+            </div>
+<input style={S.input} value={p.category} onChange={e=>updateProduct(i,'category',e.target.value)} placeholder="Detalle / Categoría" />
 <div style={{ display:'flex', alignItems:'center', gap:6 }}>
   <div style={{ position:'relative', flex:1 }}>
     <span style={{ position:'absolute', left:10, top:'50%', transform:'translateY(-50%)', color:'#5A627A', fontSize:13 }}>$</span>
@@ -281,7 +284,6 @@ function Step2({ data, set }: any) {
     <input style={{...S.input, paddingLeft:22}} value={p.priceTo||''} onChange={e=>updateProduct(i,'priceTo',e.target.value)} placeholder="Precio Hasta" />
   </div>
 </div>
-            {products.length>1&&<button onClick={()=>removeProduct(i)} style={{ background:'rgba(255,107,107,0.1)', border:'1px solid rgba(255,107,107,0.2)', borderRadius:8, width:28, height:28, cursor:'pointer', color:'#FF6B6B', fontSize:14 }}>×</button>}
           </div>
         ))}
         {products.length<10&&(
@@ -455,10 +457,12 @@ function Step3({ data, set }: any) {
             <div key={i} style={{ background:'rgba(255,255,255,0.02)', border:'1px solid rgba(255,255,255,0.06)', borderRadius:14, padding:'16px' }}>
               <div style={{ display:'flex', alignItems:'center', gap:12, marginBottom:14 }}>
                 <div style={{ width:40, height:40, borderRadius:10, background:'rgba(139,123,255,0.2)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:14, fontWeight:800, color:'#8B7BFF', flexShrink:0 }}>{c.name?c.name[0].toUpperCase():'?'}</div>
-                <div style={{ flex:1, display:'grid', gridTemplateColumns:'1fr 1fr 1fr', gap:10 }}>
+                <div style={{ flex:1, display:'flex', flexDirection:'column', gap:8 }}>
                   <input style={S.input} value={c.name} onChange={e=>update(i,'name',e.target.value)} placeholder="Nombre del competidor" />
-                  <input style={S.input} value={c.url} onChange={e=>update(i,'url',e.target.value)} placeholder="sitio.com" />
-                  <input style={S.input} value={c.products} onChange={e=>update(i,'products',e.target.value)} placeholder="Productos en competencia" />
+                  <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:8 }}>
+                    <input style={S.input} value={c.url} onChange={e=>update(i,'url',e.target.value)} placeholder="sitio.com" />
+                    <input style={S.input} value={c.products} onChange={e=>update(i,'products',e.target.value)} placeholder="Productos en competencia" />
+                  </div>
                 </div>
                 {list.length>1&&<button onClick={()=>remove(i)} style={{ background:'rgba(255,107,107,0.1)', border:'1px solid rgba(255,107,107,0.2)', borderRadius:8, width:28, height:28, cursor:'pointer', color:'#FF6B6B', fontSize:14 }}>×</button>}
               </div>
@@ -527,7 +531,7 @@ function Step4({ data, set }: any) {
       </div>
 
       <div style={S.card}>
-        <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:16 }}>
+        <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:16, flexWrap:'wrap', gap:8 }}>
           <SectionNum n="02" label="Competidores Nivel 2" />
           <button onClick={add} style={{ display:'flex', alignItems:'center', gap:6, background:'rgba(139,123,255,0.1)', border:'1px solid rgba(139,123,255,0.3)', borderRadius:20, padding:'6px 14px', color:'#8B7BFF', fontSize:12, fontWeight:600, cursor:'pointer' }}>+ Competidor</button>
         </div>
