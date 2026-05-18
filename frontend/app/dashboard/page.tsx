@@ -245,10 +245,10 @@ export default function DashboardPage() {
       <div style={{ maxWidth:1200, margin:'0 auto', padding: isMobile ? '16px 16px 60px' : '28px 28px 60px' }}>
 
         {/* ZONA 1 — HEADER con datos reales */}
-        <div style={{ marginBottom:20, width:'100%' }}>
+        <div style={{ marginBottom:20 }}>
           <span style={S.lbl}>DASHBOARD · INTELIGENCIA COMPETITIVA</span>
-          <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start', flexWrap:'wrap', gap:8, width:'100%' }}>
-            <div style={{ flex:1, minWidth:0 }}>
+          <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start', flexWrap:'wrap', gap:8 }}>
+            <div>
               <div style={{ fontSize: isMobile ? 22 : 26, fontWeight:900, color:'#F0F2FF', lineHeight:1.1 }}>
                 <span style={{ color:'#8B7BFF' }}>{companyName}</span>
               </div>
