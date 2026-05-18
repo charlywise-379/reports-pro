@@ -51,10 +51,21 @@ export async function scheduleReports() {
         })
         if (hayGenerando) continue
 
+        // Verificar que no haya ya un job en cola para este proyecto
+        const jobId = 'scheduled-' + project.id
+        const existingJob = await reportQueue.getJob(jobId)
+        if (existingJob) {
+          const state = await existingJob.getState()
+          if (state === 'waiting' || state === 'active') {
+            console.log('[Scheduler] Job ya en cola para: ' + project.name)
+            continue
+          }
+        }
+
         await reportQueue.add(
           'generate-report',
           { projectId: project.id, userId: project.userId, trigger: 'scheduled' },
-          { jobId: 'report-' + project.id + '-' + Date.now() }
+          { jobId }
         )
 
         encolados++

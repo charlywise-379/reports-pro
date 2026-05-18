@@ -974,7 +974,7 @@ function Sidebar({ step, setStep }: { step: number; setStep: (n: number) => void
 // ──────────────────────────────────────────
 // BRIEFING PANEL
 // ──────────────────────────────────────────
-function BriefingPanel({ step }: { step: number }) {
+function BriefingPanel({ step, isMobile }: { step: number; isMobile: boolean }) {
   const briefings: Record<number,{title:string;next:string}> = {
     1:{title:'Toda la lógica de monitoreo se ancla aquí. Industria define los corpus de scraping; tamaño calibra benchmarking.',next:'Posicionamiento'},
     2:{title:'El motor compara tu propuesta de valor contra cada competidor para detectar copia, convergencia o diferenciación.',next:'Competidores directos'},
@@ -986,7 +986,7 @@ function BriefingPanel({ step }: { step: number }) {
   }
   const b=briefings[step]
   return (
-    <aside style={{ width:280, minHeight:'100vh', background:'#0D0F1A', borderLeft:'1px solid rgba(255,255,255,0.06)', padding:'28px 20px', flexShrink:0, display:'flex', flexDirection:'column', gap:14 }}>
+    <aside style={{ width: isMobile ? '100%' : 280, minHeight: isMobile ? 'auto' : '100vh', background:'#0D0F1A', borderLeft: isMobile ? 'none' : '1px solid rgba(255,255,255,0.06)', borderTop: isMobile ? '1px solid rgba(255,255,255,0.06)' : 'none', padding:'28px 20px', flexShrink:0, display:'flex', flexDirection:'column', gap:14 }}>
       <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:4 }}>
         <span style={{ fontSize:13, fontWeight:800, color:'#F0F2FF' }}>BRIEFING AI</span>
         <div style={{ display:'flex', alignItems:'center', gap:6 }}>
@@ -1271,7 +1271,7 @@ export default function OnboardingPage() {
     <div style={{ display:'flex', flexDirection:'column', height:'100vh', background:'#0D0F1A', color:'#F0F2FF', fontFamily:'"Plus Jakarta Sans", system-ui, sans-serif' }}>
       <style>{`* { box-sizing: border-box; margin:0; padding:0; } input, textarea, select, button { font-family: inherit; } @keyframes spin { to { transform: rotate(360deg); } } #onboarding-main::-webkit-scrollbar { display: none; } #onboarding-main { -ms-overflow-style: none; scrollbar-width: none; } textarea::-webkit-scrollbar { display: none; } textarea { -ms-overflow-style: none; scrollbar-width: none; }`}</style>
       <TopNav />
-      <div style={{ display:'flex', flex:1, overflow:'hidden', height:'calc(100vh - 56px)' }}>
+      <div style={{ display:'flex', flex:1, overflow: isMobile ? 'auto' : 'hidden', height: isMobile ? 'auto' : 'calc(100vh - 56px)', flexDirection: isMobile ? 'column' : 'row' }}>
         {!isMobile && <Sidebar step={step} setStep={setStep} />}
         {isMobile && (
           <div style={{ position:'fixed', top:56, left:0, right:0, zIndex:40, background:'#0D0F1A', borderBottom:'1px solid rgba(255,255,255,0.06)', padding:'10px 16px' }}>
@@ -1306,7 +1306,7 @@ export default function OnboardingPage() {
             </div>
           </div>
         </main>
-        <BriefingPanel step={step} />
+        <BriefingPanel step={step} isMobile={isMobile} />
       </div>
     </div>
   )
