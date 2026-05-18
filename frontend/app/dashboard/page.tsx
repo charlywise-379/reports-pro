@@ -325,11 +325,11 @@ export default function DashboardPage() {
               </div>
             </div>
             <div style={{ display:'flex', gap:6, flexWrap:'nowrap', overflowX:'auto', paddingBottom:2 }}>
-              <button onClick={()=>{setEditName(dashData?.setup?.companyName||'');setShowEditProfile(true)}} style={{ fontSize:11, fontWeight:600, color:'#8B7BFF', background:'rgba(139,123,255,0.1)', border:'1px solid rgba(139,123,255,0.2)', borderRadius:20, padding:'6px 12px', cursor:'pointer', whiteSpace:'nowrap', flexShrink:0 }}>Editar perfil</button>
-              <button onClick={handlePasswordReset} style={{ fontSize:11, fontWeight:600, color: passwordSent ? '#6EE7A4' : '#9CA3AF', background:'rgba(255,255,255,0.04)', border:'1px solid rgba(255,255,255,0.08)', borderRadius:20, padding:'6px 12px', cursor:'pointer', whiteSpace:'nowrap', flexShrink:0 }}>{passwordSent ? '✓ Email enviado' : 'Cambiar contraseña'}</button>
+              <button onClick={()=>{setEditName(dashData?.setup?.companyName||'');setShowEditProfile(true)}} style={{ fontSize:9, fontWeight:700, color:'#8B7BFF', background:'rgba(139,123,255,0.1)', border:'1px solid rgba(139,123,255,0.2)', borderRadius:20, padding:'5px 10px', cursor:'pointer', whiteSpace:'nowrap', flexShrink:0 }}>Editar perfil</button>
+              <button onClick={handlePasswordReset} style={{ fontSize:9, fontWeight:700, color: passwordSent ? '#6EE7A4' : '#9CA3AF', background:'rgba(255,255,255,0.04)', border:'1px solid rgba(255,255,255,0.08)', borderRadius:20, padding:'5px 10px', cursor:'pointer', whiteSpace:'nowrap', flexShrink:0 }}>{passwordSent ? '✓ Email enviado' : 'Cambiar contraseña'}</button>
               {tieneStripe && (
                 <button onClick={() => router.push('/upgrade')}
-                  style={{ fontSize:11, fontWeight:600, color:'#6EE7A4', background:'rgba(110,231,164,0.1)', border:'1px solid rgba(110,231,164,0.2)', borderRadius:20, padding:'6px 12px', cursor:'pointer', whiteSpace:'nowrap', flexShrink:0 }}>
+                  style={{ fontSize:9, fontWeight:700, color:'#6EE7A4', background:'rgba(110,231,164,0.1)', border:'1px solid rgba(110,231,164,0.2)', borderRadius:20, padding:'5px 10px', cursor:'pointer', whiteSpace:'nowrap', flexShrink:0 }}>
                   Gestionar suscripcion
                 </button>
               )}
