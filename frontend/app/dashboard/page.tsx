@@ -325,15 +325,15 @@ export default function DashboardPage() {
               </div>
             </div>
             <div style={{ display:'flex', gap:6, flexWrap:'nowrap', overflowX:'auto', paddingBottom:2 }}>
-              <button onClick={()=>{setEditName(dashData?.setup?.companyName||'');setShowEditProfile(true)}} style={{ fontSize:9, fontWeight:700, color:'#8B7BFF', background:'rgba(139,123,255,0.1)', border:'1px solid rgba(139,123,255,0.2)', borderRadius:20, padding:'5px 10px', cursor:'pointer', whiteSpace:'nowrap', flexShrink:0 }}>Editar perfil</button>
-              <button onClick={handlePasswordReset} style={{ fontSize:9, fontWeight:700, color: passwordSent ? '#6EE7A4' : '#9CA3AF', background:'rgba(255,255,255,0.04)', border:'1px solid rgba(255,255,255,0.08)', borderRadius:20, padding:'5px 10px', cursor:'pointer', whiteSpace:'nowrap', flexShrink:0 }}>{passwordSent ? '✓ Email enviado' : 'Cambiar contraseña'}</button>
-              {tieneStripe && (
-                <button onClick={() => router.push('/upgrade')}
-                  style={{ fontSize:9, fontWeight:700, color:'#6EE7A4', background:'rgba(110,231,164,0.1)', border:'1px solid rgba(110,231,164,0.2)', borderRadius:20, padding:'5px 10px', cursor:'pointer', whiteSpace:'nowrap', flexShrink:0 }}>
-                  Gestionar suscripcion
-                </button>
-              )}
+              <button onClick={()=>{setEditName(dashData?.setup?.companyName||'');setShowEditProfile(true)}} style={{ fontSize:11, fontWeight:600, color:'#8B7BFF', background:'rgba(139,123,255,0.1)', border:'1px solid rgba(139,123,255,0.2)', borderRadius:20, padding:'6px 14px', cursor:'pointer', whiteSpace:'nowrap', flexShrink:0 }}>Editar perfil</button>
+              <button onClick={handlePasswordReset} style={{ fontSize:11, fontWeight:600, color: passwordSent ? '#6EE7A4' : '#9CA3AF', background:'rgba(255,255,255,0.04)', border:'1px solid rgba(255,255,255,0.08)', borderRadius:20, padding:'6px 14px', cursor:'pointer', whiteSpace:'nowrap', flexShrink:0 }}>{passwordSent ? '✓ Email enviado' : 'Cambiar contraseña'}</button>
             </div>
+            {tieneStripe && (
+              <button onClick={() => router.push('/upgrade')}
+                style={{ width:'100%', marginTop:8, fontSize:11, fontWeight:700, color:'#6EE7A4', background:'rgba(110,231,164,0.08)', border:'1px solid rgba(110,231,164,0.2)', borderRadius:20, padding:'8px 14px', cursor:'pointer', textAlign:'center' as const }}>
+                Gestionar suscripcion →
+              </button>
+            )}
           </div>
           <div style={{ display:'grid', gridTemplateColumns: isMobile ? '1fr 1fr' : '1fr 1fr 1fr 1fr', gap:10 }}>
             {[
@@ -346,9 +346,10 @@ export default function DashboardPage() {
               { label:'Invitar Colegas', color:'#9CA3AF', bg:'rgba(255,255,255,0.04)', border:'rgba(255,255,255,0.1)', href:'#', onClick: ()=>setShowInviteModal(true),
                 icon:<><path d="M17 21v-2a4 4 0 00-4-4H7a4 4 0 00-4 4v2"/><circle cx="10" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></> },
             ].map((a: any,i: number)=>(
-              <a key={i} href={a.href} onClick={a.onClick ? (e)=>{e.preventDefault();a.onClick()} : undefined} style={{ padding:'16px 14px', background:a.bg, border:`1px solid ${a.border}`, borderRadius:14, color:a.color, fontSize:12, fontWeight:700, cursor:'pointer', display:'flex', flexDirection:'column', alignItems:'flex-start', gap:10, textDecoration:'none' }}>
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={a.color} strokeWidth="2">{a.icon}</svg>
-                {a.label}
+              <a key={i} href={a.href} onClick={a.onClick ? (e)=>{e.preventDefault();a.onClick()} : undefined}
+                style={{ padding: isMobile ? '20px 16px' : '16px 14px', background:a.bg, border:`1px solid ${a.border}`, borderRadius:16, color:a.color, fontSize: isMobile ? 13 : 12, fontWeight:700, cursor:'pointer', display:'flex', flexDirection:'column', alignItems:'flex-start', gap:12, textDecoration:'none', minHeight: isMobile ? 100 : 'auto' }}>
+                <svg width={isMobile ? 22 : 18} height={isMobile ? 22 : 18} viewBox="0 0 24 24" fill="none" stroke={a.color} strokeWidth="2">{a.icon}</svg>
+                <span style={{ lineHeight:1.3 }}>{a.label}</span>
               </a>
             ))}
           </div>
