@@ -1,9 +1,22 @@
 'use client'
+import React from 'react'
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 
 const MXN = 17.50
+
+function useIsMobile() {
+  const [isMobile, setIsMobile] = React.useState(false)
+  React.useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < 768)
+    check()
+    window.addEventListener('resize', check)
+    return () => window.removeEventListener('resize', check)
+  }, [])
+  return isMobile
+}
+
 
 const PLANS = [
   { key:'weekly', label:'Semanal', freq:'Cada lunes', priceUSD:25.00, priceAnnualUSD:19.99, annualTotal:239.88, monthlyId:'price_1TUzqgRmWEBJMGXd126CDFtd', annualId:'price_1TUzqkRmWEBJMGXdVJa88pIE', popular:true },
@@ -19,6 +32,7 @@ export default function CheckoutPage() {
   const [billing, setBilling] = useState<'monthly'|'annual'>('monthly')
   const [selected, setSelected] = useState('weekly')
   const [loading, setLoading] = useState(false)
+  const isMobile = useIsMobile()
   const BACKEND = process.env.NEXT_PUBLIC_BACKEND_URL || 'https://reports-pro-production.up.railway.app'
 
   useEffect(() => {
@@ -66,7 +80,7 @@ export default function CheckoutPage() {
           Ingresa tu tarjeta para activar tu <strong style={{ color:'#F0F2FF' }}>Reporte IA · Inteligencia Competitiva</strong>, Gratis.<br/>
           No se hace ningún cargo hoy. Cancela cuando quieras, sin preguntas.
         </p>
-        <div style={{ display:'flex', justifyContent:'center', gap:16, marginTop:16 }}>
+        <div style={{ display:'flex', justifyContent:'center', gap:8, marginTop:16, flexWrap:'wrap' }}>
           {['✓ Sin cargo hoy','✓ Primer reporte en 5 min','✓ Cancela cuando quieras'].map(b => (
             <span key={b} style={{ fontSize:11, fontWeight:700, color:'#6EE7A4', background:'rgba(110,231,164,0.1)', border:'1px solid rgba(110,231,164,0.2)', borderRadius:20, padding:'4px 12px' }}>{b}</span>
           ))}
@@ -83,7 +97,7 @@ export default function CheckoutPage() {
       </div>
 
       {/* Cards de planes */}
-      <div style={{ display:'grid', gridTemplateColumns:'repeat(4,1fr)', gap:12, width:'100%', maxWidth:900, marginBottom:28 }}>
+      <div style={{ display:'grid', gridTemplateColumns: isMobile ? '1fr 1fr' : 'repeat(4,1fr)', gap:12, width:'100%', maxWidth:900, marginBottom:28 }}>
         {PLANS.map(plan => {
           const price = billing === 'annual' ? plan.priceAnnualUSD : plan.priceUSD
           const priceMXN = Math.round(price * MXN)

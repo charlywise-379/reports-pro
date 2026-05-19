@@ -1,9 +1,22 @@
 'use client'
+import React from 'react'
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 
 const MXN = 17.50
+
+function useIsMobile() {
+  const [isMobile, setIsMobile] = React.useState(false)
+  React.useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < 768)
+    check()
+    window.addEventListener('resize', check)
+    return () => window.removeEventListener('resize', check)
+  }, [])
+  return isMobile
+}
+
 
 const PLANS = [
   { key:'weekly', label:'Semanal', freq:'Cada lunes', priceUSD:25.00, priceAnnualUSD:19.99, annualTotal:239.88, monthlyId:'price_1TUzqgRmWEBJMGXd126CDFtd', annualId:'price_1TUzqkRmWEBJMGXdVJa88pIE', popular:true },
@@ -19,6 +32,7 @@ export default function UpgradePage() {
   const [billing, setBilling] = useState<'monthly'|'annual'>('monthly')
   const [selected, setSelected] = useState('weekly')
   const [loading, setLoading] = useState(false)
+  const isMobile = useIsMobile()
   const BACKEND = process.env.NEXT_PUBLIC_BACKEND_URL || 'https://reports-pro-production.up.railway.app'
 
   useEffect(() => {
@@ -81,7 +95,7 @@ export default function UpgradePage() {
       </div>
 
       {/* Cards */}
-      <div style={{ display:'grid', gridTemplateColumns:'repeat(4,1fr)', gap:12, width:'100%', maxWidth:900, marginBottom:28 }}>
+      <div style={{ display:'grid', gridTemplateColumns: isMobile ? '1fr 1fr' : 'repeat(4,1fr)', gap:12, width:'100%', maxWidth:900, marginBottom:28 }}>
         {PLANS.map(plan => {
           const price = billing === 'annual' ? plan.priceAnnualUSD : plan.priceUSD
           const priceMXN = Math.round(price * MXN)
