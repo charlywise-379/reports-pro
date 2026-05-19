@@ -1306,9 +1306,21 @@ export default function OnboardingPage() {
         {!isMobile && <Sidebar step={step} setStep={setStep} />}
         {isMobile && (
           <div style={{ position:'sticky', top:56, zIndex:40, background:'#0D0F1A', borderBottom:'1px solid rgba(255,255,255,0.06)', padding:'10px 16px' }}>
-            <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:6 }}>
+            <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:8 }}>
               <span style={{ fontSize:12, fontWeight:700, color:'#F0F2FF' }}>{STEPS[step-1]?.label}</span>
-              <span style={{ fontSize:11, fontWeight:700, color:'#8B7BFF', background:'rgba(139,123,255,0.1)', border:'1px solid rgba(139,123,255,0.2)', borderRadius:20, padding:'3px 10px' }}>Paso {step} de 7</span>
+              <span style={{ fontSize:10, fontWeight:700, color:'#5A627A' }}>{step}/7</span>
+            </div>
+            {/* Shortcut numeros de pasos */}
+            <div style={{ display:'flex', gap:6, marginBottom:8 }}>
+              {[1,2,3,4,5,6,7].map(n => (
+                <button key={n} onClick={()=>{
+                  setStep(n)
+                  setTimeout(()=>{
+                    document.getElementById('step-top')?.scrollIntoView({behavior:'smooth'})
+                    window.scrollTo({top:0,behavior:'smooth'})
+                  },50)
+                }} style={{ flex:1, padding:'5px 0', borderRadius:8, border:'1px solid', fontSize:11, fontWeight:700, cursor:'pointer', textAlign:'center' as const, background: step===n ? '#8B7BFF' : 'rgba(255,255,255,0.04)', borderColor: step===n ? '#8B7BFF' : 'rgba(255,255,255,0.08)', color: step===n ? '#fff' : '#5A627A' }}>{n}</button>
+              ))}
             </div>
             <div style={{ height:3, background:'rgba(255,255,255,0.06)', borderRadius:4, overflow:'hidden' }}>
               <div style={{ height:'100%', width:`${Math.round(((step-1)/6)*100)}%`, background:'linear-gradient(90deg,#8B7BFF,#5DD4D4)', borderRadius:4, transition:'width 0.4s' }} />
