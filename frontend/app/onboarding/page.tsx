@@ -705,12 +705,29 @@ function Step6({ data, set, isMobile }: any) {
             const on=planId===p.id
             const price=annual?p.priceAnnual:p.price
             return (
-              <button key={p.id} onClick={()=>set('frequency',p.id)} style={{ textAlign:'left', padding:'20px', borderRadius:14, border:'1px solid', cursor:'pointer', transition:'all 0.2s', background: on ? 'rgba(139,123,255,0.12)' : 'rgba(255,255,255,0.02)', borderColor: on ? 'rgba(139,123,255,0.5)' : 'rgba(255,255,255,0.06)', position:'relative' }}>
-                {p.popular&&<div style={{ position:'absolute', top:-10, right:14, background:'#8B7BFF', color:'#fff', fontSize:9, fontWeight:800, padding:'3px 8px', borderRadius:8, letterSpacing:'0.08em' }}>RECOMENDADO</div>}
-                <div style={{ fontSize:9, fontWeight:700, letterSpacing:'0.1em', color:'#5A627A', marginBottom:8, fontFamily:'monospace' }}>{p.tag}</div>
-                <div style={{ fontSize:22, fontWeight:900, color: on?'#F0F2FF':'#9CA3AF', marginBottom:2 }}>{p.label}</div>
-                <div style={{ fontSize:28, fontWeight:900, color: on?'#8B7BFF':'#5A627A', marginBottom:12 }}>USD {price.toLocaleString()} <span style={{ fontSize:12, fontWeight:500, color:'#5A627A' }}>/ mes</span></div>
-                {p.features.map((f,i)=><div key={i} style={{ display:'flex', alignItems:'center', gap:6, fontSize:12, color: on?'#9CA3AF':'#5A627A', marginBottom:4 }}><span style={{ color: on?'#8B7BFF':'#3D4458' }}>✓</span>{f}</div>)}
+              <button key={p.id} onClick={()=>set('frequency',p.id)}
+                style={{ textAlign:'left' as const, padding:'18px 16px', borderRadius:16, border:'2px solid', cursor:'pointer', transition:'all 0.2s', background: on ? 'rgba(139,123,255,0.12)' : 'rgba(255,255,255,0.02)', borderColor: on ? '#8B7BFF' : 'rgba(255,255,255,0.08)', position:'relative', display:'flex', flexDirection:'column' as const, minHeight:200 }}>
+                {p.popular && (
+                  <div style={{ position:'absolute', top:-11, left:'50%', transform:'translateX(-50%)', background:'linear-gradient(135deg,#8B7BFF,#5DD4D4)', color:'#0D0F1A', fontSize:9, fontWeight:800, padding:'3px 12px', borderRadius:20, letterSpacing:'0.08em', whiteSpace:'nowrap' as const }}>★ RECOMENDADO</div>
+                )}
+                {on && (
+                  <div style={{ position:'absolute', top:10, right:10, width:18, height:18, borderRadius:'50%', background:'#8B7BFF', display:'flex', alignItems:'center', justifyContent:'center', fontSize:10, color:'#fff', fontWeight:900 }}>✓</div>
+                )}
+                <div style={{ fontSize:8, fontWeight:700, letterSpacing:'0.12em', color: on ? '#8B7BFF' : '#3D4458', marginBottom:6, fontFamily:'monospace' }}>{p.tag}</div>
+                <div style={{ fontSize:18, fontWeight:900, color: on ? '#F0F2FF' : '#9CA3AF', marginBottom:8, lineHeight:1 }}>{p.label}</div>
+                <div style={{ marginBottom:12 }}>
+                  <span style={{ fontSize:24, fontWeight:900, color: on ? '#8B7BFF' : '#5A627A' }}>USD {price.toFixed(2)}</span>
+                  <span style={{ fontSize:11, color:'#5A627A', marginLeft:4 }}>/mes</span>
+                  {annual && <div style={{ fontSize:9, color:'#6EE7A4', fontWeight:700, marginTop:2 }}>20% OFF precio anual</div>}
+                </div>
+                <div style={{ flex:1, display:'flex', flexDirection:'column' as const, gap:5 }}>
+                  {p.features.map((f,i)=>(
+                    <div key={i} style={{ display:'flex', alignItems:'flex-start', gap:5, fontSize:10, color: on ? '#C4C9E2' : '#5A627A', lineHeight:1.4 }}>
+                      <span style={{ color: on ? '#8B7BFF' : '#3D4458', flexShrink:0, marginTop:1 }}>✓</span>
+                      <span>{f}</span>
+                    </div>
+                  ))}
+                </div>
               </button>
             )
           })}
