@@ -81,10 +81,10 @@ const AREAS = [
   { id:'data',       code:'A.09', label:'Datos relevantes de industria', desc:'Indicadores, encuestas, reportes públicos y benchmarks.', meta:'Aggregated', on:false },
 ]
 const PLANS = [
-  { id:'DAILY',    label:'Diario',    tag:'PRO · DAILY',    price:29.99, priceAnnual:23.99, features:['22 reportes / mes','Alertas en tiempo real','10 competidores · 9 áreas'] },
-  { id:'WEEKLY',   label:'Semanal',   tag:'PRO · WEEKLY',   price:25.00, priceAnnual:20.00, features:['4 reportes / mes + alertas','10 competidores · 9 áreas','Briefings ad-hoc'], popular:true },
-  { id:'BIWEEKLY', label:'Quincenal', tag:'PRO · BIWEEKLY', price:22.00, priceAnnual:17.60, features:['2 reportes / mes','Hasta 7 competidores','6 áreas'] },
-  { id:'MONTHLY',  label:'Mensual',   tag:'PRO · MONTHLY',  price:20.00, priceAnnual:16.00, features:['1 reporte / mes','Hasta 5 competidores','4 áreas'] },
+  { id:'DAILY',    label:'Diario',    tag:'PRO · DAILY',    price:29.99, priceAnnual:23.99, features:['22 reportes / mes'] },
+  { id:'WEEKLY',   label:'Semanal',   tag:'PRO · WEEKLY',   price:25.00, priceAnnual:20.00, features:['4 reportes / mes'], popular:true },
+  { id:'BIWEEKLY', label:'Quincenal', tag:'PRO · BIWEEKLY', price:22.00, priceAnnual:17.60, features:['2 reportes / mes'] },
+  { id:'MONTHLY',  label:'Mensual',   tag:'PRO · MONTHLY',  price:20.00, priceAnnual:16.00, features:['1 reporte / mes'] },
 ]
 const DAYS  = ['Lun','Mar','Mié','Jue','Vie','Sáb','Dom']
 const TIMES = ['06:00','07:00','08:00','09:00','12:00','15:00','18:00','21:00']
