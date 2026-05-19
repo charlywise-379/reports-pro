@@ -141,7 +141,7 @@ function Step1({ data, set }: any) {
             <input style={S.input} value={data.website} onChange={e=>set('website',e.target.value)} placeholder="https://tuempresa.com" />
           </div>
         </div>
-        <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr 1fr', gap:14 }}>
+        <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:14, marginBottom:14 }}>
           <div>
             <label style={S.label}>Industria</label>
             <select style={{...S.input, appearance:'none' as const}} value={data.industry} onChange={e=>set('industry',e.target.value)}>
@@ -159,16 +159,16 @@ function Step1({ data, set }: any) {
           </div>
           <div>
             <label style={S.label}>Tamaño (Personal)</label>
-            <div style={{ display:'flex', gap:6 }}>
+            <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:4 }}>
               {[['1-10','1-10'],['11-50','11-50'],['51-200','51-200'],['200+','200+']].map(([v,l])=>(
-                <button key={v} onClick={()=>set('companySize',v)} style={{ flex:1, padding:'9px 4px', borderRadius:8, border:'1px solid', fontSize:11, fontWeight:600, cursor:'pointer', background: data.companySize===v ? 'rgba(139,123,255,0.2)' : 'rgba(255,255,255,0.04)', borderColor: data.companySize===v ? 'rgba(139,123,255,0.5)' : 'rgba(255,255,255,0.1)', color: data.companySize===v ? '#8B7BFF' : '#9CA3AF' }}>{l}</button>
+                <button key={v} onClick={()=>set('companySize',v)} style={{ padding:'9px 4px', borderRadius:8, border:'1px solid', fontSize:11, fontWeight:600, cursor:'pointer', textAlign:'center' as const, background: data.companySize===v ? 'rgba(139,123,255,0.2)' : 'rgba(255,255,255,0.04)', borderColor: data.companySize===v ? 'rgba(139,123,255,0.5)' : 'rgba(255,255,255,0.1)', color: data.companySize===v ? '#8B7BFF' : '#9CA3AF' }}>{l}</button>
               ))}
             </div>
           </div>
-          <div>
-            <label style={S.label}>Mercado objetivo</label>
-            <input style={S.input} value={data.targetMarket} onChange={e=>set('targetMarket',e.target.value)} placeholder="Ej: B2B mid-market LATAM" />
-          </div>
+        </div>
+        <div>
+          <label style={S.label}>Mercado objetivo</label>
+          <input style={S.input} value={data.targetMarket} onChange={e=>set('targetMarket',e.target.value)} placeholder="Ej: B2B mid-market LATAM" />
         </div>
         <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:14, marginTop:14 }}>
           <div>
