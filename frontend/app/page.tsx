@@ -244,16 +244,16 @@ export default function Home() {
 
       {/* SERVICIOS */}
       <section id="servicios" className="relative px-6 py-20">
-        <div className="max-w-6xl mx-auto">
+        <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
             <div className="text-blue-400 text-xs font-bold uppercase tracking-widest mb-3 flex items-center justify-center gap-2">
               <Cpu size={12} /> Módulos AI especializados
             </div>
-            <h2 className="text-4xl font-black mb-4">Tres motores de inteligencia para tu empresa</h2>
-            <p className="text-gray-400 max-w-xl mx-auto">Cada módulo usa IA especializada entrenada para su dominio específico. No es un chatbot — es un analista experto automatizado.</p>
+            <h2 className="text-4xl font-black mb-4">Motores de inteligencia para tu empresa</h2>
+            <p className="text-gray-400 max-w-xl mx-auto">Cada módulo usa IA especializada entrenada para su dominio. No es un chatbot genérico — es un analista experto automatizado para cada área de tu empresa.</p>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
 
             {/* Servicio 1 */}
             <div className="group relative bg-gradient-to-b from-[#0a1628] to-[#060609] border border-blue-500/25 rounded-3xl p-8 hover:border-blue-500/50 transition-all hover:shadow-2xl hover:shadow-blue-500/10 overflow-hidden">
@@ -378,6 +378,87 @@ export default function Home() {
               </div>
             </div>
 
+            {/* Módulo 04 */}
+            <div className="group relative bg-gradient-to-b from-[#1a0f0a] to-[#060609] border border-amber-500/25 rounded-3xl p-8 hover:border-amber-500/50 transition-all hover:shadow-2xl hover:shadow-amber-500/10 overflow-hidden">
+              <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-amber-500/60 to-transparent" />
+              <div className="absolute top-4 right-4 w-32 h-32 bg-amber-500/5 rounded-full blur-2xl group-hover:bg-amber-500/10 transition-all" />
+              <div className="relative">
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="w-14 h-14 bg-gradient-to-br from-amber-600 to-orange-400 rounded-2xl flex items-center justify-center shadow-lg shadow-amber-500/30 group-hover:scale-110 transition-transform">
+                    <Star size={26} className="text-white" />
+                  </div>
+                  <div className="w-10 h-10 bg-amber-500/10 border border-amber-500/20 rounded-xl flex items-center justify-center">
+                    <Users size={16} className="text-amber-400" />
+                  </div>
+                  <div className="w-10 h-10 bg-amber-500/10 border border-amber-500/20 rounded-xl flex items-center justify-center">
+                    <Brain size={16} className="text-amber-400" />
+                  </div>
+                </div>
+                <div className="text-amber-400 text-xs font-bold uppercase tracking-widest mb-2">Módulo 04 · AI Ejecutivo</div>
+                <h3 className="font-black text-xl mb-3">Perfil Clave Ejecutivo</h3>
+                <p className="text-gray-400 text-sm mb-6 leading-relaxed">IA que construye un perfil 360° de cualquier ejecutivo: estilo de liderazgo, logros, red de contactos, presencia digital y palancas de influencia para negociación estratégica.</p>
+                <div className="space-y-2.5 mb-6">
+                  {[
+                    "Perfil profesional y trayectoria completa",
+                    "Estilo de liderazgo y toma de decisiones",
+                    "Red de contactos e influencia sectorial",
+                    "Presencia digital y reputación pública",
+                    "Palancas clave para negociación efectiva",
+                  ].map(item => (
+                    <div key={item} className="flex items-center gap-2.5 text-sm text-gray-300">
+                      <div className="w-4 h-4 bg-amber-500/20 rounded-full flex items-center justify-center shrink-0">
+                        <CheckCircle size={10} className="text-amber-400" />
+                      </div>
+                      {item}
+                    </div>
+                  ))}
+                </div>
+                <div className="bg-amber-500/10 border border-amber-500/20 rounded-xl p-3 text-xs text-amber-300">
+                  <span className="font-bold">Ideal para:</span> CEOs, directores comerciales y equipos de M&A
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </section>
+
+      {/* BENEFICIOS */}
+      <section className="relative px-6 py-20">
+        <div className="max-w-6xl mx-auto">
+          <div className="text-center mb-16">
+            <div className="text-violet-400 text-xs font-bold uppercase tracking-widest mb-3 flex items-center justify-center gap-2">
+              <Sparkles size={12} /> Todo incluido en cada reporte
+            </div>
+            <h2 className="text-4xl font-black mb-4">Inteligencia Artificial Automatizada</h2>
+            <p className="text-gray-400 max-w-xl mx-auto">Cada reporte incluye análisis profundo, alertas automáticas y entrega multicanal. Sin configuración extra.</p>
+            <div className="mt-8 max-w-3xl mx-auto bg-gradient-to-r from-blue-950/60 via-violet-950/60 to-blue-950/60 border border-blue-500/20 rounded-2xl px-8 py-6 text-left">
+              <p className="text-white text-lg font-bold mb-2">El ROI más obvio que verás en tu presupuesto.</p>
+              <p className="text-gray-400 leading-relaxed">Un analista senior cuesta entre $40,000 y $80,000 pesos al mes. Reports PRO entrega el mismo nivel de inteligencia — competitiva, de seguridad y de bienestar organizacional — automatizada, personalizada y lista antes del primer café. La ventaja que obtienes vs. lo que inviertes es simplemente abismal.</p>
+            </div>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {[
+              { icon: TrendingUp, color: 'text-blue-400', bg: 'bg-blue-500/10 border-blue-500/20', title: 'Hasta 10 Competidores', desc: 'Movimientos, precios y campañas de tus rivales detectados al instante.' },
+              { icon: Zap, color: 'text-amber-400', bg: 'bg-amber-500/10 border-amber-500/20', title: 'Early Warning Alerts', desc: 'Detectamos cambios críticos en tu sector antes que tu competencia.' },
+              { icon: Brain, color: 'text-violet-400', bg: 'bg-violet-500/10 border-violet-500/20', title: 'Inteligencia Accionable', desc: 'No solo datos — recomendaciones ejecutables listas para implementar.' },
+              { icon: BarChart2, color: 'text-cyan-400', bg: 'bg-cyan-500/10 border-cyan-500/20', title: 'Benchmark Competitivo', desc: 'Comparativa detallada de competidores en precio, producto y posición.' },
+              { icon: Globe, color: 'text-green-400', bg: 'bg-green-500/10 border-green-500/20', title: 'Tendencias del Sector', desc: 'Análisis de industria con movimientos clave y señales tempranas de mercado.' },
+              { icon: Activity, color: 'text-pink-400', bg: 'bg-pink-500/10 border-pink-500/20', title: 'Resumen Estratégico', desc: 'Todo lo importante de tu periodo en un PDF ejecutivo de alto impacto.' },
+              { icon: Lock, color: 'text-indigo-400', bg: 'bg-indigo-500/10 border-indigo-500/20', title: 'PDF + Dashboard', desc: 'Información a detalle disponible en PDF descargable y dashboard en tiempo real.' },
+              { icon: CheckCircle, color: 'text-emerald-400', bg: 'bg-emerald-500/10 border-emerald-500/20', title: 'WhatsApp + Email', desc: 'Recibes y compartes tus reportes fácilmente por los canales que ya usas.' },
+              { icon: Users, color: 'text-orange-400', bg: 'bg-orange-500/10 border-orange-500/20', title: 'Comparte con Colegas', desc: 'Genera copias de tus reportes para tu equipo en tiempo real sin costo adicional.' },
+            ].map(feature => (
+              <div key={feature.title} className={`flex items-start gap-4 bg-white/2 border ${feature.bg} rounded-2xl p-5 hover:bg-white/4 transition-all`}>
+                <div className={`w-10 h-10 ${feature.bg} rounded-xl flex items-center justify-center shrink-0 border`}>
+                  <feature.icon size={18} className={feature.color} />
+                </div>
+                <div>
+                  <div className="font-bold text-sm mb-1">{feature.title}</div>
+                  <div className="text-gray-500 text-xs leading-relaxed">{feature.desc}</div>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       </section>
@@ -436,95 +517,67 @@ export default function Home() {
               </div>
             </div>
           </div>
-
-          {/* Logos */}
-          <div className="mt-12 flex items-center justify-center gap-8 flex-wrap">
-            <div className="text-gray-600 text-xs uppercase tracking-widest mr-4">Confían en nosotros</div>
-            {['Grupo Alfa', 'Banregio', 'COPPEL', 'Vitro Flex', 'ARCA Continental'].map(company => (
-              <div key={company} className="bg-white/3 border border-white/8 rounded-xl px-4 py-2 text-gray-400 text-sm font-semibold hover:border-white/15 transition-colors">
-                {company}
-              </div>
-            ))}
-          </div>
         </div>
       </section>
 
-      {/* {/* PRECIOS */}
+      {/* PRECIOS */}
       <section id="precios" className="relative px-6 py-20">
         <div className="max-w-5xl mx-auto">
           <div className="text-center mb-10">
             <div className="text-cyan-400 text-xs font-bold uppercase tracking-widest mb-3">Precios transparentes</div>
-            <h2 className="text-4xl font-black mb-4">Un precio. Sin letra chica.</h2>
-            <p className="text-gray-400 max-w-xl mx-auto">Elige la frecuencia de entrega de tu reporte. Cambia o cancela cuando quieras.</p>
+            <h2 className="text-4xl font-black mb-4">Elige tu frecuencia.<br /><span className="bg-gradient-to-r from-blue-400 to-violet-400 bg-clip-text text-transparent">Tu analista AI te espera.</span></h2>
+            <div className="max-w-2xl mx-auto space-y-2 mt-4">
+              <p className="text-gray-300 text-lg">Inteligencia de mercado profesional a una fracción del costo de un analista.</p>
+              <p className="text-white text-2xl font-black">Cada reporte es un estudio de mercado a profundidad.</p>
+              <p className="text-blue-400 text-base font-semibold">El costo es ridículo versus un estudio de mercado profesional.</p>
+              <p className="text-gray-400 text-sm">Supera a todos los analistas humanos — sin contratos, sin sorpresas, sin excusas y sin fallas.</p>
+            </div>
           </div>
-
-          {/* Toggle mensual/anual */}
           <div className="flex items-center justify-center gap-4 mb-12">
-            <span className={`text-sm font-semibold transition-colors ${!anual ? 'text-white' : 'text-gray-500'}`}>
-              Pago mensual
-            </span>
-            <button
-              onClick={() => setAnual(a => !a)}
-              className={`relative w-14 h-7 rounded-full transition-colors ${anual ? 'bg-blue-600' : 'bg-white/15'}`}
-            >
-              <div className={`absolute top-1 w-5 h-5 bg-white rounded-full shadow transition-all ${anual ? 'left-8' : 'left-1'}`} />
+            <span className={`text-sm font-semibold transition-colors ${!anual ? "text-white" : "text-gray-500"}`}>Pago mensual</span>
+            <button onClick={() => setAnual(a => !a)} className={`relative w-14 h-7 rounded-full transition-colors ${anual ? "bg-blue-600" : "bg-white/15"}`}>
+              <div className={`absolute top-1 w-5 h-5 bg-white rounded-full shadow transition-all ${anual ? "left-8" : "left-1"}`} />
             </button>
-            <span className={`text-sm font-semibold transition-colors ${anual ? 'text-white' : 'text-gray-500'}`}>
-              Pago anual
-            </span>
+            <span className={`text-sm font-semibold transition-colors ${anual ? "text-white" : "text-gray-500"}`}>Pago anual</span>
             {anual && (
               <div className="bg-green-500/20 border border-green-500/30 text-green-400 text-xs font-black px-3 py-1 rounded-full animate-pulse">
                 🎉 Ahorras 20%
               </div>
             )}
           </div>
-
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-14">
             {[
-              { freq: 'Mensual', price: 20, desc: '1 reporte al mes', tag: null },
-              { freq: 'Quincenal', price: 22, desc: 'Cada 15 días', tag: null },
-              { freq: 'Semanal', price: 25, desc: 'Cada semana', tag: 'Más popular' },
-              { freq: 'Diario', price: 29.99, desc: 'Cada día hábil', tag: 'Max ROI' },
+              { freq: "Mensual", price: 20, desc: "1 reporte al mes", tag: null },
+              { freq: "Quincenal", price: 22, desc: "Cada 15 días", tag: null },
+              { freq: "Semanal", price: 25, desc: "Cada semana", tag: "Más popular" },
+              { freq: "Diario", price: 29.99, desc: "Cada día hábil", tag: "Max ROI" },
             ].map(plan => {
               const precioFinal = anual ? +(plan.price * 0.8).toFixed(2) : plan.price
               const precioAnual = +(precioFinal * 12).toFixed(2)
               return (
-                <div key={plan.freq} className={`relative rounded-2xl p-6 text-center border transition-all hover:scale-105 cursor-pointer ${plan.tag === 'Más popular' ? 'bg-gradient-to-b from-blue-600/25 to-blue-600/5 border-blue-500/50 shadow-lg shadow-blue-500/10' : 'bg-white/3 border-white/8 hover:border-white/20 hover:bg-white/5'}`}>
+                <div key={plan.freq} className={`relative rounded-2xl p-6 text-center border transition-all hover:scale-105 cursor-pointer ${plan.tag === "Más popular" ? "bg-gradient-to-b from-blue-600/25 to-blue-600/5 border-blue-500/50 shadow-lg shadow-blue-500/10" : "bg-white/3 border-white/8 hover:border-white/20 hover:bg-white/5"}`}>
                   {plan.tag && (
-                    <div className={`absolute -top-3 left-1/2 -translate-x-1/2 text-white text-xs font-black px-3 py-1 rounded-full whitespace-nowrap ${plan.tag === 'Más popular' ? 'bg-gradient-to-r from-blue-600 to-violet-600' : 'bg-gradient-to-r from-amber-600 to-orange-600'}`}>
+                    <div className={`absolute -top-3 left-1/2 -translate-x-1/2 text-white text-xs font-black px-3 py-1 rounded-full whitespace-nowrap ${plan.tag === "Más popular" ? "bg-gradient-to-r from-blue-600 to-violet-600" : "bg-gradient-to-r from-amber-600 to-orange-600"}`}>
                       {plan.tag}
                     </div>
                   )}
                   <div className="text-gray-400 text-sm mb-2 font-medium">{plan.freq}</div>
-
-                  {/* Precio tachado si es anual */}
-                  {anual && (
-                    <div className="text-gray-600 text-sm line-through mb-0.5">${plan.price}/mes</div>
-                  )}
-
-                  <div className="text-4xl font-black mb-0.5">
-                    ${precioFinal}
-                  </div>
+                  {anual && <div className="text-gray-600 text-sm line-through mb-0.5">${plan.price}/mes</div>}
+                  <div className="text-4xl font-black mb-0.5">${precioFinal}</div>
                   <div className="text-gray-500 text-xs mb-1">/mes por módulo</div>
-
-                  {/* Badge descuento */}
                   {anual && (
                     <div className="inline-flex items-center gap-1 bg-green-500/15 border border-green-500/20 text-green-400 text-xs font-bold px-2 py-0.5 rounded-full mb-2">
                       20% OFF
                     </div>
                   )}
-
                   <div className="border-t border-white/5 pt-3 mt-2 space-y-1">
                     <div className="text-gray-500 text-xs">{plan.desc}</div>
-                    {anual && (
-                      <div className="text-gray-600 text-xs">${precioAnual}/año total</div>
-                    )}
+                    {anual && <div className="text-gray-600 text-xs">${precioAnual}/año total</div>}
                   </div>
                 </div>
               )
             })}
           </div>
-
           <div className="relative bg-gradient-to-r from-blue-950/80 via-violet-950/80 to-blue-950/80 border border-blue-500/25 rounded-3xl p-12 text-center overflow-hidden">
             <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-blue-500/40 to-transparent" />
             <div className="inline-flex items-center gap-2 bg-green-500/15 border border-green-500/25 text-green-400 text-sm font-bold px-4 py-2 rounded-full mb-6">
@@ -532,7 +585,7 @@ export default function Home() {
               Activación gratis · En segundos · Sin tarjeta
             </div>
             <h3 className="text-4xl font-black mb-4">Genera tu primer reporte<br /><span className="text-blue-400">en los próximos 5 minutos</span></h3>
-            <p className="text-gray-400 mb-8 max-w-lg mx-auto text-lg">Regístrate ahora, configura tu empresa y recibe tu primer reporte de inteligencia AI antes de que termine tu café.</p>
+            <p className="text-gray-400 mb-8 max-w-lg mx-auto text-lg">Regístrate ahora, configura tu empresa y recibe tu primer reporte de inteligencia AI antes de que termines tu café.</p>
             <Link href="/register" className="inline-flex items-center gap-3 bg-gradient-to-r from-blue-600 to-violet-600 text-white font-black px-12 py-5 rounded-2xl transition-all hover:shadow-2xl hover:shadow-blue-500/30 hover:scale-105 text-xl">
               <Sparkles size={22} />
               Comenzar gratis ahora

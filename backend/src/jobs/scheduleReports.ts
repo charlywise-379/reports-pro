@@ -13,8 +13,8 @@ export async function scheduleReports() {
         OR: [
           // Trial vigente
           { trialEndsAt: { gt: now }, status: 'TRIAL' },
-          // Suscripcion activa via Stripe
-          { subscription: { stripeSubscriptionId: { not: null } } }
+          // Suscripcion activa via Stripe (ACTIVE o TRIALING)
+          { subscription: { stripeSubscriptionId: { not: null }, status: { in: ['ACTIVE', 'TRIALING'] } } }
         ]
       },
       include: {

@@ -24,7 +24,8 @@ export function startReportWorker() {
       const now = new Date()
       const trialVigente = (project as any).trialEndsAt && new Date((project as any).trialEndsAt) > now
       const sub = await (prisma.subscription as any).findFirst({ where: { projectId } })
-      const tieneStripe = sub?.stripeSubscriptionId != null
+      const tieneStripe = sub?.stripeSubscriptionId != null && 
+        ['active', 'trialing'].includes((sub?.status || '').toLowerCase())
 
       if (!trialVigente && !tieneStripe) {
         console.log(`[Worker] Proyecto ${projectId} sin suscripcion activa — saltando`)
