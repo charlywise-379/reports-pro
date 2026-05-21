@@ -117,7 +117,7 @@ export default function Home() {
             Motor AI · Claude Sonnet · Reportes en tiempo real
           </div>
 
-          <h1 className="text-6xl md:text-7xl font-black tracking-tight mb-6 leading-[1.05]">
+          <h1 className="text-4xl md:text-6xl lg:text-7xl font-black tracking-tight mb-6 leading-[1.05]">
             Inteligencia de Mercados.<br />
             Automatización AI.<br />
             <span className="bg-gradient-to-r from-blue-400 via-violet-400 to-cyan-300 bg-clip-text text-transparent">
@@ -129,7 +129,7 @@ export default function Home() {
             Inteligencia artificial que analiza tu industria, competidores y riesgos — y entrega reportes ejecutivos directo a tu email o WhatsApp, completamente automatizados.
           </p>
 
-          <div className="flex items-center justify-center gap-6 mb-10 text-sm text-gray-500">
+          <div className="hidden sm:flex items-center justify-center gap-6 mb-10 text-sm text-gray-500">
             <div className="flex items-center gap-1.5"><Zap size={13} className="text-green-400" /> Activación en segundos</div>
             <div className="flex items-center gap-1.5"><Brain size={13} className="text-blue-400" /> Motor AI avanzado</div>
             <div className="flex items-center gap-1.5"><Clock size={13} className="text-violet-400" /> Primer reporte en minutos</div>
@@ -162,8 +162,8 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Dashboard mockup */}
-        <div className="max-w-4xl mx-auto mt-16 relative">
+        {/* Dashboard mockup — solo desktop */}
+        <div className="hidden md:block max-w-4xl mx-auto mt-16 relative">
           <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-[#060609] to-transparent z-10 pointer-events-none" />
           <div className="border border-white/8 rounded-2xl bg-white/3 backdrop-blur-sm overflow-hidden shadow-2xl shadow-black/60">
             <div className="bg-white/3 border-b border-white/5 px-4 py-3 flex items-center gap-2">
@@ -220,7 +220,7 @@ export default function Home() {
       {/* AI BANNER */}
       <section className="relative px-6 py-12">
         <div className="max-w-6xl mx-auto">
-          <div className="bg-gradient-to-r from-blue-950/60 via-violet-950/60 to-blue-950/60 border border-blue-500/20 rounded-2xl px-8 py-6 flex flex-wrap items-center justify-between gap-6">
+          <div className="bg-gradient-to-r from-blue-950/60 via-violet-950/60 to-blue-950/60 border border-blue-500/20 rounded-2xl px-6 py-6 flex flex-col md:flex-row md:items-center md:justify-between gap-6">
             <div className="flex items-center gap-4">
               <div className="w-12 h-12 bg-gradient-to-br from-blue-600 to-violet-600 rounded-xl flex items-center justify-center shrink-0">
                 <Brain size={22} className="text-white" />
@@ -230,7 +230,7 @@ export default function Home() {
                 <div className="text-gray-400 text-sm">Impulsado por Claude Sonnet — el modelo de IA más preciso para análisis empresarial</div>
               </div>
             </div>
-            <div className="flex items-center gap-6 text-sm">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:flex md:items-center md:gap-6 gap-3 text-sm">
               {['Web Search en tiempo real','Análisis semántico profundo','Redacción ejecutiva en español','PDF profesional generado al instante'].map(f => (
                 <div key={f} className="flex items-center gap-2 text-gray-300">
                   <CheckCircle size={14} className="text-blue-400 shrink-0" />
@@ -432,11 +432,32 @@ export default function Home() {
             </div>
             <h2 className="text-4xl font-black mb-4">Inteligencia Artificial Automatizada</h2>
             <p className="text-gray-400 max-w-xl mx-auto">Cada reporte incluye análisis profundo, alertas automáticas y entrega multicanal. Sin configuración extra.</p>
-            <div className="mt-8 max-w-3xl mx-auto bg-gradient-to-r from-blue-950/60 via-violet-950/60 to-blue-950/60 border border-blue-500/20 rounded-2xl px-8 py-6 text-left">
-              <p className="text-white text-lg font-bold mb-2">El ROI más obvio que verás en tu presupuesto.</p>
-              <p className="text-gray-400 leading-relaxed">Un analista senior cuesta entre $40,000 y $80,000 pesos al mes. Reports PRO entrega el mismo nivel de inteligencia — competitiva, de seguridad y de bienestar organizacional — automatizada, personalizada y lista antes del primer café. La ventaja que obtienes vs. lo que inviertes es simplemente abismal.</p>
+            <div className="mt-8 max-w-3xl mx-auto">
+              <div className="grid grid-cols-3 gap-3 mb-4">
+                <div className="bg-blue-500/10 border border-blue-500/20 rounded-2xl p-4 text-center">
+                  <div className="text-2xl md:text-3xl font-black text-blue-400 mb-1">$80k</div>
+                  <div className="text-xs text-gray-400 leading-snug">Analista senior<br/>al mes</div>
+                </div>
+                <div className="bg-white/5 border border-white/10 rounded-2xl p-4 text-center flex items-center justify-center">
+                  <div className="text-xl font-black text-gray-500">VS</div>
+                </div>
+                <div className="bg-violet-500/10 border border-violet-500/20 rounded-2xl p-4 text-center">
+                  <div className="text-2xl md:text-3xl font-black text-violet-400 mb-1">$20</div>
+                  <div className="text-xs text-gray-400 leading-snug">Reports PRO<br/>al mes</div>
+                </div>
+              </div>
+              <div className="bg-gradient-to-r from-blue-950/60 via-violet-950/60 to-blue-950/60 border border-blue-500/20 rounded-2xl px-6 py-4 text-center">
+                <p className="text-white font-black text-base md:text-lg mb-1">La ventaja competitiva que obtienes vs. lo que inviertes</p>
+                <p className="text-blue-400 font-black text-lg md:text-xl">es, simplemente, abismal.</p>
+              </div>
             </div>
           </div>
+        </div>
+      </section>
+
+      {/* BENEFICIOS */}
+      <section className="relative px-6 py-20">
+        <div className="max-w-6xl mx-auto">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {[
               { icon: TrendingUp, color: 'text-blue-400', bg: 'bg-blue-500/10 border-blue-500/20', title: 'Hasta 10 Competidores', desc: 'Movimientos, precios y campañas de tus rivales detectados al instante.' },
@@ -476,10 +497,10 @@ export default function Home() {
 
           {/* Carousel */}
           <div className="relative">
-            <div className="bg-gradient-to-b from-white/5 to-white/2 border border-white/10 rounded-3xl p-10 min-h-64">
+            <div className="bg-gradient-to-b from-white/5 to-white/2 border border-white/10 rounded-3xl p-6 md:p-10 min-h-64">
               <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent rounded-t-3xl" />
 
-              <div className="flex items-start gap-6 mb-8">
+              <div className="flex items-start gap-4 mb-6">
                 <div className={`w-16 h-16 bg-gradient-to-br ${t.color} rounded-2xl flex items-center justify-center text-xl font-black shrink-0 shadow-lg`}>
                   {t.avatar}
                 </div>
@@ -525,10 +546,10 @@ export default function Home() {
         <div className="max-w-5xl mx-auto">
           <div className="text-center mb-10">
             <div className="text-cyan-400 text-xs font-bold uppercase tracking-widest mb-3">Precios transparentes</div>
-            <h2 className="text-4xl font-black mb-4">Elige tu frecuencia.<br /><span className="bg-gradient-to-r from-blue-400 to-violet-400 bg-clip-text text-transparent">Tu analista AI te espera.</span></h2>
+            <h2 className="text-3xl md:text-4xl font-black mb-4">Elige tu frecuencia.<br /><span className="bg-gradient-to-r from-blue-400 to-violet-400 bg-clip-text text-transparent">Tu analista AI te espera.</span></h2>
             <div className="max-w-2xl mx-auto space-y-2 mt-4">
               <p className="text-gray-300 text-lg">Inteligencia de mercado profesional a una fracción del costo de un analista.</p>
-              <p className="text-white text-2xl font-black">Cada reporte es un estudio de mercado a profundidad.</p>
+              <p className="text-white text-xl md:text-2xl font-black">Cada reporte es un estudio de mercado a profundidad.</p>
               <p className="text-blue-400 text-base font-semibold">El costo es ridículo versus un estudio de mercado profesional.</p>
               <p className="text-gray-400 text-sm">Supera a todos los analistas humanos — sin contratos, sin sorpresas, sin excusas y sin fallas.</p>
             </div>
@@ -578,15 +599,15 @@ export default function Home() {
               )
             })}
           </div>
-          <div className="relative bg-gradient-to-r from-blue-950/80 via-violet-950/80 to-blue-950/80 border border-blue-500/25 rounded-3xl p-12 text-center overflow-hidden">
+          <div className="relative bg-gradient-to-r from-blue-950/80 via-violet-950/80 to-blue-950/80 border border-blue-500/25 rounded-3xl p-8 md:p-12 text-center overflow-hidden">
             <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-blue-500/40 to-transparent" />
             <div className="inline-flex items-center gap-2 bg-green-500/15 border border-green-500/25 text-green-400 text-sm font-bold px-4 py-2 rounded-full mb-6">
               <Zap size={14} />
               Activación gratis · En segundos · Sin tarjeta
             </div>
-            <h3 className="text-4xl font-black mb-4">Genera tu primer reporte<br /><span className="text-blue-400">en los próximos 5 minutos</span></h3>
+            <h3 className="text-2xl md:text-4xl font-black mb-4">Genera tu primer reporte<br /><span className="text-blue-400">en los próximos 5 minutos</span></h3>
             <p className="text-gray-400 mb-8 max-w-lg mx-auto text-lg">Regístrate ahora, configura tu empresa y recibe tu primer reporte de inteligencia AI antes de que termines tu café.</p>
-            <Link href="/register" className="inline-flex items-center gap-3 bg-gradient-to-r from-blue-600 to-violet-600 text-white font-black px-12 py-5 rounded-2xl transition-all hover:shadow-2xl hover:shadow-blue-500/30 hover:scale-105 text-xl">
+            <Link href="/register" className="inline-flex items-center gap-2 bg-gradient-to-r from-blue-600 to-violet-600 text-white font-black px-8 py-4 md:px-12 md:py-5 rounded-2xl transition-all hover:shadow-2xl hover:shadow-blue-500/30 hover:scale-105 text-base md:text-xl w-full md:w-auto justify-center">
               <Sparkles size={22} />
               Comenzar gratis ahora
               <ArrowRight size={22} />
