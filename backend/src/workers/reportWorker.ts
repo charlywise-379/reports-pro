@@ -83,16 +83,23 @@ export function startReportWorker() {
           }
         })
 
-        // Enviar email
-        const deliveryEmail = project.deliveryEmail
-        if (deliveryEmail) {
+        const setup = (project as any).competitiveSetup
+        const companyName = setup?.companyName || 'Tu empresa'
+        const now = new Date()
+        const weekNumber = Math.ceil((now.getDate() + new Date(now.getFullYear(), now.getMonth(), 1).getDay()) / 7)
+        const reportCount = await prisma.report.count({ where: { projectId, status: 'COMPLETED' as any } })
+
+        if (project.deliveryEmail) {
           const { sendReportEmail } = await import('../lib/email')
-          const setup = (project as any).competitiveSetup
-          const companyName = setup?.companyName || 'Tu empresa'
-          const now = new Date()
-          const weekNumber = Math.ceil((now.getDate() + new Date(now.getFullYear(), now.getMonth(), 1).getDay()) / 7)
-          const reportCount = await prisma.report.count({ where: { projectId, status: 'COMPLETED' as any } })
-          await sendReportEmail(deliveryEmail, companyName, signedUrl, weekNumber, reportCount)
+          await sendReportEmail(project.deliveryEmail, companyName, signedUrl, weekNumber, reportCount)
+        }
+
+        const deliveryPhone = (project as any).deliveryPhone
+        const deliveryChannels = (project as any).deliveryChannels || []
+        if (deliveryPhone && deliveryChannels.includes('WHATSAPP')) {
+          const { sendReportWhatsApp } = await import('../lib/whatsapp')
+          await sendReportWhatsApp(deliveryPhone, companyName, signedUrl, reportCount)
+          console.log('[WhatsApp] Reporte enviado a ' + deliveryPhone)
         }
 
         console.log(`[Worker] Reporte completado: ${filename}`)

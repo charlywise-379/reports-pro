@@ -70,17 +70,25 @@ router.post('/generate/:projectId', requireAuth, async (req: Request, res: Respo
     if (!fs.existsSync(outputPath)) throw new Error('El PDF no se genero correctamente')
     const fileSize = fs.statSync(outputPath).size
     try {
-      const deliveryEmail = project.deliveryEmail
-      if (deliveryEmail) {
+      const setup = (project as any).competitiveSetup
+      const companyName = setup?.companyName || 'Tu empresa'
+      const now = new Date()
+      const weekNumber = Math.ceil((now.getDate() + new Date(now.getFullYear(), now.getMonth(), 1).getDay()) / 7)
+      const reportCount = await prisma.report.count({ where: { projectId, status: 'COMPLETED' as any } })
+
+      if (project.deliveryEmail) {
         const { sendReportEmail } = await import('../lib/email')
-        const setup = (project as any).competitiveSetup
-        const companyName = setup?.companyName || 'Tu empresa'
-        const now = new Date()
-        const weekNumber = Math.ceil((now.getDate() + new Date(now.getFullYear(), now.getMonth(), 1).getDay()) / 7)
-        const reportCount = await prisma.report.count({ where: { projectId, status: 'COMPLETED' as any } })
-        await sendReportEmail(deliveryEmail, companyName, signedUrl, weekNumber, reportCount)
+        await sendReportEmail(project.deliveryEmail, companyName, signedUrl, weekNumber, reportCount)
       }
-    } catch(emailErr: any) { console.error('Error enviando email:', emailErr.message) }
+
+      const deliveryPhone = (project as any).deliveryPhone
+      const deliveryChannels = (project as any).deliveryChannels || []
+      if (deliveryPhone && deliveryChannels.includes('WHATSAPP')) {
+        const { sendReportWhatsApp } = await import('../lib/whatsapp')
+        await sendReportWhatsApp(deliveryPhone, companyName, signedUrl, reportCount)
+        console.log('[WhatsApp] Reporte enviado a ' + deliveryPhone)
+      }
+    } catch(emailErr: any) { console.error('Error enviando notificaciones:', emailErr.message) }
     res.status(200).json({ success: true, message: 'Reporte generado correctamente', filename, fileSize: Math.round(fileSize / 1024) + 'KB' })
   } catch (error: any) {
     console.error('Error generando reporte:', error)
