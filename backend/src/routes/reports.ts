@@ -21,12 +21,18 @@ router.post('/generate/:projectId', requireAuth, async (req: Request, res: Respo
     if ((project as any).userId !== userId) return res.status(403).json({ error: 'No tienes permiso para generar este reporte' })
 
     // 🔒 RESTRICCION TRIAL: max 1 reporte gratis
+    // Solo aplica si NO tiene suscripcion Stripe activa
     if ((project as any).status === 'TRIAL') {
-      const reportCount = await prisma.report.count({
-        where: { projectId, status: 'COMPLETED' as any }
-      })
-      if (reportCount >= 1) {
-        return res.status(403).json({ error: 'trial_limit', message: 'Has usado tu reporte gratuito. Activa tu plan para continuar.' })
+      const sub = await (prisma.subscription as any).findFirst({ where: { projectId } })
+      const tieneStripe = sub?.stripeSubscriptionId != null &&
+        ['active', 'trialing'].includes((sub?.status || '').toLowerCase())
+      if (!tieneStripe) {
+        const reportCount = await prisma.report.count({
+          where: { projectId, status: 'COMPLETED' as any }
+        })
+        if (reportCount >= 1) {
+          return res.status(403).json({ error: 'trial_limit', message: 'Has usado tu reporte gratuito. Activa tu plan para continuar.' })
+        }
       }
     }
 
