@@ -91,7 +91,16 @@ export function startReportWorker() {
 
         if (project.deliveryEmail) {
           const { sendReportEmail } = await import('../lib/email')
-          await sendReportEmail(project.deliveryEmail, companyName, signedUrl, weekNumber, reportCount)
+          // Obtener CC emails de colegas invitados
+          const setupForCC = (project as any).competitiveSetup
+          let ccEmails: string[] = []
+          try {
+            const ctx = setupForCC?.additionalContext
+              ? (typeof setupForCC.additionalContext === 'string' ? JSON.parse(setupForCC.additionalContext) : setupForCC.additionalContext)
+              : {}
+            ccEmails = ctx.ccEmails || []
+          } catch(e) {}
+          await sendReportEmail(project.deliveryEmail, companyName, signedUrl, weekNumber, reportCount, ccEmails)
         }
 
         const deliveryPhone = (project as any).deliveryPhone

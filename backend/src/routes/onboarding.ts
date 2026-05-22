@@ -442,3 +442,67 @@ router.post('/save', requireAuth, async (req: Request, res: Response) => {
 })
 
 export default router
+// POST /api/onboarding/invite — guardar emails de colegas y enviar bienvenida
+router.post('/invite', requireAuth, async (req: Request, res: Response) => {
+  try {
+    const { projectId, emails } = req.body
+    const userId = req.userId!
+
+    if (!projectId || !emails?.length) {
+      return res.status(400).json({ error: 'projectId y emails requeridos' })
+    }
+
+    const project = await (prisma.project as any).findUnique({ where: { id: projectId } })
+    if (!project || project.userId !== userId) {
+      return res.status(403).json({ error: 'No tienes permiso' })
+    }
+
+    // Guardar emails adicionales en el setup
+    const setup = await (prisma.competitiveIntelligenceSetup as any).findUnique({ where: { projectId } })
+    const existingCtx = setup?.additionalContext
+      ? (typeof setup.additionalContext === 'string' ? JSON.parse(setup.additionalContext) : setup.additionalContext)
+      : {}
+
+    const currentCCs = existingCtx.ccEmails || []
+    const newCCs = [...new Set([...currentCCs, ...emails])]
+
+    await (prisma.competitiveIntelligenceSetup as any).update({
+      where: { projectId },
+      data: { additionalContext: JSON.stringify({ ...existingCtx, ccEmails: newCCs }) }
+    })
+
+    // Enviar email de bienvenida a cada colega
+    const { Resend } = await import('resend')
+    const resend = new Resend(process.env.RESEND_API_KEY)
+    const companyName = setup?.companyName || 'tu empresa'
+
+    for (const email of emails) {
+      await resend.emails.send({
+        from: 'Reports PRO <reportes@flow11.mx>',
+        to: email,
+        subject: `Te han invitado a recibir reportes de inteligencia de ${companyName}`,
+        html: `
+          <div style="font-family:sans-serif;max-width:600px;margin:0 auto;background:#0D0F1A;color:#F0F2FF;padding:40px;border-radius:16px">
+            <div style="text-align:center;margin-bottom:32px">
+              <div style="font-size:24px;font-weight:900">Reports<span style="color:#8B7BFF"> PRO</span></div>
+              <div style="font-size:11px;color:#5A627A;letter-spacing:0.15em;text-transform:uppercase;margin-top:4px">AI Automated Intelligence</div>
+            </div>
+            <h2 style="font-size:20px;font-weight:800;margin-bottom:12px">Fuiste invitado a recibir reportes de inteligencia</h2>
+            <p style="color:#9CA3AF;line-height:1.6;margin-bottom:24px">
+              A partir de ahora recibirás automáticamente los reportes de <strong style="color:#F0F2FF">${companyName}</strong> generados por Reports PRO AI — análisis competitivo, alertas del sector y tendencias de mercado.
+            </p>
+            <div style="background:rgba(139,123,255,0.1);border:1px solid rgba(139,123,255,0.2);border-radius:12px;padding:20px;margin-bottom:24px">
+              <div style="font-size:13px;color:#9CA3AF">¿Quieres tu propio servicio de inteligencia?</div>
+              <a href="https://reports-pro.vercel.app/register" style="display:inline-block;margin-top:12px;background:linear-gradient(135deg,#8B7BFF,#5DD4D4);color:#0D0F1A;font-weight:800;padding:10px 24px;border-radius:20px;text-decoration:none;font-size:13px">Crear mi cuenta gratis →</a>
+            </div>
+            <p style="font-size:11px;color:#5A627A;text-align:center">Reports PRO · Monterrey, México 🇲🇽</p>
+          </div>
+        `
+      }).catch((e: any) => console.error('Error enviando invite a', email, e.message))
+    }
+
+    res.json({ success: true, invited: emails.length })
+  } catch(e: any) {
+    res.status(500).json({ error: e.message })
+  }
+})

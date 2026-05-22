@@ -565,7 +565,22 @@ export default function DashboardPage() {
                 style={{ width:'100%', background:'rgba(255,255,255,0.04)', border:'1px solid rgba(255,255,255,0.1)', borderRadius:10, padding:'10px 14px', color:'#F0F2FF', fontSize:13, outline:'none', boxSizing:'border-box', resize:'none', height:80, scrollbarWidth:'none' as const }}
               />
               <button
-                onClick={()=>setInviteSent(true)}
+                onClick={async ()=>{
+                  if (!inviteEmails.trim()) return
+                  try {
+                    const { data: { session } } = await supabase.auth.getSession()
+                    if (!session) return
+                    const emails = inviteEmails.split(',').map((e:string)=>e.trim()).filter(Boolean)
+                    const res = await fetch(BACKEND + '/api/onboarding/invite', {
+                      method: 'POST',
+                      headers: { 'Authorization': 'Bearer ' + session.access_token, 'Content-Type': 'application/json' },
+                      body: JSON.stringify({ projectId: dashData?.project?.id, emails })
+                    })
+                    const data = await res.json()
+                    if (data.success) setInviteSent(true)
+                    else alert(data.error || 'Error al enviar invitaciones')
+                  } catch(e) { console.error(e) }
+                }}
                 style={{ width:'100%', marginTop:16, background:'linear-gradient(135deg,#8B7BFF,#5DD4D4)', border:'none', borderRadius:20, padding:'12px', color:'#0D0F1A', fontSize:13, fontWeight:800, cursor:'pointer' }}>
                 Enviar invitación →
               </button>
