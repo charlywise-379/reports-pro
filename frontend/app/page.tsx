@@ -554,6 +554,25 @@ export default function Home() {
               <p className="text-gray-400 text-sm">Supera a todos los analistas humanos — sin contratos, sin sorpresas, sin excusas y sin fallas.</p>
             </div>
           </div>
+          {/* BLOQUE ROI */}
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-6 mb-10">
+            <div className="flex items-center gap-4 bg-white/3 border border-white/8 rounded-2xl px-6 py-4">
+              <div className="text-center">
+                <div className="text-2xl font-black text-red-400">$2,100–$4,200</div>
+                <div className="text-xs text-gray-500 mt-0.5">USD/mes · Analista senior</div>
+              </div>
+              <div className="text-2xl font-black text-gray-600 px-2">VS</div>
+              <div className="text-center">
+                <div className="text-2xl font-black text-blue-400">desde $49</div>
+                <div className="text-xs text-gray-500 mt-0.5">USD/mes · Reports PRO</div>
+              </div>
+            </div>
+            <div className="bg-green-500/10 border border-green-500/20 rounded-2xl px-6 py-4 text-center">
+              <div className="text-xl font-black text-green-400">98% más barato</div>
+              <div className="text-xs text-gray-500 mt-0.5">misma inteligencia, sin el sueldo</div>
+            </div>
+          </div>
+
           <div className="flex items-center justify-center gap-4 mb-12">
             <span className={`text-sm font-semibold transition-colors ${!anual ? "text-white" : "text-gray-500"}`}>Pago mensual</span>
             <button onClick={() => setAnual(a => !a)} className={`relative w-14 h-7 rounded-full transition-colors ${anual ? "bg-blue-600" : "bg-white/15"}`}>
@@ -568,10 +587,10 @@ export default function Home() {
           </div>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-14">
             {[
-              { freq: "Mensual", price: 20, desc: "1 reporte al mes", tag: null },
-              { freq: "Quincenal", price: 22, desc: "Cada 15 días", tag: null },
-              { freq: "Semanal", price: 25, desc: "Cada semana", tag: "Más popular" },
-              { freq: "Diario", price: 29.99, desc: "Cada día hábil", tag: "Max ROI" },
+              { freq: "Mensual", price: 49, desc: "1 reporte al mes", tag: null },
+              { freq: "Quincenal", price: 79, desc: "Cada 15 días", tag: null },
+              { freq: "Semanal", price: 99, desc: "Cada semana", tag: "Más popular" },
+              { freq: "Diario", price: 149, desc: "Cada día hábil", tag: "Max ROI" },
             ].map(plan => {
               const precioFinal = anual ? +(plan.price * 0.8).toFixed(2) : plan.price
               const precioAnual = +(precioFinal * 12).toFixed(2)

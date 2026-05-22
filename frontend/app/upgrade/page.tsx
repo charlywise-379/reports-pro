@@ -19,10 +19,10 @@ function useIsMobile() {
 
 
 const PLANS = [
-  { key:'weekly', label:'Semanal', freq:'Cada lunes', priceUSD:25.00, priceAnnualUSD:19.99, annualTotal:239.88, monthlyId:'price_1TUzqgRmWEBJMGXd126CDFtd', annualId:'price_1TUzqkRmWEBJMGXdVJa88pIE', popular:true },
-  { key:'monthly', label:'Mensual', freq:'Primer día del mes', priceUSD:20.00, priceAnnualUSD:15.99, annualTotal:191.88, monthlyId:'price_1TUzqiRmWEBJMGXdssJJTmry', annualId:'price_1TUzqmRmWEBJMGXdeUrqvLpc', popular:false },
-  { key:'biweekly', label:'Quincenal', freq:'Cada 15 días', priceUSD:22.00, priceAnnualUSD:17.59, annualTotal:211.08, monthlyId:'price_1TUzqhRmWEBJMGXdSqv4IxKQ', annualId:'price_1TUzqlRmWEBJMGXdkIQKXZqq', popular:false },
-  { key:'daily', label:'Diario', freq:'Cada día hábil', priceUSD:29.99, priceAnnualUSD:23.99, annualTotal:287.88, monthlyId:'price_1TUzqgRmWEBJMGXdhWXTQFM9', annualId:'price_1TUzqjRmWEBJMGXdvziIFflY', popular:false },
+  { key:'monthly', label:'Mensual', freq:'Primer día del mes', priceUSD:49.00, priceAnnualUSD:39.20, annualTotal:470.40, monthlyId:'price_1TZgabRmWEBJMGXdvmvgL1kt', annualId:'price_1TZgfhRmWEBJMGXdpVtvQmSf', popular:false },
+  { key:'biweekly', label:'Quincenal', freq:'Cada 15 días', priceUSD:79.00, priceAnnualUSD:63.20, annualTotal:758.40, monthlyId:'price_1TZgdCRmWEBJMGXdKbORX53Z', annualId:'price_1TZggBRmWEBJMGXdNfvE2alC', popular:false },
+  { key:'weekly', label:'Semanal', freq:'Cada lunes', priceUSD:99.00, priceAnnualUSD:79.20, annualTotal:950.40, monthlyId:'price_1TZgdeRmWEBJMGXdzjmKaop1', annualId:'price_1TZggxRmWEBJMGXdpKPWiGWk', popular:true },
+  { key:'daily', label:'Diario', freq:'Cada día hábil', priceUSD:149.00, priceAnnualUSD:119.20, annualTotal:1430.40, monthlyId:'price_1TZgebRmWEBJMGXdrdmssMMn', annualId:'price_1TZghSRmWEBJMGXdBKTZj7pa', popular:false },
 ]
 
 export default function UpgradePage() {
