@@ -491,11 +491,34 @@ router.post('/invite', requireAuth, async (req: Request, res: Response) => {
             <p style="color:#9CA3AF;line-height:1.6;margin-bottom:24px">
               A partir de ahora recibirás automáticamente los reportes de <strong style="color:#F0F2FF">${companyName}</strong> generados por Reports PRO AI — análisis competitivo, alertas del sector y tendencias de mercado.
             </p>
-            <div style="background:rgba(139,123,255,0.1);border:1px solid rgba(139,123,255,0.2);border-radius:12px;padding:20px;margin-bottom:24px">
-              <div style="font-size:13px;color:#9CA3AF">¿Quieres tu propio servicio de inteligencia?</div>
-              <a href="https://reports-pro.vercel.app/register" style="display:inline-block;margin-top:12px;background:linear-gradient(135deg,#8B7BFF,#5DD4D4);color:#0D0F1A;font-weight:800;padding:10px 24px;border-radius:20px;text-decoration:none;font-size:13px">Crear mi cuenta gratis →</a>
+            <div style="background:rgba(139,123,255,0.1);border:1px solid rgba(139,123,255,0.2);border-radius:12px;padding:24px;margin-bottom:24px">
+              <div style="font-size:11px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:#8B7BFF;margin-bottom:8px">Inteligencia Automatizada AI</div>
+              <div style="font-size:16px;font-weight:800;color:#F0F2FF;margin-bottom:6px">Genera tus propios reportes PRO de AI Automation</div>
+              <div style="font-size:13px;color:#9CA3AF;margin-bottom:20px">Conoce los servicios de inteligencia automatizada IA.</div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px">
+                <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:8px;padding:12px">
+                  <div style="font-size:10px;font-weight:700;letter-spacing:0.1em;color:#5DD4D4;text-transform:uppercase;margin-bottom:4px">01 · Competitivo</div>
+                  <div style="font-size:12px;color:#F0F2FF;font-weight:600">Inteligencia Competitiva</div>
+                  <div style="font-size:11px;color:#5A627A;margin-top:2px">Movimientos, precios y alertas del sector</div>
+                </div>
+                <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:8px;padding:12px">
+                  <div style="font-size:10px;font-weight:700;letter-spacing:0.1em;color:#8B7BFF;text-transform:uppercase;margin-bottom:4px">02 · Seguridad</div>
+                  <div style="font-size:12px;color:#F0F2FF;font-weight:600">Radar Ciberseguridad</div>
+                  <div style="font-size:11px;color:#5A627A;margin-top:2px">Vulnerabilidades, brechas y protección</div>
+                </div>
+                <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:8px;padding:12px">
+                  <div style="font-size:10px;font-weight:700;letter-spacing:0.1em;color:#6EE7A4;text-transform:uppercase;margin-bottom:4px">03 · Bienestar</div>
+                  <div style="font-size:12px;color:#F0F2FF;font-weight:600">Salud Corporativa RRHH</div>
+                  <div style="font-size:11px;color:#5A627A;margin-top:2px">Burnout, rotación y bienestar laboral</div>
+                </div>
+                <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:8px;padding:12px">
+                  <div style="font-size:10px;font-weight:700;letter-spacing:0.1em;color:#F2C063;text-transform:uppercase;margin-bottom:4px">04 · Ejecutivo</div>
+                  <div style="font-size:12px;color:#F0F2FF;font-weight:600">Perfil Clave Ejecutivo</div>
+                  <div style="font-size:11px;color:#5A627A;margin-top:2px">Liderazgo, red de contactos e influencia</div>
+                </div>
+              </div>
+              <a href="https://reports-pro.vercel.app/register" style="display:inline-block;background:linear-gradient(135deg,#8B7BFF,#5DD4D4);color:#0D0F1A;font-weight:800;padding:12px 28px;border-radius:20px;text-decoration:none;font-size:13px">Crear mi cuenta gratis →</a>
             </div>
-            <p style="font-size:11px;color:#5A627A;text-align:center">Reports PRO · Monterrey, México 🇲🇽</p>
           </div>
         `
       }).catch((e: any) => console.error('Error enviando invite a', email, e.message))
