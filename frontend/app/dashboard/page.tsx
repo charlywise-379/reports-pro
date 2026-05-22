@@ -279,28 +279,38 @@ export default function DashboardPage() {
             <div>
               <span style={{...S.lbl, color:'#8B7BFF'}}>PRÓXIMO REPORTE · {dashData?.project?.frequency || 'SEMANAL'}</span>
               <div style={{ fontSize:16, fontWeight:800, color:'#F0F2FF', lineHeight:1.3 }}>Inteligencia Competitiva<br/><span style={{ color:'#8B7BFF' }}>{companyName}</span></div>
-              <div style={{...S.muted, marginTop:3}}>{dashData?.project?.deliveryEmail || 'Email'} · {(dashData?.setup?.focusAreas || []).length} áreas activas</div>
-              <div style={{ display:'flex', gap:5, marginTop:8, flexWrap:'wrap' }}>
+              <div style={{...S.muted, marginTop:3}}>
+                {dashData?.project?.deliveryEmail || 'Email'} · {(dashData?.setup?.focusAreas || []).length} áreas activas
+                {' · '}
+                {(() => {
+                  const channels = dashData?.project?.deliveryChannels || []
+                  const hasEmail = channels.includes('EMAIL') || true
+                  const hasWhatsapp = channels.includes('WHATSAPP')
+                  if (hasEmail && hasWhatsapp) return 'Entrega por Email + WhatsApp'
+                  if (hasWhatsapp) return 'Entrega por WhatsApp'
+                  return 'Entrega por Email'
+                })()}
+              </div>
+              <div style={{ display:'flex', gap:5, marginTop:8, flexWrap:'wrap', alignItems:'center' }}>
                 {(dashData?.setup?.focusAreas || ['Precios','Campañas','Lanzamientos']).map((a: string) => (
                   <span key={a} style={{...S.badge, background:'rgba(139,123,255,0.15)', color:'#8B7BFF'}}>{a}</span>
                 ))}
+                {(() => {
+                  const freqDays: Record<string,number> = { DAILY:1, WEEKLY:7, BIWEEKLY:15, MONTHLY:30 }
+                  const lastReport = (dashData?.reports || []).find((r:any) => r.status === 'COMPLETED')
+                  const diasFreq = freqDays[frequency] || 7
+                  if (!lastReport) return <span style={{ fontSize:11, color:'#8B7BFF', fontWeight:600, background:'rgba(139,123,255,0.1)', border:'1px solid rgba(139,123,255,0.2)', borderRadius:20, padding:'4px 12px' }}>Pronto</span>
+                  const diasDesde = Math.floor((Date.now() - new Date(lastReport.createdAt).getTime()) / (1000*60*60*24))
+                  const diasFaltan = Math.max(0, diasFreq - diasDesde)
+                  return (
+                    <span style={{ fontSize:11, color:'#8B7BFF', fontWeight:600, background:'rgba(139,123,255,0.1)', border:'1px solid rgba(139,123,255,0.2)', borderRadius:20, padding:'4px 12px' }}>
+                      {diasFaltan === 0 ? 'Tu próximo reporte está listo para generar' : `Tu próximo reporte estará disponible en ${diasFaltan} día${diasFaltan === 1 ? '' : 's'}`}
+                    </span>
+                  )
+                })()}
               </div>
             </div>
-            <div style={{ flexShrink:0, paddingLeft: isMobile ? 0 : 20 }}>
-              {(() => {
-                const freqDays: Record<string,number> = { DAILY:1, WEEKLY:7, BIWEEKLY:15, MONTHLY:30 }
-                const lastReport = (dashData?.reports || []).find((r:any) => r.status === 'COMPLETED')
-                const diasFreq = freqDays[frequency] || 7
-                if (!lastReport) return <span style={{ fontSize:11, color:'#8B7BFF', fontWeight:600, background:'rgba(139,123,255,0.1)', border:'1px solid rgba(139,123,255,0.2)', borderRadius:20, padding:'4px 12px' }}>Pronto</span>
-                const diasDesde = Math.floor((Date.now() - new Date(lastReport.createdAt).getTime()) / (1000*60*60*24))
-                const diasFaltan = Math.max(0, diasFreq - diasDesde)
-                return (
-                  <span style={{ fontSize:11, color:'#8B7BFF', fontWeight:600, background:'rgba(139,123,255,0.1)', border:'1px solid rgba(139,123,255,0.2)', borderRadius:20, padding:'4px 12px' }}>
-                    {diasFaltan === 0 ? 'Tu próximo reporte está listo para generar' : `Tu próximo reporte estará disponible en ${diasFaltan} día${diasFaltan === 1 ? '' : 's'}`}
-                  </span>
-                )
-              })()}
-            </div>
+            <div style={{ display:'none' }} />
           </div>
         </div>
 
