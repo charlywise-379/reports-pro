@@ -291,22 +291,33 @@ export default function DashboardPage() {
                   return 'Entrega por Email'
                 })()}
               </div>
-              <div style={{ display:'flex', gap:5, marginTop:8, flexWrap:'wrap', alignItems:'center', justifyContent:'space-between' }}>
+              <div style={{ display:'flex', gap:5, marginTop:8, flexWrap:'wrap', alignItems:'center' }}>
                 {(dashData?.setup?.focusAreas || ['Precios','Campañas','Lanzamientos']).map((a: string) => (
                   <span key={a} style={{...S.badge, background:'rgba(139,123,255,0.15)', color:'#8B7BFF'}}>{a}</span>
                 ))}
+
+              </div>
+              <div style={{ marginTop:10 }}>
                 {(() => {
-                  const freqDays: Record<string,number> = { DAILY:1, WEEKLY:7, BIWEEKLY:15, MONTHLY:30 }
-                  const lastReport = (dashData?.reports || []).find((r:any) => r.status === 'COMPLETED')
-                  const diasFreq = freqDays[frequency] || 7
-                  if (!lastReport) return <span style={{ fontSize:11, color:'#8B7BFF', fontWeight:600, background:'rgba(139,123,255,0.1)', border:'1px solid rgba(139,123,255,0.2)', borderRadius:20, padding:'4px 12px' }}>Pronto</span>
-                  const diasDesde = Math.floor((Date.now() - new Date(lastReport.createdAt).getTime()) / (1000*60*60*24))
-                  const diasFaltan = Math.max(0, diasFreq - diasDesde)
+                  const freqDays2: Record<string,number> = { DAILY:1, WEEKLY:7, BIWEEKLY:15, MONTHLY:30 }
+                  const lastReport2 = (dashData?.reports || []).find((r:any) => r.status === 'COMPLETED')
+                  const diasFreq2 = freqDays2[frequency] || 7
+                  if (!lastReport2) return <span style={{ display:'inline-flex', alignItems:'center', gap:6, fontSize:12, color:'#8B7BFF', fontWeight:600, background:'rgba(139,123,255,0.1)', border:'1px solid rgba(139,123,255,0.2)', borderRadius:20, padding:'6px 14px' }}>⏳ Pronto</span>
+                  const diasDesde2 = Math.floor((Date.now() - new Date(lastReport2.createdAt).getTime()) / (1000*60*60*24))
+                  const diasFaltan2 = Math.max(0, diasFreq2 - diasDesde2)
                   return (
-                    <span style={{ fontSize:11, color:'#8B7BFF', fontWeight:600, background:'rgba(139,123,255,0.1)', border:'1px solid rgba(139,123,255,0.2)', borderRadius:20, padding:'4px 12px', marginLeft:'auto' }}>
-                      {diasFaltan === 0 ? 'Tu próximo reporte está listo para generar' : `Tu próximo reporte estará disponible en ${diasFaltan} día${diasFaltan === 1 ? '' : 's'}`}
+                    <span style={{ display:'inline-flex', alignItems:'center', gap:6, fontSize:12, color:'#8B7BFF', fontWeight:600, background:'rgba(139,123,255,0.1)', border:'1px solid rgba(139,123,255,0.2)', borderRadius:20, padding:'6px 14px' }}>
+                      🕐 {diasFaltan2 === 0 ? 'Tu próximo reporte está listo para generar' : `Tu próximo reporte estará disponible en ${diasFaltan2} día${diasFaltan2 === 1 ? '' : 's'}`}
                     </span>
                   )
+                })()}
+              </div>
+            </div>
+            <div style={{ display:'none' }} />
+          </div>
+        </div>
+        {/* DUMMY CLOSE */}
+        {false && (() => { return null 
                 })()}
               </div>
             </div>
