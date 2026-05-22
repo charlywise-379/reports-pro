@@ -272,7 +272,6 @@ export default function DashboardPage() {
             )}
           </div>
         </div>
-
         {/* ZONA 6 — PRÓXIMO REPORTE */}
         <div style={{...S.card, background:'rgba(139,123,255,0.06)', borderColor:'rgba(139,123,255,0.2)'}}>
           <div style={{ display:'flex', justifyContent:'space-between', alignItems: isMobile ? 'flex-start' : 'center', flexDirection: isMobile ? 'column' : 'row', gap: isMobile ? 12 : 0 }}>
@@ -284,39 +283,31 @@ export default function DashboardPage() {
                 {' · '}
                 {(() => {
                   const channels = dashData?.project?.deliveryChannels || []
-                  const hasEmail = channels.includes('EMAIL') || true
                   const hasWhatsapp = channels.includes('WHATSAPP')
-                  if (hasEmail && hasWhatsapp) return 'Entrega por Email + WhatsApp'
-                  if (hasWhatsapp) return 'Entrega por WhatsApp'
+                  if (hasWhatsapp) return 'Entrega por Email + WhatsApp'
                   return 'Entrega por Email'
                 })()}
               </div>
-              <div style={{ display:'flex', gap:5, marginTop:8, flexWrap:'wrap', alignItems:'center' }}>
+              <div style={{ display:'flex', gap:5, marginTop:8, flexWrap:'wrap' }}>
                 {(dashData?.setup?.focusAreas || ['Precios','Campañas','Lanzamientos']).map((a: string) => (
                   <span key={a} style={{...S.badge, background:'rgba(139,123,255,0.15)', color:'#8B7BFF'}}>{a}</span>
                 ))}
-
-              </div>
-              <div style={{ marginTop:10 }}>
-                {(() => {
-                  const freqDays2: Record<string,number> = { DAILY:1, WEEKLY:7, BIWEEKLY:15, MONTHLY:30 }
-                  const lastReport2 = (dashData?.reports || []).find((r:any) => r.status === 'COMPLETED')
-                  const diasFreq2 = freqDays2[frequency] || 7
-                  if (!lastReport2) return <span style={{ display:'inline-flex', alignItems:'center', gap:6, fontSize:12, color:'#8B7BFF', fontWeight:600, background:'rgba(139,123,255,0.1)', border:'1px solid rgba(139,123,255,0.2)', borderRadius:20, padding:'6px 14px' }}>⏳ Pronto</span>
-                  const diasDesde2 = Math.floor((Date.now() - new Date(lastReport2.createdAt).getTime()) / (1000*60*60*24))
-                  const diasFaltan2 = Math.max(0, diasFreq2 - diasDesde2)
-                  return (
-                    <span style={{ display:'inline-flex', alignItems:'center', gap:6, fontSize:12, color:'#8B7BFF', fontWeight:600, background:'rgba(139,123,255,0.1)', border:'1px solid rgba(139,123,255,0.2)', borderRadius:20, padding:'6px 14px' }}>
-                      🕐 {diasFaltan2 === 0 ? 'Tu próximo reporte está listo para generar' : `Tu próximo reporte estará disponible en ${diasFaltan2} día${diasFaltan2 === 1 ? '' : 's'}`}
-                    </span>
-                  )
-                })()}
               </div>
             </div>
-          </div>
-        </div>
-                })()}
-              </div>
+            <div style={{ flexShrink:0, paddingLeft: isMobile ? 0 : 20 }}>
+              {(() => {
+                const freqDays: Record<string,number> = { DAILY:1, WEEKLY:7, BIWEEKLY:15, MONTHLY:30 }
+                const lastReport = (dashData?.reports || []).find((r:any) => r.status === 'COMPLETED')
+                const diasFreq = freqDays[frequency] || 7
+                if (!lastReport) return <span style={{ fontSize:11, color:'#8B7BFF', fontWeight:600, background:'rgba(139,123,255,0.1)', border:'1px solid rgba(139,123,255,0.2)', borderRadius:20, padding:'4px 12px' }}>Pronto</span>
+                const diasDesde = Math.floor((Date.now() - new Date(lastReport.createdAt).getTime()) / (1000*60*60*24))
+                const diasFaltan = Math.max(0, diasFreq - diasDesde)
+                return (
+                  <span style={{ display:'inline-flex', alignItems:'center', gap:6, fontSize:12, color:'#8B7BFF', fontWeight:600, background:'rgba(139,123,255,0.1)', border:'1px solid rgba(139,123,255,0.2)', borderRadius:20, padding:'6px 14px' }}>
+                    🕐 {diasFaltan === 0 ? 'Tu próximo reporte está listo para generar' : `Tu próximo reporte estará disponible en ${diasFaltan} día${diasFaltan === 1 ? '' : 's'}`}
+                  </span>
+                )
+              })()}
             </div>
           </div>
         </div>
