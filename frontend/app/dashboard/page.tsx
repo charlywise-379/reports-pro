@@ -306,8 +306,8 @@ export default function DashboardPage() {
 
         {/* ZONA 7 — PANEL USUARIO */}
         <div style={{ background:'linear-gradient(135deg,rgba(139,123,255,0.08),rgba(93,212,212,0.04))', border:'1px solid rgba(139,123,255,0.2)', borderRadius:16, padding:'20px 22px', marginBottom:14 }}>
-          <div style={{ paddingBottom:14, borderBottom:'1px solid rgba(255,255,255,0.06)', marginBottom:14, display:'flex', alignItems:'center', justifyContent:'space-between', gap:12 }}>
-            <div style={{ display:'flex', alignItems: isMobile ? 'flex-start' : 'center', gap:12, marginBottom: isMobile ? 12 : 0, flex: isMobile ? 'none' : 1 }}>
+          <div style={{ paddingBottom:14, borderBottom:'1px solid rgba(255,255,255,0.06)', marginBottom:14, display:'flex', flexDirection: isMobile ? 'column' : 'row', alignItems: isMobile ? 'flex-start' : 'center', justifyContent:'space-between', gap:12 }}>
+            <div style={{ display:'flex', alignItems:'center', gap:12 }}>
               <div style={{ width:42, height:42, borderRadius:12, background:'linear-gradient(135deg,#8B7BFF,#5DD4D4)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:16, fontWeight:900, color:'#0D0F1A', flexShrink:0 }}>
                 {user?.email?.[0]?.toUpperCase() || 'U'}
               </div>
