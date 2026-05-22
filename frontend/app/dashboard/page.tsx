@@ -557,11 +557,11 @@ export default function DashboardPage() {
               <p style={{ fontSize:13, color:'#9CA3AF', marginBottom:16, lineHeight:1.6 }}>
                 Agrega los emails de tus colegas para que también reciban el reporte de inteligencia competitiva.
               </p>
-              <label style={{ fontSize:10, fontWeight:700, color:'#5A627A', letterSpacing:'0.1em', display:'block', marginBottom:6 }}>EMAILS (separados por coma)</label>
+              <label style={{ fontSize:10, fontWeight:700, color:'#5A627A', letterSpacing:'0.1em', display:'block', marginBottom:6 }}>EMAILS (separados por coma, sin espacios)</label>
               <textarea
                 value={inviteEmails}
                 onChange={e=>setInviteEmails(e.target.value)}
-                placeholder="colega1@empresa.com, colega2@empresa.com"
+                placeholder="colega1@empresa.com,colega2@empresa.com"
                 style={{ width:'100%', background:'rgba(255,255,255,0.04)', border:'1px solid rgba(255,255,255,0.1)', borderRadius:10, padding:'10px 14px', color:'#F0F2FF', fontSize:13, outline:'none', boxSizing:'border-box', resize:'none', height:80, scrollbarWidth:'none' as const }}
               />
               <button
