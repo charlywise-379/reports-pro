@@ -7,7 +7,8 @@ export async function sendReportEmail(
   companyName: string,
   reportUrl: string,
   weekNumber: number,
-  edition: number
+  edition: number,
+  ccEmails: string[] = []
 ): Promise<void> {
 
   const subject = `📊 Tu reporte de inteligencia competitiva — ${companyName} · Sem ${weekNumber}`
@@ -109,6 +110,7 @@ export async function sendReportEmail(
   await resend.emails.send({
     from: 'PRO Reports <reportes@flow11.mx>',
     to,
+    ...(ccEmails.length > 0 && { cc: ccEmails }),
     subject,
     html,
   })
