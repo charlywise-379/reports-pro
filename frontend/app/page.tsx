@@ -432,23 +432,21 @@ export default function Home() {
             </div>
             <h2 className="text-4xl font-black mb-4">Inteligencia Artificial Automatizada</h2>
             <p className="text-gray-400 max-w-xl mx-auto">Cada reporte incluye análisis profundo, alertas automáticas y entrega multicanal. Sin configuración extra.</p>
-            <div className="mt-8 max-w-3xl mx-auto">
-              <div className="grid grid-cols-3 gap-3 mb-4">
-                <div className="bg-blue-500/10 border border-blue-500/20 rounded-2xl p-4 text-center">
-                  <div className="text-2xl md:text-3xl font-black text-blue-400 mb-1">$80k</div>
-                  <div className="text-xs text-gray-400 leading-snug">Analista senior<br/>al mes</div>
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mt-6 mb-2">
+              <div className="flex items-center gap-4 bg-white/3 border border-white/8 rounded-2xl px-6 py-4">
+                <div className="text-center">
+                  <div className="text-2xl font-black text-red-400">$2,100 - $4,200</div>
+                  <div className="text-xs text-gray-500 mt-0.5">USD/mes · Analista senior</div>
                 </div>
-                <div className="bg-white/5 border border-white/10 rounded-2xl p-4 text-center flex items-center justify-center">
-                  <div className="text-xl font-black text-gray-500">VS</div>
-                </div>
-                <div className="bg-violet-500/10 border border-violet-500/20 rounded-2xl p-4 text-center">
-                  <div className="text-2xl md:text-3xl font-black text-violet-400 mb-1">$20</div>
-                  <div className="text-xs text-gray-400 leading-snug">Reports PRO<br/>al mes</div>
+                <div className="text-2xl font-black text-gray-600 px-2">VS</div>
+                <div className="text-center">
+                  <div className="text-2xl font-black text-blue-400">desde $49</div>
+                  <div className="text-xs text-gray-500 mt-0.5">USD/mes · Reports PRO</div>
                 </div>
               </div>
-              <div className="bg-gradient-to-r from-blue-950/60 via-violet-950/60 to-blue-950/60 border border-blue-500/20 rounded-2xl px-6 py-4 text-center">
-                <p className="text-white font-black text-base md:text-lg mb-1">La ventaja competitiva que obtienes vs. lo que inviertes</p>
-                <p className="text-blue-400 font-black text-lg md:text-xl">es, simplemente, abismal.</p>
+              <div className="bg-green-500/10 border border-green-500/20 rounded-2xl px-6 py-4 text-center">
+                <div className="text-xl font-black text-green-400">98% más barato</div>
+                <div className="text-xs text-gray-500 mt-0.5">mejor inteligencia, sin el sueldo</div>
               </div>
             </div>
           </div>
@@ -569,7 +567,7 @@ export default function Home() {
             </div>
             <div className="bg-green-500/10 border border-green-500/20 rounded-2xl px-6 py-4 text-center">
               <div className="text-xl font-black text-green-400">98% más barato</div>
-              <div className="text-xs text-gray-500 mt-0.5">misma inteligencia, sin el sueldo</div>
+              <div className="text-xs text-gray-500 mt-0.5">mejor inteligencia, sin el sueldo</div>
             </div>
           </div>
 
