@@ -307,7 +307,7 @@ export default function DashboardPage() {
         {/* ZONA 7 — PANEL USUARIO */}
         <div style={{ background:'linear-gradient(135deg,rgba(139,123,255,0.08),rgba(93,212,212,0.04))', border:'1px solid rgba(139,123,255,0.2)', borderRadius:16, padding:'20px 22px', marginBottom:14 }}>
           <div style={{ paddingBottom:14, borderBottom:'1px solid rgba(255,255,255,0.06)', marginBottom:14 }}>
-            <div style={{ display:'flex', alignItems:'center', gap:12, marginBottom: isMobile ? 12 : 0 }}>
+            <div style={{ display:'flex', alignItems: isMobile ? 'flex-start' : 'center', gap:12, marginBottom: isMobile ? 12 : 0, flex: isMobile ? 'none' : 1 }}>
               <div style={{ width:42, height:42, borderRadius:12, background:'linear-gradient(135deg,#8B7BFF,#5DD4D4)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:16, fontWeight:900, color:'#0D0F1A', flexShrink:0 }}>
                 {user?.email?.[0]?.toUpperCase() || 'U'}
               </div>
@@ -322,16 +322,24 @@ export default function DashboardPage() {
                 </div>
               </div>
             </div>
-            <div style={{ display:'flex', gap:6, flexWrap:'nowrap', overflowX:'auto', paddingBottom:2 }}>
-              <button onClick={()=>{setEditName(dashData?.setup?.companyName||'');setShowEditProfile(true)}} style={{ fontSize:10, fontWeight:600, color:'#8B7BFF', background:'rgba(139,123,255,0.1)', border:'1px solid rgba(139,123,255,0.2)', borderRadius:20, padding:'6px 12px', cursor:'pointer', whiteSpace:'nowrap', flexShrink:0 }}>Editar Perfil (Empresa)</button>
-              <button onClick={handlePasswordReset} style={{ fontSize:10, fontWeight:600, color: passwordSent ? '#6EE7A4' : '#9CA3AF', background:'rgba(255,255,255,0.04)', border:'1px solid rgba(255,255,255,0.08)', borderRadius:20, padding:'6px 12px', cursor:'pointer', whiteSpace:'nowrap', flexShrink:0 }}>{passwordSent ? '✓ Email enviado' : 'Cambiar contraseña'}</button>
-            </div>
-            {tieneStripe && (
-              <button onClick={() => router.push('/upgrade')}
-                style={{ width:'100%', marginTop:8, fontSize:11, fontWeight:700, color:'#6EE7A4', background:'rgba(110,231,164,0.08)', border:'1px solid rgba(110,231,164,0.2)', borderRadius:20, padding:'8px 14px', cursor:'pointer', textAlign:'center' as const }}>
-                Gestionar suscripcion →
-              </button>
-            )}
+            {isMobile && <div style={{ display:'flex', gap:6, flexWrap:'wrap' }}>
+              <button onClick={()=>{setEditName(dashData?.setup?.companyName||'');setShowEditProfile(true)}} style={{ fontSize:10, fontWeight:600, color:'#8B7BFF', background:'rgba(139,123,255,0.1)', border:'1px solid rgba(139,123,255,0.2)', borderRadius:20, padding:'6px 12px', cursor:'pointer', whiteSpace:'nowrap' }}>Editar Perfil</button>
+              <button onClick={handlePasswordReset} style={{ fontSize:10, fontWeight:600, color: passwordSent ? '#6EE7A4' : '#9CA3AF', background:'rgba(255,255,255,0.04)', border:'1px solid rgba(255,255,255,0.08)', borderRadius:20, padding:'6px 12px', cursor:'pointer', whiteSpace:'nowrap' }}>{passwordSent ? '✓ Email enviado' : 'Cambiar contraseña'}</button>
+              {tieneStripe && (
+                <button onClick={() => router.push('/upgrade')} style={{ fontSize:10, fontWeight:600, color:'#6EE7A4', background:'rgba(110,231,164,0.08)', border:'1px solid rgba(110,231,164,0.2)', borderRadius:20, padding:'6px 12px', cursor:'pointer', whiteSpace:'nowrap' }}>
+                  Gestionar suscripción →
+                </button>
+              )}
+            </div>}
+            {!isMobile && <div style={{ display:'flex', gap:8, alignItems:'center', marginLeft:'auto' }}>
+              <button onClick={()=>{setEditName(dashData?.setup?.companyName||'');setShowEditProfile(true)}} style={{ fontSize:12, fontWeight:600, color:'#8B7BFF', background:'rgba(139,123,255,0.1)', border:'1px solid rgba(139,123,255,0.2)', borderRadius:20, padding:'8px 18px', cursor:'pointer', whiteSpace:'nowrap' }}>Editar Perfil</button>
+              <button onClick={handlePasswordReset} style={{ fontSize:12, fontWeight:600, color: passwordSent ? '#6EE7A4' : '#9CA3AF', background:'rgba(255,255,255,0.04)', border:'1px solid rgba(255,255,255,0.08)', borderRadius:20, padding:'8px 18px', cursor:'pointer', whiteSpace:'nowrap' }}>{passwordSent ? '✓ Email enviado' : 'Cambiar contraseña'}</button>
+              {tieneStripe && (
+                <button onClick={() => router.push('/upgrade')} style={{ fontSize:12, fontWeight:600, color:'#6EE7A4', background:'rgba(110,231,164,0.08)', border:'1px solid rgba(110,231,164,0.2)', borderRadius:20, padding:'8px 18px', cursor:'pointer', whiteSpace:'nowrap' }}>
+                  Gestionar suscripción →
+                </button>
+              )}
+            </div>}
           </div>
           <div style={{ display:'grid', gridTemplateColumns: isMobile ? '1fr 1fr' : '1fr 1fr 1fr 1fr', gap:10 }}>
             {[
