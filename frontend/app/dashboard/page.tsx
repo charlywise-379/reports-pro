@@ -274,33 +274,37 @@ export default function DashboardPage() {
         </div>
 
         {/* ZONA 6 — PRÓXIMO REPORTE */}
-        <div style={{...S.card, background:'rgba(139,123,255,0.06)', borderColor:'rgba(139,123,255,0.2)'}}>
-          <div style={{ display:'flex', justifyContent:'space-between', alignItems: isMobile ? 'flex-start' : 'center', flexDirection: isMobile ? 'column' : 'row', gap: isMobile ? 12 : 0 }}>
-            <div>
-              <span style={{...S.lbl, color:'#8B7BFF'}}>PRÓXIMO REPORTE · {dashData?.project?.frequency || 'SEMANAL'}</span>
-              <div style={{ fontSize:16, fontWeight:800, color:'#F0F2FF', lineHeight:1.3 }}>Inteligencia Competitiva<br/><span style={{ color:'#8B7BFF' }}>{companyName}</span></div>
-              <div style={{...S.muted, marginTop:3}}>{dashData?.project?.deliveryEmail || 'Email'} · {(dashData?.setup?.focusAreas || []).length} áreas activas</div>
-              <div style={{ display:'flex', gap:5, marginTop:8, flexWrap:'wrap' }}>
-                {(dashData?.setup?.focusAreas || ['Precios','Campañas','Lanzamientos']).map((a: string) => (
-                  <span key={a} style={{...S.badge, background:'rgba(139,123,255,0.15)', color:'#8B7BFF'}}>{a}</span>
-                ))}
-              </div>
-            </div>
-            <div style={{ flexShrink:0, paddingLeft: isMobile ? 0 : 20 }}>
-              {(() => {
-                const freqDays: Record<string,number> = { DAILY:1, WEEKLY:7, BIWEEKLY:15, MONTHLY:30 }
-                const lastReport = (dashData?.reports || []).find((r:any) => r.status === 'COMPLETED')
-                const diasFreq = freqDays[frequency] || 7
-                if (!lastReport) return <span style={{ fontSize:11, color:'#8B7BFF', fontWeight:600, background:'rgba(139,123,255,0.1)', border:'1px solid rgba(139,123,255,0.2)', borderRadius:20, padding:'4px 12px' }}>Pronto</span>
-                const diasDesde = Math.floor((Date.now() - new Date(lastReport.createdAt).getTime()) / (1000*60*60*24))
-                const diasFaltan = Math.max(0, diasFreq - diasDesde)
-                return (
-                  <span style={{ fontSize:11, color:'#8B7BFF', fontWeight:600, background:'rgba(139,123,255,0.1)', border:'1px solid rgba(139,123,255,0.2)', borderRadius:20, padding:'4px 12px' }}>
-                    {diasFaltan === 0 ? 'Tu próximo reporte está listo para generar' : `Tu próximo reporte estará disponible en ${diasFaltan} día${diasFaltan === 1 ? '' : 's'}`}
-                  </span>
-                )
-              })()}
-            </div>
+        <div style={{ background:'linear-gradient(135deg,rgba(108,92,231,0.18),rgba(0,206,201,0.06))', border:'1px solid rgba(108,92,231,0.25)', borderRadius:16, padding:'20px 22px', marginBottom:14 }}>
+          <div style={{ fontSize:9, fontWeight:700, letterSpacing:'0.14em', textTransform:'uppercase', color:'#8B7BFF', marginBottom:6 }}>
+            Inteligencia Competitiva · Activo
+          </div>
+          <div style={{ fontSize:16, fontWeight:800, color:'#F0F2FF', marginBottom:3 }}>{companyName}</div>
+          <div style={{ fontSize:11, color:'#5A627A', marginBottom:12 }}>
+            {dashData?.project?.deliveryEmail || 'Email'} · {(dashData?.setup?.focusAreas || []).length} áreas monitoreadas · Entrega por Email + WhatsApp
+          </div>
+          <div style={{ display:'flex', gap:5, flexWrap:'wrap', marginBottom:14 }}>
+            {(dashData?.setup?.focusAreas || ['Precios','Campañas','Lanzamientos']).map((a: string) => (
+              <span key={a} style={{ fontSize:10, color:'#8B9ABF', background:'rgba(255,255,255,0.06)', border:'0.5px solid rgba(255,255,255,0.1)', borderRadius:20, padding:'3px 9px' }}>{a}</span>
+            ))}
+          </div>
+          <div style={{ display:'flex', alignItems:'center', gap:8, flexWrap:'wrap' }}>
+            {(() => {
+              const freqDays: Record<string,number> = { DAILY:1, WEEKLY:7, BIWEEKLY:15, MONTHLY:30 }
+              const lastReport = (dashData?.reports || []).find((r:any) => r.status === 'COMPLETED')
+              const diasFreq = freqDays[frequency] || 7
+              const diasFaltan = !lastReport ? 0 : Math.max(0, diasFreq - Math.floor((Date.now() - new Date(lastReport.createdAt).getTime()) / (1000*60*60*24)))
+              return (
+                <span style={{ display:'inline-flex', alignItems:'center', gap:6, fontSize:11, fontWeight:600, color:'#00CEC9', background:'rgba(0,206,201,0.08)', border:'0.5px solid rgba(0,206,201,0.18)', borderRadius:20, padding:'5px 12px' }}>
+                  🕐 {diasFaltan === 0 ? 'Reporte listo para generar' : `Próximo reporte en ${diasFaltan} día${diasFaltan === 1 ? '' : 's'}`}
+                </span>
+              )
+            })()}
+            <span onClick={handleGenerateReport} style={{ fontSize:11, color:'#8B9ABF', background:'rgba(255,255,255,0.05)', border:'0.5px solid rgba(255,255,255,0.1)', borderRadius:20, padding:'5px 12px', cursor:'pointer' }}>
+              Generar ahora
+            </span>
+            <span onClick={() => router.push('/onboarding')} style={{ fontSize:11, color:'#8B9ABF', background:'rgba(255,255,255,0.05)', border:'0.5px solid rgba(255,255,255,0.1)', borderRadius:20, padding:'5px 12px', cursor:'pointer', marginLeft:'auto' }}>
+              Editar configuración
+            </span>
           </div>
         </div>
 
