@@ -291,7 +291,7 @@ export default function DashboardPage() {
                   return 'Entrega por Email'
                 })()}
               </div>
-              <div style={{ display:'flex', gap:5, marginTop:8, flexWrap:'wrap', alignItems:'center' }}>
+              <div style={{ display:'flex', gap:5, marginTop:8, flexWrap:'wrap', alignItems:'center', justifyContent:'space-between' }}>
                 {(dashData?.setup?.focusAreas || ['Precios','Campañas','Lanzamientos']).map((a: string) => (
                   <span key={a} style={{...S.badge, background:'rgba(139,123,255,0.15)', color:'#8B7BFF'}}>{a}</span>
                 ))}
@@ -303,7 +303,7 @@ export default function DashboardPage() {
                   const diasDesde = Math.floor((Date.now() - new Date(lastReport.createdAt).getTime()) / (1000*60*60*24))
                   const diasFaltan = Math.max(0, diasFreq - diasDesde)
                   return (
-                    <span style={{ fontSize:11, color:'#8B7BFF', fontWeight:600, background:'rgba(139,123,255,0.1)', border:'1px solid rgba(139,123,255,0.2)', borderRadius:20, padding:'4px 12px' }}>
+                    <span style={{ fontSize:11, color:'#8B7BFF', fontWeight:600, background:'rgba(139,123,255,0.1)', border:'1px solid rgba(139,123,255,0.2)', borderRadius:20, padding:'4px 12px', marginLeft:'auto' }}>
                       {diasFaltan === 0 ? 'Tu próximo reporte está listo para generar' : `Tu próximo reporte estará disponible en ${diasFaltan} día${diasFaltan === 1 ? '' : 's'}`}
                     </span>
                   )
