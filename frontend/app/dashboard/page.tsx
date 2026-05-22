@@ -313,15 +313,11 @@ export default function DashboardPage() {
                 })()}
               </div>
             </div>
-            <div style={{ display:'none' }} />
           </div>
         </div>
-        {/* DUMMY CLOSE */}
-        {false && (() => { return null 
                 })()}
               </div>
             </div>
-            <div style={{ display:'none' }} />
           </div>
         </div>
 
