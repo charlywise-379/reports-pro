@@ -39,6 +39,10 @@ export async function scheduleReports() {
       const freq = project.frequency || 'WEEKLY'
       const horasMinimas = frecuencyHours[freq] || 168
       const lastReport = project.reports?.[0]
+      const horasDesdeUltimo = lastReport
+        ? (Date.now() - new Date(lastReport.createdAt).getTime()) / (1000 * 60 * 60)
+        : null
+      console.log(`[Scheduler] ${project.name} — freq:${freq} horasMin:${horasMinimas} horasDesde:${horasDesdeUltimo ? Math.round(horasDesdeUltimo) : 'sin reporte'}`)
 
       // Si no hay reporte previo o ya paso el tiempo suficiente
       const debeGenerar = !lastReport ||
