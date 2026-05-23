@@ -53,7 +53,23 @@ export async function scheduleReports() {
         const hayGenerando = await prisma.report.findFirst({
           where: { projectId: project.id, status: 'GENERATING' as any }
         })
-        if (hayGenerando) continue
+        if (hayGenerando) {
+          console.log(`[Scheduler] Reporte ya generando para: ${project.name} — saltando`)
+          continue
+        }
+
+        // Verificar que no haya un reporte COMPLETED en las últimas 2 horas (anti-duplicado post-redeploy)
+        const reporteReciente = await prisma.report.findFirst({
+          where: {
+            projectId: project.id,
+            status: 'COMPLETED' as any,
+            createdAt: { gt: new Date(Date.now() - 2 * 60 * 60 * 1000) }
+          }
+        })
+        if (reporteReciente) {
+          console.log(`[Scheduler] Reporte generado hace menos de 2h para: ${project.name} — saltando`)
+          continue
+        }
 
         // Verificar que no haya ya un job en cola para este proyecto
         const jobId = 'scheduled-' + project.id
