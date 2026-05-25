@@ -7,6 +7,15 @@ export async function scheduleReports() {
 
     const now = new Date()
 
+    // Verificar dia habil (lunes=1 a viernes=5 en UTC-6 CST)
+    const cstOffset = -6 * 60
+    const cstNow = new Date(now.getTime() + (cstOffset - now.getTimezoneOffset()) * 60000)
+    const dayOfWeek = cstNow.getDay() // 0=domingo, 6=sabado
+    if (dayOfWeek === 0 || dayOfWeek === 6) {
+      console.log('[Scheduler] Fin de semana — no se generan reportes DAILY')
+      return
+    }
+
     // Obtener todos los proyectos activos
     const projects = await (prisma.project as any).findMany({
       where: {
