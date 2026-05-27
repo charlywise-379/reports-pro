@@ -220,7 +220,6 @@ router.get('/verify-session/:sessionId', async (req: Request, res: Response) => 
       where: { projectId },
       create: {
         projectId, userId,
-        stripeCustomerId: session.customer as string,
         stripeSubscriptionId: sub.id,
         stripePriceId: sub.items?.data[0]?.price?.id || '',
         status: 'TRIALING', frequency: freq,
@@ -228,7 +227,6 @@ router.get('/verify-session/:sessionId', async (req: Request, res: Response) => 
         trialEndsAt: sub.trial_end ? new Date(sub.trial_end * 1000) : new Date(Date.now() + 7*24*60*60*1000),
       },
       update: {
-        stripeCustomerId: session.customer as string,
         stripeSubscriptionId: sub.id,
         stripePriceId: sub.items?.data[0]?.price?.id || '',
         status: sub.status === 'trialing' ? 'TRIALING' : 'ACTIVE',
