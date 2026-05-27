@@ -323,9 +323,9 @@ export default function DashboardPage() {
         <h1 style={{ fontSize:24, fontWeight:900, marginBottom:12 }}>Tu periodo de prueba ha terminado</h1>
         <p style={{ fontSize:14, color:'#9CA3AF', lineHeight:1.6, marginBottom:28 }}>
           Activa tu plan para seguir recibiendo inteligencia competitiva automatizada.
-          Desde <strong style={{ color:'#8B7BFF' }}>$20 USD/mes</strong>. Sin compromisos, cancela cuando quieras.
+          Desde <strong style={{ color:'#8B7BFF' }}>$49 USD/mes</strong>. Sin compromisos, cancela cuando quieras.
         </p>
-        <button onClick={() => router.push('/checkout')}
+        <button onClick={() => router.push('/checkout?expired=1')}
           style={{ background:'linear-gradient(135deg,#8B7BFF,#5DD4D4)', border:'none', borderRadius:20, padding:'14px 36px', color:'#0D0F1A', fontSize:14, fontWeight:900, cursor:'pointer', marginBottom:16, width:'100%' }}>
           Ver planes y activar
         </button>
