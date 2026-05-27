@@ -203,7 +203,7 @@ router.post('/portal', async (req: Request, res: Response) => {
 // GET /api/stripe/verify-session/:sessionId — fallback cuando webhook tarda
 router.get('/verify-session/:sessionId', async (req: Request, res: Response) => {
   try {
-    const { sessionId } = req.params
+    const sessionId = req.params.sessionId as string
     const session = await stripe.checkout.sessions.retrieve(sessionId, { expand: ['subscription'] })
     if (session.payment_status !== 'paid' && session.status !== 'complete') {
       return res.json({ ready: false, status: session.status })

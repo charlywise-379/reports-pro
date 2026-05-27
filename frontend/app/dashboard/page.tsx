@@ -1,6 +1,6 @@
 'use client'
 import { useEffect, useState } from 'react'
-import { useRouter, useSearchParams } from 'next/navigation'
+import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 
 const S: Record<string, React.CSSProperties> = {
@@ -68,7 +68,6 @@ export default function DashboardPage() {
   const isMobile = useIsMobile()
   const BACKEND = process.env.NEXT_PUBLIC_BACKEND_URL || 'https://reports-pro-production.up.railway.app'
 
-  const searchParams = useSearchParams()
   useEffect(() => {
     const getUser = async () => {
       const { data: { session } } = await supabase.auth.getSession()
@@ -78,7 +77,7 @@ export default function DashboardPage() {
       setToken(session.access_token)
 
       // Si viene de checkout, verificar sesion de Stripe antes de cargar dashboard
-      const sid = searchParams.get('sid')
+      const sid = typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('sid') : null
       if (sid) {
         try {
           await fetch(`${BACKEND}/api/stripe/verify-session/${sid}`, {
