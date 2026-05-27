@@ -56,6 +56,7 @@ export default function DashboardPage() {
   const [passwordSent, setPasswordSent] = useState(false)
   const [inviteEmails, setInviteEmails] = useState('')
   const [inviteSent, setInviteSent] = useState(false)
+  const [stripeConfirmado, setStripeConfirmado] = useState(false)
   // Bug #5: Modal de confirmación antes de generar
   const [showConfirmModal, setShowConfirmModal] = useState(false)
   // Bug #6: Modal elegante de límite de frecuencia
@@ -257,6 +258,39 @@ export default function DashboardPage() {
     .filter(i => dashData?.setup?.[`competitor${i}Name`])
     .map(i => dashData.setup[`competitor${i}Name`])
 
+
+
+
+
+  // FIX LOOP: cuando trial vencido, polling 30s esperando webhook de Stripe
+  useEffect(() => {
+    if (!dashData || !token || stripeConfirmado) return
+    const tieneStripeLocal = dashData?.subscription?.stripeSubscriptionId != null
+    if (tieneStripeLocal) { setStripeConfirmado(true); return }
+    const trialVencidoLocal = dashData?.project?.trialEndsAt &&
+      new Date(dashData.project.trialEndsAt) < new Date()
+    if (!trialVencidoLocal) return
+    let attempts = 0; let stopped = false
+    const poll = async () => {
+      if (stopped || attempts >= 10) return
+      attempts++
+      try {
+        const { data: { session: s2 } } = await supabase.auth.getSession()
+        if (!s2 || stopped) return
+        const res = await fetch(BACKEND + '/api/dashboard/' + s2.user.id, {
+          headers: { 'Authorization': 'Bearer ' + s2.access_token }
+        })
+        const data = await res.json()
+        const subActiva = data?.subscription?.stripeSubscriptionId &&
+          ['ACTIVE','TRIALING'].includes(data?.subscription?.status || '')
+        if (subActiva) { stopped = true; setStripeConfirmado(true); setDashData(data) }
+        else if (attempts < 10) setTimeout(poll, 3000)
+      } catch(e) { if (attempts < 10) setTimeout(poll, 3000) }
+    }
+    setTimeout(poll, 3000)
+    return () => { stopped = true }
+  }, [token, dashData?.project?.id])
+
   if (loading) return (
     <main style={{ minHeight:'100vh', background:'#0D0F1A', display:'flex', alignItems:'center', justifyContent:'center' }}>
       <div style={{ width:32, height:32, borderRadius:'50%', border:'2px solid rgba(139,123,255,0.3)', borderTopColor:'#8B7BFF', animation:'spin 0.8s linear infinite' }} />
@@ -265,10 +299,11 @@ export default function DashboardPage() {
   )
 
   // Bloqueo trial vencido: si trialEndsAt ya paso Y no hay stripeSubscriptionId activo
-  const tieneStripe = dashData?.subscription?.stripeSubscriptionId != null
+  const tieneStripe = dashData?.subscription?.stripeSubscriptionId != null || stripeConfirmado
   const trialVencido = !tieneStripe &&
     dashData?.project?.trialEndsAt &&
     new Date(dashData.project.trialEndsAt) < new Date()
+
 
   if (trialVencido) return (
     <main style={{ minHeight:'100vh', background:'#0D0F1A', color:'#F0F2FF', fontFamily:'system-ui,sans-serif', display:'flex', alignItems:'center', justifyContent:'center', padding:24 }}>

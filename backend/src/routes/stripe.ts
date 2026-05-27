@@ -198,4 +198,45 @@ router.post('/portal', async (req: Request, res: Response) => {
   }
 })
 
+
+// GET /api/stripe/verify-session/:sessionId — fallback cuando webhook tarda
+router.get('/verify-session/:sessionId', async (req, res) => {
+  try {
+    const { sessionId } = req.params
+    const session = await stripe.checkout.sessions.retrieve(sessionId, { expand: ['subscription'] })
+    if (session.payment_status !== 'paid' && session.status !== 'complete') {
+      return res.json({ ready: false, status: session.status })
+    }
+    const { userId, projectId } = session.metadata
+    if (!userId || !projectId) return res.json({ ready: false, reason: 'no_metadata' })
+    const sub = session.subscription
+    if (!sub) return res.json({ ready: false, reason: 'no_subscription' })
+    const proj = await prisma.project.findUnique({ where: { id: projectId } })
+    const freq = proj?.frequency || 'WEEKLY'
+    await prisma.subscription.upsert({
+      where: { projectId },
+      create: {
+        projectId, userId,
+        stripeCustomerId: session.customer,
+        stripeSubscriptionId: sub.id,
+        stripePriceId: sub.items?.data[0]?.price?.id || '',
+        status: 'TRIALING', frequency: freq,
+        trialEndsAt: sub.trial_end ? new Date(sub.trial_end * 1000) : null,
+      },
+      update: {
+        stripeCustomerId: session.customer,
+        stripeSubscriptionId: sub.id,
+        stripePriceId: sub.items?.data[0]?.price?.id || '',
+        status: sub.status === 'trialing' ? 'TRIALING' : 'ACTIVE',
+        trialEndsAt: sub.trial_end ? new Date(sub.trial_end * 1000) : null,
+      }
+    })
+    await prisma.project.update({ where: { id: projectId }, data: { status: 'TRIAL' } })
+    console.log('[VerifySession] OK:', projectId)
+    res.json({ ready: true, projectId, status: sub.status })
+  } catch (e) {
+    res.status(500).json({ error: e.message })
+  }
+})
+
 export default router

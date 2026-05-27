@@ -30,12 +30,12 @@ function SuccessContent() {
       try {
         const { data: { session } } = await supabase.auth.getSession()
         if (!session || stopped) return
-        const res = await fetch(`${BACKEND}/api/dashboard/${session.user.id}`, {
+        // Verificar directamente contra Stripe (no depende del webhook)
+        const verifyRes = await fetch(`${BACKEND}/api/stripe/verify-session/${sessionId}`, {
           headers: { 'Authorization': 'Bearer ' + session.access_token }
         })
-        const data = await res.json()
-        const sub = data?.subscription
-        const isReady = sub?.stripeSubscriptionId && (sub?.status === 'ACTIVE' || sub?.status === 'TRIALING')
+        const verifyData = await verifyRes.json()
+        const isReady = verifyData?.ready === true
         if (isReady) { stopped = true; setStatus('active'); setTimeout(() => router.push('/dashboard'), 1500); return }
         attempts++
         if (attempts >= MAX_ATTEMPTS) { stopped = true; setStatus('timeout'); setTimeout(() => router.push('/dashboard'), 3000); return }
