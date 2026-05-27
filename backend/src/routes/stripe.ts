@@ -224,7 +224,7 @@ router.get('/verify-session/:sessionId', async (req: Request, res: Response) => 
         stripeSubscriptionId: sub.id,
         stripePriceId: sub.items?.data[0]?.price?.id || '',
         status: 'TRIALING', frequency: freq,
-        pricePerMonth: {"price_1TbAByRmWEBJMGXdUCjaNSAN":49,"price_1TbABzRmWEBJMGXdVRxXDOra":79,"price_1TbAC0RmWEBJMGXdVhvlncr9":99,"price_1TbAC0RmWEBJMGXd1khQ2wEJ":149,"price_1TbAC1RmWEBJMGXdTUOqMqN0":39.2,"price_1TbAC2RmWEBJMGXdpyYqw4xR":63.2,"price_1TbAC2RmWEBJMGXdA7AvWUtG":79.2,"price_1TbAC3RmWEBJMGXd4F7SbDYw":119.2}[sub.items?.data[0]?.price?.id] || 49.00,
+        pricePerMonth: ({"price_1TbAByRmWEBJMGXdUCjaNSAN":49,"price_1TbABzRmWEBJMGXdVRxXDOra":79,"price_1TbAC0RmWEBJMGXdVhvlncr9":99,"price_1TbAC0RmWEBJMGXd1khQ2wEJ":149,"price_1TbAC1RmWEBJMGXdTUOqMqN0":39.2,"price_1TbAC2RmWEBJMGXdpyYqw4xR":63.2,"price_1TbAC2RmWEBJMGXdA7AvWUtG":79.2,"price_1TbAC3RmWEBJMGXd4F7SbDYw":119.2} as Record<string,number>)[sub.items?.data[0]?.price?.id] || 49.00,
         trialEndsAt: sub.trial_end ? new Date(sub.trial_end * 1000) : new Date(Date.now() + 7*24*60*60*1000),
       },
       update: {
