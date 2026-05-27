@@ -122,8 +122,8 @@ router.post('/competitive', requireAuth, async (req: Request, res: Response) => 
       name: `${finalName} — Inteligencia Competitiva`,
       frequency: cleanFrequency,
       deliveryChannels,
-      deliveryEmail: deliveryEmail || null,
-      deliveryPhone: deliveryPhone || null,
+      ...(deliveryEmail && { deliveryEmail }),
+      ...(deliveryPhone && { deliveryPhone }),
       nextReportAt,
     }
 
@@ -162,7 +162,7 @@ router.post('/competitive', requireAuth, async (req: Request, res: Response) => 
       deliveryChannel: deliveryChannel || null,
       deliveryDay: deliveryDay || null,
       deliveryTime: deliveryTime || null,
-      deliveryPhone: deliveryPhone || null,
+      ...(deliveryPhone && { deliveryPhone }),
     })
 
     const setupData = {
