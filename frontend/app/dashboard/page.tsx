@@ -142,7 +142,7 @@ export default function DashboardPage() {
       } else if (data.error === 'trial_limit') {
         setGenerating(false)
         setPollingActive(false)
-        router.push('/checkout')
+        router.push('/checkout?expired=1')
       } else if (data.error === 'frequency_limit') {
         // Bug #6: Modal elegante en vez de alert()
         setGenerating(false)

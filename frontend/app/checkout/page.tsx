@@ -32,6 +32,10 @@ export default function CheckoutPage() {
   const [billing, setBilling] = useState<'monthly'|'annual'>('monthly')
   const [selected, setSelected] = useState('weekly')
   const [loading, setLoading] = useState(false)
+  const [isExpired, setIsExpired] = useState(false)
+  useEffect(() => {
+    setIsExpired(new URLSearchParams(window.location.search).get('expired') === '1')
+  }, [])
   const isMobile = useIsMobile()
   const BACKEND = process.env.NEXT_PUBLIC_BACKEND_URL || 'https://reports-pro-production.up.railway.app'
 
@@ -74,14 +78,16 @@ export default function CheckoutPage() {
           <span style={{ fontSize:16, fontWeight:800, color:'#F0F2FF' }}>PRO Reports</span>
         </div>
         <h1 style={{ fontSize:28, fontWeight:900, color:'#F0F2FF', marginBottom:8 }}>
-          Tu primer reporte está listo —<br/><span style={{ color:'#8B7BFF' }}>actívalo en 5 minutos</span>
+          {isExpired ? <>Reactiva tu plan —<br/><span style={{ color:'#8B7BFF' }}>sigue recibiendo inteligencia</span></> : <>Tu primer reporte está listo —<br/><span style={{ color:'#8B7BFF' }}>actívalo en 5 minutos</span></>}
         </h1>
         <p style={{ fontSize:14, color:'#9CA3AF', maxWidth:480, margin:'0 auto', lineHeight:1.6 }}>
-          Ingresa tu tarjeta para activar tu <strong style={{ color:'#F0F2FF' }}>Reporte IA · Inteligencia Competitiva</strong>, Gratis.<br/>
-          No se hace ningún cargo hoy. Cancela cuando quieras, sin preguntas.
+          {isExpired
+            ? <>Elige tu plan y continúa recibiendo tu <strong style={{ color:'#F0F2FF' }}>Reporte IA · Inteligencia Competitiva</strong>.<br/>Cancela cuando quieras, sin preguntas.</>
+            : <>Ingresa tu tarjeta para activar tu <strong style={{ color:'#F0F2FF' }}>Reporte IA · Inteligencia Competitiva</strong>, Gratis.<br/>No se hace ningún cargo hoy. Cancela cuando quieras, sin preguntas.</>
+          }
         </p>
         <div style={{ display:'flex', justifyContent:'center', gap:8, marginTop:16, flexWrap:'wrap' }}>
-          {['✓ Sin cargo hoy','✓ Primer reporte en 5 min','✓ Cancela cuando quieras'].map(b => (
+          {(isExpired ? ['✓ Pago 100% seguro','✓ Cancela cuando quieras','✓ Sin compromisos'] : ['✓ Sin cargo hoy','✓ Primer reporte en 5 min','✓ Cancela cuando quieras']).map(b => (
             <span key={b} style={{ fontSize:11, fontWeight:700, color:'#6EE7A4', background:'rgba(110,231,164,0.1)', border:'1px solid rgba(110,231,164,0.2)', borderRadius:20, padding:'4px 12px' }}>{b}</span>
           ))}
         </div>
@@ -121,9 +127,9 @@ export default function CheckoutPage() {
       {/* Botón activar */}
       <button onClick={handleCheckout} disabled={loading}
         style={{ background:'linear-gradient(135deg,#8B7BFF,#5DD4D4)', border:'none', borderRadius:20, padding:'14px 40px', color:'#0D0F1A', fontSize:15, fontWeight:900, cursor: loading ? 'not-allowed' : 'pointer', opacity: loading ? 0.7 : 1, marginBottom:12 }}>
-        {loading ? 'Redirigiendo a Stripe...' : 'Activar gratis por 7 días →'}
+        {loading ? 'Redirigiendo a Stripe...' : isExpired ? 'Activar ahora →' : 'Activar gratis por 7 días →'}
       </button>
-      <p style={{ fontSize:11, color:'#5A627A' }}>Powered by Stripe · Pago 100% seguro · Tu tarjeta no se cobra hoy</p>
+      <p style={{ fontSize:11, color:'#5A627A' }}>{isExpired ? 'Powered by Stripe · Pago 100% seguro' : 'Powered by Stripe · Pago 100% seguro · Tu tarjeta no se cobra hoy'}</p>
     </main>
   )
 }
