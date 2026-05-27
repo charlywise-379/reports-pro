@@ -56,6 +56,14 @@ export default function DashboardPage() {
   const [passwordSent, setPasswordSent] = useState(false)
   const [inviteEmails, setInviteEmails] = useState('')
   const [inviteSent, setInviteSent] = useState(false)
+  // Bug #5: Modal de confirmación antes de generar
+  const [showConfirmModal, setShowConfirmModal] = useState(false)
+  // Bug #6: Modal elegante de límite de frecuencia
+  const [showLimitModal, setShowLimitModal] = useState(false)
+  const [limitMessage, setLimitMessage] = useState('')
+  const [nextReportInfo, setNextReportInfo] = useState('')
+  // Bug #4: Polling más rápido durante generación
+  const [pollingActive, setPollingActive] = useState(false)
   const isMobile = useIsMobile()
   const BACKEND = process.env.NEXT_PUBLIC_BACKEND_URL || 'https://reports-pro-production.up.railway.app'
 
@@ -81,19 +89,27 @@ export default function DashboardPage() {
     getUser()
   }, [])
 
-  const handleGenerateReport = async () => {
+  // Bug #5: Mostrar modal de confirmación antes de generar
+  const handleGenerateClick = () => {
     if (!dashData?.project?.id) return
-
-    // Verificar si hay reporte con status GENERATING
+    // Si ya hay un reporte generándose, mostrar modal de límite
     const reporteEnProceso = (dashData?.reports || []).some((r: any) => r.status === 'GENERATING')
     if (reporteEnProceso) {
-      alert('Ya hay un reporte en proceso. Espera ~5 minutos a que termine.')
+      setLimitMessage('Ya hay un reporte en proceso.')
+      setNextReportInfo('Espera ~5 minutos a que termine de generarse.')
+      setShowLimitModal(true)
       return
     }
+    setShowConfirmModal(true)
+  }
 
-    // El backend maneja los limites de frecuencia y trial
+  // Bug #4: Ejecutar generación real con spinner + polling cada 10s
+  const handleGenerateReport = async () => {
+    setShowConfirmModal(false)
+    if (!dashData?.project?.id) return
 
     setGenerating(true)
+    setPollingActive(true)
     try {
       const res = await fetch(`${BACKEND}/api/reports/generate/${dashData.project.id}`, {
         method: 'POST',
@@ -101,23 +117,75 @@ export default function DashboardPage() {
       })
       const data = await res.json()
       if (data.success) {
-        window.location.reload()
+        // No recargar — el polling detectará el reporte listo
+        // Refrescar dashData para mostrar el reporte GENERATING inmediatamente
+        const { data: { session: s2 } } = await supabase.auth.getSession()
+        if (s2) {
+          const res2 = await fetch(`${BACKEND}/api/dashboard/${s2.user.id}`, {
+            headers: { 'Authorization': 'Bearer ' + s2.access_token }
+          })
+          const data2 = await res2.json()
+          setDashData(data2)
+        }
       } else if (data.error === 'trial_limit') {
+        setGenerating(false)
+        setPollingActive(false)
         router.push('/checkout')
       } else if (data.error === 'frequency_limit') {
-        alert(data.message)
+        // Bug #6: Modal elegante en vez de alert()
+        setGenerating(false)
+        setPollingActive(false)
+        setLimitMessage(data.message || 'Límite de frecuencia alcanzado.')
+        // Calcular tiempo exacto al próximo reporte
+        const freqDays: Record<string,number> = { DAILY:1, WEEKLY:7, BIWEEKLY:15, MONTHLY:30 }
+        const lastReport = (dashData?.reports || []).find((r: any) => r.status === 'COMPLETED')
+        const freq = dashData?.project?.frequency || 'WEEKLY'
+        if (lastReport) {
+          const diasFreq = freqDays[freq] || 7
+          const msDesde = Date.now() - new Date(lastReport.createdAt).getTime()
+          const horasDesde = msDesde / (1000 * 60 * 60)
+          const horasRestantes = Math.max(0, diasFreq * 24 - horasDesde)
+          const diasRestantes = Math.floor(horasRestantes / 24)
+          const hrsRestantes = Math.floor(horasRestantes % 24)
+          if (diasRestantes > 0) {
+            setNextReportInfo(`Tu próximo reporte estará disponible en ${diasRestantes} día${diasRestantes !== 1 ? 's' : ''}${hrsRestantes > 0 ? ` y ${hrsRestantes}h` : ''}.`)
+          } else if (hrsRestantes > 0) {
+            setNextReportInfo(`Tu próximo reporte estará disponible en ${hrsRestantes} hora${hrsRestantes !== 1 ? 's' : ''}.`)
+          } else {
+            setNextReportInfo('Tu próximo reporte ya está disponible. Intenta de nuevo.')
+          }
+        } else {
+          setNextReportInfo('Verifica tu plan o contacta soporte.')
+        }
+        setShowLimitModal(true)
       } else if (data.error) {
-        alert(data.message || data.error)
+        setGenerating(false)
+        setPollingActive(false)
+        setLimitMessage(data.message || data.error)
+        setNextReportInfo('')
+        setShowLimitModal(true)
       }
-    } catch(e) { console.error('Error generando reporte:', e) }
-    setGenerating(false)
+    } catch(e) {
+      console.error('Error generando reporte:', e)
+      setGenerating(false)
+      setPollingActive(false)
+    }
   }
 
-  // Auto-refresh cada 30s si hay reporte generándose
+  // Bug #4: Polling cada 10s cuando hay reporte generándose
   useEffect(() => {
     if (!dashData) return
     const hayGenerando = (dashData?.reports || []).some((r: any) => r.status === 'GENERATING')
-    if (!hayGenerando) return
+    // Activar polling si hay reporte generando (incluso si vino del scheduler)
+    if (hayGenerando && !pollingActive) setPollingActive(true)
+    if (!hayGenerando && pollingActive) {
+      setPollingActive(false)
+      setGenerating(false)
+    }
+  }, [dashData?.reports])
+
+  useEffect(() => {
+    if (!pollingActive) return
     const interval = setInterval(async () => {
       try {
         const { data: { session: s2 } } = await supabase.auth.getSession()
@@ -130,11 +198,15 @@ export default function DashboardPage() {
         setDashData(data)
         const latest = (data.reports || []).find((r: any) => r.sectionsJson) || (data.reports || []).find((r: any) => r.status === 'COMPLETED')
         if (latest) setSelectedReport(latest)
-        if (!sigueGenerando) clearInterval(interval)
+        if (!sigueGenerando) {
+          setPollingActive(false)
+          setGenerating(false)
+          clearInterval(interval)
+        }
       } catch(e) {}
-    }, 30000)
+    }, 10000) // Bug #4: cada 10s en vez de 30s
     return () => clearInterval(interval)
-  }, [dashData?.reports?.length])
+  }, [pollingActive])
 
   const handlePasswordReset = async () => {
     if (!user?.email) return
@@ -353,7 +425,7 @@ export default function DashboardPage() {
             {[
               { label:'Editar Configuración para Reportes', color:'#8B7BFF', bg:'rgba(139,123,255,0.12)', border:'rgba(139,123,255,0.3)', href:'/onboarding',
                 icon:<path d="M12 20h9M16.5 3.5a2.12 2.12 0 113 3L7 19l-4 1 1-4z"/> },
-              { label: generating ? 'Generando...' : 'Generar Reporte', color:'#6EE7A4', bg:'rgba(110,231,164,0.08)', border:'rgba(110,231,164,0.2)', href:'#', onClick: handleGenerateReport,
+              { label: generating ? 'Generando...' : 'Generar Reporte', color:'#6EE7A4', bg:'rgba(110,231,164,0.08)', border:'rgba(110,231,164,0.2)', href:'#', onClick: handleGenerateClick,
                 icon:<><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></> },
               { label:`${(dashData?.reports || []).filter((r: any) => r.status !== 'FAILED').length} Reportes`, color:'#F2C063', bg:'rgba(242,192,99,0.08)', border:'rgba(242,192,99,0.2)', href:'#',
                 icon:<path d="M7 3h7l5 5v13a1 1 0 01-1 1H7a1 1 0 01-1-1V4a1 1 0 011-1z"/> },
@@ -362,7 +434,12 @@ export default function DashboardPage() {
             ].map((a: any,i: number)=>(
               <a key={i} href={a.href} onClick={a.onClick ? (e)=>{e.preventDefault();a.onClick()} : undefined}
                 style={{ padding: isMobile ? '20px 16px' : '16px 14px', background:a.bg, border:`1px solid ${a.border}`, borderRadius:16, color:a.color, fontSize: isMobile ? 13 : 12, fontWeight:700, cursor:'pointer', display:'flex', flexDirection:'column', alignItems:'flex-start', gap:12, textDecoration:'none', minHeight: isMobile ? 100 : 'auto' }}>
-                <svg width={isMobile ? 22 : 18} height={isMobile ? 22 : 18} viewBox="0 0 24 24" fill="none" stroke={a.color} strokeWidth="2">{a.icon}</svg>
+                {/* Bug #4: spinner cuando está generando */}
+                {generating && a.label.includes('Generando') ? (
+                  <div style={{ width: isMobile ? 22 : 18, height: isMobile ? 22 : 18, border:'2px solid rgba(110,231,164,0.3)', borderTopColor:'#6EE7A4', borderRadius:'50%', animation:'spin 0.8s linear infinite', flexShrink:0 }} />
+                ) : (
+                  <svg width={isMobile ? 22 : 18} height={isMobile ? 22 : 18} viewBox="0 0 24 24" fill="none" stroke={a.color} strokeWidth="2">{a.icon}</svg>
+                )}
                 <span style={{ lineHeight:1.3 }}>{a.label}</span>
               </a>
             ))}
@@ -612,6 +689,68 @@ export default function DashboardPage() {
         </div>
       </div>
     )}
+    {/* Bug #5 — Modal confirmación antes de generar */}
+    {showConfirmModal && (
+      <div style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.75)', display:'flex', alignItems:'center', justifyContent:'center', zIndex:1000, padding:20 }}>
+        <div style={{ background:'#1A1730', border:'1px solid rgba(255,255,255,0.1)', borderRadius:20, padding:32, width:400, maxWidth:'100%' }}>
+          <div style={{ textAlign:'center', marginBottom:20 }}>
+            <div style={{ width:52, height:52, borderRadius:16, background:'rgba(110,231,164,0.1)', border:'1px solid rgba(110,231,164,0.25)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:24, margin:'0 auto 16px' }}>⚡</div>
+            <div style={{ fontSize:17, fontWeight:900, color:'#F0F2FF', marginBottom:8 }}>Generar Reporte Ahora</div>
+            <div style={{ fontSize:13, color:'#9CA3AF', lineHeight:1.6 }}>
+              Se generará un nuevo reporte de inteligencia competitiva para <strong style={{ color:'#F0F2FF' }}>{dashData?.setup?.companyName || 'tu empresa'}</strong>.
+            </div>
+            <div style={{ marginTop:12, fontSize:11, color:'#5A627A', background:'rgba(255,255,255,0.03)', border:'1px solid rgba(255,255,255,0.06)', borderRadius:10, padding:'8px 12px' }}>
+              El reporte tardará ~5 minutos en generarse. Recibirás una notificación por email cuando esté listo.
+            </div>
+          </div>
+          <div style={{ display:'flex', gap:10 }}>
+            <button
+              onClick={() => setShowConfirmModal(false)}
+              style={{ flex:1, background:'rgba(255,255,255,0.04)', border:'1px solid rgba(255,255,255,0.1)', borderRadius:20, padding:'12px', color:'#9CA3AF', fontSize:13, fontWeight:700, cursor:'pointer' }}>
+              Cancelar
+            </button>
+            <button
+              onClick={handleGenerateReport}
+              style={{ flex:1, background:'linear-gradient(135deg,#6EE7A4,#5DD4D4)', border:'none', borderRadius:20, padding:'12px', color:'#0D0F1A', fontSize:13, fontWeight:900, cursor:'pointer' }}>
+              Sí, generar →
+            </button>
+          </div>
+        </div>
+      </div>
+    )}
+
+    {/* Bug #6 — Modal elegante de límite de frecuencia */}
+    {showLimitModal && (
+      <div style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.75)', display:'flex', alignItems:'center', justifyContent:'center', zIndex:1000, padding:20 }}>
+        <div style={{ background:'#1A1730', border:'1px solid rgba(255,255,255,0.1)', borderRadius:20, padding:32, width:400, maxWidth:'100%' }}>
+          <div style={{ textAlign:'center', marginBottom:24 }}>
+            <div style={{ width:52, height:52, borderRadius:16, background:'rgba(242,192,99,0.1)', border:'1px solid rgba(242,192,99,0.25)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:24, margin:'0 auto 16px' }}>🕐</div>
+            <div style={{ fontSize:17, fontWeight:900, color:'#F0F2FF', marginBottom:8 }}>Reporte no disponible aún</div>
+            <div style={{ fontSize:13, color:'#9CA3AF', lineHeight:1.6, marginBottom:12 }}>
+              {limitMessage}
+            </div>
+            {nextReportInfo && (
+              <div style={{ fontSize:13, color:'#F2C063', fontWeight:700, background:'rgba(242,192,99,0.08)', border:'1px solid rgba(242,192,99,0.2)', borderRadius:12, padding:'10px 16px' }}>
+                {nextReportInfo}
+              </div>
+            )}
+          </div>
+          <div style={{ display:'flex', gap:10 }}>
+            <button
+              onClick={() => setShowLimitModal(false)}
+              style={{ flex:1, background:'rgba(255,255,255,0.04)', border:'1px solid rgba(255,255,255,0.1)', borderRadius:20, padding:'12px', color:'#9CA3AF', fontSize:13, fontWeight:700, cursor:'pointer' }}>
+              Entendido
+            </button>
+            <button
+              onClick={() => { setShowLimitModal(false); router.push('/upgrade') }}
+              style={{ flex:1, background:'linear-gradient(135deg,#8B7BFF,#5DD4D4)', border:'none', borderRadius:20, padding:'12px', color:'#0D0F1A', fontSize:13, fontWeight:900, cursor:'pointer' }}>
+              Ver planes →
+            </button>
+          </div>
+        </div>
+      </div>
+    )}
+
     </main>
   )
 }

@@ -1,6 +1,4 @@
 import { Router, Request, Response } from 'express'
-import path from 'path'
-import { generateReport } from '../lib/reportEngine'
 import { prisma } from '../lib/prisma'
 import { requireAuth } from '../middleware/auth'
 import { DeliveryChannel, ReportFrequency, ServiceType, ProjectStatus, SubscriptionStatus } from '@prisma/client'
@@ -219,90 +217,16 @@ router.post('/competitive', requireAuth, async (req: Request, res: Response) => 
       }
     })
 
-    // ── Generar primer reporte SOLO si es proyecto nuevo ──
-    // Si ya existia proyecto, no generar reporte automatico
-    if (existingProject) {
-      return res.status(201).json({
-        success: true,
-        projectId: newProject.id,
-        message: 'Configuracion actualizada correctamente',
-        trialEndsAt,
-      })
-    }
 
-    // Verificar limite trial: max 1 reporte gratis
-    const reportCount = await prisma.report.count({
-      where: { projectId: newProject.id, status: 'COMPLETED' as any }
-    })
-    if (reportCount >= 1 && newProject.status === 'TRIAL') {
-      return res.status(201).json({
-        success: true,
-        projectId: newProject.id,
-        message: 'trial_limit',
-        trialEndsAt,
-      })
-    }
-
-    const outputDir = path.join(__dirname, '../../outputs')
-    if (!require('fs').existsSync(outputDir)) {
-      require('fs').mkdirSync(outputDir, { recursive: true })
-    }
-    const filename = `report-${newProject.id}-${Date.now()}.pdf`
-    const outputPath = path.join(outputDir, filename)
-
-    const projectWithSetup = {
-      ...newProject,
-      setup: await prisma.competitiveIntelligenceSetup.findUnique({
-        where: { projectId: newProject.id }
-      })
-    }
-
-    // Crear registro en DB antes de generar para tener reportId
-    const reportRecord = await prisma.report.create({
-      data: {
-        projectId: newProject.id,
-        r2Key: `reports/${filename}`,
-        status: 'GENERATING' as any,
-      }
-    })
-
-    const projectWithSetupAndId = {
-      ...projectWithSetup,
-      reportId: reportRecord.id,
-    }
-
-    generateReport(projectWithSetupAndId, outputPath)
-      .then(async () => {
-        console.log(`✅ Primer reporte generado: ${filename}`)
-        const { uploadPDFToR2 } = await import('../lib/r2')
-        const pdfUrl = await uploadPDFToR2(outputPath, filename)
-        console.log(`☁️ PDF disponible en: ${pdfUrl}`)
-
-        await prisma.report.update({
-          where: { id: reportRecord.id },
-          data: {
-            r2Url: pdfUrl,
-            r2Key: `reports/${filename}`,
-            status: 'COMPLETED' as any,
-            pdfSizeBytes: require('fs').statSync(outputPath).size,
-          }
-        }).catch((e: any) => console.log('DB report update:', e.message))
-
-        if (deliveryEmail) {
-          const { sendReportEmail } = await import('../lib/email')
-          const now = new Date()
-          const weekNumber = Math.ceil(now.getDate() / 7) + (now.getMonth() * 4)
-          await sendReportEmail(deliveryEmail, finalName, pdfUrl, weekNumber, 1)
-        }
-      })
-      .catch((err: any) => console.error('❌ Error generando reporte inicial:', err.message))
-
+    // ── BUG #2 FIX: NO generar reporte aquí ────────────────
+    // El primer reporte lo genera el usuario manualmente desde el dashboard
+    // DESPUÉS de que Stripe confirme el pago vía webhook.
+    // Flujo correcto: onboarding → checkout → webhook → dashboard → generar manual
     res.status(201).json({
       success: true,
       projectId: newProject.id,
       message: 'Módulo activado correctamente',
       trialEndsAt,
-      firstReportIn: '~6 minutos',
     })
 
   } catch (error: any) {

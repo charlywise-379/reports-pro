@@ -7,14 +7,11 @@ export async function scheduleReports() {
 
     const now = new Date()
 
-    // Verificar dia habil (lunes=1 a viernes=5 en UTC-6 CST)
+    // Calcular día actual en CST (UTC-6)
     const cstOffset = -6 * 60
     const cstNow = new Date(now.getTime() + (cstOffset - now.getTimezoneOffset()) * 60000)
     const dayOfWeek = cstNow.getDay() // 0=domingo, 6=sabado
-    if (dayOfWeek === 0 || dayOfWeek === 6) {
-      console.log('[Scheduler] Fin de semana — no se generan reportes DAILY')
-      return
-    }
+    const isWeekend = dayOfWeek === 0 || dayOfWeek === 6
 
     // Obtener todos los proyectos activos
     const projects = await (prisma.project as any).findMany({
@@ -46,14 +43,23 @@ export async function scheduleReports() {
 
     for (const project of projects) {
       const freq = project.frequency || 'WEEKLY'
+
+      // BUG #7 FIX: el bloqueo de fin de semana solo aplica a planes DAILY
+      // Planes WEEKLY, BIWEEKLY y MONTHLY corren cualquier día de la semana
+      if (isWeekend && freq === 'DAILY') {
+        console.log(`[Scheduler] Fin de semana — saltando proyecto DAILY: ${project.name}`)
+        continue
+      }
+
       const horasMinimas = frecuencyHours[freq] || 168
       const lastReport = project.reports?.[0]
       const horasDesdeUltimo = lastReport
         ? (Date.now() - new Date(lastReport.createdAt).getTime()) / (1000 * 60 * 60)
         : null
+
       console.log(`[Scheduler] ${project.name} — freq:${freq} horasMin:${horasMinimas} horasDesde:${horasDesdeUltimo ? Math.round(horasDesdeUltimo) : 'sin reporte'}`)
 
-      // Si no hay reporte previo o ya paso el tiempo suficiente
+      // Si no hay reporte previo o ya pasó el tiempo suficiente
       const debeGenerar = !lastReport ||
         (Date.now() - new Date(lastReport.createdAt).getTime()) / (1000 * 60 * 60) >= horasMinimas
 
