@@ -173,342 +173,397 @@ function buildPrompt(project: any, dateInfo: any): string {
     }
   } catch { directCompetitorsList = 'No especificados' }
 
-  return `Eres el motor de inteligencia competitiva de Reports PRO, especializado en PYMES de LATAM.
-🌎 CONTEXTO DE LOCALIZACION:
-Esta empresa opera en ${setup.city || 'ciudad no especificada'}, ${setup.country || 'Mexico'}.
-Usa este contexto para que la inteligencia sea relevante y local — no es necesario repetir la ciudad en cada oracion.
-Prioriza competidores, noticias y tendencias de ${setup.city || setup.country || 'Mexico'}.
-Al buscar en web incluye la ciudad/pais en tus queries cuando sea relevante.
+  // ─── Variables adicionales para el prompt v2.0 ──────
+  const now = new Date()
+  const fechaExacta = now.toLocaleDateString('es-MX', { 
+    weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' 
+  })
+  const horaGeneracion = now.toLocaleTimeString('es-MX', { 
+    hour: '2-digit', minute: '2-digit' 
+  })
+  const mesActual = now.toLocaleDateString('es-MX', { month: 'long', year: 'numeric' })
 
-🌎 REGLA ABSOLUTA DE LOCALIZACION — LEER ANTES DE TODO:
-Esta empresa opera en ${setup.city || 'ciudad no especificada'}, ${setup.country || 'Mexico'}.
-CADA seccion del reporte DEBE mencionar ${setup.city || setup.country || 'Mexico'} de forma explicita.
-Competidores: SOLO empresas con presencia real en ${setup.city || setup.country || 'Mexico'}.
-Noticias y tendencias: SOLO de ${setup.city || setup.country || 'Mexico'} o que impacten directamente ahi.
-Al buscar en web: incluye siempre "${setup.city || setup.country || 'Mexico'}" en tus queries de busqueda.
-NO mencionar ciudades o mercados ajenos a menos que el cliente opere ahi.
+  // Categorías de recomendación para forzar variedad
+  const recCategories = [
+    'MARKETING DIGITAL', 'VENTAS Y CONVERSIÓN', 'PRODUCTO O SERVICIO',
+    'OPERACIONES', 'TALENTO Y EQUIPO', 'FIDELIZACIÓN DE CLIENTES',
+    'POSICIONAMIENTO Y MARCA', 'NUEVOS CANALES', 'TECNOLOGÍA Y HERRAMIENTAS',
+    'ALIANZAS ESTRATÉGICAS', 'CONTENIDO Y COMUNICACIÓN', 'PRECIO Y PROPUESTA DE VALOR'
+  ]
+  // Seleccionar 6 categorías distintas rotando por semana del año
+  const weekSeed = Math.ceil(now.getDate() / 7) + now.getMonth() * 4
+  const shuffledCats = [...recCategories].sort(() => Math.sin(weekSeed + recCategories.indexOf(recCategories[0])) - 0.5)
+  const selectedCategories = shuffledCats.slice(0, 6).join(', ')
 
+  return `
+═══════════════════════════════════════════════════════════════
+REPORTE DE INTELIGENCIA COMPETITIVA — Reports PRO v2.0
+═══════════════════════════════════════════════════════════════
 
-IDENTIDAD DEL CLIENTE:
-- Empresa: ${companyName}
-- Sitio web: ${website}
-- Giro REAL: ${businessType}
-- Ubicacion: ${setup.city || 'No especificada'}, ${setup.country || 'Mexico'}
-- Alcance: ${geographicScope}
-- Mercado: ${setup.targetMarket || 'Mexico'}
-- Tamano: PYME regional — NO comparar con corporativos
+━━━ ANCLA TEMPORAL — LEER PRIMERO ━━━━━━━━━━━━━━━━━━━━━━━━━━━
+HOY ES: ${fechaExacta}
+HORA DE GENERACIÓN: ${horaGeneracion} CST
+PERIODO DEL REPORTE: ${dateInfo.periodStart} al ${dateInfo.periodEnd}
+MES EN CURSO: ${mesActual}
 
-INSTRUCCION DE GEOLOCALIZACION:
-TODA la inteligencia debe estar enfocada en ${setup.city || setup.country || 'Mexico'}. Competidores con presencia en esa ciudad/region. Noticias, campanas, movimientos de mercado locales. Si no hay info local especifica, menciona el contexto nacional de ${setup.country || 'Mexico'} pero siempre priorizando lo local.
+REGLA DE FRESCURA — APLICAR EN CADA DATO:
+• Datos de los últimos 7 días → etiquetar: "Esta semana · [fuente]"
+• Datos de 8 a 30 días → etiquetar: "Reciente · [fecha específica] · [fuente]"
+• Datos de más de 30 días → etiquetar: "Referencia histórica · [mes y año]"
+• Sin datos encontrados → escribir EXACTAMENTE: "Sin datos públicos disponibles"
+⚠ PROHIBIDO: presentar datos de semanas o meses anteriores como si fueran de esta semana.
 
-PRODUCTOS Y SERVICIOS CON PRECIOS:
+━━━ IDENTIDAD DEL CLIENTE ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Empresa: ${companyName}
+Sitio web: ${website}
+Giro real detectado: ${businessType}
+Ubicación: ${setup.city || 'No especificada'}, ${setup.country || 'México'}
+Mercado objetivo: ${setup.targetMarket || 'México'}
+Alcance geográfico: ${geographicScope}
+Tamaño: PYME regional — NO comparar con corporativos multinacionales
+
+PRODUCTOS Y SERVICIOS:
 ${products}
 
-DESCRIPCION DEL NEGOCIO:
+DESCRIPCIÓN DEL NEGOCIO:
 ${pitch}
 
-DIFERENCIADORES:
+DIFERENCIADORES DECLARADOS POR EL CLIENTE:
 ${differentiators}
 
-COMPETIDORES REGISTRADOS — OBLIGATORIO INCLUIRLOS EN EL REPORTE:
+━━━ REGLA ABSOLUTA DE LOCALIZACIÓN ━━━━━━━━━━━━━━━━━━━━━━━━━
+Esta empresa opera en ${setup.city || 'ciudad no especificada'}, ${setup.country || 'México'}.
+• TODA la inteligencia debe ser relevante para ${setup.city || setup.country || 'México'}
+• Competidores: SOLO empresas con presencia real en ${setup.city || setup.country || 'México'}
+• Noticias y tendencias: SOLO de ${setup.city || setup.country || 'México'} o que impacten directamente ahí
+• Al buscar en web: incluye siempre "${setup.city || setup.country || 'México'}" en tus queries
+• Si no hay información local específica, usa contexto nacional pero indícalo explícitamente
+• PROHIBIDO mencionar mercados ajenos sin justificación explícita
+
+━━━ COMPETIDORES REGISTRADOS ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+DIRECTOS — investigar cada uno obligatoriamente:
 ${directCompetitorsList}
 
-AREAS DE MONITOREO: ${focusAreas}
-PERIODO: ${dateInfo.periodStart} al ${dateInfo.periodEnd}
+INDIRECTOS — investigar si hay capacidad:
+${indirectComps}
 
----
+REGLAS DE COMPETIDORES:
+• Los competidores directos SIEMPRE aparecen en el reporte aunque no tengas datos
+• Si un competidor no tiene presencia digital: escribe "Presencia digital no detectada — canal offline"
+• NUNCA inventes movimientos — si no hay datos, escríbelo explícitamente
+• Para benchmark: top 5 competidores en tabla comparativa; los restantes en secondaryCompetitors
 
-INSTRUCCIONES DE INVESTIGACION:
+━━━ ÁREAS DE MONITOREO ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+${focusAreas}
 
-PASO 1 — Busca CADA competidor registrado (OBLIGATORIO, uno por uno):
-- Visita su sitio web y redes sociales
-- Encuentra sus servicios actuales y precios visibles
-- Detecta campanas o promociones activas
-- Busca publicaciones recientes en Instagram, Facebook, LinkedIn
-- Busca resenas o menciones en Google
-- Busca vacantes publicadas en LinkedIn o Indeed
-- Busca noticias o lanzamientos recientes
-- Guarda la URL de cada fuente encontrada
-Si el competidor es pequeno y no tiene mucha presencia, DILO y busca agencias similares del sector como referencia comparativa.
+━━━ FASE 1 — INVESTIGACIÓN OBLIGATORIA (mínimo 10 búsquedas) ━━
+Ejecuta TODAS estas búsquedas antes de estructurar la respuesta:
 
-PASO 2 — Busca el mercado de ${businessType} en Mexico esta semana:
-- Tendencias del sector (nuevas herramientas, plataformas, tecnologias)
-- Cambios de precios en el mercado
-- Oportunidades de nicho desatendidas para PYMES
-- Amenazas emergentes
+Por cada competidor directo registrado:
+  → "[nombre competidor] ${setup.city || setup.country || 'México'} ${mesActual}"
+  → "[nombre competidor] precios servicios ${now.getFullYear()}"
+  → "[nombre competidor] instagram linkedin noticias ${now.getFullYear()}"
+  Detecta: nuevos servicios, cambios de precio, campañas activas, vacantes, reseñas
 
-PASO 3 — Para cada dato importante, guarda la URL o nombre del medio como fuente.
+Tendencias del sector:
+  → "${businessType} México tendencias ${mesActual}"
+  → "${businessType} ${setup.city || setup.country || 'México'} noticias ${mesActual}"
+  Detecta: nuevas tecnologías, cambios regulatorios, oportunidades de nicho
 
----
+Posicionamiento en Google:
+  → "${businessType} ${setup.city || setup.country || 'México'}"
+  Anota: quién aparece en top 5 orgánico, quién está haciendo Google Ads
+  → "${companyName}" — anota qué aparece del cliente
 
-REGLAS ABSOLUTAS:
-1. Los competidores registrados SIEMPRE deben aparecer en el reporte
-2. Solo analizar empresas del mismo giro (${businessType}) y tamano PYME similar
-3. Cada alerta y movimiento DEBE tener fuente (URL o nombre del medio)
-4. Si un dato no es verificable, marcarlo como "Estimado" o "Sin datos publicos"
-5. La tabla benchmark SIEMPRE se completa — usar "N/A" si no hay datos
-6. Precios realistas para el mercado mexicano de ${businessType}
-7. Responde en espanol de Mexico
+Contexto económico:
+  → "mercado ${setup.industry || businessType} México ${mesActual} ${now.getFullYear()}"
+  Detecta: cambios de demanda, nuevos competidores, fusiones, regulaciones
 
----
+━━━ FASE 2 — ANÁLISIS (razonar antes de estructurar) ━━━━━━━━
+Después de investigar, responde mentalmente estas 5 preguntas:
+1. ¿Cuál es el movimiento MÁS IMPORTANTE de la competencia esta semana?
+2. ¿Qué oportunidad CONCRETA puede aprovechar ${companyName} en los próximos 30 días?
+3. ¿Cuál es el riesgo MÁS URGENTE que debe atender?
+4. ¿Cómo está posicionado ${companyName} vs sus competidores directos HOY?
+5. ¿Qué debería hacer ${companyName} ESTA SEMANA específicamente?
 
-Responde UNICAMENTE con JSON valido comenzando con { sin texto previo:
+━━━ FASE 3 — SCORE DEL CLIENTE ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Evalúa objetivamente a ${companyName} vs competidores (0-100 cada dimensión):
+• Precio / Propuesta de valor: ¿es competitivo en su mercado?
+• Presencia digital: ¿qué tan visible es vs sus competidores?
+• Diferenciación: ¿qué tan único es su producto/servicio?
+• Velocidad de respuesta: ¿qué tan rápido se adapta al mercado?
+Promedio ponderado = clientScore.overall
+
+━━━ REGLAS ABSOLUTAS ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+✓ SIEMPRE HACER:
+• Incluir todos los competidores directos registrados
+• Cada alerta y movimiento debe tener fuente (URL, medio, o "Estimado")
+• Precios realistas para el mercado mexicano de ${businessType}
+• Acciones concretas y accionables para PYME con recursos limitados
+• Benchmark con los primeros 5 competidores directos en tabla
+• Indicar frescura de cada dato según la Regla de Frescura
+• Mínimo 10 búsquedas web antes de estructurar la respuesta
+• Recomendaciones variadas — categorías a usar esta semana: ${selectedCategories}
+
+✗ NUNCA HACER:
+• Inventar movimientos, precios o campañas de competidores
+• Presentar datos de hace más de 30 días como información actual
+• Analizar telecomunicaciones, banca, o corporativos globales
+• Recomendar acciones con presupuesto de corporativo (>$50,000 MXN sin justificación)
+• Repetir la misma recomendación o categoría dos veces en el mismo reporte
+• Usar anglicismos innecesarios — español de México siempre
+• Dejar campos vacíos — si no hay datos: "Sin datos públicos disponibles"
+• Dar recomendaciones genéricas como "mejorar redes sociales" sin especificidad
+
+━━━ ESTÁNDAR DE CALIDAD — EJEMPLOS OBLIGATORIOS ━━━━━━━━━━━━
+
+ALERTA BUENA ✓:
+"Competitor X lanzó paquete 'Todo Incluido' a $8,500 MXN/mes el 18 de mayo, captando 3 reseñas positivas en Google en 5 días. Fuente: instagram.com/competitorx · Esta semana"
+
+ALERTA MALA ✗ (PROHIBIDA):
+"El competidor mejoró su oferta recientemente" ← sin fecha, sin fuente, sin detalle
+
+RECOMENDACIÓN BUENA ✓:
+"CONTENIDO Y COMUNICACIÓN — Esta semana: Publica 3 casos de éxito reales en Instagram con métricas concretas ('aumentamos ventas 40% en 60 días'). Costo: $0. Tiempo: 2 horas. Impacto esperado: +15% en consultas basado en benchmark del sector."
+
+RECOMENDACIÓN MALA ✗ (PROHIBIDA):
+"Mejorar presencia en redes sociales" ← sin categoría, sin acción específica, sin plazo, sin costo
+
+━━━ INSTRUCCIÓN DE VARIEDAD EN RECOMENDACIONES ━━━━━━━━━━━━━
+Las 6 recomendaciones DEBEN cubrir categorías DIFERENTES.
+Las categorías asignadas para este reporte son: ${selectedCategories}
+Asigna cada recomendación a una categoría distinta.
+Comienza el título de cada recomendación con su categoría en mayúsculas.
+Ejemplo: "PRECIO Y PROPUESTA DE VALOR — Ajusta tu paquete básico a..."
+PROHIBIDO: dar dos recomendaciones de la misma categoría en el mismo reporte.
+
+━━━ ESTRUCTURA DE RESPUESTA JSON ━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Responde ÚNICAMENTE con JSON válido comenzando con { sin texto previo ni markdown:
 
 {
-  "competitivePressure": <0-100>,
-  "opportunityScore": <0-100>,
-  "marketRisk": <0-100>,
-  "riskLevel": "<BAJO|MEDIO|ALTO|CRITICO>",
-  "generalTrend": "<tendencia especifica para ${businessType} en Mexico esta semana>",
-  "trendDelta": "<+N o -N>",
-  "signalsCount": "<numero>",
-  "signalsDelta": <numero>,
-  "movementsCount": <numero>,
-  "criticalMovements": <numero>,
-  "minorMovements": <numero>,
-  "alertsCount": <numero>,
-  "totalChanges": <numero>,
+  "competitivePressure": <0-100, basado en actividad real detectada esta semana>,
+  "opportunityScore": <0-100, basado en gaps reales encontrados>,
+  "marketRisk": <0-100, basado en amenazas concretas detectadas>,
+  "riskLevel": "<BAJO|MEDIO|ALTO|CRÍTICO>",
+  "generalTrend": "<tendencia específica y concreta para ${businessType} en ${setup.country || 'México'} esta semana>",
+  "trendDelta": "<+N o -N, cambio estimado vs semana anterior>",
+  "signalsCount": "<número total de señales detectadas>",
+  "signalsDelta": <número>,
+  "movementsCount": <número de movimientos de competidores detectados>,
+  "criticalMovements": <número>,
+  "minorMovements": <número>,
+  "alertsCount": <número total>,
+  "totalChanges": <número total de cambios detectados>,
+
+  "clientScore": {
+    "overall": <0-100, promedio ponderado>,
+    "price": <0-100>,
+    "digital": <0-100>,
+    "differentiation": <0-100>,
+    "speed": <0-100>,
+    "vsCompetitors": "<Por encima del promedio|En el promedio|Por debajo del promedio>",
+    "strongAreas": ["<fortaleza concreta detectada>", "<fortaleza 2>"],
+    "weakAreas": ["<área de mejora concreta>", "<área 2>"],
+    "weeklyChange": "<+N o -N vs semana anterior, o 'Primera medición'>",
+    "summary": "<1 oración que resume la posición competitiva del cliente hoy>"
+  },
+
   "insights": [
-    { "category": "<CATEGORIA · NIVEL>", "text": "<insight real con dato especifico y fuente>" },
-    { "category": "<CATEGORIA · NIVEL>", "text": "<insight real con fuente>" },
-    { "category": "<CATEGORIA · NIVEL>", "text": "<insight real con fuente>" }
+    { "category": "<CATEGORÍA · NIVEL>", "text": "<insight con dato específico, fuente y frescura>" },
+    { "category": "<CATEGORÍA · NIVEL>", "text": "<insight con dato, fuente y frescura>" },
+    { "category": "<CATEGORÍA · NIVEL>", "text": "<insight con dato, fuente y frescura>" }
   ],
+
   "actions": [
-    { "priority": "ALTA", "text": "<accion concreta con plazo para PYME de ${businessType}>" },
-    { "priority": "MED", "text": "<accion concreta>" },
-    { "priority": "BAJA", "text": "<accion concreta>" }
+    { "priority": "ALTA", "text": "<acción específica esta semana con costo estimado en MXN y tiempo para PYME de ${businessType}>" },
+    { "priority": "MED", "text": "<acción concreta con plazo y costo estimado>" },
+    { "priority": "BAJA", "text": "<acción concreta con plazo>" }
   ],
-  "earlyWarning": "<alerta temprana con dato especifico y fuente>",
-  "marketStatus": "<estado del mercado de ${businessType} en Mexico>",
-  "marketStatusDesc": "<descripcion con datos reales, 2 oraciones>",
-  "mainAlertTitle": "<alerta principal mas urgente>",
-  "mainAlertDesc": "<2-3 oraciones con datos reales y fuente>",
-  "mainAlertLevel": "<BAJO|MEDIO|ALTO|CRITICO>",
+
+  "earlyWarning": "<alerta temprana MÁS URGENTE con dato específico, fuente y fecha>",
+  "marketStatus": "<estado actual del mercado de ${businessType} en ${setup.country || 'México'} — una frase concreta>",
+  "marketStatusDesc": "<2 oraciones con datos reales verificados esta semana y sus fuentes>",
+  "mainAlertTitle": "<la alerta más urgente de esta semana — concreta y específica>",
+  "mainAlertDesc": "<2-3 oraciones con datos reales, fecha y fuente verificable>",
+  "mainAlertLevel": "<BAJO|MEDIO|ALTO|CRÍTICO>",
+
   "competitors": [
     {
-      "name": "<nombre — INCLUIR TODOS LOS COMPETIDORES REGISTRADOS PRIMERO>",
-      "scope": "<Local|Nacional|Regional>",
+      "name": "<nombre exacto — incluir TODOS los registrados>",
+      "scope": "<Local|Regional|Nacional>",
       "threat": <1-10>,
-      "growth": "<subio +X% o Estable o bajo -X%>",
-      "recentMove": "<movimiento real con fecha, o Sin datos publicos disponibles>",
-      "riskLabel": "<BAJO|MEDIO|VIGILAR|CRITICO>",
-      "sourceUrl": "<URL donde encontraste info, o N/A>"
+      "growth": "<↑ subió +X% Esta semana | → Estable | ↓ bajó -X%>",
+      "recentMove": "<movimiento real con fecha y frescura, o 'Sin datos públicos disponibles'>",
+      "riskLabel": "<BAJO|MEDIO|VIGILAR|CRÍTICO>",
+      "sourceUrl": "<URL donde encontraste info, o 'Sin presencia digital detectada'>",
+      "socialMedia": {
+        "mostActivePlatform": "<Instagram|Facebook|LinkedIn|TikTok|Sin presencia>",
+        "lastPostDate": "<fecha aproximada o 'No detectado'>",
+        "postFrequency": "<Diario|Semanal|Irregular|Inactivo|No detectado>",
+        "topContentType": "<tipo de contenido o 'No detectado'>",
+        "followersEstimate": "<número estimado o 'No detectado'>",
+        "engagementLevel": "<ALTO|MEDIO|BAJO|No detectado>"
+      }
     }
   ],
-  "mostAggressiveName": "<nombre>",
-  "mostAggressiveDesc": "<dato especifico con fecha y fuente>",
-  "weakestName": "<nombre>",
-  "weakestDesc": "<evidencia de debilidad>",
+
+  "mostAggressiveName": "<competidor más activo esta semana>",
+  "mostAggressiveDesc": "<dato específico con fecha y fuente>",
+  "weakestName": "<competidor con mayor debilidad detectada>",
+  "weakestDesc": "<evidencia concreta de la debilidad>",
   "emergingName": "<amenaza emergente real>",
-  "emergingDesc": "<dato especifico>",
+  "emergingDesc": "<dato específico que justifica la alerta>",
+
   "criticalAlerts": [
     {
-      "icon": "<emoji>",
-      "title": "<alerta especifica para ${businessType}>",
-      "detected": "<fecha especifica · Fuente: nombre del medio o URL>",
-      "description": "<descripcion con datos verificados>",
-      "action": "<accion concreta accionable para PYME>"
+      "icon": "<emoji relevante>",
+      "title": "<alerta específica para ${businessType} — NO genérica>",
+      "detected": "<fecha específica · Fuente: nombre del medio o URL>",
+      "description": "<descripción con datos verificados y frescura indicada>",
+      "action": "<acción concreta accionable para PYME — con costo y tiempo estimado en MXN>"
     }
   ],
   "mediumAlerts": [
     {
       "icon": "<emoji>",
-      "title": "<titulo>",
+      "title": "<título específico>",
       "source": "<nombre del medio o URL>",
-      "description": "<descripcion con dato especifico>"
+      "description": "<descripción con dato específico y frescura>"
     }
   ],
+
   "changesCol1": [
     {
       "icon": "<emoji>",
       "category": "<CAT · NIVEL>",
-      "date": "<dia especifico, ej: 2 may>",
-      "title": "<cambio real detectado>",
-      "description": "<detalle con fuente: URL o medio>",
-      "competitor": "<nombre del competidor o Mercado general>"
+      "date": "<día específico, ej: 19 may>",
+      "title": "<cambio real detectado — específico y concreto>",
+      "description": "<detalle con fuente · frescura indicada>",
+      "competitor": "<nombre del competidor o 'Mercado general'>"
     }
   ],
   "changesCol2": [
     {
       "icon": "<emoji>",
       "category": "<CAT · NIVEL>",
-      "date": "<dia>",
-      "title": "<cambio>",
-      "description": "<detalle con fuente>",
+      "date": "<día>",
+      "title": "<cambio concreto>",
+      "description": "<detalle con fuente · frescura>",
       "competitor": "<nombre>"
     }
   ],
+
   "priceTrends": [
-    { "name": "<competidor registrado>", "change": "<subio +X% o Estable o bajo -X% o Sin datos publicos>" }
+    { "name": "<competidor registrado>", "change": "<↑ subió +X% Esta semana · [fuente] | → Estable | ↓ bajó -X% | Sin datos públicos disponibles>" }
   ],
-  "priceTrendAlert": "<alerta de precios especifica con dato real>",
+  "priceTrendAlert": "<alerta de precios más relevante con dato real, porcentaje y fuente>",
+
   "dominantMessages": [
-    {
-      "competitor": "<NOMBRE DEL COMPETIDOR EN MAYUSCULAS — solo el nombre, sin agregar ciudad ni plataforma>",
-      "message": "<mensaje real de su web o redes, o mensaje estimado basado en su posicionamiento. NO incluir nombre de ciudad en el mensaje a menos que sea parte literal del slogan>"
-    }
+    { "competitor": "<NOMBRE EN MAYÚSCULAS>", "message": "<mensaje real de su web o redes, o estimado basado en posicionamiento visible>" },
+    { "competitor": "<NOMBRE>", "message": "<mensaje>" },
+    { "competitor": "<NOMBRE>", "message": "<mensaje>" }
   ],
-  IMPORTANTE: dominantMessages debe tener MAXIMO 3 entradas. Solo los 3 competidores mas relevantes.
+
   "opportunities": [
     {
       "icon": "<emoji>",
-      "type": "<tipo de oportunidad>",
-      "title": "<titulo especifico para ${businessType} PYME>",
-      "description": "<descripcion con dato que la sustenta y fuente>",
-      "score": <0-100>,
-      "window": "<ventana de tiempo realista>"
+      "type": "<tipo de oportunidad específica>",
+      "title": "<título concreto para ${businessType} PYME>",
+      "description": "<descripción con el dato que la sustenta y la fuente>",
+      "score": <0-100, qué tan accionable para PYME>,
+      "window": "<ventana de tiempo: '2 semanas', '30 días', 'Este trimestre'>"
     }
   ],
+
   "rivalWeaknesses": [
-    {
-      "competitor": "<NOMBRE — preferir competidores registrados>",
-      "weakness": "<debilidad especifica con evidencia detectada>"
-    }
+    { "competitor": "<NOMBRE — preferir competidores directos>", "weakness": "<debilidad específica con evidencia concreta>" }
   ],
+
   "highRisks": [
     {
       "icon": "<emoji>",
-      "title": "<riesgo real para PYME de ${businessType}>",
+      "title": "<riesgo real y concreto para PYME de ${businessType}>",
       "probability": <0-100>,
-      "description": "<descripcion con contexto real>",
-      "mitigation": "<accion concreta con recursos limitados de PYME>"
+      "description": "<descripción con contexto real y dato específico>",
+      "mitigation": "<acción concreta con recursos limitados — costo y tiempo estimado en MXN>"
     }
   ],
   "mediumRisks": [
-    { "icon": "<emoji>", "title": "<riesgo>", "description": "<descripcion con dato>" }
+    { "icon": "<emoji>", "title": "<riesgo concreto>", "description": "<descripción con dato específico y fuente>" }
   ],
+
   "strengths": [
-    "<fortaleza basada en diferenciadores reales del cliente>",
-    "<fortaleza>",
-    "<fortaleza>"
+    "<fortaleza 1 — basada en diferenciadores reales vs competidores detectados>",
+    "<fortaleza 2>",
+    "<fortaleza 3>"
   ],
   "improvements": [
-    "<area de mejora detectada vs competencia>",
-    "<area>",
-    "<area>"
+    "<área de mejora 1 — detectada comparando cliente vs competidores>",
+    "<área 2>",
+    "<área 3>"
   ],
+
   "benchmarkRows": [
+    { "factor": "Precio / Tarifas", "client": "<ALTO/MEDIO/BAJO o rango MXN>", "comp1": "<o N/A>", "comp2": "<o N/A>", "comp3": "<o N/A>", "comp4": "<o N/A>", "comp5": "<o N/A>", "position": "<1er lugar | 2do lugar | etc>" },
+    { "factor": "Servicios ofrecidos", "client": "<descripción breve>", "comp1": "<o N/A>", "comp2": "<o N/A>", "comp3": "<o N/A>", "comp4": "<o N/A>", "comp5": "<o N/A>", "position": "<posición>" },
+    { "factor": "Presencia digital", "client": "<ALTA/MEDIA/BAJA>", "comp1": "<o N/A>", "comp2": "<o N/A>", "comp3": "<o N/A>", "comp4": "<o N/A>", "comp5": "<o N/A>", "position": "<posición>" },
+    { "factor": "Redes sociales", "client": "<plataforma activa · frecuencia>", "comp1": "<o N/A>", "comp2": "<o N/A>", "comp3": "<o N/A>", "comp4": "<o N/A>", "comp5": "<o N/A>", "position": "<posición>" },
+    { "factor": "SEO / Posicionamiento Google", "client": "<posición estimada>", "comp1": "<o N/A>", "comp2": "<o N/A>", "comp3": "<o N/A>", "comp4": "<o N/A>", "comp5": "<o N/A>", "position": "<posición>" },
+    { "factor": "Casos de éxito / Portafolio", "client": "<SÍ visible|NO visible|PARCIAL>", "comp1": "<o N/A>", "comp2": "<o N/A>", "comp3": "<o N/A>", "comp4": "<o N/A>", "comp5": "<o N/A>", "position": "<posición>" },
+    { "factor": "Tiempo en el mercado", "client": "<años estimados>", "comp1": "<o N/A>", "comp2": "<o N/A>", "comp3": "<o N/A>", "comp4": "<o N/A>", "comp5": "<o N/A>", "position": "<posición>" },
+    { "factor": "Especialización", "client": "<descripción breve>", "comp1": "<o N/A>", "comp2": "<o N/A>", "comp3": "<o N/A>", "comp4": "<o N/A>", "comp5": "<o N/A>", "position": "<posición>" },
+    { "factor": "Cobertura geográfica", "client": "<Local/Regional/Nacional>", "comp1": "<o N/A>", "comp2": "<o N/A>", "comp3": "<o N/A>", "comp4": "<o N/A>", "comp5": "<o N/A>", "position": "<posición>" }
+  ],
+
+  "secondaryCompetitors": [
     {
-      "factor": "Precio / Tarifas",
-      "client": "<ALTO/MEDIO/BAJO o rango de precio>",
-      "comp1": "<evaluacion competidor 1 o N/A>",
-      "comp2": "<evaluacion competidor 2 o N/A>",
-      "comp3": "<evaluacion competidor 3 o N/A>",
-      "position": "<1er lugar / 2do lugar / etc>"
-    },
-    {
-      "factor": "Servicios ofrecidos",
-      "client": "<descripcion breve>",
-      "comp1": "<o N/A>",
-      "comp2": "<o N/A>",
-      "comp3": "<o N/A>",
-      "position": "<posicion>"
-    },
-    {
-      "factor": "Presencia digital",
-      "client": "<ALTA/MEDIA/BAJA>",
-      "comp1": "<o N/A>",
-      "comp2": "<o N/A>",
-      "comp3": "<o N/A>",
-      "position": "<posicion>"
-    },
-    {
-      "factor": "Redes sociales",
-      "client": "<activo/inactivo/seguidores estimados>",
-      "comp1": "<o N/A>",
-      "comp2": "<o N/A>",
-      "comp3": "<o N/A>",
-      "position": "<posicion>"
-    },
-    {
-      "factor": "Casos de exito / Portafolio",
-      "client": "<SI/NO/PARCIAL>",
-      "comp1": "<o N/A>",
-      "comp2": "<o N/A>",
-      "comp3": "<o N/A>",
-      "position": "<posicion>"
-    },
-    {
-      "factor": "Tiempo en el mercado",
-      "client": "<anos estimados>",
-      "comp1": "<o N/A>",
-      "comp2": "<o N/A>",
-      "comp3": "<o N/A>",
-      "position": "<posicion>"
-    },
-    {
-      "factor": "Especializacion",
-      "client": "<descripcion>",
-      "comp1": "<o N/A>",
-      "comp2": "<o N/A>",
-      "comp3": "<o N/A>",
-      "position": "<posicion>"
-    },
-    {
-      "factor": "Cobertura geografica",
-      "client": "<Local/Regional/Nacional>",
-      "comp1": "<o N/A>",
-      "comp2": "<o N/A>",
-      "comp3": "<o N/A>",
-      "position": "<posicion>"
+      "name": "<nombre del competidor adicional — del 6 al 10>",
+      "category": "<tipo de empresa o servicio>",
+      "threat": <1-10>,
+      "recentMove": "<movimiento reciente con frescura, o 'Sin datos públicos disponibles'>",
+      "sourceUrl": "<URL o 'Sin presencia digital detectada'>"
     }
   ],
+
   "highPriorityRecs": [
     {
       "number": 1,
-      "title": "<recomendacion concreta>",
-      "owner": "<responsable>",
-      "deadline": "<plazo>",
-      "description": "<detalle paso a paso accionable>",
-      "impact": "<impacto esperado con metrica>",
-      "difficulty": "<FACIL|MEDIO|DIFICIL>",
-      "timeRequired": "<CORTO|MEDIO|LARGO>",
-      "costRequired": "<BAJO|MEDIO|ALTO>"
+      "title": "<CATEGORÍA EN MAYÚSCULAS — verbo + acción específica + resultado esperado>",
+      "owner": "<CEO|Marketing|Ventas|Operaciones|etc>",
+      "deadline": "<'Esta semana'|'En 7 días'|'En 15 días'>",
+      "description": "<máximo 3 pasos concretos y accionables para PYME>",
+      "impact": "<impacto con métrica real: '+20% en consultas', '-15% costo adquisición'>",
+      "difficulty": "<FÁCIL|MEDIO|DIFÍCIL>",
+      "timeRequired": "<CORTO (1-3 días)|MEDIO (1-2 semanas)|LARGO (1+ mes)>",
+      "costRequired": "<BAJO (menos $5,000 MXN)|MEDIO ($5,000-$20,000)|ALTO (más $20,000)>"
     },
     {
       "number": 2,
-      "title": "<recomendacion>",
+      "title": "<CATEGORÍA DIFERENTE A REC 1 — acción específica>",
       "owner": "<responsable>",
       "deadline": "<plazo>",
-      "description": "<detalle>",
-      "impact": "<impacto>",
-      "difficulty": "<FACIL|MEDIO|DIFICIL>",
+      "description": "<pasos concretos>",
+      "impact": "<métrica>",
+      "difficulty": "<FÁCIL|MEDIO|DIFÍCIL>",
       "timeRequired": "<CORTO|MEDIO|LARGO>",
       "costRequired": "<BAJO|MEDIO|ALTO>"
     }
   ],
   "mediumPriorityRecs": [
-    {
-      "number": 3,
-      "title": "<recomendacion>",
-      "deadline": "<plazo>",
-      "description": "<detalle>",
-      "impact": "<impacto>"
-    },
-    {
-      "number": 4,
-      "title": "<recomendacion>",
-      "deadline": "<plazo>",
-      "description": "<detalle>",
-      "impact": "<impacto>"
-    }
+    { "number": 3, "title": "<CATEGORÍA DIFERENTE A 1 Y 2 — acción>", "deadline": "<plazo>", "description": "<detalle accionable>", "impact": "<impacto esperado>" },
+    { "number": 4, "title": "<CATEGORÍA DIFERENTE A 1, 2 Y 3 — acción>", "deadline": "<plazo>", "description": "<detalle>", "impact": "<impacto>" }
   ],
   "lowPriorityRecs": [
-    { "number": 5, "title": "<recomendacion>", "description": "<detalle>" },
-    { "number": 6, "title": "<recomendacion>", "description": "<detalle>" }
+    { "number": 5, "title": "<CATEGORÍA DIFERENTE A LAS ANTERIORES — acción>", "description": "<detalle con contexto>" },
+    { "number": 6, "title": "<CATEGORÍA DIFERENTE A TODAS LAS ANTERIORES — acción>", "description": "<detalle con contexto>" }
   ],
-  "secondaryCompetitors": [
-    {
-      "name": "<nombre competidor secundario — buscar agencias similares en el mercado>",
-      "category": "<tipo de agencia o servicio>",
-      "threat": 3,
-      "recentMove": "<movimiento reciente o Sin datos publicos>",
-      "sourceUrl": "<URL o N/A>"
-    }
-  ],
-  "criticalSignals": ["<senal critica 1>", "<senal 2>", "<senal 3>", "<senal 4>"],
-  "importantSignals": ["<senal 1>", "<senal 2>", "<senal 3>", "<senal 4>"],
-  "infoSignals": ["<senal 1>", "<senal 2>", "<senal 3>", "<senal 4>"]
+
+  "criticalSignals": ["<señal crítica específica para ${businessType}>", "<señal 2>", "<señal 3>", "<señal 4>"],
+  "importantSignals": ["<señal 1>", "<señal 2>", "<señal 3>", "<señal 4>", "<señal 5>"],
+  "infoSignals": ["<señal 1>", "<señal 2>", "<señal 3>", "<señal 4>"]
 }`
 }
 
@@ -536,7 +591,22 @@ async function callClaudeWithSearch(project: any, dateInfo: any): Promise<any> {
 
   const prompt = buildPrompt(project, dateInfo)
   const businessType = inferBusinessType(project.setup || {})
-  const systemPrompt = `Eres un analista de inteligencia competitiva para PYMES mexicanas. REGLA ABSOLUTA: El negocio del cliente es una ${businessType}. PROHIBIDO analizar telecomunicaciones, 5G, Telcel, AT&T, Movistar, Izzi o cualquier empresa de telecom. SOLO analiza competidores del mismo giro y tamaño PYME. Responde en español de México.`
+  const systemPrompt = `Eres el analista senior de inteligencia competitiva de Reports PRO, especializado en PYMES de México y LATAM.
+
+IDENTIDAD DEL ANÁLISIS:
+- Empresa cliente: ${businessType}
+- PROHIBIDO analizar: telecomunicaciones (Telcel, AT&T, Movistar, Izzi, 5G), banca nacional, corporativos globales, empresas de tamaño incomparable al cliente
+- SOLO analiza: competidores del mismo giro (${businessType}) y tamaño PYME
+- Idioma: español de México — nunca inglés, nunca español neutro
+
+PROCESO DE PENSAMIENTO OBLIGATORIO — ejecutar en orden:
+1. INVESTIGA → busca cada competidor y el mercado (mínimo 10 búsquedas web)
+2. VERIFICA → confirma cada dato con su fuente y fecha
+3. ANALIZA → identifica patrones, movimientos y gaps
+4. SINTETIZA → determina las 3 cosas más importantes para el cliente esta semana
+5. ESTRUCTURA → organiza el JSON de salida
+
+REGLA DE ORO: Cada dato debe poder ser verificado por el cliente. Si no puedes verificarlo, márcalo explícitamente como "Estimado" o "Sin datos públicos disponibles". NUNCA inventes datos.`
 
   // Llamada a Claude con web search habilitado — reintentos automáticos en 529
   const MAX_RETRIES = 3
@@ -544,7 +614,7 @@ async function callClaudeWithSearch(project: any, dateInfo: any): Promise<any> {
   for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
     try {
       response = await anthropic.messages.create({
-        model: 'claude-sonnet-4-5',
+        model: 'claude-sonnet-4-20250514',
         system: systemPrompt,
         max_tokens: 16000,
         tools: [
@@ -898,6 +968,15 @@ function buildReportData(project: any, aiData: any, dateInfo: any): ReportData {
 
     // Scores
     competitivePressure: pressure,
+    clientScore: aiData.clientScore || {
+      overall: 60,
+      price: 60, digital: 50, differentiation: 65, speed: 55,
+      vsCompetitors: 'En el promedio',
+      strongAreas: ['Especialización en el sector'],
+      weakAreas: ['Presencia digital a fortalecer'],
+      weeklyChange: 'Primera medición',
+      summary: 'Posición competitiva en evaluación inicial — datos disponibles en próximos reportes.'
+    },
     opportunityScore: opportunity,
     marketRisk: aiData.marketRisk ?? 40,
     riskLevel: aiData.riskLevel || 'MEDIO',
