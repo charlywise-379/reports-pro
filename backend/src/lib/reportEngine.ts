@@ -48,6 +48,18 @@ interface ReportData {
   alertsCount: number
   activeCompetitors: number
   totalChanges: number
+  clientScore?: {
+    overall: number
+    price: number
+    digital: number
+    differentiation: number
+    speed: number
+    vsCompetitors: string
+    strongAreas: string[]
+    weakAreas: string[]
+    weeklyChange: string
+    summary: string
+  }
   insights: { color: string; borderColor: string; category: string; text: string }[]
   actions: { color: string; borderColor: string; priority: string; text: string }[]
   topCompetitors: any[]
