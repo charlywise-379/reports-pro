@@ -48,18 +48,6 @@ interface ReportData {
   alertsCount: number
   activeCompetitors: number
   totalChanges: number
-  clientScore?: {
-    overall: number
-    price: number
-    digital: number
-    differentiation: number
-    speed: number
-    vsCompetitors: string
-    strongAreas: string[]
-    weakAreas: string[]
-    weeklyChange: string
-    summary: string
-  }
   insights: { color: string; borderColor: string; category: string; text: string }[]
   actions: { color: string; borderColor: string; priority: string; text: string }[]
   topCompetitors: any[]
@@ -626,7 +614,7 @@ REGLA DE ORO: Cada dato debe poder ser verificado por el cliente. Si no puedes v
   for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
     try {
       response = await anthropic.messages.create({
-        model: 'claude-sonnet-4-5',
+        model: 'claude-sonnet-4-20250514',
         system: systemPrompt,
         max_tokens: 16000,
         tools: [
