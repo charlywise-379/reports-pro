@@ -1,4 +1,5 @@
 import express from "express"
+import rateLimit from "express-rate-limit"
 import cors from "cors"
 import dotenv from "dotenv"
 import onboardingRouter from "./routes/onboarding"
@@ -14,6 +15,26 @@ const app = express()
 const PORT = process.env.PORT || 3001
 
 app.use(cors())
+
+// Rate limiting global — 100 requests por 15 min por IP
+const globalLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 100,
+  message: { error: 'Demasiadas solicitudes. Intenta en 15 minutos.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+})
+app.use(globalLimiter)
+
+// Rate limiting estricto para generación de reportes — 5 por hora por IP
+const generateLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000,
+  max: 5,
+  message: { error: 'Límite de generación alcanzado. Máximo 5 reportes por hora.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+})
+app.use('/api/reports/generate', generateLimiter)
 app.use("/api/stripe/webhook", express.raw({ type: "application/json" }))
 app.use(express.json())
 
