@@ -1037,7 +1037,7 @@ function BriefingPanel({ step, isMobile }: { step: number; isMobile: boolean }) 
       </div>
       <div style={{ background:'rgba(255,255,255,0.03)', border:'1px solid rgba(255,255,255,0.07)', borderRadius:14, padding:'14px' }}>
         <div style={{ fontSize:10, fontWeight:700, letterSpacing:'0.1em', color:'#5A627A', marginBottom:8 }}>AYUDA</div>
-        <div style={{ fontSize:12, color:'#9CA3AF', lineHeight:1.6 }}>¿Dudas? El equipo de PRO Reports responde en menos de 2h en horario laboral.</div>
+        <div style={{ fontSize:12, color:'#9CA3AF', lineHeight:1.6 }}>¿Dudas? El equipo de Omni Reports · AI Automation responde en menos de 2h en horario laboral.</div>
       </div>
       <div style={{ background:'rgba(139,123,255,0.08)', border:'1px solid rgba(139,123,255,0.2)', borderRadius:14, padding:'14px' }}>
   <div style={{ fontSize:10, fontWeight:700, letterSpacing:'0.1em', color:'#8B7BFF', marginBottom:10 }}>¿TIENES DUDAS? PREGÚNTANOS</div>
@@ -1080,9 +1080,9 @@ function TopNav() {
   return (
     <div style={{ borderBottom:'1px solid rgba(255,255,255,0.06)', background:'#0D0F1A', flexShrink:0, padding: isMobile ? '10px 16px' : '0 24px', height: isMobile ? 'auto' : 56, display:'flex', alignItems:'center', justifyContent:'space-between', flexWrap: isMobile ? 'wrap' : 'nowrap', gap: isMobile ? 8 : 0 }}>
       <div style={{ display:'flex', alignItems:'center', gap:10 }}>
-        <div style={{ width:34, height:34, borderRadius:10, background:'linear-gradient(135deg,#8B7BFF,#5DD4D4)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:11, fontWeight:900, color:'#0D0F1A', flexShrink:0 }}>PR</div>
+        <div style={{ width:34, height:34, borderRadius:10, background:'linear-gradient(135deg,#8B7BFF,#5DD4D4)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:11, fontWeight:900, color:'#0D0F1A', flexShrink:0 }}>OM</div>
         <div>
-          <div style={{ fontSize:13, fontWeight:800, color:'#F0F2FF' }}>PRO Reports</div>
+          <div style={{ fontSize:13, fontWeight:800, color:'#F0F2FF' }}>Omni Reports · AI Automation</div>
           <div style={{ fontSize:10, color:'#5A627A' }}>Inteligencia Competitiva · AI</div>
         </div>
       </div>
