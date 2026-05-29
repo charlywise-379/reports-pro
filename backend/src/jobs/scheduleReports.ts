@@ -36,7 +36,7 @@ export async function scheduleReports() {
     console.log(`[Scheduler] ${projects.length} proyectos activos encontrados`)
 
     const frecuencyHours: Record<string, number> = {
-      DAILY: 24, WEEKLY: 168, BIWEEKLY: 336, MONTHLY: 720
+      DAILY: 22, WEEKLY: 168, BIWEEKLY: 336, MONTHLY: 720
     }
 
     let encolados = 0

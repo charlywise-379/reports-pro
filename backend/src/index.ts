@@ -26,8 +26,8 @@ startReportWorker()
 console.log("Worker de reportes activo")
 
 scheduleReports()
-setInterval(scheduleReports, 6 * 60 * 60 * 1000)
-console.log("Scheduler activo cada 6 horas")
+setInterval(scheduleReports, 60 * 60 * 1000)
+console.log("Scheduler activo cada hora")
 
 app.get("/health", (req, res) => {
   res.json({ status: "ok", message: "Reports PRO Backend", timestamp: new Date().toISOString() })
