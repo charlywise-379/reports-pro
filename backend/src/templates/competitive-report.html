@@ -413,32 +413,33 @@
         {{/each}}
       </div>
     </div>
-    <div style="background:#1A1730;border-radius:12px;padding:14px 20px">
-      <div style="font-size:7px;font-weight:700;letter-spacing:.12em;color:#8B7BFF;text-transform:uppercase;margin-bottom:10px">📊 Resumen semanal · Semana {{weekNumber}}</div>
-      <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr 1fr 1fr;gap:8px">
-        <div style="text-align:center;padding:10px 6px;background:rgba(255,107,107,0.1);border:1px solid rgba(255,107,107,0.2);border-radius:10px">
-          <div style="font-size:28px;font-weight:900;color:#FF6B6B;line-height:1">{{criticalMovements}}</div>
-          <div style="font-size:7.5px;color:#9CA3AF;margin-top:4px;font-weight:600">CRÍTICOS</div>
+    <div style="background:#1A1730;border-radius:8px;padding:7px 16px;display:flex;align-items:center;gap:6px">
+      <span style="font-size:7px;font-weight:700;letter-spacing:.1em;color:#8B7BFF;white-space:nowrap">📊 SEM {{weekNumber}}</span>
+      <div style="width:1px;height:20px;background:rgba(255,255,255,0.1);flex-shrink:0"></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr 1fr 1fr;gap:6px;flex:1">
+        <div style="text-align:center;padding:4px 4px;background:rgba(255,107,107,0.1);border-radius:6px;display:flex;align-items:center;justify-content:center;gap:5px">
+          <span style="font-size:16px;font-weight:900;color:#FF6B6B;line-height:1">{{criticalMovements}}</span>
+          <span style="font-size:7px;color:#9CA3AF;font-weight:600">Críticos</span>
         </div>
-        <div style="text-align:center;padding:10px 6px;background:rgba(242,192,99,0.1);border:1px solid rgba(242,192,99,0.2);border-radius:10px">
-          <div style="font-size:28px;font-weight:900;color:#F2C063;line-height:1">{{minorMovements}}</div>
-          <div style="font-size:7.5px;color:#9CA3AF;margin-top:4px;font-weight:600">MEDIOS</div>
+        <div style="text-align:center;padding:4px 4px;background:rgba(242,192,99,0.1);border-radius:6px;display:flex;align-items:center;justify-content:center;gap:5px">
+          <span style="font-size:16px;font-weight:900;color:#F2C063;line-height:1">{{minorMovements}}</span>
+          <span style="font-size:7px;color:#9CA3AF;font-weight:600">Medios</span>
         </div>
-        <div style="text-align:center;padding:10px 6px;background:rgba(139,123,255,0.1);border:1px solid rgba(139,123,255,0.2);border-radius:10px">
-          <div style="font-size:28px;font-weight:900;color:#8B7BFF;line-height:1">{{activeCompetitors}}</div>
-          <div style="font-size:7.5px;color:#9CA3AF;margin-top:4px;font-weight:600">COMPETIDORES</div>
+        <div style="text-align:center;padding:4px 4px;background:rgba(139,123,255,0.1);border-radius:6px;display:flex;align-items:center;justify-content:center;gap:5px">
+          <span style="font-size:16px;font-weight:900;color:#8B7BFF;line-height:1">{{activeCompetitors}}</span>
+          <span style="font-size:7px;color:#9CA3AF;font-weight:600">Competidores</span>
         </div>
-        <div style="text-align:center;padding:10px 6px;background:rgba(110,231,164,0.1);border:1px solid rgba(110,231,164,0.2);border-radius:10px">
-          <div style="font-size:28px;font-weight:900;color:#6EE7A4;line-height:1">{{totalChanges}}</div>
-          <div style="font-size:7.5px;color:#9CA3AF;margin-top:4px;font-weight:600">TOTAL CAMBIOS</div>
+        <div style="text-align:center;padding:4px 4px;background:rgba(110,231,164,0.1);border-radius:6px;display:flex;align-items:center;justify-content:center;gap:5px">
+          <span style="font-size:16px;font-weight:900;color:#6EE7A4;line-height:1">{{totalChanges}}</span>
+          <span style="font-size:7px;color:#9CA3AF;font-weight:600">Cambios</span>
         </div>
-        <div style="text-align:center;padding:10px 6px;background:rgba(93,212,212,0.1);border:1px solid rgba(93,212,212,0.2);border-radius:10px">
-          <div style="font-size:28px;font-weight:900;color:#5DD4D4;line-height:1">{{alertsCount}}</div>
-          <div style="font-size:7.5px;color:#9CA3AF;margin-top:4px;font-weight:600">ALERTAS</div>
+        <div style="text-align:center;padding:4px 4px;background:rgba(93,212,212,0.1);border-radius:6px;display:flex;align-items:center;justify-content:center;gap:5px">
+          <span style="font-size:16px;font-weight:900;color:#5DD4D4;line-height:1">{{alertsCount}}</span>
+          <span style="font-size:7px;color:#9CA3AF;font-weight:600">Alertas</span>
         </div>
-        <div style="text-align:center;padding:10px 6px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:10px">
-          <div style="font-size:28px;font-weight:900;color:#6EE7A4;line-height:1">↑{{signalsDelta}}%</div>
-          <div style="font-size:7.5px;color:#9CA3AF;margin-top:4px;font-weight:600">VS ANTERIOR</div>
+        <div style="text-align:center;padding:4px 4px;background:rgba(255,255,255,0.05);border-radius:6px;display:flex;align-items:center;justify-content:center;gap:5px">
+          <span style="font-size:16px;font-weight:900;color:#6EE7A4;line-height:1">↑{{signalsDelta}}%</span>
+          <span style="font-size:7px;color:#9CA3AF;font-weight:600">vs ant.</span>
         </div>
       </div>
     </div>
