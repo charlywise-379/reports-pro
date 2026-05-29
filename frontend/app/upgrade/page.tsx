@@ -73,8 +73,8 @@ export default function UpgradePage() {
           ← Volver al dashboard
         </button>
         <div style={{ display:'flex', alignItems:'center', justifyContent:'center', gap:10, marginBottom:16 }}>
-          <div style={{ width:36, height:36, borderRadius:10, background:'linear-gradient(135deg,#8B7BFF,#5DD4D4)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:12, fontWeight:900, color:'#0D0F1A' }}>PR</div>
-          <span style={{ fontSize:16, fontWeight:800, color:'#F0F2FF' }}>PRO Reports</span>
+          <div style={{ width:36, height:36, borderRadius:10, background:'linear-gradient(135deg,#8B7BFF,#5DD4D4)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:12, fontWeight:900, color:'#0D0F1A' }}>OM</div>
+          <span style={{ fontSize:16, fontWeight:800, color:'#F0F2FF' }}>Omni Reports · AI Automation</span>
         </div>
         <h1 style={{ fontSize:28, fontWeight:900, color:'#F0F2FF', marginBottom:8 }}>
           Cambia tu plan

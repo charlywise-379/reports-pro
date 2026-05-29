@@ -959,7 +959,7 @@ function Sidebar({ step, setStep }: { step: number; setStep: (n: number) => void
       <div style={{ marginBottom:32 }}>
         <div style={{ fontSize:10, fontWeight:700, letterSpacing:'0.12em', color:'#5A627A', marginBottom:10 }}>WIZARD · 7 PASOS</div>
         <div style={{ fontSize:22, fontWeight:800, color:'#F0F2FF', lineHeight:1.2, letterSpacing:'-0.02em' }}>Inteligencia<br />Competitiva Sectorial</div>
-        <div style={{ fontSize:16, fontWeight:700, color:'#8B7BFF', marginTop:2 }}>AI Automated</div>
+        <div style={{ fontSize:16, fontWeight:700, color:'#8B7BFF', marginTop:2 }}>AI Automation</div>
       </div>
       <nav style={{ display:'flex', flexDirection:'column', gap:4, marginBottom:20 }}>
         {STEPS.map(s=>{

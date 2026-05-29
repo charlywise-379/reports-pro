@@ -58,8 +58,8 @@ export default function LoginPage() {
               <Zap size={20} className="text-white" />
             </div>
             <div className="text-left">
-              <span className="font-black text-xl">Reports<span className="text-blue-400"> PRO</span></span>
-              <div className="text-[10px] text-gray-500 -mt-0.5 tracking-widest uppercase">AI Automated</div>
+              <span className="font-black text-xl">Omni Reports<span className="text-blue-400"> · AI Automation</span></span>
+              <div className="text-[10px] text-gray-500 -mt-0.5 tracking-widest uppercase">AI Automation</div>
             </div>
           </Link>
           <h1 className="text-2xl font-black mb-2">Bienvenido de vuelta</h1>
