@@ -373,7 +373,7 @@ export default function DashboardPage() {
           <div style={{ width:34, height:34, borderRadius:10, background:'linear-gradient(135deg,#8B7BFF,#5DD4D4)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:11, fontWeight:900, color:'#0D0F1A', flexShrink:0 }}>OM</div>
           <div>
             <div style={{ fontSize:13, fontWeight:800, color: isDark ? T.text : '#F0F2FF' }}>Omni Reports · AI Automation</div>
-            <div style={{ fontSize:10, color:T.textMuted }}>Inteligencia Competitiva · AI</div>
+            <div style={{ fontSize:10, color: isDark ? T.textMuted : "#AFA9EC" }}>Inteligencia Competitiva · AI</div>
           </div>
         </div>
         <div style={{ display:'flex', flexDirection: isMobile ? 'column' : 'row', alignItems: isMobile ? 'flex-end' : 'center', gap: isMobile ? 4 : 14 }}>
@@ -381,11 +381,11 @@ export default function DashboardPage() {
             <div style={{ width:6, height:6, borderRadius:'50%', background:'#6EE7A4', flexShrink:0 }} />
             <span style={{ fontSize:10, fontWeight:700, letterSpacing:'0.08em', color:'#6EE7A4' }}>SISTEMA ACTIVO</span>
           </div>
-          {!isMobile && <span style={{ fontSize:12, color:T.textMuted }}>{user?.email}</span>}
-          <button onClick={toggleTheme} style={{ fontSize:18, background:'none', border:'none', cursor:'pointer', padding:'4px 6px', borderRadius:8, lineHeight:1 }} title={isDark ? 'Modo claro' : 'Modo oscuro'}>
+          {!isMobile && <span style={{ fontSize:12, color: isDark ? T.textMuted : "#AFA9EC" }}>{user?.email}</span>}
+          <button onClick={toggleTheme} style={{ fontSize:18, background:'none', border:'none', cursor:'pointer', padding:'4px 6px', borderRadius:8, lineHeight:1, opacity: isDark ? 1 : 0.9 }} title={isDark ? 'Modo claro' : 'Modo oscuro'}>
             {isDark ? '☀️' : '🌙'}
           </button>
-          <button onClick={handleLogout} style={{ fontSize:11, color:T.textMuted, background:'none', border:'none', cursor:'pointer', fontWeight:600, marginTop: isMobile ? 4 : 0 }}>Salir →</button>
+          <button onClick={handleLogout} style={{ fontSize:11, color: isDark ? T.textMuted : "#AFA9EC", background:'none', border:'none', cursor:'pointer', fontWeight:600, marginTop: isMobile ? 4 : 0 }}>Salir →</button>
         </div>
       </nav>
 
