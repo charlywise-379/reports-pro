@@ -11,7 +11,6 @@ const S: Record<string, React.CSSProperties> = {
   muted:{ color:'#5A627A', fontSize:11 } as React.CSSProperties,
   row:  { display:'flex', alignItems:'center', gap:10, padding:'7px 0', borderBottom:'1px solid rgba(255,255,255,0.05)' } as React.CSSProperties,
 }
-// Nota: S usa valores base. Los colores dinámicos van via T en el JSX.
 
 const BarFill = ({ pct, color }: { pct: number; color: string }) => (
   <div style={{ height:'100%', width:`${pct}%`, background:color, borderRadius:3 }} />
@@ -85,12 +84,12 @@ export default function DashboardPage() {
     lbl: '#5A627A', barBg: 'rgba(255,255,255,0.06)',
     modalBg: '#1A1730', inputBg: 'rgba(255,255,255,0.04)',
   } : {
-    bg: '#F4F5F7', bgCard: '#FFFFFF', bgCard2: '#F8F9FB',
-    border: '#E5E7EB', border2: '#D1D5DB',
-    text: '#111827', textMuted: '#6B7280', textSub: '#9CA3AF',
-    navBg: '#FFFFFF', navBorder: '#E5E7EB',
-    lbl: '#6B7280', barBg: '#E5E7EB',
-    modalBg: '#FFFFFF', inputBg: '#F9FAFB',
+    bg: '#F0EEFF', bgCard: '#FFFFFF', bgCard2: '#EEEDFE',
+    border: '#CECBF6', border2: '#AFA9EC',
+    text: '#26215C', textMuted: '#7F77DD', textSub: '#534AB7',
+    navBg: '#FFFFFF', navBorder: '#CECBF6',
+    lbl: '#7F77DD', barBg: '#CECBF6',
+    modalBg: '#FFFFFF', inputBg: '#EEEDFE',
   }
   const isMobile = useIsMobile()
   const BACKEND = process.env.NEXT_PUBLIC_BACKEND_URL || 'https://reports-pro-production.up.railway.app'
@@ -344,11 +343,11 @@ export default function DashboardPage() {
 
 
   if (trialVencido) return (
-    <main style={{ minHeight:'100vh', background:'#0D0F1A', color:'#F0F2FF', fontFamily:'system-ui,sans-serif', display:'flex', alignItems:'center', justifyContent:'center', padding:24 }}>
+    <main style={{ minHeight:'100vh', background:'#0D0F1A', color:T.text, fontFamily:'system-ui,sans-serif', display:'flex', alignItems:'center', justifyContent:'center', padding:24 }}>
       <div style={{ maxWidth:480, width:'100%', textAlign:'center' }}>
         <div style={{ width:64, height:64, background:'rgba(139,123,255,0.1)', border:'1px solid rgba(139,123,255,0.3)', borderRadius:20, display:'flex', alignItems:'center', justifyContent:'center', fontSize:28, margin:'0 auto 24px' }}>🔒</div>
         <h1 style={{ fontSize:24, fontWeight:900, marginBottom:12 }}>Tu periodo de prueba ha terminado</h1>
-        <p style={{ fontSize:14, color:'#9CA3AF', lineHeight:1.6, marginBottom:28 }}>
+        <p style={{ fontSize:14, color:T.textSub, lineHeight:1.6, marginBottom:28 }}>
           Activa tu plan para seguir recibiendo inteligencia competitiva automatizada.
           Desde <strong style={{ color:'#8B7BFF' }}>$49 USD/mes</strong>. Sin compromisos, cancela cuando quieras.
         </p>
@@ -357,7 +356,7 @@ export default function DashboardPage() {
           Ver planes y activar
         </button>
         <button onClick={handleLogout}
-          style={{ background:'transparent', border:'1px solid rgba(255,255,255,0.1)', borderRadius:20, padding:'10px 24px', color:'#5A627A', fontSize:12, fontWeight:600, cursor:'pointer', width:'100%' }}>
+          style={{ background:'transparent', border:`1px solid ${T.border2}`, borderRadius:20, padding:'10px 24px', color:T.textMuted, fontSize:12, fontWeight:600, cursor:'pointer', width:'100%' }}>
           Cerrar sesion
         </button>
       </div>
@@ -374,7 +373,7 @@ export default function DashboardPage() {
           <div style={{ width:34, height:34, borderRadius:10, background:'linear-gradient(135deg,#8B7BFF,#5DD4D4)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:11, fontWeight:900, color:'#0D0F1A', flexShrink:0 }}>OM</div>
           <div>
             <div style={{ fontSize:13, fontWeight:800, color:T.text }}>Omni Reports · AI Automation</div>
-            <div style={{ fontSize:10, color:'#5A627A' }}>Inteligencia Competitiva · AI</div>
+            <div style={{ fontSize:10, color:T.textMuted }}>Inteligencia Competitiva · AI</div>
           </div>
         </div>
         <div style={{ display:'flex', flexDirection: isMobile ? 'column' : 'row', alignItems: isMobile ? 'flex-end' : 'center', gap: isMobile ? 4 : 14 }}>
@@ -382,7 +381,7 @@ export default function DashboardPage() {
             <div style={{ width:6, height:6, borderRadius:'50%', background:'#6EE7A4', flexShrink:0 }} />
             <span style={{ fontSize:10, fontWeight:700, letterSpacing:'0.08em', color:'#6EE7A4' }}>SISTEMA ACTIVO</span>
           </div>
-          {!isMobile && <span style={{ fontSize:12, color:'#5A627A' }}>{user?.email}</span>}
+          {!isMobile && <span style={{ fontSize:12, color:T.textMuted }}>{user?.email}</span>}
           <button onClick={toggleTheme} style={{ fontSize:18, background:'none', border:'none', cursor:'pointer', padding:'4px 6px', borderRadius:8, lineHeight:1 }} title={isDark ? 'Modo claro' : 'Modo oscuro'}>
             {isDark ? '☀️' : '🌙'}
           </button>
@@ -394,13 +393,13 @@ export default function DashboardPage() {
 
         {/* ZONA 1 — HEADER con datos reales */}
         <div style={{ marginBottom:20 }}>
-          <span style={S.lbl}>DASHBOARD · INTELIGENCIA COMPETITIVA</span>
+          <span style={{...S.lbl, color:T.lbl}}>DASHBOARD · INTELIGENCIA COMPETITIVA</span>
           <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start', flexWrap:'wrap', gap:8 }}>
             <div>
-              <div style={{ fontSize: isMobile ? 22 : 26, fontWeight:900, color:'#F0F2FF', lineHeight:1.1 }}>
+              <div style={{ fontSize: isMobile ? 22 : 26, fontWeight:900, color:T.text, lineHeight:1.1 }}>
                 <span style={{ color:'#8B7BFF' }}>{companyName}</span>
               </div>
-              <div style={{ fontSize:12, color:'#5A627A', marginTop:4 }}>
+              <div style={{ fontSize:12, color:T.textMuted, marginTop:4 }}>
                 {industry}{city ? ` · ${city}, ${country}` : ` · ${country}`} · {new Date().toLocaleDateString('es-MX',{weekday:'long',day:'numeric',month:'long'})}
               </div>
               <div style={{ display:'flex', alignItems:'center', gap:8, marginTop:6, flexWrap:'wrap' }}>
@@ -425,7 +424,7 @@ export default function DashboardPage() {
           <div style={{ display:'flex', justifyContent:'space-between', alignItems: isMobile ? 'flex-start' : 'center', flexDirection: isMobile ? 'column' : 'row', gap: isMobile ? 12 : 0 }}>
             <div>
               <span style={{...S.lbl, color:'#8B7BFF'}}>PRÓXIMO REPORTE · {dashData?.project?.frequency || 'SEMANAL'}</span>
-              <div style={{ fontSize:16, fontWeight:800, color:'#F0F2FF', lineHeight:1.3 }}>Inteligencia Competitiva<br/><span style={{ color:'#8B7BFF' }}>{companyName}</span></div>
+              <div style={{ fontSize:16, fontWeight:800, color:T.text, lineHeight:1.3 }}>Inteligencia Competitiva<br/><span style={{ color:'#8B7BFF' }}>{companyName}</span></div>
               <div style={{...S.muted, marginTop:3}}>
                 {dashData?.project?.deliveryEmail || 'Email'} · {(dashData?.setup?.focusAreas || []).length} áreas activas
                 {' · '}
@@ -462,25 +461,25 @@ export default function DashboardPage() {
 
         {/* ZONA 7 — PANEL USUARIO */}
         <div style={{ background:'linear-gradient(135deg,rgba(139,123,255,0.08),rgba(93,212,212,0.04))', border:'1px solid rgba(139,123,255,0.2)', borderRadius:16, padding:'20px 22px', marginBottom:14 }}>
-          <div style={{ paddingBottom:14, borderBottom:'1px solid rgba(255,255,255,0.06)', marginBottom:14, display:'flex', flexDirection: isMobile ? 'column' : 'row', alignItems: isMobile ? 'flex-start' : 'center', justifyContent:'space-between', gap:12 }}>
+          <div style={{ paddingBottom:14, borderBottom:`1px solid ${T.border}`, marginBottom:14, display:'flex', flexDirection: isMobile ? 'column' : 'row', alignItems: isMobile ? 'flex-start' : 'center', justifyContent:'space-between', gap:12 }}>
             <div style={{ display:'flex', alignItems:'center', gap:12 }}>
               <div style={{ width:42, height:42, borderRadius:12, background:'linear-gradient(135deg,#8B7BFF,#5DD4D4)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:16, fontWeight:900, color:'#0D0F1A', flexShrink:0 }}>
                 {user?.email?.[0]?.toUpperCase() || 'U'}
               </div>
               <div style={{ flex:1, minWidth:0 }}>
-                <div style={{ fontSize:14, fontWeight:800, color:'#F0F2FF', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{user?.email || 'usuario@email.com'}</div>
+                <div style={{ fontSize:14, fontWeight:800, color:T.text, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{user?.email || 'usuario@email.com'}</div>
                 <div style={{ display:'flex', alignItems:'center', gap:6, marginTop:3, flexWrap:'wrap' }}>
                   <span style={{...S.badge, background: tieneStripe ? 'rgba(110,231,164,0.12)' : 'rgba(242,192,99,0.12)', color: tieneStripe ? '#6EE7A4' : '#F2C063'}}>
                     {tieneStripe ? 'Activo' : `Trial · ${trialDaysLeft} días`}
                   </span>
-                  <span style={{ fontSize:10, color:'#5A627A' }}>· Plan {frequency}</span>
-                  {city && <span style={{ fontSize:10, color:'#5A627A' }}>· {city}, {country}</span>}
+                  <span style={{ fontSize:10, color:T.textMuted }}>· Plan {frequency}</span>
+                  {city && <span style={{ fontSize:10, color:T.textMuted }}>· {city}, {country}</span>}
                 </div>
               </div>
             </div>
             {isMobile && <div style={{ display:'flex', gap:6, flexWrap:'wrap' }}>
               <button onClick={()=>{setEditName(dashData?.setup?.companyName||'');setShowEditProfile(true)}} style={{ fontSize:10, fontWeight:600, color:'#8B7BFF', background:'rgba(139,123,255,0.1)', border:'1px solid rgba(139,123,255,0.2)', borderRadius:20, padding:'6px 12px', cursor:'pointer', whiteSpace:'nowrap' }}>Editar Perfil</button>
-              <button onClick={handlePasswordReset} style={{ fontSize:10, fontWeight:600, color: passwordSent ? '#6EE7A4' : '#9CA3AF', background:'rgba(255,255,255,0.04)', border:'1px solid rgba(255,255,255,0.08)', borderRadius:20, padding:'6px 12px', cursor:'pointer', whiteSpace:'nowrap' }}>{passwordSent ? '✓ Email enviado' : 'Cambiar contraseña'}</button>
+              <button onClick={handlePasswordReset} style={{ fontSize:10, fontWeight:600, color: passwordSent ? '#6EE7A4' : '#9CA3AF', background:T.inputBg, border:'1px solid rgba(255,255,255,0.08)', borderRadius:20, padding:'6px 12px', cursor:'pointer', whiteSpace:'nowrap' }}>{passwordSent ? '✓ Email enviado' : 'Cambiar contraseña'}</button>
               {tieneStripe && (
                 <button onClick={() => router.push('/upgrade')} style={{ fontSize:10, fontWeight:600, color:'#6EE7A4', background:'rgba(110,231,164,0.08)', border:'1px solid rgba(110,231,164,0.2)', borderRadius:20, padding:'6px 12px', cursor:'pointer', whiteSpace:'nowrap' }}>
                   Gestionar suscripción →
@@ -489,7 +488,7 @@ export default function DashboardPage() {
             </div>}
             {!isMobile && <div style={{ display:'flex', gap:8, alignItems:'center', marginLeft:'auto' }}>
               <button onClick={()=>{setEditName(dashData?.setup?.companyName||'');setShowEditProfile(true)}} style={{ fontSize:12, fontWeight:600, color:'#8B7BFF', background:'rgba(139,123,255,0.1)', border:'1px solid rgba(139,123,255,0.2)', borderRadius:20, padding:'8px 18px', cursor:'pointer', whiteSpace:'nowrap' }}>Editar Perfil</button>
-              <button onClick={handlePasswordReset} style={{ fontSize:12, fontWeight:600, color: passwordSent ? '#6EE7A4' : '#9CA3AF', background:'rgba(255,255,255,0.04)', border:'1px solid rgba(255,255,255,0.08)', borderRadius:20, padding:'8px 18px', cursor:'pointer', whiteSpace:'nowrap' }}>{passwordSent ? '✓ Email enviado' : 'Cambiar contraseña'}</button>
+              <button onClick={handlePasswordReset} style={{ fontSize:12, fontWeight:600, color: passwordSent ? '#6EE7A4' : '#9CA3AF', background:T.inputBg, border:'1px solid rgba(255,255,255,0.08)', borderRadius:20, padding:'8px 18px', cursor:'pointer', whiteSpace:'nowrap' }}>{passwordSent ? '✓ Email enviado' : 'Cambiar contraseña'}</button>
               {tieneStripe && (
                 <button onClick={() => router.push('/upgrade')} style={{ fontSize:12, fontWeight:600, color:'#6EE7A4', background:'rgba(110,231,164,0.08)', border:'1px solid rgba(110,231,164,0.2)', borderRadius:20, padding:'8px 18px', cursor:'pointer', whiteSpace:'nowrap' }}>
                   Gestionar suscripción →
@@ -505,7 +504,7 @@ export default function DashboardPage() {
                 icon:<><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></> },
               { label:`${(dashData?.reports || []).filter((r: any) => r.status !== 'FAILED').length} Reportes`, color:'#F2C063', bg:'rgba(242,192,99,0.08)', border:'rgba(242,192,99,0.2)', href:'#',
                 icon:<path d="M7 3h7l5 5v13a1 1 0 01-1 1H7a1 1 0 01-1-1V4a1 1 0 011-1z"/> },
-              { label:'Invitar Colegas', color:'#9CA3AF', bg:'rgba(255,255,255,0.04)', border:'rgba(255,255,255,0.1)', href:'#', onClick: ()=>setShowInviteModal(true),
+              { label:'Invitar Colegas', color:T.textSub, bg:'rgba(255,255,255,0.04)', border:'rgba(255,255,255,0.1)', href:'#', onClick: ()=>setShowInviteModal(true),
                 icon:<><path d="M17 21v-2a4 4 0 00-4-4H7a4 4 0 00-4 4v2"/><circle cx="10" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></> },
             ].map((a: any,i: number)=>(
               <a key={i} href={a.href} onClick={a.onClick ? (e)=>{e.preventDefault();a.onClick()} : undefined}
@@ -538,7 +537,7 @@ export default function DashboardPage() {
                     )}
                     <div>
                       <div style={{ fontSize:12, fontWeight:700, color: r.reportTitle ? '#F0F2FF' : '#8B7BFF' }}>{r.reportTitle || '⏳ Generando reporte IA... ~5 min'}</div>
-                      <div style={{ fontSize:10, color:'#5A627A' }}>{new Date(r.createdAt).toLocaleDateString('es-MX', { day:'2-digit', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' })} · {r.pdfSizeBytes ? Math.round(r.pdfSizeBytes/1024)+'KB' : 'Procesando...'}</div>
+                      <div style={{ fontSize:10, color:T.textMuted }}>{new Date(r.createdAt).toLocaleDateString('es-MX', { day:'2-digit', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' })} · {r.pdfSizeBytes ? Math.round(r.pdfSizeBytes/1024)+'KB' : 'Procesando...'}</div>
                     </div>
                   </div>
                   <div style={{ display:'flex', gap:8, alignItems:'center' }}>
@@ -568,8 +567,8 @@ export default function DashboardPage() {
             <div style={{ marginBottom:14 }}>
               <div style={{ display:'flex', alignItems:'center', gap:8, marginBottom:12 }}>
                 <div style={{ width:3, height:18, background:'linear-gradient(180deg,#8B7BFF,#5DD4D4)', borderRadius:2 }}/>
-                <span style={{ fontSize:13, fontWeight:800, color:'#F0F2FF', letterSpacing:'0.05em' }}>INTELIGENCIA DEL ÚLTIMO REPORTE</span>
-                <span style={{ fontSize:10, color:'#5A627A' }}>· {new Date(selectedReport.createdAt).toLocaleDateString('es-MX',{day:'2-digit',month:'short'})}</span>
+                <span style={{ fontSize:13, fontWeight:800, color:T.text, letterSpacing:'0.05em' }}>INTELIGENCIA DEL ÚLTIMO REPORTE</span>
+                <span style={{ fontSize:10, color:T.textMuted }}>· {new Date(selectedReport.createdAt).toLocaleDateString('es-MX',{day:'2-digit',month:'short'})}</span>
               </div>
 
               {/* Score del cliente */}
@@ -580,12 +579,12 @@ export default function DashboardPage() {
                       <span style={S.lbl}>SCORE COMPETITIVO DE TU EMPRESA</span>
                       <div style={{ display:'flex', alignItems:'baseline', gap:8, marginBottom:8 }}>
                         <span style={{ fontSize:40, fontWeight:900, color: score.overall >= 70 ? '#6EE7A4' : score.overall >= 50 ? '#F2C063' : '#FF6B6B', lineHeight:1 }}>{score.overall}</span>
-                        <span style={{ fontSize:13, color:'#5A627A' }}>/100</span>
+                        <span style={{ fontSize:13, color:T.textMuted }}>/100</span>
                         <span style={{ fontSize:11, color: score.vsCompetitors === 'Por encima del promedio' ? '#6EE7A4' : score.vsCompetitors === 'En el promedio' ? '#F2C063' : '#FF6B6B', fontWeight:700, background: score.vsCompetitors === 'Por encima del promedio' ? 'rgba(110,231,164,0.1)' : 'rgba(242,192,99,0.1)', padding:'2px 8px', borderRadius:20 }}>
                           {score.vsCompetitors}
                         </span>
                       </div>
-                      {score.summary && <div style={{ fontSize:11, color:'#9CA3AF', lineHeight:1.5, marginBottom:10 }}>{score.summary}</div>}
+                      {score.summary && <div style={{ fontSize:11, color:T.textSub, lineHeight:1.5, marginBottom:10 }}>{score.summary}</div>}
                       {/* Barras de dimensiones */}
                       <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:8 }}>
                         {[
@@ -596,7 +595,7 @@ export default function DashboardPage() {
                         ].map((d,i) => (
                           <div key={i}>
                             <div style={{ display:'flex', justifyContent:'space-between', marginBottom:3 }}>
-                              <span style={{ fontSize:9, color:'#5A627A', fontWeight:700 }}>{d.label.toUpperCase()}</span>
+                              <span style={{ fontSize:9, color:T.textMuted, fontWeight:700 }}>{d.label.toUpperCase()}</span>
                               <span style={{ fontSize:9, color:d.color, fontWeight:800 }}>{d.val || '—'}</span>
                             </div>
                             <div style={S.bar}><BarFill pct={d.val || 0} color={d.color}/></div>
@@ -610,7 +609,7 @@ export default function DashboardPage() {
                         <div>
                           <span style={{ fontSize:9, fontWeight:700, color:'#6EE7A4', letterSpacing:'0.1em', display:'block', marginBottom:4 }}>✓ FORTALEZAS</span>
                           {score.strongAreas.slice(0,2).map((a:string,i:number)=>(
-                            <div key={i} style={{ fontSize:10, color:'#9CA3AF', padding:'4px 8px', background:'rgba(110,231,164,0.06)', border:'1px solid rgba(110,231,164,0.15)', borderRadius:6, marginBottom:4 }}>{a}</div>
+                            <div key={i} style={{ fontSize:10, color:T.textSub, padding:'4px 8px', background:'rgba(110,231,164,0.06)', border:'1px solid rgba(110,231,164,0.15)', borderRadius:6, marginBottom:4 }}>{a}</div>
                           ))}
                         </div>
                       )}
@@ -618,7 +617,7 @@ export default function DashboardPage() {
                         <div>
                           <span style={{ fontSize:9, fontWeight:700, color:'#F2C063', letterSpacing:'0.1em', display:'block', marginBottom:4 }}>↑ ÁREAS DE MEJORA</span>
                           {score.weakAreas.slice(0,2).map((a:string,i:number)=>(
-                            <div key={i} style={{ fontSize:10, color:'#9CA3AF', padding:'4px 8px', background:'rgba(242,192,99,0.06)', border:'1px solid rgba(242,192,99,0.15)', borderRadius:6, marginBottom:4 }}>{a}</div>
+                            <div key={i} style={{ fontSize:10, color:T.textSub, padding:'4px 8px', background:'rgba(242,192,99,0.06)', border:'1px solid rgba(242,192,99,0.15)', borderRadius:6, marginBottom:4 }}>{a}</div>
                           ))}
                         </div>
                       )}
@@ -636,10 +635,10 @@ export default function DashboardPage() {
                       <div key={i} style={{ display:'flex', gap:10, padding:'10px 12px', background:'rgba(255,107,107,0.05)', border:'1px solid rgba(255,107,107,0.15)', borderRadius:10 }}>
                         <span style={{ fontSize:18, flexShrink:0 }}>{a.icon || '⚠️'}</span>
                         <div style={{ flex:1, minWidth:0 }}>
-                          <div style={{ fontSize:12, fontWeight:700, color:'#F0F2FF', marginBottom:2 }}>{a.title}</div>
-                          <div style={{ fontSize:10, color:'#9CA3AF', lineHeight:1.4, marginBottom:4 }}>{a.description}</div>
+                          <div style={{ fontSize:12, fontWeight:700, color:T.text, marginBottom:2 }}>{a.title}</div>
+                          <div style={{ fontSize:10, color:T.textSub, lineHeight:1.4, marginBottom:4 }}>{a.description}</div>
                           {a.action && <div style={{ fontSize:10, color:'#FF6B6B', fontWeight:700 }}>💡 {a.action}</div>}
-                          {a.detected && <div style={{ fontSize:9, color:'#5A627A', marginTop:3 }}>📅 {a.detected}</div>}
+                          {a.detected && <div style={{ fontSize:9, color:T.textMuted, marginTop:3 }}>📅 {a.detected}</div>}
                         </div>
                       </div>
                     ))}
@@ -655,17 +654,17 @@ export default function DashboardPage() {
                     {topRecs.map((r:any,i:number)=>(
                       <div key={i} style={{ padding:'12px 14px', background:'rgba(139,123,255,0.05)', border:'1px solid rgba(139,123,255,0.15)', borderRadius:10 }}>
                         <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start', gap:8, marginBottom:6 }}>
-                          <div style={{ fontSize:12, fontWeight:800, color:'#F0F2FF', flex:1 }}>{r.title}</div>
+                          <div style={{ fontSize:12, fontWeight:800, color:T.text, flex:1 }}>{r.title}</div>
                           <div style={{ display:'flex', gap:4, flexShrink:0 }}>
                             {r.difficulty && <span style={{ fontSize:9, fontWeight:700, padding:'2px 6px', borderRadius:10, background: r.difficulty==='FÁCIL' ? 'rgba(110,231,164,0.1)' : r.difficulty==='MEDIO' ? 'rgba(242,192,99,0.1)' : 'rgba(255,107,107,0.1)', color: r.difficulty==='FÁCIL' ? '#6EE7A4' : r.difficulty==='MEDIO' ? '#F2C063' : '#FF6B6B' }}>{r.difficulty}</span>}
-                            {r.costRequired && <span style={{ fontSize:9, fontWeight:700, padding:'2px 6px', borderRadius:10, background:'rgba(255,255,255,0.05)', color:'#9CA3AF' }}>{r.costRequired}</span>}
+                            {r.costRequired && <span style={{ fontSize:9, fontWeight:700, padding:'2px 6px', borderRadius:10, background:'rgba(255,255,255,0.05)', color:T.textSub }}>{r.costRequired}</span>}
                           </div>
                         </div>
-                        <div style={{ fontSize:10, color:'#9CA3AF', lineHeight:1.5, marginBottom:6 }}>{r.description}</div>
+                        <div style={{ fontSize:10, color:T.textSub, lineHeight:1.5, marginBottom:6 }}>{r.description}</div>
                         <div style={{ display:'flex', gap:10, flexWrap:'wrap' }}>
                           {r.impact && <span style={{ fontSize:10, color:'#6EE7A4', fontWeight:600 }}>📈 {r.impact}</span>}
                           {r.deadline && <span style={{ fontSize:10, color:'#8B7BFF', fontWeight:600 }}>⏱ {r.deadline}</span>}
-                          {r.owner && <span style={{ fontSize:10, color:'#5A627A' }}>👤 {r.owner}</span>}
+                          {r.owner && <span style={{ fontSize:10, color:T.textMuted }}>👤 {r.owner}</span>}
                         </div>
                       </div>
                     ))}
@@ -718,7 +717,7 @@ export default function DashboardPage() {
                   {[{label:'Presión',color:'#8B7BFF'},{label:'Oportunidad',color:'#6EE7A4'},{label:'Riesgo',color:'#FF6B6B'},{label:'Score',color:'#F2C063'}].map((l,i)=>(
                     <div key={i} style={{ display:'flex', alignItems:'center', gap:4 }}>
                       <div style={{ width:12, height:2, background:l.color, borderRadius:1 }}/>
-                      <span style={{ fontSize:9, color:'#5A627A', fontWeight:600 }}>{l.label}</span>
+                      <span style={{ fontSize:9, color:T.textMuted, fontWeight:600 }}>{l.label}</span>
                     </div>
                   ))}
                 </div>
@@ -749,7 +748,7 @@ export default function DashboardPage() {
                   ))}
                 </svg>
               </div>
-              <div style={{ fontSize:10, color:'#5A627A', marginTop:4, textAlign:'center' }}>
+              <div style={{ fontSize:10, color:T.textMuted, marginTop:4, textAlign:'center' }}>
                 Basado en {dataPoints.length} reportes generados
               </div>
             </div>
@@ -757,10 +756,10 @@ export default function DashboardPage() {
         })()}
 
         {/* ZONA 8 — MOTORES IA */}
-        <div style={{ border:'1px solid rgba(255,255,255,0.07)', borderRadius:16, padding:'18px 20px', marginBottom:14 }}>
+        <div style={{ border:`1px solid ${T.border}`, borderRadius:16, padding:'18px 20px', marginBottom:14 }}>
           <div style={{ display:'flex', alignItems:'center', gap:8, marginBottom:14 }}>
             <div style={{ width:6, height:6, borderRadius:'50%', background:'#8B7BFF' }}/>
-            <span style={{ fontSize:9, fontWeight:700, letterSpacing:'0.14em', color:'#5A627A', textTransform:'uppercase' }}>Motores IA — Automation Intelligence Omni Reports · AI Automation</span>
+            <span style={{ fontSize:9, fontWeight:700, letterSpacing:'0.14em', color:T.textMuted, textTransform:'uppercase' }}>Motores IA — Automation Intelligence Omni Reports · AI Automation</span>
           </div>
           <div style={{ display:'grid', gridTemplateColumns: isMobile ? '1fr 1fr' : '1fr 1fr 1fr 1fr', gap:10 }}>
             {[
@@ -777,7 +776,7 @@ export default function DashboardPage() {
                   <span style={{...S.badge, background: m.active ? 'rgba(110,231,164,0.12)' : 'rgba(255,255,255,0.05)', color: m.active ? '#6EE7A4' : '#5A627A'}}>{m.active ? 'ACTIVO' : 'PRÓXIMO'}</span>
                 </div>
                 <div style={{ fontSize:11, fontWeight:700, color: m.active ? '#F0F2FF' : '#9CA3AF', marginBottom:3 }}>{m.title}</div>
-                <div style={{ fontSize:10, color:'#5A627A' }}>{m.sub}</div>
+                <div style={{ fontSize:10, color:T.textMuted }}>{m.sub}</div>
               </div>
             ))}
           </div>
@@ -788,8 +787,8 @@ export default function DashboardPage() {
           <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', flexWrap:'wrap', gap:8 }}>
             <div style={{ display:'flex', alignItems:'center', gap:8 }}>
               <div style={{ width:3, height:18, background:'linear-gradient(180deg,#8B7BFF,#5DD4D4)', borderRadius:2 }}/>
-              <span style={{ fontSize:13, fontWeight:800, color:'#F0F2FF', letterSpacing:'0.05em' }}>RESUMEN DEL REPORTE</span>
-              {selectedReport && <span style={{ fontSize:10, color:'#5A627A' }}>· {new Date(selectedReport.createdAt).toLocaleDateString('es-MX', { day:'2-digit', month:'short', year:'numeric' })} {new Date(selectedReport.createdAt).toLocaleTimeString('es-MX', { hour:'2-digit', minute:'2-digit' })}</span>}
+              <span style={{ fontSize:13, fontWeight:800, color:T.text, letterSpacing:'0.05em' }}>RESUMEN DEL REPORTE</span>
+              {selectedReport && <span style={{ fontSize:10, color:T.textMuted }}>· {new Date(selectedReport.createdAt).toLocaleDateString('es-MX', { day:'2-digit', month:'short', year:'numeric' })} {new Date(selectedReport.createdAt).toLocaleTimeString('es-MX', { hour:'2-digit', minute:'2-digit' })}</span>}
             </div>
             {selectedReport?.r2Key && (
               <button onClick={() => handleDownload(selectedReport.id)}
@@ -825,8 +824,8 @@ export default function DashboardPage() {
                 <div key={i} style={{ display:'flex', gap:10, padding:'10px 12px', background:'rgba(255,107,107,0.05)', border:'1px solid rgba(255,107,107,0.2)', borderRadius:10 }}>
                   <span style={{ fontSize:18, flexShrink:0 }}>{a.icon || '⚠️'}</span>
                   <div style={{ flex:1 }}>
-                    <div style={{ fontSize:12, fontWeight:700, color:'#F0F2FF', marginBottom:2 }}>{a.title}</div>
-                    <div style={{ fontSize:11, color:'#9CA3AF' }}>{a.description}</div>
+                    <div style={{ fontSize:12, fontWeight:700, color:T.text, marginBottom:2 }}>{a.title}</div>
+                    <div style={{ fontSize:11, color:T.textSub }}>{a.description}</div>
                     {a.action && <div style={{ fontSize:10, color:'#FF6B6B', marginTop:4, fontWeight:600 }}>💡 {a.action}</div>}
                   </div>
                 </div>
@@ -839,8 +838,8 @@ export default function DashboardPage() {
         {setupCompetitors.length > 0 && (
           <div style={{...S.card, margin:0, marginBottom:14}}>
             <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:12 }}>
-              <span style={{ fontSize:13, fontWeight:700, color:'#F0F2FF' }}>Competidores monitoreados</span>
-              <span style={{...S.badge, background:'rgba(255,255,255,0.05)', color:'#5A627A'}}>{setupCompetitors.length} activos</span>
+              <span style={{ fontSize:13, fontWeight:700, color:T.text }}>Competidores monitoreados</span>
+              <span style={{...S.badge, background:'rgba(255,255,255,0.05)', color:T.textMuted}}>{setupCompetitors.length} activos</span>
             </div>
             <div style={{ display:'flex', flexDirection:'column', gap:8 }}>
               {setupCompetitors.map((name: string, i: number) => {
@@ -852,7 +851,7 @@ export default function DashboardPage() {
                   <div key={i} style={{ display:'flex', alignItems:'center', gap:10, padding:'10px 12px', background:'rgba(255,255,255,0.02)', border:`1px solid rgba(255,255,255,0.06)`, borderRadius:10 }}>
                     <GaugeCircle value={threat} color={colors[i % colors.length]}/>
                     <div style={{ flex:1, minWidth:0 }}>
-                      <div style={{ fontSize:12, fontWeight:700, color:'#F0F2FF' }}>{name}</div>
+                      <div style={{ fontSize:12, fontWeight:700, color:T.text }}>{name}</div>
                       <div style={S.muted}>{city ? `${city} · ` : ''}{industry}</div>
                       <div style={S.bar}><BarFill pct={threat*10} color={colors[i % colors.length]}/></div>
                     </div>
@@ -873,9 +872,9 @@ export default function DashboardPage() {
                 <div key={i} style={{ padding:'10px 12px', background:'rgba(110,231,164,0.04)', border:'1px solid rgba(110,231,164,0.15)', borderRadius:10 }}>
                   <div style={{ display:'flex', alignItems:'center', gap:6, marginBottom:4 }}>
                     <span style={{ fontSize:16 }}>{o.icon || '💡'}</span>
-                    <div style={{ fontSize:11, fontWeight:700, color:'#F0F2FF' }}>{o.title}</div>
+                    <div style={{ fontSize:11, fontWeight:700, color:T.text }}>{o.title}</div>
                   </div>
-                  <div style={{ fontSize:10, color:'#9CA3AF', lineHeight:1.4 }}>{o.description}</div>
+                  <div style={{ fontSize:10, color:T.textSub, lineHeight:1.4 }}>{o.description}</div>
                 </div>
               ))}
             </div>
@@ -889,16 +888,16 @@ export default function DashboardPage() {
     {/* Modal Editar Perfil */}
     {showEditProfile && (
       <div style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.7)', display:'flex', alignItems:'center', justifyContent:'center', zIndex:1000 }}>
-        <div style={{ background:'#1A1730', border:'1px solid rgba(255,255,255,0.1)', borderRadius:20, padding:32, width:400, maxWidth:'90vw' }}>
+        <div style={{ background:T.modalBg, border:`1px solid ${T.border2}`, borderRadius:20, padding:32, width:400, maxWidth:'90vw' }}>
           <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:20 }}>
-            <div style={{ fontSize:16, fontWeight:800, color:'#F0F2FF' }}>Editar perfil</div>
-            <button onClick={()=>setShowEditProfile(false)} style={{ background:'none', border:'none', color:'#5A627A', cursor:'pointer', fontSize:20 }}>×</button>
+            <div style={{ fontSize:16, fontWeight:800, color:T.text }}>Editar perfil</div>
+            <button onClick={()=>setShowEditProfile(false)} style={{ background:'none', border:'none', color:T.textMuted, cursor:'pointer', fontSize:20 }}>×</button>
           </div>
-          <label style={{ fontSize:10, fontWeight:700, color:'#5A627A', letterSpacing:'0.1em', display:'block', marginBottom:6 }}>NOMBRE DE EMPRESA</label>
+          <label style={{ fontSize:10, fontWeight:700, color:T.textMuted, letterSpacing:'0.1em', display:'block', marginBottom:6 }}>NOMBRE DE EMPRESA</label>
           <input
             value={editName}
             onChange={e=>setEditName(e.target.value)}
-            style={{ width:'100%', background:'rgba(255,255,255,0.04)', border:'1px solid rgba(255,255,255,0.1)', borderRadius:10, padding:'10px 14px', color:'#F0F2FF', fontSize:13, outline:'none', boxSizing:'border-box' as const }}
+            style={{ width:'100%', background:T.inputBg, border:`1px solid ${T.border2}`, borderRadius:10, padding:'10px 14px', color:T.text, fontSize:13, outline:'none', boxSizing:'border-box' as const }}
           />
           <button
             onClick={async()=>{
@@ -916,22 +915,22 @@ export default function DashboardPage() {
     {/* Modal Invitar Colegas */}
     {showInviteModal && (
       <div style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.7)', display:'flex', alignItems:'center', justifyContent:'center', zIndex:1000 }}>
-        <div style={{ background:'#1A1730', border:'1px solid rgba(255,255,255,0.1)', borderRadius:20, padding:32, width:420, maxWidth:'90vw' }}>
+        <div style={{ background:T.modalBg, border:`1px solid ${T.border2}`, borderRadius:20, padding:32, width:420, maxWidth:'90vw' }}>
           <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:20 }}>
-            <div style={{ fontSize:16, fontWeight:800, color:'#F0F2FF' }}>Invitar Colegas</div>
-            <button onClick={()=>{setShowInviteModal(false);setInviteSent(false);setInviteEmails('')}} style={{ background:'none', border:'none', color:'#5A627A', cursor:'pointer', fontSize:20 }}>×</button>
+            <div style={{ fontSize:16, fontWeight:800, color:T.text }}>Invitar Colegas</div>
+            <button onClick={()=>{setShowInviteModal(false);setInviteSent(false);setInviteEmails('')}} style={{ background:'none', border:'none', color:T.textMuted, cursor:'pointer', fontSize:20 }}>×</button>
           </div>
           {!inviteSent ? (
             <>
-              <p style={{ fontSize:13, color:'#9CA3AF', marginBottom:16, lineHeight:1.6 }}>
+              <p style={{ fontSize:13, color:T.textSub, marginBottom:16, lineHeight:1.6 }}>
                 Agrega los emails de tus colegas para que también reciban el reporte de inteligencia competitiva.
               </p>
-              <label style={{ fontSize:10, fontWeight:700, color:'#5A627A', letterSpacing:'0.1em', display:'block', marginBottom:6 }}>EMAILS (separados por coma, sin espacios)</label>
+              <label style={{ fontSize:10, fontWeight:700, color:T.textMuted, letterSpacing:'0.1em', display:'block', marginBottom:6 }}>EMAILS (separados por coma, sin espacios)</label>
               <textarea
                 value={inviteEmails}
                 onChange={e=>setInviteEmails(e.target.value)}
                 placeholder="colega1@empresa.com,colega2@empresa.com"
-                style={{ width:'100%', background:'rgba(255,255,255,0.04)', border:'1px solid rgba(255,255,255,0.1)', borderRadius:10, padding:'10px 14px', color:'#F0F2FF', fontSize:13, outline:'none', boxSizing:'border-box', resize:'none', height:80, scrollbarWidth:'none' as const }}
+                style={{ width:'100%', background:T.inputBg, border:`1px solid ${T.border2}`, borderRadius:10, padding:'10px 14px', color:T.text, fontSize:13, outline:'none', boxSizing:'border-box', resize:'none', height:80, scrollbarWidth:'none' as const }}
               />
               <button
                 onClick={async ()=>{
@@ -958,8 +957,8 @@ export default function DashboardPage() {
             <div style={{ textAlign:'center', padding:'20px 0' }}>
               <div style={{ fontSize:32, marginBottom:12 }}>✅</div>
               <div style={{ fontSize:15, fontWeight:700, color:'#6EE7A4', marginBottom:8 }}>Invitaciones enviadas</div>
-              <div style={{ fontSize:13, color:'#9CA3AF' }}>Tus colegas recibirán el próximo reporte automáticamente.</div>
-              <button onClick={()=>{setShowInviteModal(false);setInviteSent(false);setInviteEmails('')}} style={{ marginTop:20, background:'rgba(255,255,255,0.06)', border:'1px solid rgba(255,255,255,0.1)', borderRadius:20, padding:'10px 24px', color:'#F0F2FF', fontSize:13, fontWeight:700, cursor:'pointer' }}>Cerrar</button>
+              <div style={{ fontSize:13, color:T.textSub }}>Tus colegas recibirán el próximo reporte automáticamente.</div>
+              <button onClick={()=>{setShowInviteModal(false);setInviteSent(false);setInviteEmails('')}} style={{ marginTop:20, background:T.barBg, border:`1px solid ${T.border2}`, borderRadius:20, padding:'10px 24px', color:T.text, fontSize:13, fontWeight:700, cursor:'pointer' }}>Cerrar</button>
             </div>
           )}
         </div>
@@ -968,21 +967,21 @@ export default function DashboardPage() {
     {/* Bug #5 — Modal confirmación antes de generar */}
     {showConfirmModal && (
       <div style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.75)', display:'flex', alignItems:'center', justifyContent:'center', zIndex:1000, padding:20 }}>
-        <div style={{ background:'#1A1730', border:'1px solid rgba(255,255,255,0.1)', borderRadius:20, padding:32, width:400, maxWidth:'100%' }}>
+        <div style={{ background:T.modalBg, border:`1px solid ${T.border2}`, borderRadius:20, padding:32, width:400, maxWidth:'100%' }}>
           <div style={{ textAlign:'center', marginBottom:20 }}>
             <div style={{ width:52, height:52, borderRadius:16, background:'rgba(110,231,164,0.1)', border:'1px solid rgba(110,231,164,0.25)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:24, margin:'0 auto 16px' }}>⚡</div>
-            <div style={{ fontSize:17, fontWeight:900, color:'#F0F2FF', marginBottom:8 }}>Generar Reporte Ahora</div>
-            <div style={{ fontSize:13, color:'#9CA3AF', lineHeight:1.6 }}>
-              Se generará un nuevo reporte de inteligencia competitiva para <strong style={{ color:'#F0F2FF' }}>{dashData?.setup?.companyName || 'tu empresa'}</strong>.
+            <div style={{ fontSize:17, fontWeight:900, color:T.text, marginBottom:8 }}>Generar Reporte Ahora</div>
+            <div style={{ fontSize:13, color:T.textSub, lineHeight:1.6 }}>
+              Se generará un nuevo reporte de inteligencia competitiva para <strong style={{ color:T.text }}>{dashData?.setup?.companyName || 'tu empresa'}</strong>.
             </div>
-            <div style={{ marginTop:12, fontSize:11, color:'#5A627A', background:'rgba(255,255,255,0.03)', border:'1px solid rgba(255,255,255,0.06)', borderRadius:10, padding:'8px 12px' }}>
+            <div style={{ marginTop:12, fontSize:11, color:T.textMuted, background:'rgba(255,255,255,0.03)', border:'1px solid rgba(255,255,255,0.06)', borderRadius:10, padding:'8px 12px' }}>
               El reporte tardará ~5 minutos en generarse. Recibirás una notificación por email cuando esté listo.
             </div>
           </div>
           <div style={{ display:'flex', gap:10 }}>
             <button
               onClick={() => setShowConfirmModal(false)}
-              style={{ flex:1, background:'rgba(255,255,255,0.04)', border:'1px solid rgba(255,255,255,0.1)', borderRadius:20, padding:'12px', color:'#9CA3AF', fontSize:13, fontWeight:700, cursor:'pointer' }}>
+              style={{ flex:1, background:T.inputBg, border:`1px solid ${T.border2}`, borderRadius:20, padding:'12px', color:T.textSub, fontSize:13, fontWeight:700, cursor:'pointer' }}>
               Cancelar
             </button>
             <button
@@ -998,11 +997,11 @@ export default function DashboardPage() {
     {/* Bug #6 — Modal elegante de límite de frecuencia */}
     {showLimitModal && (
       <div style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.75)', display:'flex', alignItems:'center', justifyContent:'center', zIndex:1000, padding:20 }}>
-        <div style={{ background:'#1A1730', border:'1px solid rgba(255,255,255,0.1)', borderRadius:20, padding:32, width:400, maxWidth:'100%' }}>
+        <div style={{ background:T.modalBg, border:`1px solid ${T.border2}`, borderRadius:20, padding:32, width:400, maxWidth:'100%' }}>
           <div style={{ textAlign:'center', marginBottom:24 }}>
             <div style={{ width:52, height:52, borderRadius:16, background:'rgba(242,192,99,0.1)', border:'1px solid rgba(242,192,99,0.25)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:24, margin:'0 auto 16px' }}>🕐</div>
-            <div style={{ fontSize:17, fontWeight:900, color:'#F0F2FF', marginBottom:8 }}>Reporte no disponible aún</div>
-            <div style={{ fontSize:13, color:'#9CA3AF', lineHeight:1.6, marginBottom:12 }}>
+            <div style={{ fontSize:17, fontWeight:900, color:T.text, marginBottom:8 }}>Reporte no disponible aún</div>
+            <div style={{ fontSize:13, color:T.textSub, lineHeight:1.6, marginBottom:12 }}>
               {limitMessage}
             </div>
             {nextReportInfo && (
@@ -1014,7 +1013,7 @@ export default function DashboardPage() {
           <div style={{ display:'flex', gap:10 }}>
             <button
               onClick={() => setShowLimitModal(false)}
-              style={{ flex:1, background:'rgba(255,255,255,0.04)', border:'1px solid rgba(255,255,255,0.1)', borderRadius:20, padding:'12px', color:'#9CA3AF', fontSize:13, fontWeight:700, cursor:'pointer' }}>
+              style={{ flex:1, background:T.inputBg, border:`1px solid ${T.border2}`, borderRadius:20, padding:'12px', color:T.textSub, fontSize:13, fontWeight:700, cursor:'pointer' }}>
               Entendido
             </button>
             <button
