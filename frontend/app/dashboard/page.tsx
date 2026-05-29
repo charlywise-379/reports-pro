@@ -526,6 +526,206 @@ export default function DashboardPage() {
           </div>
         )}
 
+        {/* ZONA 7.6 — RESUMEN INTELIGENTE DEL ÚLTIMO REPORTE */}
+        {selectedReport?.sectionsJson && (() => {
+          const sj = typeof selectedReport.sectionsJson === 'string'
+            ? JSON.parse(selectedReport.sectionsJson) : selectedReport.sectionsJson
+          const score = sj?.clientScore
+          const topAlerts = (sj?.criticalAlerts || []).slice(0,3)
+          const topRecs = (sj?.highPriorityRecs || []).slice(0,2)
+          if (!score && topAlerts.length === 0 && topRecs.length === 0) return null
+          return (
+            <div style={{ marginBottom:14 }}>
+              <div style={{ display:'flex', alignItems:'center', gap:8, marginBottom:12 }}>
+                <div style={{ width:3, height:18, background:'linear-gradient(180deg,#8B7BFF,#5DD4D4)', borderRadius:2 }}/>
+                <span style={{ fontSize:13, fontWeight:800, color:'#F0F2FF', letterSpacing:'0.05em' }}>INTELIGENCIA DEL ÚLTIMO REPORTE</span>
+                <span style={{ fontSize:10, color:'#5A627A' }}>· {new Date(selectedReport.createdAt).toLocaleDateString('es-MX',{day:'2-digit',month:'short'})}</span>
+              </div>
+
+              {/* Score del cliente */}
+              {score && (
+                <div style={{...S.card, marginBottom:10}}>
+                  <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start', flexWrap:'wrap', gap:12 }}>
+                    <div style={{ flex:1, minWidth:200 }}>
+                      <span style={S.lbl}>SCORE COMPETITIVO DE TU EMPRESA</span>
+                      <div style={{ display:'flex', alignItems:'baseline', gap:8, marginBottom:8 }}>
+                        <span style={{ fontSize:40, fontWeight:900, color: score.overall >= 70 ? '#6EE7A4' : score.overall >= 50 ? '#F2C063' : '#FF6B6B', lineHeight:1 }}>{score.overall}</span>
+                        <span style={{ fontSize:13, color:'#5A627A' }}>/100</span>
+                        <span style={{ fontSize:11, color: score.vsCompetitors === 'Por encima del promedio' ? '#6EE7A4' : score.vsCompetitors === 'En el promedio' ? '#F2C063' : '#FF6B6B', fontWeight:700, background: score.vsCompetitors === 'Por encima del promedio' ? 'rgba(110,231,164,0.1)' : 'rgba(242,192,99,0.1)', padding:'2px 8px', borderRadius:20 }}>
+                          {score.vsCompetitors}
+                        </span>
+                      </div>
+                      {score.summary && <div style={{ fontSize:11, color:'#9CA3AF', lineHeight:1.5, marginBottom:10 }}>{score.summary}</div>}
+                      {/* Barras de dimensiones */}
+                      <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:8 }}>
+                        {[
+                          { label:'Precio / Valor', val: score.price, color:'#8B7BFF' },
+                          { label:'Presencia digital', val: score.digital, color:'#5DD4D4' },
+                          { label:'Diferenciación', val: score.differentiation, color:'#6EE7A4' },
+                          { label:'Velocidad', val: score.speed, color:'#F2C063' },
+                        ].map((d,i) => (
+                          <div key={i}>
+                            <div style={{ display:'flex', justifyContent:'space-between', marginBottom:3 }}>
+                              <span style={{ fontSize:9, color:'#5A627A', fontWeight:700 }}>{d.label.toUpperCase()}</span>
+                              <span style={{ fontSize:9, color:d.color, fontWeight:800 }}>{d.val || '—'}</span>
+                            </div>
+                            <div style={S.bar}><BarFill pct={d.val || 0} color={d.color}/></div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                    {/* Fortalezas y áreas de mejora */}
+                    <div style={{ minWidth:180, display:'flex', flexDirection:'column', gap:8 }}>
+                      {score.strongAreas?.length > 0 && (
+                        <div>
+                          <span style={{ fontSize:9, fontWeight:700, color:'#6EE7A4', letterSpacing:'0.1em', display:'block', marginBottom:4 }}>✓ FORTALEZAS</span>
+                          {score.strongAreas.slice(0,2).map((a:string,i:number)=>(
+                            <div key={i} style={{ fontSize:10, color:'#9CA3AF', padding:'4px 8px', background:'rgba(110,231,164,0.06)', border:'1px solid rgba(110,231,164,0.15)', borderRadius:6, marginBottom:4 }}>{a}</div>
+                          ))}
+                        </div>
+                      )}
+                      {score.weakAreas?.length > 0 && (
+                        <div>
+                          <span style={{ fontSize:9, fontWeight:700, color:'#F2C063', letterSpacing:'0.1em', display:'block', marginBottom:4 }}>↑ ÁREAS DE MEJORA</span>
+                          {score.weakAreas.slice(0,2).map((a:string,i:number)=>(
+                            <div key={i} style={{ fontSize:10, color:'#9CA3AF', padding:'4px 8px', background:'rgba(242,192,99,0.06)', border:'1px solid rgba(242,192,99,0.15)', borderRadius:6, marginBottom:4 }}>{a}</div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Top 3 alertas críticas */}
+              {topAlerts.length > 0 && (
+                <div style={{...S.card, marginBottom:10}}>
+                  <span style={S.lbl}>🔴 TOP ALERTAS CRÍTICAS DE ESTA SEMANA</span>
+                  <div style={{ display:'flex', flexDirection:'column', gap:8, marginTop:8 }}>
+                    {topAlerts.map((a:any,i:number)=>(
+                      <div key={i} style={{ display:'flex', gap:10, padding:'10px 12px', background:'rgba(255,107,107,0.05)', border:'1px solid rgba(255,107,107,0.15)', borderRadius:10 }}>
+                        <span style={{ fontSize:18, flexShrink:0 }}>{a.icon || '⚠️'}</span>
+                        <div style={{ flex:1, minWidth:0 }}>
+                          <div style={{ fontSize:12, fontWeight:700, color:'#F0F2FF', marginBottom:2 }}>{a.title}</div>
+                          <div style={{ fontSize:10, color:'#9CA3AF', lineHeight:1.4, marginBottom:4 }}>{a.description}</div>
+                          {a.action && <div style={{ fontSize:10, color:'#FF6B6B', fontWeight:700 }}>💡 {a.action}</div>}
+                          {a.detected && <div style={{ fontSize:9, color:'#5A627A', marginTop:3 }}>📅 {a.detected}</div>}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Top 2 recomendaciones */}
+              {topRecs.length > 0 && (
+                <div style={{...S.card, marginBottom:0}}>
+                  <span style={S.lbl}>🎯 RECOMENDACIONES PRIORITARIAS ESTA SEMANA</span>
+                  <div style={{ display:'flex', flexDirection:'column', gap:8, marginTop:8 }}>
+                    {topRecs.map((r:any,i:number)=>(
+                      <div key={i} style={{ padding:'12px 14px', background:'rgba(139,123,255,0.05)', border:'1px solid rgba(139,123,255,0.15)', borderRadius:10 }}>
+                        <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start', gap:8, marginBottom:6 }}>
+                          <div style={{ fontSize:12, fontWeight:800, color:'#F0F2FF', flex:1 }}>{r.title}</div>
+                          <div style={{ display:'flex', gap:4, flexShrink:0 }}>
+                            {r.difficulty && <span style={{ fontSize:9, fontWeight:700, padding:'2px 6px', borderRadius:10, background: r.difficulty==='FÁCIL' ? 'rgba(110,231,164,0.1)' : r.difficulty==='MEDIO' ? 'rgba(242,192,99,0.1)' : 'rgba(255,107,107,0.1)', color: r.difficulty==='FÁCIL' ? '#6EE7A4' : r.difficulty==='MEDIO' ? '#F2C063' : '#FF6B6B' }}>{r.difficulty}</span>}
+                            {r.costRequired && <span style={{ fontSize:9, fontWeight:700, padding:'2px 6px', borderRadius:10, background:'rgba(255,255,255,0.05)', color:'#9CA3AF' }}>{r.costRequired}</span>}
+                          </div>
+                        </div>
+                        <div style={{ fontSize:10, color:'#9CA3AF', lineHeight:1.5, marginBottom:6 }}>{r.description}</div>
+                        <div style={{ display:'flex', gap:10, flexWrap:'wrap' }}>
+                          {r.impact && <span style={{ fontSize:10, color:'#6EE7A4', fontWeight:600 }}>📈 {r.impact}</span>}
+                          {r.deadline && <span style={{ fontSize:10, color:'#8B7BFF', fontWeight:600 }}>⏱ {r.deadline}</span>}
+                          {r.owner && <span style={{ fontSize:10, color:'#5A627A' }}>👤 {r.owner}</span>}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          )
+        })()}
+
+        {/* ZONA 7.7 — GRÁFICA HISTÓRICA DE MÉTRICAS */}
+        {dashData?.reports && dashData.reports.filter((r:any) => r.status === 'COMPLETED' && r.sectionsJson).length >= 2 && (() => {
+          const completedReports = dashData.reports
+            .filter((r:any) => r.status === 'COMPLETED' && r.sectionsJson)
+            .slice(0, 10)
+            .reverse()
+          const dataPoints = completedReports.map((r:any) => {
+            const sj = typeof r.sectionsJson === 'string' ? JSON.parse(r.sectionsJson) : r.sectionsJson
+            return {
+              date: new Date(r.createdAt).toLocaleDateString('es-MX',{day:'2-digit',month:'short'}),
+              pressure: sj?.competitivePressure || 0,
+              opportunity: sj?.opportunityScore || 0,
+              risk: sj?.marketRisk || 0,
+              score: sj?.clientScore?.overall || null,
+            }
+          })
+          const maxVal = 100
+          const chartW = 600
+          const chartH = 120
+          const padL = 32, padR = 16, padT = 10, padB = 24
+          const innerW = chartW - padL - padR
+          const innerH = chartH - padT - padB
+          const n = dataPoints.length
+          const xPos = (i:number) => padL + (i / (n-1)) * innerW
+          const yPos = (v:number) => padT + innerH - (v / maxVal) * innerH
+          const makePath = (key:'pressure'|'opportunity'|'risk'|'score') => {
+            const pts = dataPoints.map((d:any,i:number) => {
+              const v = d[key]
+              if (v === null || v === undefined) return null
+              return `${xPos(i)},${yPos(v as number)}`
+            }).filter(Boolean)
+            if (pts.length < 2) return ''
+            return 'M ' + pts.join(' L ')
+          }
+          return (
+            <div style={{...S.card, marginBottom:14}}>
+              <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:12 }}>
+                <span style={S.lbl}>📊 EVOLUCIÓN HISTÓRICA DE MÉTRICAS</span>
+                <div style={{ display:'flex', gap:12 }}>
+                  {[{label:'Presión',color:'#8B7BFF'},{label:'Oportunidad',color:'#6EE7A4'},{label:'Riesgo',color:'#FF6B6B'},{label:'Score',color:'#F2C063'}].map((l,i)=>(
+                    <div key={i} style={{ display:'flex', alignItems:'center', gap:4 }}>
+                      <div style={{ width:12, height:2, background:l.color, borderRadius:1 }}/>
+                      <span style={{ fontSize:9, color:'#5A627A', fontWeight:600 }}>{l.label}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <div style={{ overflowX:'auto' }}>
+                <svg width="100%" viewBox={`0 0 ${chartW} ${chartH}`} style={{ minWidth:300 }}>
+                  {/* Grid lines */}
+                  {[0,25,50,75,100].map(v=>(
+                    <g key={v}>
+                      <line x1={padL} y1={yPos(v)} x2={chartW-padR} y2={yPos(v)} stroke="rgba(255,255,255,0.05)" strokeWidth="1"/>
+                      <text x={padL-4} y={yPos(v)+3} fill="#5A627A" fontSize="8" textAnchor="end">{v}</text>
+                    </g>
+                  ))}
+                  {/* Líneas de datos */}
+                  {makePath('pressure') && <path d={makePath('pressure')} fill="none" stroke="#8B7BFF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>}
+                  {makePath('opportunity') && <path d={makePath('opportunity')} fill="none" stroke="#6EE7A4" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>}
+                  {makePath('risk') && <path d={makePath('risk')} fill="none" stroke="#FF6B6B" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>}
+                  {makePath('score') && <path d={makePath('score')} fill="none" stroke="#F2C063" strokeWidth="1.5" strokeDasharray="4,3" strokeLinecap="round"/>}
+                  {/* Puntos y etiquetas de fecha */}
+                  {dataPoints.map((d:any,i:number)=>(
+                    <g key={i}>
+                      {d.pressure > 0 && <circle cx={xPos(i)} cy={yPos(d.pressure)} r="3" fill="#8B7BFF"/>}
+                      {d.opportunity > 0 && <circle cx={xPos(i)} cy={yPos(d.opportunity)} r="3" fill="#6EE7A4"/>}
+                      {d.risk > 0 && <circle cx={xPos(i)} cy={yPos(d.risk)} r="3" fill="#FF6B6B"/>}
+                      {d.score && <circle cx={xPos(i)} cy={yPos(d.score)} r="2.5" fill="#F2C063"/>}
+                      <text x={xPos(i)} y={chartH-4} fill="#5A627A" fontSize="8" textAnchor="middle">{d.date}</text>
+                    </g>
+                  ))}
+                </svg>
+              </div>
+              <div style={{ fontSize:10, color:'#5A627A', marginTop:4, textAlign:'center' }}>
+                Basado en {dataPoints.length} reportes generados
+              </div>
+            </div>
+          )
+        })()}
+
         {/* ZONA 8 — MOTORES IA */}
         <div style={{ border:'1px solid rgba(255,255,255,0.07)', borderRadius:16, padding:'18px 20px', marginBottom:14 }}>
           <div style={{ display:'flex', alignItems:'center', gap:8, marginBottom:14 }}>
