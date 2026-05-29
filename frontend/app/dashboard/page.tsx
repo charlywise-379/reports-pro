@@ -11,6 +11,7 @@ const S: Record<string, React.CSSProperties> = {
   muted:{ color:'#5A627A', fontSize:11 } as React.CSSProperties,
   row:  { display:'flex', alignItems:'center', gap:10, padding:'7px 0', borderBottom:'1px solid rgba(255,255,255,0.05)' } as React.CSSProperties,
 }
+// Nota: S usa valores base. Los colores dinámicos van via T en el JSX.
 
 const BarFill = ({ pct, color }: { pct: number; color: string }) => (
   <div style={{ height:'100%', width:`${pct}%`, background:color, borderRadius:3 }} />
@@ -65,6 +66,32 @@ export default function DashboardPage() {
   const [nextReportInfo, setNextReportInfo] = useState('')
   // Bug #4: Polling más rápido durante generación
   const [pollingActive, setPollingActive] = useState(false)
+  const [isDark, setIsDark] = useState(true)
+  useEffect(() => {
+    const saved = localStorage.getItem('theme')
+    if (saved) setIsDark(saved === 'dark')
+  }, [])
+  const toggleTheme = () => {
+    const next = !isDark
+    setIsDark(next)
+    localStorage.setItem('theme', next ? 'dark' : 'light')
+  }
+  // Paleta de colores según tema
+  const T = isDark ? {
+    bg: '#0D0F1A', bgCard: 'rgba(255,255,255,0.03)', bgCard2: 'rgba(255,255,255,0.05)',
+    border: 'rgba(255,255,255,0.07)', border2: 'rgba(255,255,255,0.1)',
+    text: '#F0F2FF', textMuted: '#5A627A', textSub: '#9CA3AF',
+    navBg: '#0D0F1A', navBorder: 'rgba(255,255,255,0.06)',
+    lbl: '#5A627A', barBg: 'rgba(255,255,255,0.06)',
+    modalBg: '#1A1730', inputBg: 'rgba(255,255,255,0.04)',
+  } : {
+    bg: '#F4F5F7', bgCard: '#FFFFFF', bgCard2: '#F8F9FB',
+    border: '#E5E7EB', border2: '#D1D5DB',
+    text: '#111827', textMuted: '#6B7280', textSub: '#9CA3AF',
+    navBg: '#FFFFFF', navBorder: '#E5E7EB',
+    lbl: '#6B7280', barBg: '#E5E7EB',
+    modalBg: '#FFFFFF', inputBg: '#F9FAFB',
+  }
   const isMobile = useIsMobile()
   const BACKEND = process.env.NEXT_PUBLIC_BACKEND_URL || 'https://reports-pro-production.up.railway.app'
 
@@ -338,15 +365,15 @@ export default function DashboardPage() {
   )
 
   return (
-    <main style={{ minHeight:'100vh', background:'#0D0F1A', color:'#F0F2FF', fontFamily:'"Plus Jakarta Sans",system-ui,sans-serif', overflowX:'hidden' }}>
+    <main style={{ minHeight:'100vh', background:T.bg, color:T.text, fontFamily:'"Plus Jakarta Sans",system-ui,sans-serif', overflowX:'hidden', transition:'background 0.2s, color 0.2s' }}>
       <style>{`*{box-sizing:border-box;margin:0;padding:0} @keyframes spin{to{transform:rotate(360deg)}} button:active{opacity:0.7!important;transform:scale(0.97);transition:opacity 0.1s,transform 0.1s} a:active{opacity:0.7!important;transform:scale(0.97)}`}</style>
 
       {/* NAVBAR */}
-      <nav style={{ borderBottom:'1px solid rgba(255,255,255,0.06)', background:'#0D0F1A', position:'sticky', top:0, zIndex:50, padding: isMobile ? '10px 16px' : '0 28px', height: isMobile ? 'auto' : 56, display:'flex', alignItems:'center', justifyContent:'space-between', flexWrap: isMobile ? 'wrap' : 'nowrap', gap: isMobile ? 8 : 0 }}>
+      <nav style={{ borderBottom:`1px solid ${T.navBorder}`, background:T.navBg, position:'sticky', top:0, zIndex:50, padding: isMobile ? '10px 16px' : '0 28px', height: isMobile ? 'auto' : 56, display:'flex', alignItems:'center', justifyContent:'space-between', flexWrap: isMobile ? 'wrap' : 'nowrap', gap: isMobile ? 8 : 0 }}>
         <div style={{ display:'flex', alignItems:'center', gap:10 }}>
           <div style={{ width:34, height:34, borderRadius:10, background:'linear-gradient(135deg,#8B7BFF,#5DD4D4)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:11, fontWeight:900, color:'#0D0F1A', flexShrink:0 }}>OM</div>
           <div>
-            <div style={{ fontSize:13, fontWeight:800, color:'#F0F2FF' }}>Omni Reports · AI Automation</div>
+            <div style={{ fontSize:13, fontWeight:800, color:T.text }}>Omni Reports · AI Automation</div>
             <div style={{ fontSize:10, color:'#5A627A' }}>Inteligencia Competitiva · AI</div>
           </div>
         </div>
@@ -356,7 +383,10 @@ export default function DashboardPage() {
             <span style={{ fontSize:10, fontWeight:700, letterSpacing:'0.08em', color:'#6EE7A4' }}>SISTEMA ACTIVO</span>
           </div>
           {!isMobile && <span style={{ fontSize:12, color:'#5A627A' }}>{user?.email}</span>}
-          <button onClick={handleLogout} style={{ fontSize:11, color:'#5A627A', background:'none', border:'none', cursor:'pointer', fontWeight:600, marginTop: isMobile ? 4 : 0 }}>Salir →</button>
+          <button onClick={toggleTheme} style={{ fontSize:18, background:'none', border:'none', cursor:'pointer', padding:'4px 6px', borderRadius:8, lineHeight:1 }} title={isDark ? 'Modo claro' : 'Modo oscuro'}>
+            {isDark ? '☀️' : '🌙'}
+          </button>
+          <button onClick={handleLogout} style={{ fontSize:11, color:T.textMuted, background:'none', border:'none', cursor:'pointer', fontWeight:600, marginTop: isMobile ? 4 : 0 }}>Salir →</button>
         </div>
       </nav>
 
