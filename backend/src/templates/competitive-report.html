@@ -238,7 +238,7 @@
   <div class="title-band"><div><span class="title-bar"></span><span class="title-text">Competidores con más actividad (monitoreo)</span></div><div class="title-sub">Ordenados por amenaza real · Semana {{weekNumber}} · {{year}}</div></div>
   <div class="body-wrap">
     <!-- Tabla de competidores principales -->
-    <table style="margin-bottom:10px">
+    <table style="margin-bottom:8px;font-size:8px">
       <thead><tr style="background:#F4F2FF">
         <th style="border-radius:8px 0 0 8px;width:24px">#</th>
         <th>Empresa</th><th>Categoría</th><th>Amenaza</th><th>Crecimiento</th><th>Movimiento reciente</th>
@@ -262,7 +262,7 @@
             </div>
           </td>
           <td style="white-space:nowrap"><span style="color:{{this.growthColor}};font-weight:700">{{this.growth}}</span></td>
-          <td style="font-size:9px;color:#555;max-width:140px">{{this.recentMove}}</td>
+          <td style="font-size:8px;color:#555;max-width:130px;overflow:hidden"><div style="display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;line-height:1.3">{{this.recentMove}}</div></td>
           <td><span style="background:{{this.riskBg}};color:{{this.riskColor}};font-size:8px;font-weight:700;padding:2px 7px;border-radius:20px;white-space:nowrap;border:1px solid {{this.riskBorder}}">{{this.riskLabel}}</span></td>
         </tr>
         {{/each}}
@@ -373,14 +373,17 @@
         {{#each changesCol1}}
         <div style="display:flex;gap:0;border-radius:8px;overflow:hidden;border:1.5px solid {{this.borderColor}}">
           <div style="width:3px;background:{{this.color}};flex-shrink:0"></div>
-          <div style="padding:7px 10px;flex:1">
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px">
-              <div style="display:flex;align-items:center;gap:5px"><span style="font-size:13px">{{this.icon}}</span><span style="font-size:7px;font-weight:700;color:{{this.color}};letter-spacing:.08em">{{this.category}}</span></div>
-              <span style="font-size:7px;color:#aaa;font-family:monospace">{{this.date}}</span>
+          <div style="padding:5px 8px;flex:1">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:2px">
+              <div style="display:flex;align-items:center;gap:4px">
+                <div style="width:4px;height:4px;border-radius:50%;background:{{this.color}}"></div>
+                <span style="font-size:7px;font-weight:700;color:{{this.color}}">{{this.competitor}}</span>
+                <span style="font-size:6px;font-weight:700;color:{{this.color}};letter-spacing:.06em;opacity:0.8">· {{this.category}}</span>
+              </div>
+              <span style="font-size:6px;color:#aaa;font-family:monospace">{{this.date}}</span>
             </div>
-            <div style="font-size:10px;font-weight:700;color:#1A1730;margin-bottom:2px">{{this.title}}</div>
-            <div style="font-size:8px;color:#555;line-height:1.4">{{this.description}}</div>
-            <div style="margin-top:4px;display:flex;align-items:center;gap:4px"><div style="width:5px;height:5px;border-radius:50%;background:{{this.color}}"></div><span style="font-size:8px;font-weight:600;color:{{this.color}}">{{this.competitor}}</span></div>
+            <div style="font-size:9px;font-weight:700;color:#1A1730;margin-bottom:1px;line-height:1.2">{{this.title}}</div>
+            <div style="font-size:7.5px;color:#555;line-height:1.3;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">{{this.description}}</div>
           </div>
         </div>
         {{/each}}
@@ -390,14 +393,17 @@
         {{#each changesCol2}}
         <div style="display:flex;gap:0;border-radius:8px;overflow:hidden;border:1.5px solid {{this.borderColor}}">
           <div style="width:3px;background:{{this.color}};flex-shrink:0"></div>
-          <div style="padding:7px 10px;flex:1">
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px">
-              <div style="display:flex;align-items:center;gap:5px"><span style="font-size:13px">{{this.icon}}</span><span style="font-size:7px;font-weight:700;color:{{this.color}};letter-spacing:.08em">{{this.category}}</span></div>
-              <span style="font-size:7px;color:#aaa;font-family:monospace">{{this.date}}</span>
+          <div style="padding:5px 8px;flex:1">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:2px">
+              <div style="display:flex;align-items:center;gap:4px">
+                <div style="width:4px;height:4px;border-radius:50%;background:{{this.color}}"></div>
+                <span style="font-size:7px;font-weight:700;color:{{this.color}}">{{this.competitor}}</span>
+                <span style="font-size:6px;font-weight:700;color:{{this.color}};letter-spacing:.06em;opacity:0.8">· {{this.category}}</span>
+              </div>
+              <span style="font-size:6px;color:#aaa;font-family:monospace">{{this.date}}</span>
             </div>
-            <div style="font-size:10px;font-weight:700;color:#1A1730;margin-bottom:2px">{{this.title}}</div>
-            <div style="font-size:8px;color:#555;line-height:1.4">{{this.description}}</div>
-            <div style="margin-top:4px;display:flex;align-items:center;gap:4px"><div style="width:5px;height:5px;border-radius:50%;background:{{this.color}}"></div><span style="font-size:8px;font-weight:600;color:{{this.color}}">{{this.competitor}}</span></div>
+            <div style="font-size:9px;font-weight:700;color:#1A1730;margin-bottom:1px;line-height:1.2">{{this.title}}</div>
+            <div style="font-size:7.5px;color:#555;line-height:1.3;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">{{this.description}}</div>
           </div>
         </div>
         {{/each}}
@@ -430,12 +436,12 @@
         <div style="background:#534AB7;padding:9px 12px;display:flex;align-items:center;gap:6px"><span style="font-size:14px">💰</span><div style="font-size:7px;font-weight:700;letter-spacing:.1em;color:#fff;text-transform:uppercase">Tendencias de precios</div></div>
         <div style="padding:10px">
           {{#each priceTrends}}
-          <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 7px;background:#F8F7FF;border-radius:6px;margin-bottom:4px">
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:4px 6px;background:#F8F7FF;border-radius:5px;margin-bottom:3px">
             <span style="font-size:9px;color:#444;font-weight:600">{{this.name}}</span>
             <span style="font-size:10px;font-weight:900;color:{{this.color}}">{{this.change}}</span>
           </div>
           {{/each}}
-          <div style="margin-top:6px;padding:6px;background:#FCEBEB;border-radius:6px;font-size:9px;color:#A32D2D;font-weight:600">{{priceTrendAlert}}</div>
+          <div style="margin-top:4px;padding:4px 6px;background:#FCEBEB;border-radius:5px;font-size:7.5px;color:#A32D2D;font-weight:600;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;line-height:1.3">{{priceTrendAlert}}</div>
         </div>
       </div>
       <!-- Mensajes dominantes -->
@@ -633,8 +639,8 @@
   <div class="title-band"><div><span class="title-bar"></span><span class="title-text">Benchmark Estratégico</span></div><div class="title-sub">Tu empresa vs el mercado · 8 factores clave · Semana {{weekNumber}}</div></div>
   <div class="body-wrap">
     <!-- Tabla benchmark con datos reales de Claude -->
-    <div style="border:1.5px solid #EEEDFE;border-radius:12px;overflow:hidden;margin-bottom:14px">
-      <table>
+    <div style="border:1.5px solid #EEEDFE;border-radius:12px;overflow:hidden;margin-bottom:8px">
+      <table style="font-size:8px">
         <thead><tr style="background:#534AB7">
           <th style="color:rgba(255,255,255,0.7);font-size:9px">FACTOR</th>
           <th style="color:#fff;text-align:center;font-size:9px">{{companyName}}</th>
@@ -693,7 +699,7 @@
   <div class="body-wrap">
     <div style="font-size:7px;font-weight:700;letter-spacing:.15em;color:#E24B4A;text-transform:uppercase;margin-bottom:8px">🔴 Prioridad alta — ejecutar esta semana</div>
     {{#each highPriorityRecs}}
-    <div style="border:1.5px solid #F7C1C1;border-radius:10px;overflow:hidden;margin-bottom:7px">
+    <div style="border:1.5px solid #F7C1C1;border-radius:10px;overflow:hidden;margin-bottom:5px">
       <div style="background:#E24B4A;padding:7px 12px;display:flex;justify-content:space-between;align-items:center">
         <div style="display:flex;align-items:center;gap:7px">
           <span style="background:rgba(255,255,255,0.2);color:#fff;font-size:9px;font-weight:900;width:18px;height:18px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0">{{this.number}}</span>
@@ -705,9 +711,9 @@
           <span style="background:rgba(255,255,255,0.25);color:#fff;font-size:7px;font-weight:700;padding:2px 6px;border-radius:5px">⏱ {{this.deadline}}</span>
         </div>
       </div>
-      <div style="padding:9px 12px;display:grid;grid-template-columns:1fr auto;gap:9px;align-items:center">
-        <div style="font-size:9px;color:#444;line-height:1.6">{{this.description}}</div>
-        <div style="text-align:center;padding:7px 10px;background:#FAEEDA;border-radius:7px;flex-shrink:0;min-width:90px">
+      <div style="padding:6px 10px;display:grid;grid-template-columns:1fr auto;gap:8px;align-items:start">
+        <div style="font-size:8.5px;color:#444;line-height:1.4;display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden">{{this.description}}</div>
+        <div style="text-align:center;padding:5px 8px;background:#FAEEDA;border-radius:7px;flex-shrink:0;min-width:90px">
           <div style="font-size:7px;color:#854F0B;font-weight:700;margin-bottom:1px">IMPACTO EST.</div>
           <div style="font-size:10px;font-weight:900;color:#BA7517;line-height:1.3">{{this.impact}}</div>
         </div>
@@ -715,8 +721,8 @@
     </div>
     {{/each}}
 
-    <div style="font-size:7px;font-weight:700;letter-spacing:.15em;color:#BA7517;text-transform:uppercase;margin-top:10px;margin-bottom:7px">🟡 Prioridad media — ejecutar en 2 semanas</div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:10px">
+    <div style="font-size:7px;font-weight:700;letter-spacing:.15em;color:#BA7517;text-transform:uppercase;margin-top:6px;margin-bottom:5px">🟡 Prioridad media — ejecutar en 2 semanas</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-bottom:6px">
       {{#each mediumPriorityRecs}}
       <div style="border:1.5px solid #FAC775;border-radius:9px;overflow:hidden">
         <div style="background:#BA7517;padding:6px 10px;display:flex;align-items:center;justify-content:space-between">
@@ -734,7 +740,7 @@
       {{/each}}
     </div>
 
-    <div style="font-size:7px;font-weight:700;letter-spacing:.15em;color:#1D9E75;text-transform:uppercase;margin-bottom:7px">🟢 Prioridad baja — planificar próximo mes</div>
+    <div style="font-size:7px;font-weight:700;letter-spacing:.15em;color:#1D9E75;text-transform:uppercase;margin-bottom:5px">🟢 Prioridad baja — planificar próximo mes</div>
     <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px">
       {{#each lowPriorityRecs}}
       <div style="border:1.5px solid #C0DD97;border-radius:8px;padding:9px 11px">
@@ -829,30 +835,30 @@
     </div>
 
     <!-- Calendario de monitoreo -->
-    <div style="font-size:7px;font-weight:700;letter-spacing:.15em;color:#8B7BFF;text-transform:uppercase;margin-bottom:8px">Calendario de monitoreo · {{nextMonth}}</div>
+    <div style="font-size:7px;font-weight:700;letter-spacing:.15em;color:#8B7BFF;text-transform:uppercase;margin-bottom:5px">Calendario de monitoreo · {{nextMonth}}</div>
     {{weeklyPlansHTML}}
 
     <!-- Señales clave -->
-    <div style="background:#FAFAFA;border:1.5px solid #EEEDFE;border-radius:10px;padding:11px 14px;margin-top:10px">
+    <div style="background:#FAFAFA;border:1.5px solid #EEEDFE;border-radius:10px;padding:8px 12px;margin-top:6px">
       <div style="font-size:7px;font-weight:700;letter-spacing:.15em;color:#8B7BFF;text-transform:uppercase;margin-bottom:8px">📡 Señales clave a vigilar este mes</div>
       <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px">
         <div style="background:#fff;border-radius:7px;padding:9px;border:1px solid #F0EEF8">
           <div style="font-size:7px;font-weight:700;color:#E24B4A;margin-bottom:4px;text-transform:uppercase">🚨 CRÍTICO — Alertar inmediato</div>
-          {{#each criticalSignals}}<div style="font-size:9px;color:#444;line-height:1.6;padding:2px 0;border-bottom:1px solid #F5F3FF">{{this}}</div>{{/each}}
+          {{#each criticalSignals}}<div style="font-size:8px;color:#444;line-height:1.4;padding:1px 0;border-bottom:1px solid #F5F3FF">{{this}}</div>{{/each}}
         </div>
         <div style="background:#fff;border-radius:7px;padding:9px;border:1px solid #F0EEF8">
           <div style="font-size:7px;font-weight:700;color:#BA7517;margin-bottom:4px;text-transform:uppercase">⚠ IMPORTANTE — Revisar semanal</div>
-          {{#each importantSignals}}<div style="font-size:9px;color:#444;line-height:1.6;padding:2px 0;border-bottom:1px solid #F5F3FF">{{this}}</div>{{/each}}
+          {{#each importantSignals}}<div style="font-size:8px;color:#444;line-height:1.4;padding:1px 0;border-bottom:1px solid #F5F3FF">{{this}}</div>{{/each}}
         </div>
         <div style="background:#fff;border-radius:7px;padding:9px;border:1px solid #F0EEF8">
           <div style="font-size:7px;font-weight:700;color:#534AB7;margin-bottom:4px;text-transform:uppercase">📊 INFORMATIVO — Seguimiento</div>
-          {{#each infoSignals}}<div style="font-size:9px;color:#444;line-height:1.6;padding:2px 0;border-bottom:1px solid #F5F3FF">{{this}}</div>{{/each}}
+          {{#each infoSignals}}<div style="font-size:8px;color:#444;line-height:1.4;padding:1px 0;border-bottom:1px solid #F5F3FF">{{this}}</div>{{/each}}
         </div>
       </div>
     </div>
 
     <!-- Footer de próxima entrega -->
-    <div style="background:#1A1730;border-radius:10px;padding:11px 16px;display:flex;justify-content:space-between;align-items:center;margin-top:8px">
+    <div style="background:#1A1730;border-radius:10px;padding:8px 14px;display:flex;justify-content:space-between;align-items:center;margin-top:5px">
       <div>
         <div style="font-size:7px;font-weight:700;color:#8B7BFF;letter-spacing:.1em;text-transform:uppercase;margin-bottom:3px">Próxima entrega · Edición {{nextEdition}}</div>
         <div style="font-size:12px;font-weight:800;color:#F0F2FF">Inteligencia {{frequency}} · {{companyName}}</div>
