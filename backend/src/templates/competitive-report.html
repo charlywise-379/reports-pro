@@ -366,56 +366,79 @@
 <div class="page">
   <div class="hdr"><div class="hdr-logo"><div class="hdr-badge">PR</div><div><div class="hdr-name">PRO Reports</div><div class="hdr-sub">INTELIGENCIA COMPETITIVA</div></div></div><div class="hdr-right"><div class="hdr-meta">{{companyName}} · Agencia Marketing Digital · Sem {{weekNumber}} · {{year}}</div><div class="hdr-pag">Pág. 5 de 11</div></div></div>
   <div class="title-band"><div><span class="title-bar"></span><span class="title-text">Cambios Detectados Esta Semana</span></div><div class="title-sub">{{totalChanges}} movimientos registrados · Semana {{weekNumber}} · {{periodStart}} - {{periodEnd}}</div></div>
-  <div class="body-wrap" style="padding-bottom:44px">
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-      <!-- Columna 1: hasta 6 cajas -->
+  <div class="body-wrap" style="display:flex;flex-direction:column;gap:8px;padding-bottom:44px">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
       <div style="display:flex;flex-direction:column;gap:6px">
         {{#each changesCol1}}
-        <div style="display:flex;gap:0;border-radius:8px;overflow:hidden;border:1.5px solid {{this.borderColor}}">
-          <div style="width:3px;background:{{this.color}};flex-shrink:0"></div>
-          <div style="padding:7px 10px;flex:1">
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:2px">
-              <div style="display:flex;align-items:center;gap:4px">
-                <div style="width:4px;height:4px;border-radius:50%;background:{{this.color}}"></div>
-                <span style="font-size:7px;font-weight:700;color:{{this.color}}">{{this.competitor}}</span>
-                <span style="font-size:6px;font-weight:700;color:{{this.color}};letter-spacing:.06em;opacity:0.8">· {{this.category}}</span>
+        <div style="display:flex;gap:0;border-radius:9px;overflow:hidden;border:1.5px solid {{this.borderColor}}">
+          <div style="width:4px;background:{{this.color}};flex-shrink:0"></div>
+          <div style="padding:9px 11px;flex:1">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px">
+              <div style="display:flex;align-items:center;gap:5px">
+                <span style="font-size:10px">{{this.icon}}</span>
+                <span style="font-size:7px;font-weight:800;color:{{this.color}};letter-spacing:.06em">{{this.category}}</span>
               </div>
-              <span style="font-size:6px;color:#aaa;font-family:monospace">{{this.date}}</span>
+              <span style="font-size:7px;color:#aaa;font-family:monospace">{{this.date}}</span>
             </div>
-            <div style="font-size:9px;font-weight:700;color:#1A1730;margin-bottom:1px;line-height:1.2">{{this.title}}</div>
-            <div style="font-size:7.5px;color:#555;line-height:1.3;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden">{{this.description}}</div>
+            <div style="font-size:9.5px;font-weight:800;color:#1A1730;margin-bottom:3px;line-height:1.3">{{this.title}}</div>
+            <div style="font-size:8px;color:#555;line-height:1.45">{{this.description}}</div>
+            <div style="margin-top:5px;display:flex;align-items:center;gap:4px">
+              <div style="width:5px;height:5px;border-radius:50%;background:{{this.color}}"></div>
+              <span style="font-size:7.5px;font-weight:700;color:{{this.color}}">{{this.competitor}}</span>
+            </div>
           </div>
         </div>
         {{/each}}
       </div>
-      <!-- Columna 2: hasta 5 cajas + resumen -->
       <div style="display:flex;flex-direction:column;gap:6px">
         {{#each changesCol2}}
-        <div style="display:flex;gap:0;border-radius:8px;overflow:hidden;border:1.5px solid {{this.borderColor}}">
-          <div style="width:3px;background:{{this.color}};flex-shrink:0"></div>
-          <div style="padding:5px 8px;flex:1">
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:2px">
-              <div style="display:flex;align-items:center;gap:4px">
-                <div style="width:4px;height:4px;border-radius:50%;background:{{this.color}}"></div>
-                <span style="font-size:7px;font-weight:700;color:{{this.color}}">{{this.competitor}}</span>
-                <span style="font-size:6px;font-weight:700;color:{{this.color}};letter-spacing:.06em;opacity:0.8">· {{this.category}}</span>
+        <div style="display:flex;gap:0;border-radius:9px;overflow:hidden;border:1.5px solid {{this.borderColor}}">
+          <div style="width:4px;background:{{this.color}};flex-shrink:0"></div>
+          <div style="padding:9px 11px;flex:1">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px">
+              <div style="display:flex;align-items:center;gap:5px">
+                <span style="font-size:10px">{{this.icon}}</span>
+                <span style="font-size:7px;font-weight:800;color:{{this.color}};letter-spacing:.06em">{{this.category}}</span>
               </div>
-              <span style="font-size:6px;color:#aaa;font-family:monospace">{{this.date}}</span>
+              <span style="font-size:7px;color:#aaa;font-family:monospace">{{this.date}}</span>
             </div>
-            <div style="font-size:9px;font-weight:700;color:#1A1730;margin-bottom:1px;line-height:1.2">{{this.title}}</div>
-            <div style="font-size:7.5px;color:#555;line-height:1.3;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">{{this.description}}</div>
+            <div style="font-size:9.5px;font-weight:800;color:#1A1730;margin-bottom:3px;line-height:1.3">{{this.title}}</div>
+            <div style="font-size:8px;color:#555;line-height:1.45">{{this.description}}</div>
+            <div style="margin-top:5px;display:flex;align-items:center;gap:4px">
+              <div style="width:5px;height:5px;border-radius:50%;background:{{this.color}}"></div>
+              <span style="font-size:7.5px;font-weight:700;color:{{this.color}}">{{this.competitor}}</span>
+            </div>
           </div>
         </div>
         {{/each}}
-        <!-- Resumen semanal horizontal -->
-        <div style="background:#1A1730;border-radius:8px;padding:12px 16px;margin-top:auto">
-          <div style="font-size:7px;font-weight:700;letter-spacing:.1em;color:#8B7BFF;margin-bottom:8px">RESUMEN SEMANAL</div>
-          <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:8px">
-            <div style="text-align:center;padding:10px 8px;background:rgba(255,255,255,0.05);border-radius:8px"><div style="font-size:26px;font-weight:900;color:#FF6B6B;line-height:1">{{criticalMovements}}</div><div style="font-size:8px;color:#5A627A;margin-top:3px">Críticos</div></div>
-            <div style="text-align:center;padding:10px 8px;background:rgba(255,255,255,0.05);border-radius:8px"><div style="font-size:26px;font-weight:900;color:#F2C063;line-height:1">{{minorMovements}}</div><div style="font-size:8px;color:#5A627A;margin-top:3px">Medios</div></div>
-            <div style="text-align:center;padding:10px 8px;background:rgba(255,255,255,0.05);border-radius:8px"><div style="font-size:26px;font-weight:900;color:#8B7BFF;line-height:1">{{activeCompetitors}}</div><div style="font-size:8px;color:#5A627A;margin-top:3px">Competidores</div></div>
-            <div style="text-align:center;padding:10px 8px;background:rgba(255,255,255,0.05);border-radius:8px"><div style="font-size:26px;font-weight:900;color:#6EE7A4;line-height:1">↑{{signalsDelta}}%</div><div style="font-size:8px;color:#5A627A;margin-top:3px">vs anterior</div></div>
-          </div>
+      </div>
+    </div>
+    <div style="background:#1A1730;border-radius:12px;padding:14px 20px">
+      <div style="font-size:7px;font-weight:700;letter-spacing:.12em;color:#8B7BFF;text-transform:uppercase;margin-bottom:10px">📊 Resumen semanal · Semana {{weekNumber}}</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr 1fr 1fr;gap:8px">
+        <div style="text-align:center;padding:10px 6px;background:rgba(255,107,107,0.1);border:1px solid rgba(255,107,107,0.2);border-radius:10px">
+          <div style="font-size:28px;font-weight:900;color:#FF6B6B;line-height:1">{{criticalMovements}}</div>
+          <div style="font-size:7.5px;color:#9CA3AF;margin-top:4px;font-weight:600">CRÍTICOS</div>
+        </div>
+        <div style="text-align:center;padding:10px 6px;background:rgba(242,192,99,0.1);border:1px solid rgba(242,192,99,0.2);border-radius:10px">
+          <div style="font-size:28px;font-weight:900;color:#F2C063;line-height:1">{{minorMovements}}</div>
+          <div style="font-size:7.5px;color:#9CA3AF;margin-top:4px;font-weight:600">MEDIOS</div>
+        </div>
+        <div style="text-align:center;padding:10px 6px;background:rgba(139,123,255,0.1);border:1px solid rgba(139,123,255,0.2);border-radius:10px">
+          <div style="font-size:28px;font-weight:900;color:#8B7BFF;line-height:1">{{activeCompetitors}}</div>
+          <div style="font-size:7.5px;color:#9CA3AF;margin-top:4px;font-weight:600">COMPETIDORES</div>
+        </div>
+        <div style="text-align:center;padding:10px 6px;background:rgba(110,231,164,0.1);border:1px solid rgba(110,231,164,0.2);border-radius:10px">
+          <div style="font-size:28px;font-weight:900;color:#6EE7A4;line-height:1">{{totalChanges}}</div>
+          <div style="font-size:7.5px;color:#9CA3AF;margin-top:4px;font-weight:600">TOTAL CAMBIOS</div>
+        </div>
+        <div style="text-align:center;padding:10px 6px;background:rgba(93,212,212,0.1);border:1px solid rgba(93,212,212,0.2);border-radius:10px">
+          <div style="font-size:28px;font-weight:900;color:#5DD4D4;line-height:1">{{alertsCount}}</div>
+          <div style="font-size:7.5px;color:#9CA3AF;margin-top:4px;font-weight:600">ALERTAS</div>
+        </div>
+        <div style="text-align:center;padding:10px 6px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:10px">
+          <div style="font-size:28px;font-weight:900;color:#6EE7A4;line-height:1">↑{{signalsDelta}}%</div>
+          <div style="font-size:7.5px;color:#9CA3AF;margin-top:4px;font-weight:600">VS ANTERIOR</div>
         </div>
       </div>
     </div>
