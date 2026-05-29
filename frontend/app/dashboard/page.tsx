@@ -84,12 +84,12 @@ export default function DashboardPage() {
     lbl: '#5A627A', barBg: 'rgba(255,255,255,0.06)',
     modalBg: '#1A1730', inputBg: 'rgba(255,255,255,0.04)',
   } : {
-    bg: '#F0EEFF', bgCard: '#FFFFFF', bgCard2: '#EEEDFE',
+    bg: '#EEEDFE', bgCard: '#FFFFFF', bgCard2: '#F0EEFF',
     border: '#CECBF6', border2: '#AFA9EC',
     text: '#26215C', textMuted: '#7F77DD', textSub: '#534AB7',
-    navBg: '#FFFFFF', navBorder: '#CECBF6',
-    lbl: '#7F77DD', barBg: '#CECBF6',
-    modalBg: '#FFFFFF', inputBg: '#EEEDFE',
+    navBg: '#26215C', navBorder: '#3C3489',
+    lbl: '#534AB7', barBg: '#EEEDFE',
+    modalBg: '#FFFFFF', inputBg: '#F0EEFF',
   }
   const isMobile = useIsMobile()
   const BACKEND = process.env.NEXT_PUBLIC_BACKEND_URL || 'https://reports-pro-production.up.railway.app'
@@ -372,7 +372,7 @@ export default function DashboardPage() {
         <div style={{ display:'flex', alignItems:'center', gap:10 }}>
           <div style={{ width:34, height:34, borderRadius:10, background:'linear-gradient(135deg,#8B7BFF,#5DD4D4)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:11, fontWeight:900, color:'#0D0F1A', flexShrink:0 }}>OM</div>
           <div>
-            <div style={{ fontSize:13, fontWeight:800, color:T.text }}>Omni Reports · AI Automation</div>
+            <div style={{ fontSize:13, fontWeight:800, color: isDark ? T.text : '#F0F2FF' }}>Omni Reports · AI Automation</div>
             <div style={{ fontSize:10, color:T.textMuted }}>Inteligencia Competitiva · AI</div>
           </div>
         </div>
@@ -523,12 +523,12 @@ export default function DashboardPage() {
 
         {/* ZONA 7.5 — REPORTES GENERADOS */}
         {dashData?.reports?.length > 0 && (
-          <div style={{...S.card, marginBottom:14}}>
-            <span style={S.lbl}>REPORTES GENERADOS</span>
+          <div style={{...S.card, background:T.bgCard, border:`1px solid ${T.border}`, marginBottom:14, boxShadow: isDark ? 'none' : '0 1px 4px rgba(83,74,183,0.08)'}}>
+            <span style={{...S.lbl, color:T.lbl}}>REPORTES GENERADOS</span>
             <div style={{ display:'flex', flexDirection:'column', gap:6, marginTop:8 }}>
               {dashData.reports.filter((r: any) => r.status !== 'FAILED').map((r: any, i: number) => (
                 <div key={i} onClick={() => r.sectionsJson && setSelectedReport(r)}
-                  style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'8px 12px', background: selectedReport?.id === r.id ? 'rgba(139,123,255,0.1)' : 'rgba(255,255,255,0.02)', border:`1px solid ${selectedReport?.id === r.id ? 'rgba(139,123,255,0.3)' : 'rgba(255,255,255,0.06)'}`, borderRadius:10, cursor: r.sectionsJson ? 'pointer' : 'default' }}>
+                  style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'8px 12px', background: selectedReport?.id === r.id ? (isDark ? 'rgba(139,123,255,0.1)' : '#F0EEFF') : (isDark ? 'rgba(255,255,255,0.02)' : '#FFFFFF'), border:`1.5px solid ${selectedReport?.id === r.id ? (isDark ? 'rgba(139,123,255,0.3)' : '#8B7BFF') : T.border}`, boxShadow: isDark ? 'none' : '0 1px 3px rgba(83,74,183,0.06)', borderRadius:10, cursor: r.sectionsJson ? 'pointer' : 'default' }}>
                   <div style={{ display:'flex', alignItems:'center', gap:10 }}>
                     {!r.reportTitle ? (
                       <div style={{ width:14, height:14, borderRadius:'50%', border:'2px solid rgba(139,123,255,0.3)', borderTopColor:'#8B7BFF', animation:'spin 0.8s linear infinite', flexShrink:0 }} />
@@ -544,7 +544,7 @@ export default function DashboardPage() {
                     {selectedReport?.id === r.id && <span style={{ fontSize:10, color:'#8B7BFF', fontWeight:700 }}>← Viendo</span>}
                     {r.r2Key && (
                       <button onClick={e => { e.stopPropagation(); handleDownload(r.id) }}
-                        style={{ fontSize:11, fontWeight:700, color:'#8B7BFF', background:'rgba(139,123,255,0.1)', border:'1px solid rgba(139,123,255,0.2)', borderRadius:20, padding:'5px 12px', cursor:'pointer' }}>
+                        style={{ fontSize:11, fontWeight:700, color: isDark ? '#8B7BFF' : '#FFFFFF', background: isDark ? 'rgba(139,123,255,0.1)' : '#534AB7', border: isDark ? '1px solid rgba(139,123,255,0.2)' : '1.5px solid #3C3489', borderRadius:20, padding:'5px 12px', cursor:'pointer' }}>
                         ↓ PDF
                       </button>
                     )}
@@ -573,7 +573,7 @@ export default function DashboardPage() {
 
               {/* Score del cliente */}
               {score && (
-                <div style={{...S.card, marginBottom:10}}>
+                <div style={{...S.card, background:T.bgCard, border:`1px solid ${T.border}`, marginBottom:10, boxShadow: isDark ? 'none' : '0 1px 4px rgba(83,74,183,0.08)'}}>
                   <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start', flexWrap:'wrap', gap:12 }}>
                     <div style={{ flex:1, minWidth:200 }}>
                       <span style={S.lbl}>SCORE COMPETITIVO DE TU EMPRESA</span>
@@ -648,7 +648,7 @@ export default function DashboardPage() {
 
               {/* Top 2 recomendaciones */}
               {topRecs.length > 0 && (
-                <div style={{...S.card, marginBottom:0}}>
+                <div style={{...S.card, background:T.bgCard, border:`1px solid ${T.border}`, marginBottom:0, boxShadow: isDark ? 'none' : '0 1px 4px rgba(83,74,183,0.08)'}}>
                   <span style={S.lbl}>🎯 RECOMENDACIONES PRIORITARIAS ESTA SEMANA</span>
                   <div style={{ display:'flex', flexDirection:'column', gap:8, marginTop:8 }}>
                     {topRecs.map((r:any,i:number)=>(
@@ -792,7 +792,7 @@ export default function DashboardPage() {
             </div>
             {selectedReport?.r2Key && (
               <button onClick={() => handleDownload(selectedReport.id)}
-                style={{ display:'flex', alignItems:'center', gap:8, fontSize:11, fontWeight:700, color:'#0D0F1A', background:'#8B7BFF', borderRadius:20, padding:'8px 16px', border:'none', cursor:'pointer' }}>
+                style={{ display:'flex', alignItems:'center', gap:8, fontSize:11, fontWeight:700, color:'#FFFFFF', background:'#534AB7', borderRadius:20, padding:'8px 16px', border:'none', cursor:'pointer' }}>
                 <span>↓ PDF</span>
                 {isMobile && <span style={{ fontSize:10, fontWeight:600 }}>Descarga tu reporte de Inteligencia Competitiva</span>}
               </button>
@@ -806,7 +806,7 @@ export default function DashboardPage() {
             { label:'OPORTUNIDADES', value: s.opportunityScore ? `${s.opportunityScore}%` : '—', sub: s.opportunities ? `${s.opportunities.length} identificadas` : 'Sin datos', color:'#6EE7A4', pct: s.opportunityScore || 0 },
             { label:'RIESGO DE MERCADO', value: s.marketRisk ? `${s.marketRisk}%` : '—', sub: s.riskLevel || 'Sin datos', color:'#F2C063', pct: s.marketRisk || 0 },
           ].map((k,i)=>(
-            <div key={i} style={{...S.card, margin:0}}>
+            <div key={i} style={{...S.card, background:T.bgCard, border:`1px solid ${T.border}`, margin:0, boxShadow: isDark ? 'none' : '0 1px 4px rgba(83,74,183,0.08)'}}>
               <span style={S.lbl}>{k.label}</span>
               <div style={{ fontSize:26, fontWeight:900, color:k.color, lineHeight:1 }}>{k.value}</div>
               <div style={{...S.muted, marginTop:4}}>{k.sub}</div>
@@ -836,7 +836,7 @@ export default function DashboardPage() {
 
         {/* ZONA 4 — Competidores reales del setup + amenaza del reporte */}
         {setupCompetitors.length > 0 && (
-          <div style={{...S.card, margin:0, marginBottom:14}}>
+          <div style={{...S.card, background:T.bgCard, border:`1px solid ${T.border}`, margin:0, marginBottom:14, boxShadow: isDark ? 'none' : '0 1px 4px rgba(83,74,183,0.08)'}}>
             <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:12 }}>
               <span style={{ fontSize:13, fontWeight:700, color:T.text }}>Competidores monitoreados</span>
               <span style={{...S.badge, background:'rgba(255,255,255,0.05)', color:T.textMuted}}>{setupCompetitors.length} activos</span>
