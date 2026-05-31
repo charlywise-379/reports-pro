@@ -576,7 +576,7 @@ export default function DashboardPage() {
                 <div style={{...S.card, background:T.bgCard, border:`1px solid ${T.border}`, marginBottom:10, boxShadow: isDark ? 'none' : '0 1px 4px rgba(83,74,183,0.08)'}}>
                   <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start', flexWrap:'wrap', gap:12 }}>
                     <div style={{ flex:1, minWidth:200 }}>
-                      <span style={S.lbl}>SCORE COMPETITIVO DE TU EMPRESA</span>
+                      <span style={{...S.lbl, color:T.lbl}}>SCORE COMPETITIVO DE TU EMPRESA</span>
                       <div style={{ display:'flex', alignItems:'baseline', gap:8, marginBottom:8 }}>
                         <span style={{ fontSize:40, fontWeight:900, color: score.overall >= 70 ? '#6EE7A4' : score.overall >= 50 ? '#F2C063' : '#FF6B6B', lineHeight:1 }}>{score.overall}</span>
                         <span style={{ fontSize:13, color:T.textMuted }}>/100</span>
@@ -598,7 +598,7 @@ export default function DashboardPage() {
                               <span style={{ fontSize:9, color:T.textMuted, fontWeight:700 }}>{d.label.toUpperCase()}</span>
                               <span style={{ fontSize:9, color:d.color, fontWeight:800 }}>{d.val || '—'}</span>
                             </div>
-                            <div style={S.bar}><BarFill pct={d.val || 0} color={d.color}/></div>
+                            <div style={{height:5, background:T.barBg, borderRadius:3, overflow:"hidden", marginTop:6}}><BarFill pct={d.val || 0} color={d.color}/></div>
                           </div>
                         ))}
                       </div>
@@ -629,7 +629,7 @@ export default function DashboardPage() {
               {/* Top 3 alertas críticas */}
               {topAlerts.length > 0 && (
                 <div style={{...S.card, marginBottom:10}}>
-                  <span style={S.lbl}>🔴 TOP ALERTAS CRÍTICAS DE ESTA SEMANA</span>
+                  <span style={{...S.lbl, color:T.lbl}}>🔴 TOP ALERTAS CRÍTICAS DE ESTA SEMANA</span>
                   <div style={{ display:'flex', flexDirection:'column', gap:8, marginTop:8 }}>
                     {topAlerts.map((a:any,i:number)=>(
                       <div key={i} style={{ display:'flex', gap:10, padding:'10px 12px', background:'rgba(255,107,107,0.05)', border:'1px solid rgba(255,107,107,0.15)', borderRadius:10 }}>
@@ -649,7 +649,7 @@ export default function DashboardPage() {
               {/* Top 2 recomendaciones */}
               {topRecs.length > 0 && (
                 <div style={{...S.card, background:T.bgCard, border:`1px solid ${T.border}`, marginBottom:0, boxShadow: isDark ? 'none' : '0 1px 4px rgba(83,74,183,0.08)'}}>
-                  <span style={S.lbl}>🎯 RECOMENDACIONES PRIORITARIAS ESTA SEMANA</span>
+                  <span style={{...S.lbl, color:T.lbl}}>🎯 RECOMENDACIONES PRIORITARIAS ESTA SEMANA</span>
                   <div style={{ display:'flex', flexDirection:'column', gap:8, marginTop:8 }}>
                     {topRecs.map((r:any,i:number)=>(
                       <div key={i} style={{ padding:'12px 14px', background:'rgba(139,123,255,0.05)', border:'1px solid rgba(139,123,255,0.15)', borderRadius:10 }}>
@@ -712,7 +712,7 @@ export default function DashboardPage() {
           return (
             <div style={{...S.card, marginBottom:14}}>
               <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:12 }}>
-                <span style={S.lbl}>📊 EVOLUCIÓN HISTÓRICA DE MÉTRICAS</span>
+                <span style={{...S.lbl, color:T.lbl}}>📊 EVOLUCIÓN HISTÓRICA DE MÉTRICAS</span>
                 <div style={{ display:'flex', gap:12 }}>
                   {[{label:'Presión',color:'#8B7BFF'},{label:'Oportunidad',color:'#6EE7A4'},{label:'Riesgo',color:'#FF6B6B'},{label:'Score',color:'#F2C063'}].map((l,i)=>(
                     <div key={i} style={{ display:'flex', alignItems:'center', gap:4 }}>
@@ -727,8 +727,8 @@ export default function DashboardPage() {
                   {/* Grid lines */}
                   {[0,25,50,75,100].map(v=>(
                     <g key={v}>
-                      <line x1={padL} y1={yPos(v)} x2={chartW-padR} y2={yPos(v)} stroke="rgba(255,255,255,0.05)" strokeWidth="1"/>
-                      <text x={padL-4} y={yPos(v)+3} fill="#5A627A" fontSize="8" textAnchor="end">{v}</text>
+                      <line x1={padL} y1={yPos(v)} x2={chartW-padR} y2={yPos(v)} stroke={isDark ? "rgba(255,255,255,0.05)" : "#EEEDFE"} strokeWidth="1"/>
+                      <text x={padL-4} y={yPos(v)+3} fill={isDark ? "#5A627A" : "#7F77DD"} fontSize="8" textAnchor="end">{v}</text>
                     </g>
                   ))}
                   {/* Líneas de datos */}
@@ -743,7 +743,7 @@ export default function DashboardPage() {
                       {d.opportunity > 0 && <circle cx={xPos(i)} cy={yPos(d.opportunity)} r="3" fill="#6EE7A4"/>}
                       {d.risk > 0 && <circle cx={xPos(i)} cy={yPos(d.risk)} r="3" fill="#FF6B6B"/>}
                       {d.score && <circle cx={xPos(i)} cy={yPos(d.score)} r="2.5" fill="#F2C063"/>}
-                      <text x={xPos(i)} y={chartH-4} fill="#5A627A" fontSize="8" textAnchor="middle">{d.date}</text>
+                      <text x={xPos(i)} y={chartH-4} fill={isDark ? "#5A627A" : "#7F77DD"} fontSize="8" textAnchor="middle">{d.date}</text>
                     </g>
                   ))}
                 </svg>
@@ -807,21 +807,21 @@ export default function DashboardPage() {
             { label:'RIESGO DE MERCADO', value: s.marketRisk ? `${s.marketRisk}%` : '—', sub: s.riskLevel || 'Sin datos', color:'#F2C063', pct: s.marketRisk || 0 },
           ].map((k,i)=>(
             <div key={i} style={{...S.card, background:T.bgCard, border:`1px solid ${T.border}`, margin:0, boxShadow: isDark ? 'none' : '0 1px 4px rgba(83,74,183,0.08)'}}>
-              <span style={S.lbl}>{k.label}</span>
+              <span style={{...S.lbl, color:T.lbl}}>{k.label}</span>
               <div style={{ fontSize:26, fontWeight:900, color:k.color, lineHeight:1 }}>{k.value}</div>
-              <div style={{...S.muted, marginTop:4}}>{k.sub}</div>
-              <div style={S.bar}><BarFill pct={k.pct} color={k.color}/></div>
+              <div style={{fontSize:11, color:T.textMuted, marginTop:4}}>{k.sub}</div>
+              <div style={{height:5, background:T.barBg, borderRadius:3, overflow:"hidden", marginTop:6}}><BarFill pct={k.pct} color={k.color}/></div>
             </div>
           ))}
         </div>
 
         {/* ZONA 3 — Alertas críticas reales */}
         {s.criticalAlerts && s.criticalAlerts.length > 0 && (
-          <div style={{...S.card}}>
-            <span style={S.lbl}>🔴 ALERTAS CRÍTICAS · ACCIÓN INMEDIATA</span>
+          <div style={{...S.card, background:T.bgCard, border:`1px solid ${T.border}`, boxShadow: isDark ? "none" : "0 1px 4px rgba(83,74,183,0.08)"}}>
+            <span style={{...S.lbl, color:T.lbl}}>🔴 ALERTAS CRÍTICAS · ACCIÓN INMEDIATA</span>
             <div style={{ display:'flex', flexDirection:'column', gap:8 }}>
               {s.criticalAlerts.map((a: any, i: number) => (
-                <div key={i} style={{ display:'flex', gap:10, padding:'10px 12px', background:'rgba(255,107,107,0.05)', border:'1px solid rgba(255,107,107,0.2)', borderRadius:10 }}>
+                <div key={i} style={{ display:'flex', gap:10, padding:'10px 12px', background: isDark ? 'rgba(255,107,107,0.05)' : '#FEF2F2', border:'1px solid rgba(255,107,107,0.25)', borderRadius:10 }}>
                   <span style={{ fontSize:18, flexShrink:0 }}>{a.icon || '⚠️'}</span>
                   <div style={{ flex:1 }}>
                     <div style={{ fontSize:12, fontWeight:700, color:T.text, marginBottom:2 }}>{a.title}</div>
@@ -839,7 +839,7 @@ export default function DashboardPage() {
           <div style={{...S.card, background:T.bgCard, border:`1px solid ${T.border}`, margin:0, marginBottom:14, boxShadow: isDark ? 'none' : '0 1px 4px rgba(83,74,183,0.08)'}}>
             <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:12 }}>
               <span style={{ fontSize:13, fontWeight:700, color:T.text }}>Competidores monitoreados</span>
-              <span style={{...S.badge, background:'rgba(255,255,255,0.05)', color:T.textMuted}}>{setupCompetitors.length} activos</span>
+              <span style={{...S.badge, background:T.bgCard2, color:T.textMuted, border:`1px solid ${T.border}`}}>{setupCompetitors.length} activos</span>
             </div>
             <div style={{ display:'flex', flexDirection:'column', gap:8 }}>
               {setupCompetitors.map((name: string, i: number) => {
@@ -848,12 +848,12 @@ export default function DashboardPage() {
                 const comp = (s.competitors || []).find((c: any) => c.name?.toLowerCase().includes(name.toLowerCase().split(' ')[0]))
                 const threat = comp?.threat || (5 - i)
                 return (
-                  <div key={i} style={{ display:'flex', alignItems:'center', gap:10, padding:'10px 12px', background:'rgba(255,255,255,0.02)', border:`1px solid rgba(255,255,255,0.06)`, borderRadius:10 }}>
+                  <div key={i} style={{ display:'flex', alignItems:'center', gap:10, padding:'10px 12px', background: isDark ? 'rgba(255,255,255,0.02)' : '#F8F7FF', border:`1px solid ${T.border}`, borderRadius:10 }}>
                     <GaugeCircle value={threat} color={colors[i % colors.length]}/>
                     <div style={{ flex:1, minWidth:0 }}>
                       <div style={{ fontSize:12, fontWeight:700, color:T.text }}>{name}</div>
-                      <div style={S.muted}>{city ? `${city} · ` : ''}{industry}</div>
-                      <div style={S.bar}><BarFill pct={threat*10} color={colors[i % colors.length]}/></div>
+                      <div style={{fontSize:11, color:T.textMuted}}>{city ? `${city} · ` : ''}{industry}</div>
+                      <div style={{height:5, background:T.barBg, borderRadius:3, overflow:"hidden", marginTop:6}}><BarFill pct={threat*10} color={colors[i % colors.length]}/></div>
                     </div>
                     <span style={{...S.badge, background:`${colors[i % colors.length]}20`, color:colors[i % colors.length]}}>{labels[i % labels.length]}</span>
                   </div>
@@ -865,11 +865,11 @@ export default function DashboardPage() {
 
         {/* ZONA 5 — Oportunidades reales */}
         {s.opportunities && s.opportunities.length > 0 && (
-          <div style={{...S.card, marginBottom:14}}>
-            <span style={S.lbl}>🟢 OPORTUNIDADES IDENTIFICADAS</span>
+          <div style={{...S.card, background:T.bgCard, border:`1px solid ${T.border}`, marginBottom:14, boxShadow: isDark ? "none" : "0 1px 4px rgba(83,74,183,0.08)"}}>
+            <span style={{...S.lbl, color:T.lbl}}>🟢 OPORTUNIDADES IDENTIFICADAS</span>
             <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:8, marginTop:8 }}>
               {s.opportunities.slice(0,4).map((o: any, i: number) => (
-                <div key={i} style={{ padding:'10px 12px', background:'rgba(110,231,164,0.04)', border:'1px solid rgba(110,231,164,0.15)', borderRadius:10 }}>
+                <div key={i} style={{ padding:'10px 12px', background: isDark ? 'rgba(110,231,164,0.04)' : '#F0FDF4', border:'1px solid rgba(110,231,164,0.25)', borderRadius:10 }}>
                   <div style={{ display:'flex', alignItems:'center', gap:6, marginBottom:4 }}>
                     <span style={{ fontSize:16 }}>{o.icon || '💡'}</span>
                     <div style={{ fontSize:11, fontWeight:700, color:T.text }}>{o.title}</div>
