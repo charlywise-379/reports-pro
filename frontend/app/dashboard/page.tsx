@@ -396,7 +396,7 @@ export default function DashboardPage() {
           <span style={{...S.lbl, color:T.lbl}}>DASHBOARD · INTELIGENCIA COMPETITIVA</span>
           <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start', flexWrap:'wrap', gap:8 }}>
             <div>
-              <div style={{ fontSize: isMobile ? 22 : 26, fontWeight:900, color:T.text, lineHeight:1.1 }}>
+              <div style={{ fontSize: isMobile ? 22 : 26, fontWeight:900, color: isDark ? T.text : '#26215C', lineHeight:1.1 }}>
                 <span style={{ color:'#8B7BFF' }}>{companyName}</span>
               </div>
               <div style={{ fontSize:12, color:T.textMuted, marginTop:4 }}>
@@ -504,7 +504,7 @@ export default function DashboardPage() {
                 icon:<><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></> },
               { label:`${(dashData?.reports || []).filter((r: any) => r.status !== 'FAILED').length} Reportes`, color:'#F2C063', bg:'rgba(242,192,99,0.08)', border:'rgba(242,192,99,0.2)', href:'#',
                 icon:<path d="M7 3h7l5 5v13a1 1 0 01-1 1H7a1 1 0 01-1-1V4a1 1 0 011-1z"/> },
-              { label:'Invitar Colegas', color:T.textSub, bg:'rgba(255,255,255,0.04)', border:'rgba(255,255,255,0.1)', href:'#', onClick: ()=>setShowInviteModal(true),
+              { label:'Invitar Colegas', color:T.textSub, bg: isDark ? 'rgba(255,255,255,0.04)' : '#F8F7FF', border: isDark ? 'rgba(255,255,255,0.1)' : '#CECBF6', href:'#', onClick: ()=>setShowInviteModal(true),
                 icon:<><path d="M17 21v-2a4 4 0 00-4-4H7a4 4 0 00-4 4v2"/><circle cx="10" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></> },
             ].map((a: any,i: number)=>(
               <a key={i} href={a.href} onClick={a.onClick ? (e)=>{e.preventDefault();a.onClick()} : undefined}
