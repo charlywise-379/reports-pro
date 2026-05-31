@@ -397,7 +397,7 @@ export default function DashboardPage() {
           <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start', flexWrap:'wrap', gap:8 }}>
             <div>
               <div style={{ fontSize: isMobile ? 22 : 26, fontWeight:900, color: isDark ? T.text : '#26215C', lineHeight:1.1 }}>
-                <span style={{ color:'#8B7BFF' }}>{companyName}</span>
+                <span style={{ color: isDark ? '#8B7BFF' : '#26215C' }}>{companyName}</span>
               </div>
               <div style={{ fontSize:12, color:T.textMuted, marginTop:4 }}>
                 {industry}{city ? ` · ${city}, ${country}` : ` · ${country}`} · {new Date().toLocaleDateString('es-MX',{weekday:'long',day:'numeric',month:'long'})}
@@ -536,7 +536,7 @@ export default function DashboardPage() {
                       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={selectedReport?.id === r.id ? '#8B7BFF' : '#5A627A'} strokeWidth="2"><path d="M7 3h7l5 5v13a1 1 0 01-1 1H7a1 1 0 01-1-1V4a1 1 0 011-1z"/></svg>
                     )}
                     <div>
-                      <div style={{ fontSize:12, fontWeight:700, color: r.reportTitle ? '#F0F2FF' : '#8B7BFF' }}>{r.reportTitle || '⏳ Generando reporte IA... ~5 min'}</div>
+                      <div style={{ fontSize:12, fontWeight:700, color: r.reportTitle ? (isDark ? '#F0F2FF' : '#26215C') : '#8B7BFF' }}>{r.reportTitle || '⏳ Generando reporte IA... ~5 min'}</div>
                       <div style={{ fontSize:10, color:T.textMuted }}>{new Date(r.createdAt).toLocaleDateString('es-MX', { day:'2-digit', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' })} · {r.pdfSizeBytes ? Math.round(r.pdfSizeBytes/1024)+'KB' : 'Procesando...'}</div>
                     </div>
                   </div>
