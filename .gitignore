@@ -9,3 +9,5 @@ dist/
 credenciales-privadas/
 .DS_Store
 **/.DS_Store
+**/*.js.map
+**/*.ts.map
