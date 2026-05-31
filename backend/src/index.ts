@@ -1,3 +1,4 @@
+import "./instrument"
 import express from "express"
 import rateLimit from "express-rate-limit"
 import cors from "cors"
@@ -54,6 +55,10 @@ console.log("Scheduler activo cada hora")
 app.get("/health", (req, res) => {
   res.json({ status: "ok", message: "Reports PRO Backend", timestamp: new Date().toISOString() })
 })
+
+// Sentry error handler — debe ir después de todas las rutas
+import * as Sentry from "@sentry/node"
+Sentry.setupExpressErrorHandler(app)
 
 app.listen(Number(PORT), "0.0.0.0", () => {
   console.log("Servidor corriendo en puerto " + PORT)
