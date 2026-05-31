@@ -15,6 +15,7 @@ const app = express()
 const PORT = process.env.PORT || 3001
 
 app.use(cors())
+app.set("trust proxy", 1)
 
 // Rate limiting global — 100 requests por 15 min por IP
 const globalLimiter = rateLimit({
