@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
+import posthog from 'posthog-js'
 
 const STEPS = [
   { id: 1, label: 'Tu empresa' },
@@ -1277,6 +1278,15 @@ export default function OnboardingPage() {
       })
       const res = await response.json()
       if (!response.ok) throw new Error(res.error || 'Error al activar')
+      posthog.capture('onboarding_completed', {
+        company_name: data.companyName || data.brand,
+        industry: data.industry,
+        frequency: data.frequency,
+        delivery_channel: data.deliveryChannel,
+        direct_competitors: (data.directCompetitors || []).filter((c: any) => c.name).length,
+        monitor_areas: (data.monitorAreas || []).length,
+        is_editing: isEditing,
+      })
       if (isEditing) {
         router.push('/dashboard')
       } else {
@@ -1340,6 +1350,12 @@ export default function OnboardingPage() {
               {step<7 ? (
                 <button onClick={async ()=>{
                   await saveProgress();
+                  posthog.capture('onboarding_step_completed', {
+                    step,
+                    step_label: STEPS[step - 1]?.label,
+                    company_name: data.companyName,
+                    industry: data.industry,
+                  });
                   setStep(step+1);
                   setTimeout(()=>{
                     document.getElementById('step-top')?.scrollIntoView({behavior:'smooth'});

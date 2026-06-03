@@ -2,6 +2,7 @@
 import { useEffect, useState, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
+import posthog from 'posthog-js'
 
 type PollingStatus = 'waiting' | 'active' | 'timeout' | 'error'
 
@@ -36,7 +37,13 @@ function SuccessContent() {
         })
         const verifyData = await verifyRes.json()
         const isReady = verifyData?.ready === true
-        if (isReady) { stopped = true; setStatus('active'); setTimeout(() => router.push('/dashboard?verified=1&sid=' + sessionId), 1500); return }
+        if (isReady) {
+          stopped = true
+          posthog.capture('subscription_activated', { session_id: sessionId })
+          setStatus('active')
+          setTimeout(() => router.push('/dashboard?verified=1&sid=' + sessionId), 1500)
+          return
+        }
         attempts++
         if (attempts >= MAX_ATTEMPTS) { stopped = true; setStatus('timeout'); setTimeout(() => router.push('/dashboard'), 3000); return }
         setTimeout(poll, 2000)

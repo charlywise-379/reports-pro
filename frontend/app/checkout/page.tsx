@@ -3,6 +3,7 @@ import React from 'react'
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
+import posthog from 'posthog-js'
 
 const MXN = 17.50
 
@@ -51,6 +52,13 @@ export default function CheckoutPage() {
     setLoading(true)
     const plan = PLANS.find(p => p.key === selected)!
     const priceId = billing === 'annual' ? plan.annualId : plan.monthlyId
+    const price = billing === 'annual' ? plan.priceAnnualUSD : plan.priceUSD
+    posthog.capture('checkout_initiated', {
+      plan: plan.key,
+      billing_cycle: billing,
+      price_usd: price,
+      is_reactivation: isExpired,
+    })
 
     try {
       const res = await fetch(`${BACKEND}/api/stripe/create-checkout-session`, {
@@ -62,6 +70,7 @@ export default function CheckoutPage() {
       if (data.url) window.location.href = data.url
       else throw new Error(data.error)
     } catch(e: any) {
+      posthog.captureException(e, { plan: plan.key, billing_cycle: billing })
       alert('Error: ' + e.message)
       setLoading(false)
     }

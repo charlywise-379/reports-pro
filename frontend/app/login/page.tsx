@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { Zap, Mail, Lock, ArrowRight, Sparkles } from 'lucide-react'
+import posthog from 'posthog-js'
 
 export default function LoginPage() {
   const [email, setEmail] = useState('')
@@ -19,8 +20,11 @@ export default function LoginPage() {
     const { error, data } = await supabase.auth.signInWithPassword({ email, password })
     if (error) {
       setError('Email o contraseña incorrectos')
+      posthog.capture('login_failed', { email })
       setLoading(false)
     } else {
+      posthog.identify(data.user?.id, { email: data.user?.email })
+      posthog.capture('user_logged_in', { email: data.user?.email })
       // Verificar si el usuario ya tiene proyecto configurado
       try {
         const BACKEND = process.env.NEXT_PUBLIC_BACKEND_URL || 'https://reports-pro-production.up.railway.app'

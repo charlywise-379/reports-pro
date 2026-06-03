@@ -1,8 +1,13 @@
 'use client'
+import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import posthog from 'posthog-js'
 
 export default function CancelPage() {
   const router = useRouter()
+  useEffect(() => {
+    posthog.capture('checkout_cancelled')
+  }, [])
   return (
     <main style={{ minHeight:'100vh', background:'#0D0F1A', color:'#F0F2FF', display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', fontFamily:'"Plus Jakarta Sans",system-ui,sans-serif' }}>
       <div style={{ fontSize:48, marginBottom:16 }}>😔</div>

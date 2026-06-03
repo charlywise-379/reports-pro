@@ -3,6 +3,7 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import { Zap, Mail, Lock, User, ArrowRight, CheckCircle, Sparkles } from 'lucide-react'
+import posthog from 'posthog-js'
 
 export default function RegisterPage() {
   const [fullName, setFullName] = useState('')
@@ -20,7 +21,7 @@ export default function RegisterPage() {
     }
     setLoading(true)
     setError('')
-    const { error } = await supabase.auth.signUp({
+    const { error, data } = await supabase.auth.signUp({
       email,
       password,
       options: { data: { full_name: fullName } }
@@ -29,8 +30,13 @@ export default function RegisterPage() {
       setError(error.message === 'User already registered'
         ? 'Este email ya está registrado.'
         : 'Ocurrió un error. Intenta de nuevo.')
+      posthog.captureException(new Error(error.message), { email })
       setLoading(false)
     } else {
+      if (data.user) {
+        posthog.identify(data.user.id, { email: data.user.email, name: fullName })
+        posthog.capture('user_signed_up', { email, name: fullName })
+      }
       setSuccess(true)
     }
   }

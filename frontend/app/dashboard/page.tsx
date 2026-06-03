@@ -2,6 +2,7 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
+import posthog from 'posthog-js'
 
 const S: Record<string, React.CSSProperties> = {
   card: { background:'rgba(255,255,255,0.03)', border:'1px solid rgba(255,255,255,0.07)', borderRadius:14, padding:16, marginBottom:14 },
@@ -101,6 +102,7 @@ export default function DashboardPage() {
       const user = session.user
       setUser(user)
       setToken(session.access_token)
+      posthog.identify(user.id, { email: user.email })
 
       // Si viene de checkout, verificar sesion de Stripe antes de cargar dashboard
       const sid = typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('sid') : null
@@ -155,6 +157,11 @@ export default function DashboardPage() {
       })
       const data = await res.json()
       if (data.success) {
+        posthog.capture('report_generated', {
+          project_id: dashData.project.id,
+          frequency: dashData.project?.frequency,
+          company_name: dashData.setup?.companyName,
+        })
         // No recargar — el polling detectará el reporte listo
         // Refrescar dashData para mostrar el reporte GENERATING inmediatamente
         const { data: { session: s2 } } = await supabase.auth.getSession()
@@ -269,6 +276,7 @@ export default function DashboardPage() {
       })
       const data = await res.json()
       if (data.url) {
+        posthog.capture('report_downloaded', { report_id: reportId })
         window.location.href = data.url
       } else {
         alert('Error al descargar: ' + (data.error || 'intenta de nuevo'))
@@ -327,6 +335,15 @@ export default function DashboardPage() {
     setTimeout(poll, 3000)
     return () => { stopped = true }
   }, [token, dashData?.project?.id])
+
+  const trialExpiredForCapture = !loading &&
+    !(dashData?.subscription?.stripeSubscriptionId != null || stripeConfirmado) &&
+    dashData?.project?.trialEndsAt &&
+    new Date(dashData.project.trialEndsAt) < new Date()
+
+  useEffect(() => {
+    if (trialExpiredForCapture) posthog.capture('trial_expired_viewed')
+  }, [trialExpiredForCapture])
 
   if (loading) return (
     <main style={{ minHeight:'100vh', background:'#0D0F1A', display:'flex', alignItems:'center', justifyContent:'center' }}>
@@ -945,8 +962,10 @@ export default function DashboardPage() {
                       body: JSON.stringify({ projectId: dashData?.project?.id, emails })
                     })
                     const data = await res.json()
-                    if (data.success) setInviteSent(true)
-                    else alert(data.error || 'Error al enviar invitaciones')
+                    if (data.success) {
+                      posthog.capture('colleagues_invited', { count: emails.length })
+                      setInviteSent(true)
+                    } else alert(data.error || 'Error al enviar invitaciones')
                   } catch(e) { console.error(e) }
                 }}
                 style={{ width:'100%', marginTop:16, background:'linear-gradient(135deg,#8B7BFF,#5DD4D4)', border:'none', borderRadius:20, padding:'12px', color:'#0D0F1A', fontSize:13, fontWeight:800, cursor:'pointer' }}>
