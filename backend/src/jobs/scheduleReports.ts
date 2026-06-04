@@ -73,6 +73,19 @@ export async function scheduleReports() {
           continue
         }
 
+        // Verificar que no haya un reporte COMPLETED en las últimas 4 horas (anti-duplicado robusto)
+        const reporteMuyReciente = await prisma.report.findFirst({
+          where: {
+            projectId: project.id,
+            status: 'COMPLETED' as any,
+            createdAt: { gt: new Date(Date.now() - 4 * 60 * 60 * 1000) }
+          }
+        })
+        if (reporteMuyReciente) {
+          console.log(`[Scheduler] Reporte generado hace menos de 4h para: ${project.name} — saltando`)
+          continue
+        }
+
         // Verificar que no haya un reporte COMPLETED en las últimas 2 horas (anti-duplicado post-redeploy)
         const reporteReciente = await prisma.report.findFirst({
           where: {
