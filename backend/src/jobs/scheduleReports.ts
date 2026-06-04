@@ -87,15 +87,16 @@ export async function scheduleReports() {
         }
 
         // Verificar que no haya ya un job en cola para este proyecto
-        const jobId = 'scheduled-' + project.id
-        const existingJob = await reportQueue.getJob(jobId)
-        if (existingJob) {
-          const state = await existingJob.getState()
-          if (state === 'waiting' || state === 'active') {
-            console.log('[Scheduler] Job ya en cola para: ' + project.name)
-            continue
-          }
+        // Verificar jobs activos o en espera (no usar jobId fijo — causaba bloqueo)
+        const waiting = await reportQueue.getWaiting()
+        const active = await reportQueue.getActive()
+        const allPending = [...waiting, ...active]
+        const yaEnCola = allPending.some(j => j.data?.projectId === project.id)
+        if (yaEnCola) {
+          console.log('[Scheduler] Job ya en cola para: ' + project.name)
+          continue
         }
+        const jobId = 'scheduled-' + project.id + '-' + Date.now()
 
         await reportQueue.add(
           'generate-report',
