@@ -628,7 +628,7 @@ REGLA DE ORO: Cada dato debe poder ser verificado por el cliente. Si no puedes v
       response = await anthropic.messages.create({
         model: 'claude-sonnet-4-5',
         system: systemPrompt,
-        max_tokens: 16000,
+        max_tokens: 32000,
         tools: [
           {
             type: 'web_search_20250305' as any,
