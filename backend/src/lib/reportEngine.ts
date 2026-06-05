@@ -620,12 +620,16 @@ PROCESO DE PENSAMIENTO OBLIGATORIO — ejecutar en orden:
 
 REGLA DE ORO: Cada dato debe poder ser verificado por el cliente. Si no puedes verificarlo, márcalo explícitamente como "Estimado" o "Sin datos públicos disponibles". NUNCA inventes datos.`
 
-  // Llamada a Claude con web search habilitado — reintentos automáticos en 529
+  // Llamada a Claude con streaming — necesario para respuestas largas con web search
   const MAX_RETRIES = 3
-  let response: any
+  let jsonText = ''
+
   for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
     try {
-      response = await anthropic.messages.create({
+      jsonText = ''
+      console.log(`🔄 Intento ${attempt}/${MAX_RETRIES} — iniciando stream...`)
+
+      const stream = await anthropic.messages.stream({
         model: 'claude-sonnet-4-5',
         system: systemPrompt,
         max_tokens: 16000,
@@ -639,35 +643,33 @@ REGLA DE ORO: Cada dato debe poder ser verificado por el cliente. Si no puedes v
           { role: 'user', content: prompt },
           { role: 'assistant', content: '{' },
         ],
-      }, {
-        timeout: 900000,
-      } as any)
-      break // Éxito — salir del loop
+      })
+
+      // Recolectar texto del stream
+      for await (const event of stream) {
+        if (event.type === 'content_block_delta' && event.delta?.type === 'text_delta') {
+          jsonText += event.delta.text
+        }
+      }
+
+      const finalMessage = await stream.finalMessage()
+      console.log(`✅ Claude respondió — stop_reason: ${finalMessage.stop_reason} — chars: ${jsonText.length}`)
+      break
+
     } catch (err: any) {
       const is529 = err?.status === 529 || err?.message?.includes('529') || err?.message?.includes('overloaded')
       if (is529 && attempt < MAX_RETRIES) {
-        const waitMs = attempt * 15000 // 15s, 30s entre reintentos
+        const waitMs = attempt * 15000
         console.log(`⏳ Claude sobrecargado (529) — reintento ${attempt}/${MAX_RETRIES} en ${waitMs/1000}s...`)
         await new Promise(resolve => setTimeout(resolve, waitMs))
         continue
       }
-      throw err // Si no es 529 o agotamos reintentos, lanzar el error
-    }
-  }
-
-  console.log(`✅ Claude respondió — stop_reason: ${response.stop_reason}`)
-
-  // Extraer el JSON de la respuesta
-  // Claude puede devolver múltiples bloques (tool_use + text) — buscamos el text final
-  let jsonText = ''
-  for (const block of response.content) {
-    if (block.type === 'text') {
-      jsonText = block.text
+      throw err
     }
   }
 
   if (!jsonText) {
-    throw new Error('Claude no devolvió texto en la respuesta')
+    throw new Error('Claude no devolvió texto en el stream')
   }
 
   // Limpiar posible markdown residual
@@ -675,7 +677,7 @@ REGLA DE ORO: Cada dato debe poder ser verificado por el cliente. Si no puedes v
     .replace(/```json\s*/g, '')
     .replace(/```\s*/g, '')
     .trim()
-    if (!jsonText.startsWith('{')) jsonText = '{' + jsonText
+  if (!jsonText.startsWith('{')) jsonText = '{' + jsonText
 
   try {
     const parsed = JSON.parse(jsonText)
