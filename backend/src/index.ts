@@ -52,6 +52,14 @@ scheduleReports()
 setInterval(scheduleReports, 60 * 60 * 1000)
 console.log("Scheduler activo cada hora")
 
+app.get("/debug-env", (req: any, res: any) => {
+  res.json({
+    CF_API_TOKEN: process.env.CF_API_TOKEN ? 'presente:' + process.env.CF_API_TOKEN.substring(0,8) : 'VACÍO',
+    CF_KV_NAMESPACE_ID: process.env.CF_KV_NAMESPACE_ID ? 'presente:' + process.env.CF_KV_NAMESPACE_ID.substring(0,8) : 'VACÍO',
+    CLOUDFLARE_ACCOUNT_ID: process.env.CLOUDFLARE_ACCOUNT_ID ? 'presente:' + process.env.CLOUDFLARE_ACCOUNT_ID.substring(0,8) : 'VACÍO',
+  })
+})
+
 app.get("/health", (req, res) => {
   res.json({ status: "ok", message: "Reports PRO Backend", timestamp: new Date().toISOString() })
 })
