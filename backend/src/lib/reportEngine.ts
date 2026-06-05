@@ -629,7 +629,6 @@ REGLA DE ORO: Cada dato debe poder ser verificado por el cliente. Si no puedes v
         model: 'claude-sonnet-4-5',
         system: systemPrompt,
         max_tokens: 16000,
-        timeout: 900000,
         tools: [
           {
             type: 'web_search_20250305' as any,
@@ -640,7 +639,9 @@ REGLA DE ORO: Cada dato debe poder ser verificado por el cliente. Si no puedes v
           { role: 'user', content: prompt },
           { role: 'assistant', content: '{' },
         ],
-      })
+      }, {
+        timeout: 900000,
+      } as any)
       break // Éxito — salir del loop
     } catch (err: any) {
       const is529 = err?.status === 529 || err?.message?.includes('529') || err?.message?.includes('overloaded')
