@@ -7,7 +7,7 @@ const client = twilio(
 
 const FROM = process.env.TWILIO_WHATSAPP_FROM || 'whatsapp:+14155238886'
 const TEMPLATE_SID = 'HX577fa9c7c055dcc7b4cc2bc8973bab97'
-const SHORT_DOMAIN = 'https://r.flow11.mx'
+const SHORT_DOMAIN = 'https://r.flow11.mx' // v2
 
 async function createShortLink(url: string): Promise<string> {
   const apiToken = process.env.CF_API_TOKEN || ''
