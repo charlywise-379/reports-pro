@@ -11,12 +11,13 @@ const SHORT_DOMAIN = 'https://r.flow11.mx'
 
 async function createShortLink(url: string): Promise<string> {
   const apiToken = process.env.CF_API_TOKEN || ''
+  const accountId = process.env.CLOUDFLARE_ACCOUNT_ID || ''
+  const namespaceId = process.env.CF_KV_NAMESPACE_ID || ''
   console.log('[ShortLink] CF_API_TOKEN presente:', apiToken ? 'SI (' + apiToken.substring(0,8) + '...)' : 'NO — variable vacía')
+  console.log('[ShortLink] accountId:', accountId ? accountId.substring(0,8) + '...' : 'VACÍO')
+  console.log('[ShortLink] namespaceId:', namespaceId ? namespaceId.substring(0,8) + '...' : 'VACÍO')
   try {
     const code = Math.random().toString(36).substring(2, 8)
-    const accountId = process.env.CLOUDFLARE_ACCOUNT_ID || ''
-    const namespaceId = process.env.CF_KV_NAMESPACE_ID || ''
-    const apiToken = process.env.CF_API_TOKEN || ''
     const kvUrl = `https://api.cloudflare.com/client/v4/accounts/${accountId}/storage/kv/namespaces/${namespaceId}/values/${code}`
     const res = await fetch(kvUrl, {
       method: 'PUT',
