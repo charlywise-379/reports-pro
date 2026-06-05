@@ -34,9 +34,9 @@ export async function sendReportEmail(
   <div class="wrap">
     <div class="header">
       <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
-        <div style="width:36px;height:36px;background:#534AB7;border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:900;color:#fff;font-size:12px">PR</div>
+        <div style="width:36px;height:36px;background:#534AB7;border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:900;color:#fff;font-size:12px">OM</div>
         <div>
-          <div style="font-size:13px;font-weight:800;color:#F0F2FF">PRO Reports</div>
+          <div style="font-size:13px;font-weight:800;color:#F0F2FF">Omni Reports · AI Automation</div>
           <div style="font-size:9px;color:#8B7BFF;letter-spacing:.1em">INTELIGENCIA COMPETITIVA</div>
         </div>
       </div>
@@ -93,13 +93,13 @@ export async function sendReportEmail(
       </div>
 
       <p style="font-size:12px;color:#888;text-align:center;margin-top:16px">
-        Este reporte fue generado automáticamente por PRO Reports AI.<br/>
+        Este reporte fue generado automáticamente por Omni Reports · AI Automation.<br/>
         Confidencial — solo para uso interno.
       </p>
     </div>
 
     <div class="footer">
-      PRO Reports · Inteligencia Competitiva AI · 
+      Omni Reports · AI Automation · 
       <a href="https://reports-pro.vercel.app" style="color:#8B7BFF">reports-pro.vercel.app</a>
     </div>
   </div>
@@ -108,7 +108,7 @@ export async function sendReportEmail(
   `
 
   await resend.emails.send({
-    from: 'PRO Reports <reportes@flow11.mx>',
+    from: 'Omni Reports <reportes@flow11.mx>',
     to,
     ...(ccEmails.length > 0 && { cc: ccEmails }),
     subject,

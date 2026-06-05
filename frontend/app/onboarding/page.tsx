@@ -1038,7 +1038,7 @@ function BriefingPanel({ step, isMobile }: { step: number; isMobile: boolean }) 
       </div>
       <div style={{ background:'rgba(255,255,255,0.03)', border:'1px solid rgba(255,255,255,0.07)', borderRadius:14, padding:'14px' }}>
         <div style={{ fontSize:10, fontWeight:700, letterSpacing:'0.1em', color:'#5A627A', marginBottom:8 }}>AYUDA</div>
-        <div style={{ fontSize:12, color:'#9CA3AF', lineHeight:1.6 }}>¿Dudas? El equipo de Omni Reports · AI Automation responde en menos de 2h en horario laboral.</div>
+        <div style={{ fontSize:12, color:'#9CA3AF', lineHeight:1.6 }}>¿Dudas? El equipo de Omni Reports · AI Automation responde en menos de 1h en horario laboral.</div>
       </div>
       <div style={{ background:'rgba(139,123,255,0.08)', border:'1px solid rgba(139,123,255,0.2)', borderRadius:14, padding:'14px' }}>
   <div style={{ fontSize:10, fontWeight:700, letterSpacing:'0.1em', color:'#8B7BFF', marginBottom:10 }}>¿TIENES DUDAS? PREGÚNTANOS</div>

@@ -7,17 +7,33 @@ const client = twilio(
 
 const FROM = process.env.TWILIO_WHATSAPP_FROM || 'whatsapp:+14155238886'
 const TEMPLATE_SID = 'HX577fa9c7c055dcc7b4cc2bc8973bab97'
+const SHORT_DOMAIN = 'https://r.flow11.mx'
 
-async function shortenUrl(url: string): Promise<string> {
-  return new Promise((resolve) => {
-    const https = require('https')
-    const encoded = encodeURIComponent(url)
-    https.get(`https://tinyurl.com/api-create.php?url=${encoded}`, (res: any) => {
-      let data = ''
-      res.on('data', (chunk: any) => data += chunk)
-      res.on('end', () => resolve(data.trim() || url))
-    }).on('error', () => resolve(url))
-  })
+async function createShortLink(url: string): Promise<string> {
+  try {
+    const code = Math.random().toString(36).substring(2, 8)
+    const accountId = process.env.CLOUDFLARE_ACCOUNT_ID || ''
+    const namespaceId = process.env.CF_KV_NAMESPACE_ID || ''
+    const apiToken = process.env.CF_API_TOKEN || ''
+    const kvUrl = `https://api.cloudflare.com/client/v4/accounts/${accountId}/storage/kv/namespaces/${namespaceId}/values/${code}`
+    const res = await fetch(kvUrl, {
+      method: 'PUT',
+      headers: {
+        'Authorization': `Bearer ${apiToken}`,
+        'Content-Type': 'text/plain',
+      },
+      body: url,
+    })
+    if (!res.ok) {
+      const err = await res.text()
+      throw new Error('KV write failed: ' + err)
+    }
+    console.log('[ShortLink] Creado: ' + SHORT_DOMAIN + '/' + code)
+    return SHORT_DOMAIN + '/' + code
+  } catch (e) {
+    console.error('[ShortLink] Error — usando URL original:', e)
+    return url
+  }
 }
 
 export async function sendReportWhatsApp(
@@ -30,7 +46,7 @@ export async function sendReportWhatsApp(
   const toPhone = cleanPhone.startsWith('+') ? cleanPhone : '+52' + cleanPhone
   const to = 'whatsapp:' + toPhone
 
-  const shortUrl = await shortenUrl(reportUrl)
+  const shortUrl = await createShortLink(reportUrl)
 
   await client.messages.create({
     from: FROM,
@@ -43,5 +59,5 @@ export async function sendReportWhatsApp(
     }),
   })
 
-  console.log(`[WhatsApp] Reporte enviado a ${toPhone} via template`)
+  console.log('[WhatsApp] Reporte enviado a ' + toPhone + ' via template')
 }
