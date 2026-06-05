@@ -115,7 +115,7 @@ router.post('/generate/:projectId', requireAuth, async (req: Request, res: Respo
 
 async function cleanupStuckReports() {
   try {
-    const cutoff = new Date(Date.now() - 15 * 60 * 1000)
+    const cutoff = new Date(Date.now() - 10 * 60 * 1000)
     const stuck = await prisma.report.updateMany({
       where: { status: 'GENERATING' as any, createdAt: { lt: cutoff } },
       data: { status: 'FAILED' as any, reportTitle: 'Error — Tiempo de espera agotado' }
@@ -123,7 +123,37 @@ async function cleanupStuckReports() {
     if (stuck.count > 0) console.log(stuck.count + ' reportes atascados marcados como FAILED')
   } catch(e) {}
 }
-setInterval(cleanupStuckReports, 5 * 60 * 1000)
+setInterval(cleanupStuckReports, 2 * 60 * 1000)
+
+// GET /api/reports/status/:projectId — estado del reporte en curso
+router.get('/status/:projectId', requireAuth, async (req: Request, res: Response) => {
+  try {
+    const projectId = req.params.projectId as string
+    const userId = req.userId!
+    const project = await prisma.project.findUnique({ where: { id: projectId } })
+    if (!project || (project as any).userId !== userId) {
+      return res.status(403).json({ error: 'No autorizado' })
+    }
+    const generating = await prisma.report.findFirst({
+      where: { projectId, status: 'GENERATING' as any },
+      orderBy: { createdAt: 'desc' }
+    })
+    if (generating) {
+      const minutosGenerando = (Date.now() - new Date((generating as any).createdAt).getTime()) / (1000 * 60)
+      return res.json({ status: 'generating', minutosGenerando: Math.round(minutosGenerando) })
+    }
+    const lastCompleted = await prisma.report.findFirst({
+      where: { projectId, status: 'COMPLETED' as any },
+      orderBy: { createdAt: 'desc' }
+    })
+    if (lastCompleted) {
+      return res.json({ status: 'completed', reportId: lastCompleted.id })
+    }
+    return res.json({ status: 'idle' })
+  } catch(e: any) {
+    res.status(500).json({ error: e.message })
+  }
+})
 
 // GET /api/reports/signed-url/:reportId — genera URL fresca on-demand
 router.get('/signed-url/:reportId', requireAuth, async (req: Request, res: Response) => {

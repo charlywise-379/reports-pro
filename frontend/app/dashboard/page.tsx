@@ -136,7 +136,7 @@ export default function DashboardPage() {
     const reporteEnProceso = (dashData?.reports || []).some((r: any) => r.status === 'GENERATING')
     if (reporteEnProceso) {
       setLimitMessage('Ya hay un reporte en proceso.')
-      setNextReportInfo('Espera ~5 minutos a que termine de generarse.')
+      setNextReportInfo('El reporte tarda entre 5 y 10 minutos. Te avisamos por email cuando esté listo.')
       setShowLimitModal(true)
       return
     }
@@ -203,6 +203,9 @@ export default function DashboardPage() {
           setNextReportInfo('Verifica tu plan o contacta soporte.')
         }
         setShowLimitModal(true)
+      } else if (data.error === 'generating') {
+        setGenerating(true)
+        setPollingActive(true)
       } else if (data.error) {
         setGenerating(false)
         setPollingActive(false)
@@ -249,7 +252,7 @@ export default function DashboardPage() {
           clearInterval(interval)
         }
       } catch(e) {}
-    }, 10000) // Bug #4: cada 10s en vez de 30s
+    }, 8000) // Polling cada 8s para detectar reporte completado
     return () => clearInterval(interval)
   }, [pollingActive])
 
@@ -553,7 +556,7 @@ export default function DashboardPage() {
                       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={selectedReport?.id === r.id ? '#8B7BFF' : '#5A627A'} strokeWidth="2"><path d="M7 3h7l5 5v13a1 1 0 01-1 1H7a1 1 0 01-1-1V4a1 1 0 011-1z"/></svg>
                     )}
                     <div>
-                      <div style={{ fontSize:12, fontWeight:700, color: r.reportTitle ? (isDark ? '#F0F2FF' : '#26215C') : '#8B7BFF' }}>{r.reportTitle || '⏳ Generando reporte IA... ~5 min'}</div>
+                      <div style={{ fontSize:12, fontWeight:700, color: r.reportTitle ? (isDark ? '#F0F2FF' : '#26215C') : '#8B7BFF' }}>{r.reportTitle || '⏳ Generando reporte IA... 5-10 min'}</div>
                       <div style={{ fontSize:10, color:T.textMuted }}>{new Date(r.createdAt).toLocaleDateString('es-MX', { day:'2-digit', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' })} · {r.pdfSizeBytes ? Math.round(r.pdfSizeBytes/1024)+'KB' : 'Procesando...'}</div>
                     </div>
                   </div>
@@ -994,7 +997,7 @@ export default function DashboardPage() {
               Se generará un nuevo reporte de inteligencia competitiva para <strong style={{ color:T.text }}>{dashData?.setup?.companyName || 'tu empresa'}</strong>.
             </div>
             <div style={{ marginTop:12, fontSize:11, color:T.textMuted, background:'rgba(255,255,255,0.03)', border:'1px solid rgba(255,255,255,0.06)', borderRadius:10, padding:'8px 12px' }}>
-              El reporte tardará ~5 minutos en generarse. Recibirás una notificación por email cuando esté listo.
+              El reporte tardará entre 5 y 10 minutos en generarse. Recibirás una notificación por email cuando esté listo.
             </div>
           </div>
           <div style={{ display:'flex', gap:10 }}>
