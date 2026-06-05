@@ -10,6 +10,8 @@ const TEMPLATE_SID = 'HX577fa9c7c055dcc7b4cc2bc8973bab97'
 const SHORT_DOMAIN = 'https://r.flow11.mx'
 
 async function createShortLink(url: string): Promise<string> {
+  const apiToken = process.env.CF_API_TOKEN || ''
+  console.log('[ShortLink] CF_API_TOKEN presente:', apiToken ? 'SI (' + apiToken.substring(0,8) + '...)' : 'NO — variable vacía')
   try {
     const code = Math.random().toString(36).substring(2, 8)
     const accountId = process.env.CLOUDFLARE_ACCOUNT_ID || ''
