@@ -53,6 +53,14 @@ router.post('/generate/:projectId', requireAuth, async (req: Request, res: Respo
         return res.status(429).json({ error: 'frequency_limit', message: 'Tu plan ' + freq + ' permite un reporte cada ' + horasMinimas + 'h. Faltan ' + horasRestantes + 'h para tu proximo reporte.' })
       }
     }
+    // 🔒 ANTI-DUPLICADO: verificar que no haya un reporte ya generándose
+    const hayGenerando = await prisma.report.findFirst({
+      where: { projectId, status: 'GENERATING' as any }
+    })
+    if (hayGenerando) {
+      return res.status(429).json({ error: 'generating', message: 'Ya hay un reporte generándose. Espera a que termine.' })
+    }
+
     const outputDir = path.join(__dirname, '../../outputs')
     if (!fs.existsSync(outputDir)) fs.mkdirSync(outputDir, { recursive: true })
     const filename = 'report-' + projectId + '-' + Date.now() + '.pdf'
