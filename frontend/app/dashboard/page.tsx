@@ -69,6 +69,7 @@ export default function DashboardPage() {
   const pollingRef = useRef<NodeJS.Timeout | null>(null)
   const countdownRef = useRef<NodeJS.Timeout | null>(null)
   const [countdown, setCountdown] = useState(600)
+  const [stuckMinutes, setStuckMinutes] = useState(0)
   const [isDark, setIsDark] = useState(true)
   useEffect(() => {
     const saved = localStorage.getItem('theme')
@@ -204,7 +205,26 @@ export default function DashboardPage() {
         }
         setShowLimitModal(true)
       } else if (data.error === 'generating') {
-        startPolling()
+        // Calcular cuánto lleva el reporte generándose
+        const reporteGenerando = (dashData?.reports || []).find((r: any) => r.status === 'GENERATING')
+        const minutosGenerando = reporteGenerando
+          ? Math.round((Date.now() - new Date(reporteGenerando.createdAt).getTime()) / (1000 * 60))
+          : 0
+        setStuckMinutes(minutosGenerando)
+        if (minutosGenerando >= 10) {
+          // Lleva más de 10 min — probablemente stuck, permitir reintentar
+          stopPolling()
+          setLimitMessage('El reporte anterior tardó demasiado y fue cancelado automáticamente.')
+          setNextReportInfo('Puedes generar un nuevo reporte ahora.')
+          setShowLimitModal(true)
+        } else {
+          // Está generándose normalmente
+          startPolling()
+          setStuckMinutes(minutosGenerando)
+          setLimitMessage('Ya hay un reporte generándose.')
+          setNextReportInfo(`Lleva ${minutosGenerando} min. Se desbloquea automáticamente a los 10 min.`)
+          setShowLimitModal(true)
+        }
       } else if (data.error) {
         stopPolling()
         setLimitMessage(data.message || data.error)
@@ -263,12 +283,21 @@ export default function DashboardPage() {
     }, 8000)
   }, [stopPolling])
 
-  // Detectar reportes GENERATING al cargar el dashboard
+  // Detectar reportes GENERATING al cargar el dashboard — con auto-desbloqueo a los 10 min
   useEffect(() => {
     if (!dashData) return
-    const hayGenerando = (dashData?.reports || []).some((r: any) => r.status === 'GENERATING')
-    if (hayGenerando && !pollingRef.current) {
-      startPolling()
+    const reporteGenerando = (dashData?.reports || []).find((r: any) => r.status === 'GENERATING')
+    const hayGenerando = !!reporteGenerando
+    if (hayGenerando) {
+      const minutosGenerando = Math.round((Date.now() - new Date(reporteGenerando.createdAt).getTime()) / (1000 * 60))
+      setStuckMinutes(minutosGenerando)
+      if (minutosGenerando >= 10) {
+        // Reporte stuck — desbloquear automáticamente
+        console.log('[Dashboard] Reporte stuck +10min — desbloqueando automáticamente')
+        stopPolling()
+      } else if (!pollingRef.current) {
+        startPolling()
+      }
     } else if (!hayGenerando && pollingRef.current) {
       stopPolling()
     }
@@ -1051,8 +1080,8 @@ export default function DashboardPage() {
       <div style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.75)', display:'flex', alignItems:'center', justifyContent:'center', zIndex:1000, padding:20 }}>
         <div style={{ background:T.modalBg, border:`1px solid ${T.border2}`, borderRadius:20, padding:32, width:400, maxWidth:'100%' }}>
           <div style={{ textAlign:'center', marginBottom:24 }}>
-            <div style={{ width:52, height:52, borderRadius:16, background:'rgba(242,192,99,0.1)', border:'1px solid rgba(242,192,99,0.25)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:24, margin:'0 auto 16px' }}>🕐</div>
-            <div style={{ fontSize:17, fontWeight:900, color:T.text, marginBottom:8 }}>Reporte no disponible aún</div>
+            <div style={{ width:52, height:52, borderRadius:16, background:'rgba(242,192,99,0.1)', border:'1px solid rgba(242,192,99,0.25)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:24, margin:'0 auto 16px' }}>{stuckMinutes >= 10 ? '⚠️' : '🕐'}</div>
+            <div style={{ fontSize:17, fontWeight:900, color:T.text, marginBottom:8 }}>{stuckMinutes >= 10 ? 'Reporte cancelado' : 'Reporte en proceso'}</div>
             <div style={{ fontSize:13, color:T.textSub, lineHeight:1.6, marginBottom:12 }}>
               {limitMessage}
             </div>
