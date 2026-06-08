@@ -7,24 +7,25 @@ export async function scheduleReports() {
 
     const now = new Date()
 
-    // Calcular día actual en CST (UTC-6)
+    // Calcular hora actual en CST (UTC-6)
     const cstOffset = -6 * 60
     const cstNow = new Date(now.getTime() + (cstOffset - now.getTimezoneOffset()) * 60000)
     const dayOfWeek = cstNow.getDay() // 0=domingo, 6=sabado
     const isWeekend = dayOfWeek === 0 || dayOfWeek === 6
+    const currentHour = cstNow.getHours()
+    const currentMinute = cstNow.getMinutes()
 
-    // Obtener todos los proyectos activos
+    // Obtener todos los proyectos activos con su setup
     const projects = await (prisma.project as any).findMany({
       where: {
         OR: [
-          // Trial vigente
           { trialEndsAt: { gt: now }, status: 'TRIAL' },
-          // Suscripcion activa via Stripe (ACTIVE o TRIALING)
           { subscription: { stripeSubscriptionId: { not: null }, status: { in: ['ACTIVE', 'TRIALING'] } } }
         ]
       },
       include: {
         subscription: true,
+        competitiveSetup: true,
         reports: {
           where: { status: 'COMPLETED' as any },
           orderBy: { createdAt: 'desc' },
@@ -44,11 +45,39 @@ export async function scheduleReports() {
     for (const project of projects) {
       const freq = project.frequency || 'WEEKLY'
 
-      // BUG #7 FIX: el bloqueo de fin de semana solo aplica a planes DAILY
-      // Planes WEEKLY, BIWEEKLY y MONTHLY corren cualquier día de la semana
+      // Bloqueo fin de semana solo para DAILY
       if (isWeekend && freq === 'DAILY') {
         console.log(`[Scheduler] Fin de semana — saltando proyecto DAILY: ${project.name}`)
         continue
+      }
+
+      // Leer deliveryTime del additionalContext del setup
+      let deliveryHour: number | null = null
+      try {
+        const setup = (project as any).competitiveSetup
+        if (setup?.additionalContext) {
+          const ctx = typeof setup.additionalContext === 'string'
+            ? JSON.parse(setup.additionalContext)
+            : setup.additionalContext
+          if (ctx.deliveryTime) {
+            // deliveryTime viene como "07:00" o "07:00 AM"
+            const timeParts = ctx.deliveryTime.replace('AM','').replace('PM','').trim().split(':')
+            deliveryHour = parseInt(timeParts[0], 10)
+            // Si era PM y no es 12, sumar 12
+            if (ctx.deliveryTime.includes('PM') && deliveryHour !== 12) deliveryHour += 12
+          }
+        }
+      } catch(e) {}
+
+      // Verificar ventana de hora de entrega (±30 minutos de la hora configurada)
+      if (deliveryHour !== null) {
+        const minutosDesdeHora = (currentHour * 60 + currentMinute) - (deliveryHour * 60)
+        const enVentana = minutosDesdeHora >= 0 && minutosDesdeHora < 60
+        if (!enVentana) {
+          console.log(`[Scheduler] ${project.name} — fuera de ventana (configurado: ${deliveryHour}:00, actual CST: ${currentHour}:${String(currentMinute).padStart(2,'0')})`)
+          continue
+        }
+        console.log(`[Scheduler] ${project.name} — EN ventana de entrega (${deliveryHour}:00 CST) ✓`)
       }
 
       const horasMinimas = frecuencyHours[freq] || 168
@@ -59,7 +88,6 @@ export async function scheduleReports() {
 
       console.log(`[Scheduler] ${project.name} — freq:${freq} horasMin:${horasMinimas} horasDesde:${horasDesdeUltimo ? Math.round(horasDesdeUltimo) : 'sin reporte'}`)
 
-      // Si no hay reporte previo o ya pasó el tiempo suficiente
       const debeGenerar = !lastReport ||
         (Date.now() - new Date(lastReport.createdAt).getTime()) / (1000 * 60 * 60) >= horasMinimas
 
@@ -73,7 +101,7 @@ export async function scheduleReports() {
           continue
         }
 
-        // Verificar que no haya un reporte COMPLETED en las últimas 4 horas (anti-duplicado robusto)
+        // Anti-duplicado: no generar si ya hay uno en las últimas 4 horas
         const reporteMuyReciente = await prisma.report.findFirst({
           where: {
             projectId: project.id,
@@ -86,21 +114,7 @@ export async function scheduleReports() {
           continue
         }
 
-        // Verificar que no haya un reporte COMPLETED en las últimas 2 horas (anti-duplicado post-redeploy)
-        const reporteReciente = await prisma.report.findFirst({
-          where: {
-            projectId: project.id,
-            status: 'COMPLETED' as any,
-            createdAt: { gt: new Date(Date.now() - 2 * 60 * 60 * 1000) }
-          }
-        })
-        if (reporteReciente) {
-          console.log(`[Scheduler] Reporte generado hace menos de 2h para: ${project.name} — saltando`)
-          continue
-        }
-
         // Verificar que no haya ya un job en cola para este proyecto
-        // Verificar jobs activos o en espera (no usar jobId fijo — causaba bloqueo)
         const waiting = await reportQueue.getWaiting()
         const active = await reportQueue.getActive()
         const allPending = [...waiting, ...active]
@@ -109,8 +123,8 @@ export async function scheduleReports() {
           console.log('[Scheduler] Job ya en cola para: ' + project.name)
           continue
         }
-        const jobId = 'scheduled-' + project.id + '-' + Date.now()
 
+        const jobId = 'scheduled-' + project.id + '-' + Date.now()
         await reportQueue.add(
           'generate-report',
           { projectId: project.id, userId: project.userId, trigger: 'scheduled' },
@@ -118,7 +132,7 @@ export async function scheduleReports() {
         )
 
         encolados++
-        console.log(`[Scheduler] Encolado: ${project.name} (${freq})`)
+        console.log(`[Scheduler] Encolado: ${project.name} (${freq}) para las ${deliveryHour !== null ? deliveryHour + ':00' : 'hora libre'} CST`)
       }
     }
 
