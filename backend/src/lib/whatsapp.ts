@@ -7,15 +7,13 @@ const client = twilio(
 
 const FROM = process.env.TWILIO_WHATSAPP_FROM || 'whatsapp:+14155238886'
 const TEMPLATE_SID = 'HX577fa9c7c055dcc7b4cc2bc8973bab97'
-const SHORT_DOMAIN = 'https://r.flow11.mx' // v2
+const SHORT_DOMAIN = 'https://r.flow11.mx'
 
 async function createShortLink(url: string): Promise<string> {
   const apiToken = process.env.CF_API_TOKEN || ''
   const accountId = process.env.CLOUDFLARE_ACCOUNT_ID || ''
   const namespaceId = process.env.CF_KV_NAMESPACE_ID || ''
-  console.log('[ShortLink] CF_API_TOKEN presente:', apiToken ? 'SI (' + apiToken.substring(0,8) + '...)' : 'NO — variable vacía')
-  console.log('[ShortLink] accountId:', accountId ? accountId.substring(0,8) + '...' : 'VACÍO')
-  console.log('[ShortLink] namespaceId:', namespaceId ? namespaceId.substring(0,8) + '...' : 'VACÍO')
+
   try {
     const code = Math.random().toString(36).substring(2, 8)
     const kvUrl = `https://api.cloudflare.com/client/v4/accounts/${accountId}/storage/kv/namespaces/${namespaceId}/values/${code}`
