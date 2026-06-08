@@ -67,6 +67,8 @@ export default function DashboardPage() {
   // Bug #4: Polling más rápido durante generación
   const [pollingActive, setPollingActive] = useState(false)
   const pollingRef = useRef<NodeJS.Timeout | null>(null)
+  const countdownRef = useRef<NodeJS.Timeout | null>(null)
+  const [countdown, setCountdown] = useState(600)
   const [isDark, setIsDark] = useState(true)
   useEffect(() => {
     const saved = localStorage.getItem('theme')
@@ -221,6 +223,11 @@ export default function DashboardPage() {
       clearInterval(pollingRef.current)
       pollingRef.current = null
     }
+    if (countdownRef.current) {
+      clearInterval(countdownRef.current)
+      countdownRef.current = null
+    }
+    setCountdown(600)
     setPollingActive(false)
     setGenerating(false)
   }, [])
@@ -229,6 +236,14 @@ export default function DashboardPage() {
     if (pollingRef.current) return // ya está corriendo
     setPollingActive(true)
     setGenerating(true)
+    setCountdown(600)
+    if (countdownRef.current) clearInterval(countdownRef.current)
+    countdownRef.current = setInterval(() => {
+      setCountdown(prev => {
+        if (prev <= 1) { clearInterval(countdownRef.current!); return 0 }
+        return prev - 1
+      })
+    }, 1000)
     pollingRef.current = setInterval(async () => {
       try {
         const { data: { session: s2 } } = await supabase.auth.getSession()
@@ -546,6 +561,11 @@ export default function DashboardPage() {
                   <svg width={isMobile ? 22 : 18} height={isMobile ? 22 : 18} viewBox="0 0 24 24" fill="none" stroke={a.color} strokeWidth="2">{a.icon}</svg>
                 )}
                 <span style={{ lineHeight:1.3 }}>{a.label}</span>
+                {generating && a.label.includes('Generando') && (
+                  <span style={{ fontSize:10, color:'rgba(110,231,164,0.7)', fontWeight:500 }}>
+                    {Math.floor(countdown/60)}:{String(countdown%60).padStart(2,'0')} min
+                  </span>
+                )}
               </a>
             ))}
           </div>
