@@ -1,5 +1,5 @@
 'use client'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import posthog from 'posthog-js'
@@ -66,6 +66,7 @@ export default function DashboardPage() {
   const [nextReportInfo, setNextReportInfo] = useState('')
   // Bug #4: Polling más rápido durante generación
   const [pollingActive, setPollingActive] = useState(false)
+  const pollingRef = useRef<NodeJS.Timeout | null>(null)
   const [isDark, setIsDark] = useState(true)
   useEffect(() => {
     const saved = localStorage.getItem('theme')
@@ -148,8 +149,7 @@ export default function DashboardPage() {
     setShowConfirmModal(false)
     if (!dashData?.project?.id) return
 
-    setGenerating(true)
-    setPollingActive(true)
+    startPolling()
     try {
       const res = await fetch(`${BACKEND}/api/reports/generate/${dashData.project.id}`, {
         method: 'POST',
@@ -173,13 +173,11 @@ export default function DashboardPage() {
           setDashData(data2)
         }
       } else if (data.error === 'trial_limit') {
-        setGenerating(false)
-        setPollingActive(false)
+        stopPolling()
         router.push('/checkout?expired=1')
       } else if (data.error === 'frequency_limit') {
         // Bug #6: Modal elegante en vez de alert()
-        setGenerating(false)
-        setPollingActive(false)
+        stopPolling()
         setLimitMessage(data.message || 'Límite de frecuencia alcanzado.')
         // Calcular tiempo exacto al próximo reporte
         const freqDays: Record<string,number> = { DAILY:1, WEEKLY:7, BIWEEKLY:15, MONTHLY:30 }
@@ -204,40 +202,37 @@ export default function DashboardPage() {
         }
         setShowLimitModal(true)
       } else if (data.error === 'generating') {
-        setGenerating(true)
-        setPollingActive(true)
+        startPolling()
       } else if (data.error) {
-        setGenerating(false)
-        setPollingActive(false)
+        stopPolling()
         setLimitMessage(data.message || data.error)
         setNextReportInfo('')
         setShowLimitModal(true)
       }
     } catch(e) {
       console.error('Error generando reporte:', e)
-      setGenerating(false)
-      setPollingActive(false)
+      stopPolling()
     }
   }
 
-  // Bug #4: Polling cada 10s cuando hay reporte generándose
-  useEffect(() => {
-    if (!dashData) return
-    const hayGenerando = (dashData?.reports || []).some((r: any) => r.status === 'GENERATING')
-    // Activar polling si hay reporte generando (incluso si vino del scheduler)
-    if (hayGenerando && !pollingActive) setPollingActive(true)
-    if (!hayGenerando && pollingActive) {
-      setPollingActive(false)
-      setGenerating(false)
+  // Polling robusto con useRef — evita race conditions y intervals fantasma
+  const stopPolling = useCallback(() => {
+    if (pollingRef.current) {
+      clearInterval(pollingRef.current)
+      pollingRef.current = null
     }
-  }, [dashData?.reports])
+    setPollingActive(false)
+    setGenerating(false)
+  }, [])
 
-  useEffect(() => {
-    if (!pollingActive) return
-    const interval = setInterval(async () => {
+  const startPolling = useCallback(() => {
+    if (pollingRef.current) return // ya está corriendo
+    setPollingActive(true)
+    setGenerating(true)
+    pollingRef.current = setInterval(async () => {
       try {
         const { data: { session: s2 } } = await supabase.auth.getSession()
-        if (!s2) return
+        if (!s2) { stopPolling(); return }
         const res = await fetch(`${BACKEND}/api/dashboard/${s2.user.id}`, {
           headers: { 'Authorization': 'Bearer ' + s2.access_token }
         })
@@ -247,14 +242,29 @@ export default function DashboardPage() {
         const latest = (data.reports || []).find((r: any) => r.sectionsJson) || (data.reports || []).find((r: any) => r.status === 'COMPLETED')
         if (latest) setSelectedReport(latest)
         if (!sigueGenerando) {
-          setPollingActive(false)
-          setGenerating(false)
-          clearInterval(interval)
+          stopPolling()
         }
       } catch(e) {}
-    }, 8000) // Polling cada 8s para detectar reporte completado
-    return () => clearInterval(interval)
-  }, [pollingActive])
+    }, 8000)
+  }, [stopPolling])
+
+  // Detectar reportes GENERATING al cargar el dashboard
+  useEffect(() => {
+    if (!dashData) return
+    const hayGenerando = (dashData?.reports || []).some((r: any) => r.status === 'GENERATING')
+    if (hayGenerando && !pollingRef.current) {
+      startPolling()
+    } else if (!hayGenerando && pollingRef.current) {
+      stopPolling()
+    }
+  }, [dashData?.reports])
+
+  // Limpiar interval al desmontar el componente
+  useEffect(() => {
+    return () => {
+      if (pollingRef.current) clearInterval(pollingRef.current)
+    }
+  }, [])
 
   const handlePasswordReset = async () => {
     if (!user?.email) return
