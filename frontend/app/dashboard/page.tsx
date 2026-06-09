@@ -604,6 +604,9 @@ export default function DashboardPage() {
         {dashData?.reports?.length > 0 && (
           <div style={{...S.card, background:T.bgCard, border:`1px solid ${T.border}`, marginBottom:14, boxShadow: isDark ? 'none' : '0 1px 4px rgba(83,74,183,0.08)'}}>
             <span style={{...S.lbl, color:T.lbl}}>REPORTES GENERADOS</span>
+            <div style={{ fontSize:10, color:T.textMuted, marginTop:2, marginBottom:6, fontWeight:400, letterSpacing:'0.02em' }}>
+              * Disponibles para descarga por 30 días
+            </div>
             <div style={{ display:'flex', flexDirection:'column', gap:6, marginTop:8 }}>
               {dashData.reports.filter((r: any) => r.status !== 'FAILED').map((r: any, i: number) => (
                 <div key={i} onClick={() => r.sectionsJson && setSelectedReport(r)}
