@@ -64,6 +64,32 @@ export default function DashboardPage() {
   const [showLimitModal, setShowLimitModal] = useState(false)
   const [limitMessage, setLimitMessage] = useState('')
   const [nextReportInfo, setNextReportInfo] = useState('')
+
+  // Calcular si el usuario puede generar un reporte ahora
+  const canGenerate = (() => {
+    if (!dashData) return false
+    if (generating) return false
+    const hayGenerando = (dashData?.reports || []).some((r: any) => r.status === 'GENERATING')
+    if (hayGenerando) return false
+    const lastReport = (dashData?.reports || []).find((r: any) => r.status === 'COMPLETED')
+    if (!lastReport) return true
+    const freq = dashData?.project?.frequency || 'WEEKLY'
+    const horasMinimas: Record<string, number> = { DAILY: 22, WEEKLY: 168, BIWEEKLY: 336, MONTHLY: 720 }
+    const horasDesde = (Date.now() - new Date(lastReport.createdAt).getTime()) / (1000 * 60 * 60)
+    return horasDesde >= (horasMinimas[freq] || 168)
+  })()
+
+  // Calcular fecha del próximo reporte disponible
+  const proximaFechaReporte = (() => {
+    if (!dashData) return null
+    const lastReport = (dashData?.reports || []).find((r: any) => r.status === 'COMPLETED')
+    if (!lastReport) return null
+    const freq = dashData?.project?.frequency || 'WEEKLY'
+    const horasMinimas: Record<string, number> = { DAILY: 22, WEEKLY: 168, BIWEEKLY: 336, MONTHLY: 720 }
+    const horas = horasMinimas[freq] || 168
+    const proximaFecha = new Date(new Date(lastReport.createdAt).getTime() + horas * 60 * 60 * 1000)
+    return proximaFecha
+  })()
   // Bug #4: Polling más rápido durante generación
   const [pollingActive, setPollingActive] = useState(false)
   const pollingRef = useRef<NodeJS.Timeout | null>(null)
@@ -574,7 +600,7 @@ export default function DashboardPage() {
             {[
               { label:'Editar Configuración para Reportes', color:'#8B7BFF', bg:'rgba(139,123,255,0.12)', border:'rgba(139,123,255,0.3)', href:'/onboarding',
                 icon:<path d="M12 20h9M16.5 3.5a2.12 2.12 0 113 3L7 19l-4 1 1-4z"/> },
-              { label: generating ? 'Generando...' : 'Generar Reporte', color:'#6EE7A4', bg:'rgba(110,231,164,0.08)', border:'rgba(110,231,164,0.2)', href:'#', onClick: handleGenerateClick,
+              { label: generating ? 'Generando...' : canGenerate ? 'Generar Reporte' : proximaFechaReporte ? 'Próximo: ' + proximaFechaReporte.toLocaleDateString('es-MX', {day:'2-digit', month:'short'}) + ' ' + proximaFechaReporte.toLocaleTimeString('es-MX', {hour:'2-digit', minute:'2-digit'}) : 'Generar Reporte', color: canGenerate || generating ? '#6EE7A4' : '#5A627A', bg: canGenerate || generating ? 'rgba(110,231,164,0.08)' : 'rgba(255,255,255,0.02)', border: canGenerate || generating ? 'rgba(110,231,164,0.2)' : 'rgba(255,255,255,0.06)', href:'#', onClick: canGenerate && !generating ? handleGenerateClick : undefined,
                 icon:<><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></> },
               { label:`${(dashData?.reports || []).filter((r: any) => r.status !== 'FAILED').length} Reportes`, color:'#F2C063', bg:'rgba(242,192,99,0.08)', border:'rgba(242,192,99,0.2)', href:'#',
                 icon:<path d="M7 3h7l5 5v13a1 1 0 01-1 1H7a1 1 0 01-1-1V4a1 1 0 011-1z"/> },

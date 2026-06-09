@@ -43,7 +43,7 @@ router.post('/generate/:projectId', requireAuth, async (req: Request, res: Respo
     })
     if (lastReport && (project as any).status !== 'TRIAL') {
       const frecuencyHours: Record<string, number> = {
-        DAILY: 24, WEEKLY: 168, BIWEEKLY: 336, MONTHLY: 720
+        DAILY: 22, WEEKLY: 168, BIWEEKLY: 336, MONTHLY: 720
       }
       const freq = (project as any).frequency || 'WEEKLY'
       const horasMinimas = frecuencyHours[freq] || 168
