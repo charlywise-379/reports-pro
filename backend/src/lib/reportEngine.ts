@@ -628,7 +628,7 @@ REGLA DE ORO: Cada dato debe poder ser verificado por el cliente. Si no puedes v
       const stream = await anthropic.messages.stream({
         model: 'claude-sonnet-4-5',
         system: systemPrompt,
-        max_tokens: 16000,
+        max_tokens: 20000,
         tools: [
           {
             type: 'web_search_20250305' as any,

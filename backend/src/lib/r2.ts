@@ -20,7 +20,7 @@ export async function getSignedDownloadUrl(r2Key: string): Promise<string> {
       Bucket: process.env.R2_BUCKET_NAME || 'reports-pro-pdfs',
       Key: key,
     }),
-    { expiresIn: 60 * 60 * 24 * 30 } // 30 dias
+    { expiresIn: 60 * 60 * 24 * 7 } // 7 dias
   )
   return signedUrl
 }
@@ -45,7 +45,7 @@ export async function uploadPDFToR2(localPath: string, filename: string): Promis
       Bucket: process.env.R2_BUCKET_NAME || 'reports-pro-pdfs',
       Key: key,
     }),
-    { expiresIn: 60 * 60 * 24 * 30 } // 30 días
+    { expiresIn: 60 * 60 * 24 * 7 } // 7 días
   )
 
   return signedUrl
