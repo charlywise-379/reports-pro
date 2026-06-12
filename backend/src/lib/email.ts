@@ -100,7 +100,7 @@ export async function sendReportEmail(
 
     <div class="footer">
       Omni Reports · AI Automation · 
-      <a href="https://reports-pro.vercel.app" style="color:#8B7BFF">reports-pro.vercel.app</a>
+      <a href="https://omnireports.pro" style="color:#8B7BFF">omnireports.pro</a>
     </div>
   </div>
 </body>
