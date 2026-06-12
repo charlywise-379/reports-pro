@@ -6,8 +6,8 @@ export async function sendReportEmail(
   to: string,
   companyName: string,
   reportUrl: string,
-  weekNumber: number,
   edition: number,
+  _unused: number = 0,
   ccEmails: string[] = []
 ): Promise<void> {
 

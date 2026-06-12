@@ -80,8 +80,6 @@ router.post('/generate/:projectId', requireAuth, async (req: Request, res: Respo
     try {
       const setup = (project as any).competitiveSetup
       const companyName = setup?.companyName || 'Tu empresa'
-      const now = new Date()
-      const weekNumber = Math.ceil((now.getDate() + new Date(now.getFullYear(), now.getMonth(), 1).getDay()) / 7)
       const reportCount = await prisma.report.count({ where: { projectId, status: 'COMPLETED' as any } })
 
       if (project.deliveryEmail) {

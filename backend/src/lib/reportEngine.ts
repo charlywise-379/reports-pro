@@ -918,6 +918,8 @@ function buildReportData(project: any, aiData: any, dateInfo: any): ReportData {
   const comp2 = competitors[1]?.name || 'Competidor B'
   const comp3 = competitors[2]?.name || 'Competidor C'
 
+  const editionNumber = await prisma.report.count({ where: { projectId: project.id, status: 'COMPLETED' as any } }) + 1
+
   const weeklyPlansHTML = `
   <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:8px">
     <div style="border:1.5px solid #F7C1C1;border-radius:12px;overflow:hidden">
@@ -951,8 +953,6 @@ function buildReportData(project: any, aiData: any, dateInfo: any): ReportData {
       </div>
     </div>
   </div>`
-
-  const editionNumber = await prisma.report.count({ where: { projectId: project.id, status: 'COMPLETED' as any } }) + 1
 
   return {
     // Meta
