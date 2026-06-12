@@ -95,7 +95,7 @@ router.post('/generate/:projectId', requireAuth, async (req: Request, res: Respo
             : {}
           ccEmails = ctx.ccEmails || []
         } catch(e) {}
-        await sendReportEmail(project.deliveryEmail, companyName, signedUrl, weekNumber, reportCount, ccEmails)
+        await sendReportEmail(project.deliveryEmail, companyName, signedUrl, reportCount, reportCount, ccEmails)
       }
 
       const deliveryPhone = (project as any).deliveryPhone
