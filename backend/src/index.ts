@@ -53,7 +53,7 @@ setInterval(scheduleReports, 60 * 60 * 1000)
 console.log("Scheduler activo cada hora")
 
 app.get("/health", (req, res) => {
-  res.json({ status: "ok", message: "Reports PRO Backend", timestamp: new Date().toISOString() })
+  res.json({ status: "ok", message: "Reports PRO Backend", timestamp: new Date().toISOString(), version: "reporte-fix-v2" })
 })
 
 // Sentry error handler — debe ir después de todas las rutas
