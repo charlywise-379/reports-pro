@@ -952,7 +952,7 @@ function buildReportData(project: any, aiData: any, dateInfo: any): ReportData {
     </div>
   </div>`
 
-  const editionNumber = await prisma.report.count({ where: { projectId: project.id, status: 'COMPLETED' as any } })
+  const editionNumber = await prisma.report.count({ where: { projectId: project.id, status: 'COMPLETED' as any } }) + 1
 
   return {
     // Meta
