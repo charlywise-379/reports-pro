@@ -965,7 +965,7 @@ function buildReportData(project: any, aiData: any, dateInfo: any): ReportData {
     })(),
     weekNumber: dateInfo.weekNumber,
     year: dateInfo.year,
-    edition: reportCount,
+    edition: await prisma.report.count({ where: { projectId: project.id, status: 'COMPLETED' as any } }),
     periodStart: dateInfo.periodStart,
     periodEnd: dateInfo.periodEnd,
     generatedAt: dateInfo.generatedAt,
