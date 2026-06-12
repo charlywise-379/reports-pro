@@ -952,6 +952,8 @@ function buildReportData(project: any, aiData: any, dateInfo: any): ReportData {
     </div>
   </div>`
 
+  const editionNumber = await prisma.report.count({ where: { projectId: project.id, status: 'COMPLETED' as any } })
+
   return {
     // Meta
     companyName,
@@ -965,7 +967,7 @@ function buildReportData(project: any, aiData: any, dateInfo: any): ReportData {
     })(),
     weekNumber: dateInfo.weekNumber,
     year: dateInfo.year,
-    edition: await prisma.report.count({ where: { projectId: project.id, status: 'COMPLETED' as any } }),
+    edition: editionNumber,
     periodStart: dateInfo.periodStart,
     periodEnd: dateInfo.periodEnd,
     generatedAt: dateInfo.generatedAt,
