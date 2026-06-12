@@ -707,7 +707,7 @@ const ACTION_COLORS: Record<string, { color: string; borderColor: string }> = {
 }
 
 // ─── Construir ReportData desde respuesta de Claude ──
-function buildReportData(project: any, aiData: any, dateInfo: any): ReportData {
+function buildReportData(project: any, aiData: any, dateInfo: any, editionNumber: number): ReportData {
   const now = new Date()
   const nextReport = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000)
   const companyName = project.companyName || project.name || 'Tu Empresa'
@@ -918,7 +918,6 @@ function buildReportData(project: any, aiData: any, dateInfo: any): ReportData {
   const comp2 = competitors[1]?.name || 'Competidor B'
   const comp3 = competitors[2]?.name || 'Competidor C'
 
-  const editionNumber = await prisma.report.count({ where: { projectId: project.id, status: 'COMPLETED' as any } }) + 1
 
   const weeklyPlansHTML = `
   <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:8px">
@@ -1206,7 +1205,8 @@ export async function generateReport(project: any, outputPath: string): Promise<
   }
 
   // 2. Construir datos completos del reporte
-  const data = buildReportData(project, aiData, dateInfo)
+  const editionNumber = await prisma.report.count({ where: { projectId: project.id, status: 'COMPLETED' as any } }) + 1
+  const data = buildReportData(project, aiData, dateInfo, editionNumber)
 
   // 3. Cargar y renderizar template
   const templatePath = path.join(__dirname, '../templates/competitive-report.html')
