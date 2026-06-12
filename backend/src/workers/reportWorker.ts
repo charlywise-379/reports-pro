@@ -85,13 +85,10 @@ export function startReportWorker() {
 
         const setup = (project as any).competitiveSetup
         const companyName = setup?.companyName || 'Tu empresa'
-        const now = new Date()
-        const weekNumber = Math.ceil((now.getDate() + new Date(now.getFullYear(), now.getMonth(), 1).getDay()) / 7)
         const reportCount = await prisma.report.count({ where: { projectId, status: 'COMPLETED' as any } })
 
         if (project.deliveryEmail) {
           const { sendReportEmail } = await import('../lib/email')
-          // Obtener CC emails de colegas invitados
           const setupForCC = (project as any).competitiveSetup
           let ccEmails: string[] = []
           try {
@@ -100,7 +97,7 @@ export function startReportWorker() {
               : {}
             ccEmails = ctx.ccEmails || []
           } catch(e) {}
-          await sendReportEmail(project.deliveryEmail, companyName, signedUrl, weekNumber, reportCount, ccEmails)
+          await sendReportEmail(project.deliveryEmail, companyName, signedUrl, reportCount, reportCount, ccEmails)
         }
 
         const deliveryPhone = (project as any).deliveryPhone

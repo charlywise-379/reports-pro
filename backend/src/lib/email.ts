@@ -11,7 +11,7 @@ export async function sendReportEmail(
   ccEmails: string[] = []
 ): Promise<void> {
 
-  const subject = `📊 Tu reporte de inteligencia competitiva — ${companyName} · Sem ${weekNumber}`
+  const subject = `📊 Tu reporte de inteligencia competitiva — ${companyName} · Reporte #${edition}`
 
   const html = `
 <!DOCTYPE html>
@@ -44,7 +44,7 @@ export async function sendReportEmail(
         Tu reporte está listo 📊
       </div>
       <div style="font-size:12px;color:#5A627A;margin-top:6px">
-        ${companyName} · Edición ${edition} · Semana ${weekNumber}
+        ${companyName} · Reporte #${edition}
       </div>
     </div>
 

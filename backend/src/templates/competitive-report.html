@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Omni Reports · AI Automation · {{companyName}} · Sem {{weekNumber}} · {{year}}</title>
+<title>Omni Reports · AI Automation · {{companyName}} · Reporte #{{edition}} · {{year}}</title>
 <style>
   *{box-sizing:border-box;margin:0;padding:0;-webkit-print-color-adjust:exact;print-color-adjust:exact}
   body{font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;background:#fff;color:#1A1730;font-size:12px;line-height:1.4}
@@ -47,7 +47,7 @@
     </div>
     <div style="display:flex;gap:22px;align-items:center">
       <div style="text-align:center"><div style="font-size:8px;color:#5A627A;letter-spacing:.1em;font-weight:700">PERÍODO</div><div style="font-size:10px;font-weight:700;color:#C4C9E2">{{periodStart}} — {{periodEnd}}</div></div>
-      <div style="text-align:center"><div style="font-size:8px;color:#5A627A;letter-spacing:.1em;font-weight:700">EDICIÓN</div><div style="font-size:10px;font-weight:700;color:#C4C9E2">{{edition}} · Sem {{weekNumber}}</div></div>
+      <div style="text-align:center"><div style="font-size:8px;color:#5A627A;letter-spacing:.1em;font-weight:700">EDICIÓN</div><div style="font-size:10px;font-weight:700;color:#C4C9E2">Reporte #{{edition}}</div></div>
       <div style="text-align:center"><div style="font-size:8px;color:#5A627A;letter-spacing:.1em;font-weight:700">GENERADO</div><div style="font-size:10px;font-weight:700;color:#C4C9E2">{{generatedAt}}</div></div>
       <div style="display:flex;align-items:center;gap:6px;background:rgba(110,231,164,0.12);border:1.5px solid rgba(110,231,164,0.35);border-radius:20px;padding:5px 12px">
         <div style="width:6px;height:6px;border-radius:50%;background:#6EE7A4"></div>
@@ -126,7 +126,7 @@
       <div style="margin-top:8px;background:#F8F7FF;border-radius:8px;border:1px solid #EEEDFE;padding:8px;text-align:center">
         <div style="font-size:7px;font-weight:700;color:#534AB7;letter-spacing:.1em;margin-bottom:3px">TENDENCIA GENERAL</div>
         <div style="font-size:13px;font-weight:900;color:#1D9E75;line-height:1.2">{{generalTrend}}</div>
-        <div style="font-size:8px;color:#888;margin-top:2px">vs semana anterior {{trendDelta}} pts</div>
+        <div style="font-size:8px;color:#888;margin-top:2px">vs reporte anterior {{trendDelta}} pts</div>
       </div>
     </div>
     <div style="padding:14px 18px">
@@ -144,15 +144,15 @@
       </div>
     </div>
   </div>
-  <div class="footer"><div class="footer-l">Omni Reports · Confidencial · No distribuir</div><div class="footer-r">{{companyName}} · Sem {{weekNumber}} · {{year}} · Pág. 1 de 11</div></div>
+  <div class="footer"><div class="footer-l">Omni Reports · Confidencial · No distribuir</div><div class="footer-r">{{companyName}} · Reporte #{{edition}} · {{year}} · Pág. 1 de 11</div></div>
 </div>
 
 <!-- ═══════════════════════════════════════════
      PÁG 2 — TERMÓMETRO DEL MERCADO
 ═══════════════════════════════════════════ -->
 <div class="page">
-  <div class="hdr"><div class="hdr-logo"><div class="hdr-badge">OM</div><div><div class="hdr-name">Omni Reports · AI Automation</div><div class="hdr-sub">INTELIGENCIA COMPETITIVA</div></div></div><div class="hdr-right"><div class="hdr-meta">{{companyName}} · Agencia Marketing Digital · Sem {{weekNumber}} · {{year}}</div><div class="hdr-pag">Pág. 2 de 11</div></div></div>
-  <div class="title-band"><div><span class="title-bar"></span><span class="title-text">Termómetro del Mercado</span></div><div class="title-sub">Estado general del ecosistema competitivo · Semana {{weekNumber}} · {{year}}</div></div>
+  <div class="hdr"><div class="hdr-logo"><div class="hdr-badge">OM</div><div><div class="hdr-name">Omni Reports · AI Automation</div><div class="hdr-sub">INTELIGENCIA COMPETITIVA</div></div></div><div class="hdr-right"><div class="hdr-meta">{{companyName}} · Reporte #{{edition}} · {{year}}</div><div class="hdr-pag">Pág. 2 de 11</div></div></div>
+  <div class="title-band"><div><span class="title-bar"></span><span class="title-text">Termómetro del Mercado</span></div><div class="title-sub">Estado general del ecosistema competitivo · Reporte #{{edition}} · {{year}}</div></div>
   <div class="body-wrap">
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;align-items:center;margin-bottom:14px">
       <!-- Gauge principal — FIXED: etiquetas BAJO/ALTO fuera del SVG -->
@@ -227,15 +227,15 @@
       </div>
     </div>
   </div>
-  <div class="footer"><div class="footer-l">Omni Reports · Confidencial · No distribuir</div><div class="footer-r">{{companyName}} · Sem {{weekNumber}} · {{year}} · Pág. 2 de 11</div></div>
+  <div class="footer"><div class="footer-l">Omni Reports · Confidencial · No distribuir</div><div class="footer-r">{{companyName}} · Reporte #{{edition}} · {{year}} · Pág. 2 de 11</div></div>
 </div>
 
 <!-- ═══════════════════════════════════════════
      PÁG 3 — RANKING DE COMPETIDORES
 ═══════════════════════════════════════════ -->
 <div class="page">
-  <div class="hdr"><div class="hdr-logo"><div class="hdr-badge">OM</div><div><div class="hdr-name">Omni Reports · AI Automation</div><div class="hdr-sub">INTELIGENCIA COMPETITIVA</div></div></div><div class="hdr-right"><div class="hdr-meta">{{companyName}} · Agencia Marketing Digital · Sem {{weekNumber}} · {{year}}</div><div class="hdr-pag">Pág. 3 de 11</div></div></div>
-  <div class="title-band"><div><span class="title-bar"></span><span class="title-text">Competidores con más actividad (monitoreo)</span></div><div class="title-sub">Ordenados por amenaza real · Semana {{weekNumber}} · {{year}}</div></div>
+  <div class="hdr"><div class="hdr-logo"><div class="hdr-badge">OM</div><div><div class="hdr-name">Omni Reports · AI Automation</div><div class="hdr-sub">INTELIGENCIA COMPETITIVA</div></div></div><div class="hdr-right"><div class="hdr-meta">{{companyName}} · Reporte #{{edition}} · {{year}}</div><div class="hdr-pag">Pág. 3 de 11</div></div></div>
+  <div class="title-band"><div><span class="title-bar"></span><span class="title-text">Competidores con más actividad (monitoreo)</span></div><div class="title-sub">Ordenados por amenaza real · Reporte #{{edition}} · {{year}}</div></div>
   <div class="body-wrap">
     <!-- Tabla de competidores principales -->
     <table style="margin-bottom:8px;font-size:8px">
@@ -309,14 +309,14 @@
       </div>
     </div>
   </div>
-  <div class="footer"><div class="footer-l">Omni Reports · Confidencial · No distribuir</div><div class="footer-r">{{companyName}} · Sem {{weekNumber}} · {{year}} · Pág. 3 de 11</div></div>
+  <div class="footer"><div class="footer-l">Omni Reports · Confidencial · No distribuir</div><div class="footer-r">{{companyName}} · Reporte #{{edition}} · {{year}} · Pág. 3 de 11</div></div>
 </div>
 
 <!-- ═══════════════════════════════════════════
      PÁG 4 — EARLY WARNING ALERTS™
 ═══════════════════════════════════════════ -->
 <div class="page">
-  <div class="hdr"><div class="hdr-logo"><div class="hdr-badge">OM</div><div><div class="hdr-name">Omni Reports · AI Automation</div><div class="hdr-sub">INTELIGENCIA COMPETITIVA</div></div></div><div class="hdr-right"><div class="hdr-meta">{{companyName}} · Agencia Marketing Digital · Sem {{weekNumber}} · {{year}}</div><div class="hdr-pag">Pág. 4 de 11</div></div></div>
+  <div class="hdr"><div class="hdr-logo"><div class="hdr-badge">OM</div><div><div class="hdr-name">Omni Reports · AI Automation</div><div class="hdr-sub">INTELIGENCIA COMPETITIVA</div></div></div><div class="hdr-right"><div class="hdr-meta">{{companyName}} · Reporte #{{edition}} · {{year}}</div><div class="hdr-pag">Pág. 4 de 11</div></div></div>
   <div style="background:linear-gradient(135deg,#1A1730,#2D2550);padding:14px 28px;border-bottom:2px solid #534AB7">
     <div style="display:flex;align-items:center;gap:7px;margin-bottom:3px"><div style="width:3px;height:14px;background:#FF6B6B;border-radius:2px"></div><div style="font-size:7px;font-weight:700;letter-spacing:.15em;color:#FF6B6B;text-transform:uppercase">Página 4 · Early Warning Alerts™</div></div>
     <div style="font-size:16px;font-weight:900;color:#F0F2FF;margin-left:10px">Señales antes que el mercado las vea</div>
@@ -357,15 +357,15 @@
       {{/each}}
     </div>
   </div>
-  <div class="footer"><div class="footer-l">Omni Reports · Confidencial · No distribuir</div><div class="footer-r">{{companyName}} · Sem {{weekNumber}} · {{year}} · Pág. 4 de 11</div></div>
+  <div class="footer"><div class="footer-l">Omni Reports · Confidencial · No distribuir</div><div class="footer-r">{{companyName}} · Reporte #{{edition}} · {{year}} · Pág. 4 de 11</div></div>
 </div>
 
 <!-- ═══════════════════════════════════════════
      PÁG 5 — CAMBIOS DETECTADOS (6+6 cajas)
 ═══════════════════════════════════════════ -->
 <div class="page">
-  <div class="hdr"><div class="hdr-logo"><div class="hdr-badge">OM</div><div><div class="hdr-name">Omni Reports · AI Automation</div><div class="hdr-sub">INTELIGENCIA COMPETITIVA</div></div></div><div class="hdr-right"><div class="hdr-meta">{{companyName}} · Agencia Marketing Digital · Sem {{weekNumber}} · {{year}}</div><div class="hdr-pag">Pág. 5 de 11</div></div></div>
-  <div class="title-band"><div><span class="title-bar"></span><span class="title-text">Cambios Detectados Esta Semana</span></div><div class="title-sub">{{totalChanges}} movimientos registrados · Semana {{weekNumber}} · {{periodStart}} - {{periodEnd}}</div></div>
+  <div class="hdr"><div class="hdr-logo"><div class="hdr-badge">OM</div><div><div class="hdr-name">Omni Reports · AI Automation</div><div class="hdr-sub">INTELIGENCIA COMPETITIVA</div></div></div><div class="hdr-right"><div class="hdr-meta">{{companyName}} · Reporte #{{edition}} · {{year}}</div><div class="hdr-pag">Pág. 5 de 11</div></div></div>
+  <div class="title-band"><div><span class="title-bar"></span><span class="title-text">Cambios Detectados Esta Semana</span></div><div class="title-sub">{{totalChanges}} movimientos registrados · Reporte #{{edition}} · {{periodStart}} — {{periodEnd}}</div></div>
   <div class="body-wrap" style="display:flex;flex-direction:column;gap:8px;padding-bottom:44px">
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
       <div style="display:flex;flex-direction:column;gap:6px">
@@ -414,7 +414,7 @@
       </div>
     </div>
     <div style="background:#1A1730;border-radius:8px;padding:7px 16px;display:flex;align-items:center;gap:6px">
-      <span style="font-size:7px;font-weight:700;letter-spacing:.1em;color:#8B7BFF;white-space:nowrap">📊 SEM {{weekNumber}}</span>
+      <span style="font-size:7px;font-weight:700;letter-spacing:.1em;color:#8B7BFF;white-space:nowrap">📊 RPT #{{edition}}</span>
       <div style="width:1px;height:20px;background:rgba(255,255,255,0.1);flex-shrink:0"></div>
       <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr 1fr 1fr;gap:6px;flex:1">
         <div style="text-align:center;padding:4px 4px;background:rgba(255,107,107,0.1);border-radius:6px;display:flex;align-items:center;justify-content:center;gap:5px">
@@ -444,15 +444,15 @@
       </div>
     </div>
   </div>
-  <div class="footer"><div class="footer-l">Omni Reports · Confidencial · No distribuir</div><div class="footer-r">{{companyName}} · Sem {{weekNumber}} · {{year}} · Pág. 5 de 11</div></div>
+  <div class="footer"><div class="footer-l">Omni Reports · Confidencial · No distribuir</div><div class="footer-r">{{companyName}} · Reporte #{{edition}} · {{year}} · Pág. 5 de 11</div></div>
 </div>
 
 <!-- ═══════════════════════════════════════════
      PÁG 6 — INTELIGENCIA COMERCIAL
 ═══════════════════════════════════════════ -->
 <div class="page">
-  <div class="hdr"><div class="hdr-logo"><div class="hdr-badge">OM</div><div><div class="hdr-name">Omni Reports · AI Automation</div><div class="hdr-sub">INTELIGENCIA COMPETITIVA</div></div></div><div class="hdr-right"><div class="hdr-meta">{{companyName}} · Agencia Marketing Digital · Sem {{weekNumber}} · {{year}}</div><div class="hdr-pag">Pág. 6 de 11</div></div></div>
-  <div class="title-band"><div><span class="title-bar"></span><span class="title-text">Inteligencia Comercial</span></div><div class="title-sub">Dónde están ganando dinero tus competidores · Semana {{weekNumber}} · {{year}}</div></div>
+  <div class="hdr"><div class="hdr-logo"><div class="hdr-badge">OM</div><div><div class="hdr-name">Omni Reports · AI Automation</div><div class="hdr-sub">INTELIGENCIA COMPETITIVA</div></div></div><div class="hdr-right"><div class="hdr-meta">{{companyName}} · Reporte #{{edition}} · {{year}}</div><div class="hdr-pag">Pág. 6 de 11</div></div></div>
+  <div class="title-band"><div><span class="title-bar"></span><span class="title-text">Inteligencia Comercial</span></div><div class="title-sub">Dónde están ganando dinero tus competidores · Reporte #{{edition}} · {{year}}</div></div>
   <div class="body-wrap">
     <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:12px">
       <!-- Precios -->
@@ -545,14 +545,14 @@
       </div>
     </div>
   </div>
-  <div class="footer"><div class="footer-l">Omni Reports · Confidencial · No distribuir</div><div class="footer-r">{{companyName}} · Sem {{weekNumber}} · {{year}} · Pág. 6 de 11</div></div>
+  <div class="footer"><div class="footer-l">Omni Reports · Confidencial · No distribuir</div><div class="footer-r">{{companyName}} · Reporte #{{edition}} · {{year}} · Pág. 6 de 11</div></div>
 </div>
 
 <!-- ═══════════════════════════════════════════
      PÁG 7 — OPORTUNIDADES
 ═══════════════════════════════════════════ -->
 <div class="page">
-  <div class="hdr"><div class="hdr-logo"><div class="hdr-badge">OM</div><div><div class="hdr-name">Omni Reports · AI Automation</div><div class="hdr-sub">INTELIGENCIA COMPETITIVA</div></div></div><div class="hdr-right"><div class="hdr-meta">{{companyName}} · Agencia Marketing Digital · Sem {{weekNumber}} · {{year}}</div><div class="hdr-pag">Pág. 7 de 11</div></div></div>
+  <div class="hdr"><div class="hdr-logo"><div class="hdr-badge">OM</div><div><div class="hdr-name">Omni Reports · AI Automation</div><div class="hdr-sub">INTELIGENCIA COMPETITIVA</div></div></div><div class="hdr-right"><div class="hdr-meta">{{companyName}} · Reporte #{{edition}} · {{year}}</div><div class="hdr-pag">Pág. 7 de 11</div></div></div>
   <div style="background:linear-gradient(135deg,#0A3D2B,#1A1730);padding:14px 28px;border-bottom:2px solid #1D9E75">
     <div style="display:flex;justify-content:space-between;align-items:center">
       <div>
@@ -599,14 +599,14 @@
       </div>
     </div>
   </div>
-  <div class="footer"><div class="footer-l">Omni Reports · Confidencial · No distribuir</div><div class="footer-r">{{companyName}} · Sem {{weekNumber}} · {{year}} · Pág. 7 de 11</div></div>
+  <div class="footer"><div class="footer-l">Omni Reports · Confidencial · No distribuir</div><div class="footer-r">{{companyName}} · Reporte #{{edition}} · {{year}} · Pág. 7 de 11</div></div>
 </div>
 
 <!-- ═══════════════════════════════════════════
      PÁG 8 — RIESGOS ESTRATÉGICOS
 ═══════════════════════════════════════════ -->
 <div class="page">
-  <div class="hdr"><div class="hdr-logo"><div class="hdr-badge">OM</div><div><div class="hdr-name">Omni Reports · AI Automation</div><div class="hdr-sub">INTELIGENCIA COMPETITIVA</div></div></div><div class="hdr-right"><div class="hdr-meta">{{companyName}} · Agencia Marketing Digital · Sem {{weekNumber}} · {{year}}</div><div class="hdr-pag">Pág. 8 de 11</div></div></div>
+  <div class="hdr"><div class="hdr-logo"><div class="hdr-badge">OM</div><div><div class="hdr-name">Omni Reports · AI Automation</div><div class="hdr-sub">INTELIGENCIA COMPETITIVA</div></div></div><div class="hdr-right"><div class="hdr-meta">{{companyName}} · Reporte #{{edition}} · {{year}}</div><div class="hdr-pag">Pág. 8 de 11</div></div></div>
   <div style="background:linear-gradient(135deg,#2D0A0A,#1A1730);padding:14px 28px;border-bottom:2px solid #E24B4A">
     <div style="display:flex;justify-content:space-between;align-items:center">
       <div>
@@ -652,14 +652,14 @@
       {{/each}}
     </div>
   </div>
-  <div class="footer"><div class="footer-l">Omni Reports · Confidencial · No distribuir</div><div class="footer-r">{{companyName}} · Sem {{weekNumber}} · {{year}} · Pág. 8 de 11</div></div>
+  <div class="footer"><div class="footer-l">Omni Reports · Confidencial · No distribuir</div><div class="footer-r">{{companyName}} · Reporte #{{edition}} · {{year}} · Pág. 8 de 11</div></div>
 </div>
 
 <!-- ═══════════════════════════════════════════
      PÁG 9 — BENCHMARK ESTRATÉGICO
 ═══════════════════════════════════════════ -->
 <div class="page">
-  <div class="hdr"><div class="hdr-logo"><div class="hdr-badge">OM</div><div><div class="hdr-name">Omni Reports · AI Automation</div><div class="hdr-sub">INTELIGENCIA COMPETITIVA</div></div></div><div class="hdr-right"><div class="hdr-meta">{{companyName}} · Agencia Marketing Digital · Sem {{weekNumber}} · {{year}}</div><div class="hdr-pag">Pág. 9 de 11</div></div></div>
+  <div class="hdr"><div class="hdr-logo"><div class="hdr-badge">OM</div><div><div class="hdr-name">Omni Reports · AI Automation</div><div class="hdr-sub">INTELIGENCIA COMPETITIVA</div></div></div><div class="hdr-right"><div class="hdr-meta">{{companyName}} · Reporte #{{edition}} · {{year}}</div><div class="hdr-pag">Pág. 9 de 11</div></div></div>
   <div class="title-band"><div><span class="title-bar"></span><span class="title-text">Benchmark Estratégico</span></div><div class="title-sub">Tu empresa vs el mercado · 8 factores clave · Semana {{weekNumber}}</div></div>
   <div class="body-wrap">
     <!-- Tabla benchmark con datos reales de Claude -->
@@ -711,14 +711,14 @@
       </div>
     </div>
   </div>
-  <div class="footer"><div class="footer-l">Omni Reports · Confidencial · No distribuir</div><div class="footer-r">{{companyName}} · Sem {{weekNumber}} · {{year}} · Pág. 9 de 11</div></div>
+  <div class="footer"><div class="footer-l">Omni Reports · Confidencial · No distribuir</div><div class="footer-r">{{companyName}} · Reporte #{{edition}} · {{year}} · Pág. 9 de 11</div></div>
 </div>
 
 <!-- ═══════════════════════════════════════════
      PÁG 10 — RECOMENDACIONES EJECUTABLES
 ═══════════════════════════════════════════ -->
 <div class="page">
-  <div class="hdr"><div class="hdr-logo"><div class="hdr-badge">OM</div><div><div class="hdr-name">Omni Reports · AI Automation</div><div class="hdr-sub">INTELIGENCIA COMPETITIVA</div></div></div><div class="hdr-right"><div class="hdr-meta">{{companyName}} · Agencia Marketing Digital · Sem {{weekNumber}} · {{year}}</div><div class="hdr-pag">Pág. 10 de 11</div></div></div>
+  <div class="hdr"><div class="hdr-logo"><div class="hdr-badge">OM</div><div><div class="hdr-name">Omni Reports · AI Automation</div><div class="hdr-sub">INTELIGENCIA COMPETITIVA</div></div></div><div class="hdr-right"><div class="hdr-meta">{{companyName}} · Reporte #{{edition}} · {{year}}</div><div class="hdr-pag">Pág. 10 de 11</div></div></div>
   <div class="title-band"><div><span class="title-bar"></span><span class="title-text">Recomendaciones Ejecutables</span></div><div class="title-sub">No teoría. Acción inmediata. · Responsable + Tiempo estimado + Impacto</div></div>
   <div class="body-wrap">
     <div style="font-size:7px;font-weight:700;letter-spacing:.15em;color:#E24B4A;text-transform:uppercase;margin-bottom:8px">🔴 Prioridad alta — ejecutar esta semana</div>
@@ -777,14 +777,14 @@
       {{/each}}
     </div>
   </div>
-  <div class="footer"><div class="footer-l">Omni Reports · Confidencial · No distribuir</div><div class="footer-r">{{companyName}} · Sem {{weekNumber}} · {{year}} · Pág. 10 de 11</div></div>
+  <div class="footer"><div class="footer-l">Omni Reports · Confidencial · No distribuir</div><div class="footer-r">{{companyName}} · Reporte #{{edition}} · {{year}} · Pág. 10 de 11</div></div>
 </div>
 
 <!-- ═══════════════════════════════════════════
      PÁG 11 — PLAN 30 DÍAS + TERMÓMETROS
 ═══════════════════════════════════════════ -->
 <div class="page">
-  <div class="hdr"><div class="hdr-logo"><div class="hdr-badge">OM</div><div><div class="hdr-name">Omni Reports · AI Automation</div><div class="hdr-sub">INTELIGENCIA COMPETITIVA</div></div></div><div class="hdr-right"><div class="hdr-meta">{{companyName}} · Agencia Marketing Digital · Sem {{weekNumber}} · {{year}}</div><div class="hdr-pag">Pág. 11 de 11</div></div></div>
+  <div class="hdr"><div class="hdr-logo"><div class="hdr-badge">OM</div><div><div class="hdr-name">Omni Reports · AI Automation</div><div class="hdr-sub">INTELIGENCIA COMPETITIVA</div></div></div><div class="hdr-right"><div class="hdr-meta">{{companyName}} · Reporte #{{edition}} · {{year}}</div><div class="hdr-pag">Pág. 11 de 11</div></div></div>
   <div style="background:linear-gradient(135deg,#1A1730,#2A1F4E);padding:12px 28px;border-bottom:2px solid #8B7BFF">
     <div style="display:flex;justify-content:space-between;align-items:center">
       <div>
@@ -895,7 +895,7 @@
       </div>
     </div>
   </div>
-  <div class="footer"><div class="footer-l">Omni Reports · Confidencial · No distribuir</div><div class="footer-r">{{companyName}} · Sem {{weekNumber}} · {{year}} · Pág. 11 de 11 · Fin del reporte</div></div>
+  <div class="footer"><div class="footer-l">Omni Reports · Confidencial · No distribuir</div><div class="footer-r">{{companyName}} · Reporte #{{edition}} · {{year}} · Pág. 11 de 11 · Fin del reporte</div></div>
 </div>
 
 </body>

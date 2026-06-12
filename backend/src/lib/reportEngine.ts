@@ -965,7 +965,7 @@ function buildReportData(project: any, aiData: any, dateInfo: any): ReportData {
     })(),
     weekNumber: dateInfo.weekNumber,
     year: dateInfo.year,
-    edition: 1,
+    edition: reportCount,
     periodStart: dateInfo.periodStart,
     periodEnd: dateInfo.periodEnd,
     generatedAt: dateInfo.generatedAt,
@@ -1280,7 +1280,7 @@ export async function generateReport(project: any, outputPath: string): Promise<
         where: { id: project.reportId },
         data: {
           sectionsJson,
-          reportTitle: `Inteligencia Competitiva · Sem ${data.weekNumber} · ${data.year}`,
+          reportTitle: `Inteligencia Competitiva · Reporte #${data.edition} · ${data.year}`,
           pdfSizeBytes: Buffer.from(pdfBuffer).length,
           status: 'COMPLETED' as any,
         }
