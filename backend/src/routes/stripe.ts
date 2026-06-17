@@ -84,6 +84,19 @@ router.post('/webhook', async (req: Request, res: Response) => {
         const proj = await (prisma.project as any).findUnique({ where: { id: projectId } })
         const freq = proj?.frequency || 'WEEKLY'
 
+        const priceId = sub.items.data[0].price.id
+        const priceMap: Record<string,number> = {
+          "price_1TbAByRmWEBJMGXdUCjaNSAN": 49,
+          "price_1TbABzRmWEBJMGXdVRxXDOra": 79,
+          "price_1TbAC0RmWEBJMGXdVhvlncr9": 99,
+          "price_1TbAC0RmWEBJMGXd1khQ2wEJ": 149,
+          "price_1TbAC1RmWEBJMGXdTUOqMqN0": 39.2,
+          "price_1TbAC2RmWEBJMGXdpyYqw4xR": 63.2,
+          "price_1TbAC2RmWEBJMGXdA7AvWUtG": 79.2,
+          "price_1TbAC3RmWEBJMGXd4F7SbDYw": 119.2
+        }
+        const trialEnd = sub.trial_end ? new Date(sub.trial_end * 1000) : new Date(Date.now() + 7*24*60*60*1000)
+
         await (prisma.subscription as any).upsert({
           where: { projectId },
           create: {
@@ -91,17 +104,19 @@ router.post('/webhook', async (req: Request, res: Response) => {
             userId,
             stripeCustomerId: session.customer,
             stripeSubscriptionId: session.subscription,
-            stripePriceId: sub.items.data[0].price.id,
+            stripePriceId: priceId,
             status: 'TRIALING',
             frequency: freq,
-            trialEndsAt: new Date(sub.trial_end! * 1000),
+            pricePerMonth: priceMap[priceId] || 49,
+            trialEndsAt: trialEnd,
           },
           update: {
             stripeCustomerId: session.customer,
             stripeSubscriptionId: session.subscription,
-            stripePriceId: sub.items.data[0].price.id,
+            stripePriceId: priceId,
             status: 'TRIALING',
-            trialEndsAt: new Date(sub.trial_end! * 1000),
+            pricePerMonth: priceMap[priceId] || 49,
+            trialEndsAt: trialEnd,
           }
         })
 
