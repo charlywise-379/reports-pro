@@ -117,13 +117,19 @@ router.post('/webhook', async (req: Request, res: Response) => {
         const projectId = sub.metadata?.projectId
         if (!projectId) break
 
+        const updateData: any = {
+          status: sub.status.toUpperCase(),
+        }
+        if (sub.current_period_start) {
+          updateData.currentPeriodStart = new Date(sub.current_period_start * 1000)
+        }
+        if (sub.current_period_end) {
+          updateData.currentPeriodEnd = new Date(sub.current_period_end * 1000)
+        }
+
         await (prisma.subscription as any).updateMany({
           where: { stripeSubscriptionId: sub.id },
-          data: {
-            status: sub.status.toUpperCase(),
-            currentPeriodStart: new Date(sub.current_period_start * 1000),
-            currentPeriodEnd: new Date(sub.current_period_end * 1000),
-          }
+          data: updateData
         })
         break
       }
