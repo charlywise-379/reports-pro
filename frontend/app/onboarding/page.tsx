@@ -757,7 +757,7 @@ function Step6({ data, set, isMobile }: any) {
           )}
         </div>
         <div style={S.card}>
-          <SectionNum n="03" label="Horario · UTC-5" />
+          <SectionNum n="03" label="Horario" />
           <div style={{ display:'flex', flexWrap:'wrap', gap:6 }}>
             {TIMES.map((t,i)=>(
               <button key={i} onClick={()=>set('deliveryTime',i)} style={{ padding:'8px 12px', borderRadius:10, border:'1px solid', fontSize:12, fontWeight:700, fontFamily:'monospace', cursor:'pointer', background: data.deliveryTime===i ? '#8B7BFF' : 'rgba(255,255,255,0.04)', borderColor: data.deliveryTime===i ? '#8B7BFF' : 'rgba(255,255,255,0.08)', color: data.deliveryTime===i ? '#fff' : '#5A627A' }}>{t}</button>
