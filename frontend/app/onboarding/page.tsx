@@ -739,11 +739,22 @@ function Step6({ data, set, isMobile }: any) {
       <div style={{ display:'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap:16, marginBottom:16 }}>
         <div style={S.card}>
           <SectionNum n="02" label="Día de entrega" />
-          <div style={{ display:'grid', gridTemplateColumns:'repeat(4,1fr)', gap:4 }}>
-            {DAYS.map((d,i)=>(
-              <button key={i} onClick={()=>set('deliveryDay',i)} style={{ padding:'8px 4px', borderRadius:10, border:'1px solid', fontSize:11, fontWeight:700, cursor:'pointer', textAlign:'center' as const, background: data.deliveryDay===i ? '#8B7BFF' : 'rgba(255,255,255,0.04)', borderColor: data.deliveryDay===i ? '#8B7BFF' : 'rgba(255,255,255,0.08)', color: data.deliveryDay===i ? '#fff' : '#5A627A' }}>{d}</button>
-            ))}
-          </div>
+          {data.frequency === 'DAILY' ? (
+            <>
+              <div style={{ display:'grid', gridTemplateColumns:'repeat(4,1fr)', gap:4 }}>
+                {DAYS.map((d,i)=>(
+                  <button key={i} disabled style={{ padding:'8px 4px', borderRadius:10, border:'1px solid', fontSize:11, fontWeight:700, cursor:'not-allowed', textAlign:'center' as const, background:'#8B7BFF', borderColor:'#8B7BFF', color:'#fff', opacity:0.7 }}>{d}</button>
+                ))}
+              </div>
+              <p style={{ fontSize:11, color:'#8B7BFF', marginTop:10 }}>📅 Plan Diario — tu reporte llega todos los días hábiles</p>
+            </>
+          ) : (
+            <div style={{ display:'grid', gridTemplateColumns:'repeat(4,1fr)', gap:4 }}>
+              {DAYS.map((d,i)=>(
+                <button key={i} onClick={()=>set('deliveryDay',i)} style={{ padding:'8px 4px', borderRadius:10, border:'1px solid', fontSize:11, fontWeight:700, cursor:'pointer', textAlign:'center' as const, background: data.deliveryDay===i ? '#8B7BFF' : 'rgba(255,255,255,0.04)', borderColor: data.deliveryDay===i ? '#8B7BFF' : 'rgba(255,255,255,0.08)', color: data.deliveryDay===i ? '#fff' : '#5A627A' }}>{d}</button>
+              ))}
+            </div>
+          )}
         </div>
         <div style={S.card}>
           <SectionNum n="03" label="Horario · UTC-5" />
