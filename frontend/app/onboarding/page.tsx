@@ -1131,6 +1131,8 @@ export default function OnboardingPage() {
   const supabase = createClient()
   const [step, setStep] = useState(1)
   const [loading, setLoading] = useState(false)
+  const [saving, setSaving] = useState(false)
+  const [saved, setSaved] = useState(false)
   const [errorMsg, setErrorMsg] = useState('')
   const [isEditing, setIsEditing] = useState(false)
   const [dataLoaded, setDataLoaded] = useState(false)
@@ -1360,21 +1362,27 @@ export default function OnboardingPage() {
 
               {step<7 ? (
                 <button onClick={async ()=>{
+                  setSaving(true);
                   await saveProgress();
+                  setSaving(false);
+                  setSaved(true);
                   posthog.capture('onboarding_step_completed', {
                     step,
                     step_label: STEPS[step - 1]?.label,
                     company_name: data.companyName,
                     industry: data.industry,
                   });
-                  setStep(step+1);
                   setTimeout(()=>{
-                    document.getElementById('step-top')?.scrollIntoView({behavior:'smooth'});
-                    document.getElementById('onboarding-main')?.scrollTo({top:0,behavior:'smooth'});
-                    window.scrollTo({top:0,behavior:'smooth'});
-                  },50)
-                }} style={{ background:'#8B7BFF', border:'none', borderRadius:20, padding:'10px 24px', color:'#fff', fontSize:13, fontWeight:700, cursor:'pointer', display:'flex', alignItems:'center', gap:6 }}>
-                  Continuar →
+                    setSaved(false);
+                    setStep(step+1);
+                    setTimeout(()=>{
+                      document.getElementById('step-top')?.scrollIntoView({behavior:'smooth'});
+                      document.getElementById('onboarding-main')?.scrollTo({top:0,behavior:'smooth'});
+                      window.scrollTo({top:0,behavior:'smooth'});
+                    },50);
+                  }, 600);
+                }} disabled={saving} style={{ background: saved ? '#6EE7A4' : '#8B7BFF', border:'none', borderRadius:20, padding:'10px 24px', color: saved ? '#0D0F1A' : '#fff', fontSize:13, fontWeight:700, cursor: saving ? 'wait' : 'pointer', display:'flex', alignItems:'center', gap:6, transition:'background 0.2s, color 0.2s', opacity: saving ? 0.8 : 1 }}>
+                  {saving ? '⏳ Guardando...' : saved ? '✓ Guardado' : 'Continuar →'}
                 </button>
               ) : (
                 <button onClick={()=>{}} disabled style={{ background:'rgba(139,123,255,0.1)', border:'1px solid rgba(139,123,255,0.2)', borderRadius:20, padding:'10px 24px', color:'#8B7BFF', fontSize:13, fontWeight:700, cursor:'default', display:'flex', alignItems:'center', gap:6 }}>
