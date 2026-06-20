@@ -672,7 +672,7 @@ export default function DashboardPage() {
           const xPos = (i:number) => padL + (i / (n-1)) * innerW
           const yPos = (v:number) => padT + innerH - (v / maxVal) * innerH
           const makePath = (key:'pressure'|'opportunity'|'risk'|'score') => {
-            const pts = dataPoints.map((d,i) => {
+            const pts = dataPoints.map((d:any,i:number) => {
               const v = d[key]
               if (v === null || v === undefined) return null
               return `${xPos(i)},${yPos(v as number)}`
@@ -708,7 +708,7 @@ export default function DashboardPage() {
                   {makePath('risk') && <path d={makePath('risk')} fill="none" stroke="#FF6B6B" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>}
                   {makePath('score') && <path d={makePath('score')} fill="none" stroke="#F2C063" strokeWidth="1.5" strokeDasharray="4,3" strokeLinecap="round"/>}
                   {/* Puntos y etiquetas de fecha */}
-                  {dataPoints.map((d,i)=>(
+                  {dataPoints.map((d:any,i:number)=>(
                     <g key={i}>
                       {d.pressure > 0 && <circle cx={xPos(i)} cy={yPos(d.pressure)} r="3" fill="#8B7BFF"/>}
                       {d.opportunity > 0 && <circle cx={xPos(i)} cy={yPos(d.opportunity)} r="3" fill="#6EE7A4"/>}
