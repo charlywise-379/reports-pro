@@ -478,7 +478,7 @@ Responde ÚNICAMENTE con JSON válido comenzando con { sin texto previo ni markd
   "priceTrends": [
     { "name": "<competidor registrado>", "change": "<↑ subió +X% Esta semana · [fuente] | → Estable | ↓ bajó -X% | Sin datos públicos disponibles>" }
   ],
-  "priceTrendAlert": "<alerta de precios más relevante con dato real, porcentaje y fuente>",
+  "priceTrendAlert": "<resumen de UNA sola línea, máximo 18 palabras, con el dato de precio más relevante y su impacto — sin fuente ni fecha, directo al punto>",
 
   "dominantMessages": [
     { "competitor": "<NOMBRE EN MAYÚSCULAS>", "message": "<mensaje real de su web o redes, o estimado basado en posicionamiento visible>" },
@@ -1216,19 +1216,29 @@ function renderTemplate(template: string, data: any): string {
 
 // ─── Calcular próxima fecha de entrega según frecuencia real,
 //     saltando fines de semana (sábado y domingo son inhábiles) ──
+//
+// IMPORTANTE: el servidor (Railway) corre en UTC. Si hacemos aritmética de fechas
+// directo sobre `new Date()` y solo convertimos a hora de México al MOSTRAR el
+// resultado, el cambio de zona horaria puede mover el día de calendario hacia atrás
+// (ej: lunes 1:14am UTC se muestra como domingo 7:14pm en México). Por eso esta
+// función primero "ancla" la fecha al día de calendario correcto en México,
+// y solo entonces hace la aritmética de días.
+function toMexicoCalendarDate(date: Date): Date {
+  // Extrae año/mes/día tal como se ven en hora de México, y construye
+  // una fecha "neutra" a mediodía para evitar problemas de límite de día por DST
+  const parts = new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'America/Mexico_City',
+    year: 'numeric', month: '2-digit', day: '2-digit'
+  }).formatToParts(date)
+  const y = parts.find(p => p.type === 'year')!.value
+  const m = parts.find(p => p.type === 'month')!.value
+  const d = parts.find(p => p.type === 'day')!.value
+  return new Date(`${y}-${m}-${d}T12:00:00`)
+}
+
 function isWeekend(date: Date): boolean {
   const day = date.getDay() // 0 = domingo, 6 = sábado
   return day === 0 || day === 6
-}
-
-function addBusinessDays(startDate: Date, days: number): Date {
-  const result = new Date(startDate)
-  let remaining = days
-  while (remaining > 0) {
-    result.setDate(result.getDate() + 1)
-    if (!isWeekend(result)) remaining--
-  }
-  return result
 }
 
 function skipToNextBusinessDay(date: Date): Date {
@@ -1240,30 +1250,32 @@ function skipToNextBusinessDay(date: Date): Date {
 }
 
 function getNextReportDate(frequency: string, from: Date): Date {
+  // Ancla a la fecha de calendario de México ANTES de sumar días —
+  // así toda la aritmética siguiente es correcta sin importar la hora UTC del servidor
+  const anchor = toMexicoCalendarDate(from)
   switch (frequency) {
     case 'DAILY': {
-      // Diario: el próximo día hábil (salta sáb/dom automáticamente)
-      const next = new Date(from)
+      const next = new Date(anchor)
       next.setDate(next.getDate() + 1)
       return skipToNextBusinessDay(next)
     }
     case 'WEEKLY': {
-      const next = new Date(from)
+      const next = new Date(anchor)
       next.setDate(next.getDate() + 7)
       return skipToNextBusinessDay(next)
     }
     case 'BIWEEKLY': {
-      const next = new Date(from)
+      const next = new Date(anchor)
       next.setDate(next.getDate() + 15)
       return skipToNextBusinessDay(next)
     }
     case 'MONTHLY': {
-      const next = new Date(from)
+      const next = new Date(anchor)
       next.setMonth(next.getMonth() + 1)
       return skipToNextBusinessDay(next)
     }
     default: {
-      const next = new Date(from)
+      const next = new Date(anchor)
       next.setDate(next.getDate() + 7)
       return skipToNextBusinessDay(next)
     }

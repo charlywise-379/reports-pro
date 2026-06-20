@@ -615,32 +615,23 @@
         </div>
       </div>
     </div>
-    <!-- Alerta de precios — banda de ancho completo, separada de las 3 columnas -->
-    <div style="background:#FCEBEB;border:1.5px solid #F7C1C1;border-radius:10px;padding:9px 14px;display:flex;align-items:flex-start;gap:9px;margin-bottom:10px">
-      <span style="font-size:14px;flex-shrink:0">⚠️</span>
-      <div>
-        <div style="font-size:6.5px;font-weight:700;color:#A32D2D;text-transform:uppercase;letter-spacing:.08em;margin-bottom:3px">Alerta de precios más relevante</div>
-        <div style="font-size:9px;color:#A32D2D;font-weight:600;line-height:1.45">{{priceTrendAlert}}</div>
-      </div>
+    <!-- Alerta de precios — banda de ancho completo, una sola línea -->
+    <div style="background:#FCEBEB;border:1.5px solid #F7C1C1;border-radius:8px;padding:6px 12px;display:flex;align-items:center;gap:8px;margin-bottom:8px">
+      <span style="font-size:11px;flex-shrink:0">⚠️</span>
+      <div style="font-size:8px;color:#A32D2D;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis"><strong style="font-weight:700">Alerta de precios:</strong> {{priceTrendAlert}}</div>
     </div>
     <!-- Actividad social de competidores -->
-    <div style="background:#F8F7FF;border:1.5px solid #EEEDFE;border-radius:12px;padding:12px;margin-bottom:10px">
-      <div style="font-size:7px;font-weight:700;letter-spacing:.15em;color:#534AB7;text-transform:uppercase;margin-bottom:10px">📱 Actividad en redes sociales · Mejores impactos de competidores</div>
-      <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:8px">
+    <div style="background:#F8F7FF;border:1.5px solid #EEEDFE;border-radius:12px;padding:9px;margin-bottom:8px">
+      <div style="font-size:6.5px;font-weight:700;letter-spacing:.15em;color:#534AB7;text-transform:uppercase;margin-bottom:7px">📱 Actividad en redes sociales · Mejores impactos de competidores</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:7px">
         {{#each topCompetitors}}
-        <div style="background:#fff;border:1px solid #EEEDFE;border-radius:8px;padding:9px">
-          <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px">
-            <div style="width:22px;height:22px;border-radius:5px;background:{{this.color}};display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:900;color:#fff">{{this.initials}}</div>
-            <div style="font-size:9px;font-weight:700;color:#1A1730">{{this.name}}</div>
+        <div style="background:#fff;border:1px solid #EEEDFE;border-radius:7px;padding:7px">
+          <div style="display:flex;align-items:center;gap:5px;margin-bottom:4px">
+            <div style="width:18px;height:18px;border-radius:4px;background:{{this.color}};display:flex;align-items:center;justify-content:center;font-size:7px;font-weight:900;color:#fff">{{this.initials}}</div>
+            <div style="font-size:8px;font-weight:700;color:#1A1730">{{this.name}}</div>
           </div>
-          <!-- Métricas de redes sociales simuladas por competidor -->
-          <div style="display:flex;gap:4px;margin-bottom:5px">
-            <div style="font-size:9px;background:#E8F0FE;color:#1877F2;padding:2px 5px;border-radius:4px;font-weight:700">📘</div>
-            <div style="font-size:9px;background:#FFF3E0;color:#E1306C;padding:2px 5px;border-radius:4px;font-weight:700">📸</div>
-            <div style="font-size:9px;background:#E8F5E9;color:#0A66C2;padding:2px 5px;border-radius:4px;font-weight:700">💼</div>
-          </div>
-          <div style="font-size:8px;color:#555;line-height:1.4;margin-bottom:4px">Contenido más reciente en redes detectado esta semana</div>
-          <div style="display:flex;justify-content:space-between;font-size:7px;color:#888">
+          <div style="font-size:7px;color:#555;line-height:1.3;margin-bottom:3px">Contenido más reciente en redes detectado esta semana</div>
+          <div style="display:flex;justify-content:space-between;font-size:6.5px;color:#888">
             <span>👁 Alcance estimado</span>
             <span style="font-weight:700;color:{{this.color}}">{{this.threat}}K+</span>
           </div>
