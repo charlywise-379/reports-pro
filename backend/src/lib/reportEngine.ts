@@ -90,6 +90,7 @@ interface ReportData {
   targetSegments: any[]
   newChannels: any[]
   rivalAdvantages: any[]
+  rivalLeaderName: string
   opportunitiesCount: number
   opportunities: any[]
   rivalWeaknesses: any[]
@@ -264,6 +265,12 @@ REGLAS DE COMPETIDORES:
 • Si un competidor no tiene presencia digital: escribe "Presencia digital no detectada — canal offline"
 • NUNCA inventes movimientos — si no hay datos, escríbelo explícitamente
 • Para benchmark: top 5 competidores en tabla comparativa; los restantes en secondaryCompetitors
+• secondaryCompetitors DEBE incluir SIEMPRE un mínimo de 3 elementos. Si el cliente no registró suficientes competidores indirectos, investiga y agrega competidores adicionales reales del mismo sector/industria (${setup.industry || 'la industria del cliente'}) en ${setup.city || setup.country || 'México'} mediante búsqueda web. Solo si después de buscar genuinamente no encuentras NINGÚN competidor adicional verificable, usa exactamente este valor para cada campo de texto: "No se encontraron datos" — pero esto debe ser la excepción, no la regla.
+
+REGLAS DE CANALES DE VENTA (newChannels):
+• Recomienda exactamente 3 canales de venta/adquisición REALES y relevantes para ${businessType} en ${setup.industry || 'la industria del cliente'}
+• Varía las recomendaciones según lo que detectes en el mercado y la competencia — NO uses siempre las mismas 3 opciones genéricas. Considera el abanico completo: WhatsApp Business API, LinkedIn Ads B2B, Programmatic Display, Google Shopping, Marketplace especializado del sector, Email marketing automatizado, Partnerships/Alianzas estratégicas, Eventos y ferias del sector, Referidos B2B, TikTok Ads, Influencer marketing de nicho, SEO local, Telemarketing dirigido, etc. — elige las 3 que mejor encajen con lo observado en este reporte específico
+• Cada canal DEBE incluir el campo "reason" con un argumento concreto y específico de por qué conviene implementarlo ahora (basado en una señal real detectada en el mercado o la competencia, no genérico)
 
 ━━━ ÁREAS DE MONITOREO ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ${focusAreas}
@@ -479,6 +486,21 @@ Responde ÚNICAMENTE con JSON válido comenzando con { sin texto previo ni markd
     { "competitor": "<NOMBRE>", "message": "<mensaje>" }
   ],
 
+  "newChannels": [
+    {
+      "icon": "<emoji representativo del canal>",
+      "channel": "<nombre del canal de venta o adquisición recomendado para ${businessType} en ${setup.industry || 'esta industria'}>",
+      "desc": "<para qué sirve este canal en una frase corta>",
+      "reason": "<argumento concreto de por qué conviene implementarlo ahora, basado en lo que estás viendo de la competencia o el mercado>"
+    }
+  ],
+  "rivalAdvantages": [
+    { "icon": "<emoji>", "text": "<ventaja visible y concreta del rival líder, con evidencia>", "bg": "#FCEBEB", "border": "#F7C1C1", "textColor": "#A32D2D" },
+    { "icon": "<emoji>", "text": "<segunda ventaja del rival líder>", "bg": "#FCEBEB", "border": "#F7C1C1", "textColor": "#A32D2D" },
+    { "icon": "✅", "text": "<la ventaja propia del cliente frente a ese rival>", "bg": "#EAF3DE", "border": "#C0DD97", "textColor": "#27500A" }
+  ],
+  "rivalLeaderName": "<nombre del competidor con mayor amenaza/posición #1 en el ranking>",
+
   "opportunities": [
     {
       "icon": "<emoji>",
@@ -510,12 +532,16 @@ Responde ÚNICAMENTE con JSON válido comenzando con { sin texto previo ni markd
   "strengths": [
     "<fortaleza 1 — basada en diferenciadores reales vs competidores detectados>",
     "<fortaleza 2>",
-    "<fortaleza 3>"
+    "<fortaleza 3>",
+    "<fortaleza 4>",
+    "<fortaleza 5>"
   ],
   "improvements": [
     "<área de mejora 1 — detectada comparando cliente vs competidores>",
     "<área 2>",
-    "<área 3>"
+    "<área 3>",
+    "<área 4>",
+    "<área 5>"
   ],
 
   "benchmarkRows": [
@@ -525,7 +551,7 @@ Responde ÚNICAMENTE con JSON válido comenzando con { sin texto previo ni markd
     { "factor": "Redes sociales", "client": "<plataforma activa · frecuencia>", "comp1": "<o N/A>", "comp2": "<o N/A>", "comp3": "<o N/A>", "comp4": "<o N/A>", "comp5": "<o N/A>", "position": "<posición>" },
     { "factor": "SEO / Posicionamiento Google", "client": "<posición estimada>", "comp1": "<o N/A>", "comp2": "<o N/A>", "comp3": "<o N/A>", "comp4": "<o N/A>", "comp5": "<o N/A>", "position": "<posición>" },
     { "factor": "Casos de éxito / Portafolio", "client": "<SÍ visible|NO visible|PARCIAL>", "comp1": "<o N/A>", "comp2": "<o N/A>", "comp3": "<o N/A>", "comp4": "<o N/A>", "comp5": "<o N/A>", "position": "<posición>" },
-    { "factor": "Tiempo en el mercado", "client": "<años estimados>", "comp1": "<o N/A>", "comp2": "<o N/A>", "comp3": "<o N/A>", "comp4": "<o N/A>", "comp5": "<o N/A>", "position": "<posición>" },
+    { "factor": "Presencia de Mercado", "client": "<años estimados>", "comp1": "<o N/A>", "comp2": "<o N/A>", "comp3": "<o N/A>", "comp4": "<o N/A>", "comp5": "<o N/A>", "position": "<posición>" },
     { "factor": "Especialización", "client": "<descripción breve>", "comp1": "<o N/A>", "comp2": "<o N/A>", "comp3": "<o N/A>", "comp4": "<o N/A>", "comp5": "<o N/A>", "position": "<posición>" },
     { "factor": "Cobertura geográfica", "client": "<Local/Regional/Nacional>", "comp1": "<o N/A>", "comp2": "<o N/A>", "comp3": "<o N/A>", "comp4": "<o N/A>", "comp5": "<o N/A>", "position": "<posición>" }
   ],
@@ -709,7 +735,7 @@ const ACTION_COLORS: Record<string, { color: string; borderColor: string }> = {
 // ─── Construir ReportData desde respuesta de Claude ──
 function buildReportData(project: any, aiData: any, dateInfo: any, editionNumber: number): ReportData {
   const now = new Date()
-  const nextReport = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000)
+  const nextReport = new Date(now.getTime() + getNextReportDelta(project.frequency) * 24 * 60 * 60 * 1000)
   const companyName = project.companyName || project.name || 'Tu Empresa'
   const industry = project.setup?.industry || 'Tu industria'
   const projectCompetitors = project.setup?.directCompetitors?.filter((c: any) => c.name) || []
@@ -871,12 +897,21 @@ function buildReportData(project: any, aiData: any, dateInfo: any, editionNumber
     { name: 'MID-MARKET CORPORATIVO', pct: 30, color: '#534AB7', bg: '#F8F7FF', trackColor: '#CECBF6', desc: 'Poco explorado — oportunidad' },
   ]
 
-  // New channels
-  const newChannels = aiData.newChannels || [
-    { icon: '📲', channel: 'WhatsApp Business API', desc: 'Atención y ventas directas' },
-    { icon: '💼', channel: 'LinkedIn Ads B2B', desc: 'Segmento ejecutivo' },
-    { icon: '🎯', channel: 'Programmatic Display', desc: 'Retargeting avanzado' },
+  // New channels — fallback rota entre un pool más amplio si Claude no genera recomendaciones,
+  // usando el id del proyecto para variar la selección entre reportes distintos
+  const channelPool = [
+    { icon: '📲', channel: 'WhatsApp Business API', desc: 'Atención y ventas directas', reason: 'Canal de bajo costo con alta tasa de respuesta en LATAM' },
+    { icon: '💼', channel: 'LinkedIn Ads B2B', desc: 'Segmento ejecutivo', reason: 'Permite segmentar por cargo e industria con precisión' },
+    { icon: '🎯', channel: 'Programmatic Display', desc: 'Retargeting avanzado', reason: 'Recupera visitantes que no convirtieron en su primera visita' },
+    { icon: '🛒', channel: 'Marketplace especializado del sector', desc: 'Visibilidad ante compradores activos', reason: 'Tráfico ya calificado buscando el producto o servicio' },
+    { icon: '🤝', channel: 'Partnerships estratégicos', desc: 'Alianzas con negocios complementarios', reason: 'Acceso a base de clientes ya validada sin costo de adquisición' },
+    { icon: '✉️', channel: 'Email marketing automatizado', desc: 'Nutrición de leads a bajo costo', reason: 'Mejora retención y reactiva prospectos fríos' },
+    { icon: '📍', channel: 'SEO local', desc: 'Visibilidad en búsquedas cercanas', reason: 'Captura demanda con intención de compra inmediata' },
+    { icon: '🎤', channel: 'Eventos y ferias del sector', desc: 'Generación de contactos calificados', reason: 'Construye confianza y cierra ciclos de venta más rápido' },
   ]
+  const poolSeed = (project.id ? project.id.toString() : 'default').split('').reduce((a: number, c: string) => a + c.charCodeAt(0), 0)
+  const rotatedPool = [...channelPool.slice(poolSeed % channelPool.length), ...channelPool.slice(0, poolSeed % channelPool.length)]
+  const newChannels = aiData.newChannels || rotatedPool.slice(0, 3)
 
   // Rival advantages
   const rivalAdvantages = aiData.rivalAdvantages || [
@@ -884,6 +919,9 @@ function buildReportData(project: any, aiData: any, dateInfo: any, editionNumber
     { icon: '🥇', text: 'Expansión geográfica activa', bg: '#FCEBEB', border: '#F7C1C1', textColor: '#A32D2D' },
     { icon: '✅', text: 'Tu ventaja: servicio personalizado + datos reales', bg: '#EAF3DE', border: '#C0DD97', textColor: '#27500A' },
   ]
+
+  // Nombre del rival líder — viene de Claude o se infiere del competidor #1 del ranking
+  const rivalLeaderName = aiData.rivalLeaderName || competitors[0]?.name || 'Sin datos suficientes'
 
   // Benchmark rows HTML — generado dinámicamente
   // Benchmark desde datos de Claude
@@ -973,9 +1011,9 @@ function buildReportData(project: any, aiData: any, dateInfo: any, editionNumber
     nextMonth: dateInfo.nextMonth,
     nextReportDate: dateInfo.nextReportDate,
     nextReportTime: project.deliveryTime || '07:00 UTC-5',
-    nextEdition: 2,
+    nextEdition: editionNumber + 1,
     deliveryChannel: project.deliveryChannel === 'BOTH' ? 'Email + WhatsApp' : project.deliveryChannel === 'WHATSAPP' ? 'WhatsApp' : 'Email',
-    frequency: project.frequency === 'WEEKLY' ? 'Semanal' : project.frequency === 'DAILY' ? 'Diario' : 'Quincenal',
+    frequency: getFrequencyLabel(project.frequency),
     activeAreas: (project.setup?.focusAreas || []).length || 6,
     competitorsCount: competitors.length || 3,
 
@@ -1052,6 +1090,7 @@ function buildReportData(project: any, aiData: any, dateInfo: any, editionNumber
     targetSegments,
     newChannels,
     rivalAdvantages,
+    rivalLeaderName,
 
     // Página 7
     opportunitiesCount: opportunities.length,
@@ -1069,8 +1108,8 @@ function buildReportData(project: any, aiData: any, dateInfo: any, editionNumber
     benchmarkCompetitors: competitors.slice(0, 3).map((c: any) => ({ name: c.name })),
     benchmarkRowsHTML,
     radarPoints: '0,-56 49,-20 55,28 0,65 -55,28 -46,-24',
-    strengths: (aiData.strengths || ['Servicio personalizado', 'Retención de clientes', 'Agilidad de respuesta']).slice(0, 3),
-    improvements: (aiData.improvements || ['Presencia digital', 'Cobertura geográfica', 'Inversión publicitaria']).slice(0, 3),
+    strengths: (aiData.strengths || ['Servicio personalizado', 'Retención de clientes', 'Agilidad de respuesta', 'Conocimiento del mercado local', 'Flexibilidad operativa']).slice(0, 5),
+    improvements: (aiData.improvements || ['Presencia digital', 'Cobertura geográfica', 'Inversión publicitaria', 'Automatización de procesos', 'Diversificación de canales']).slice(0, 5),
 
     // Página 10
     highPriorityRecs: (aiData.highPriorityRecs || []).map((rec: any) => {
@@ -1102,18 +1141,32 @@ function buildReportData(project: any, aiData: any, dateInfo: any, editionNumber
     mediumPriorityRecs: aiData.mediumPriorityRecs || [],
     lowPriorityRecs: aiData.lowPriorityRecs || [],
 
-    // Competidores secundarios
-    secondaryCompetitors: (aiData.secondaryCompetitors || []).slice(0, 8).map((c: any, i: number) => {
-      const palette = COMPETITOR_COLORS[i % COMPETITOR_COLORS.length]
-      return {
-        initials: (c.name || 'XX').slice(0, 2).toUpperCase(),
-        name: c.name || 'Desconocido',
-        category: c.category || 'Agencia Digital',
-        recentMove: c.recentMove || 'Sin datos públicos disponibles',
-        threat: c.threat || 3,
-        ...palette,
+    // Competidores secundarios — garantiza mínimo 3, con fallback "No se encontraron datos"
+    // como red de seguridad si Claude no cumple la instrucción del prompt
+    secondaryCompetitors: (() => {
+      const fromAI = (aiData.secondaryCompetitors || []).slice(0, 8)
+      const minRequired = 3
+      const padded = [...fromAI]
+      while (padded.length < minRequired) {
+        padded.push({
+          name: 'No se encontraron datos',
+          category: 'No se encontraron datos',
+          recentMove: 'No se encontraron datos',
+          threat: 0,
+        })
       }
-    }),
+      return padded.map((c: any, i: number) => {
+        const palette = COMPETITOR_COLORS[i % COMPETITOR_COLORS.length]
+        return {
+          initials: c.name === 'No se encontraron datos' ? '—' : (c.name || 'XX').slice(0, 2).toUpperCase(),
+          name: c.name || 'Desconocido',
+          category: c.category || 'Agencia Digital',
+          recentMove: c.recentMove || 'Sin datos públicos disponibles',
+          threat: c.threat || 0,
+          ...palette,
+        }
+      })
+    })(),
 
     // Página 11
     weeklyPlans: [],
@@ -1161,13 +1214,35 @@ function renderTemplate(template: string, data: any): string {
   return html
 }
 
+// ─── Calcular próxima fecha de entrega según frecuencia real ──
+function getNextReportDelta(frequency: string): number {
+  switch (frequency) {
+    case 'DAILY': return 1
+    case 'WEEKLY': return 7
+    case 'BIWEEKLY': return 15
+    case 'MONTHLY': return 30
+    default: return 7
+  }
+}
+
+function getFrequencyLabel(frequency: string): string {
+  switch (frequency) {
+    case 'DAILY': return 'Diario'
+    case 'WEEKLY': return 'Semanal'
+    case 'BIWEEKLY': return 'Quincenal'
+    case 'MONTHLY': return 'Mensual'
+    default: return 'Semanal'
+  }
+}
+
 // ─── Función principal: generar PDF ──────────────────
 export async function generateReport(project: any, outputPath: string): Promise<string> {
   console.log(`📄 Generando reporte REAL para: ${project.companyName || project.name || 'Sin nombre'}`)
 
   const now = new Date()
   const periodStart = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)
-  const nextReport = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000)
+  const reportDeltaDays = getNextReportDelta(project.frequency)
+  const nextReport = new Date(now.getTime() + reportDeltaDays * 24 * 60 * 60 * 1000)
 
   const dateInfo = {
     weekNumber: Math.ceil(now.getDate() / 7) + now.getMonth() * 4,
