@@ -1010,7 +1010,7 @@ function buildReportData(project: any, aiData: any, dateInfo: any, editionNumber
     generatedAt: dateInfo.generatedAt,
     nextMonth: dateInfo.nextMonth,
     nextReportDate: dateInfo.nextReportDate,
-    nextReportTime: project.deliveryTime || '07:00 UTC-5',
+    nextReportTime: project.deliveryTime || '07:00',
     nextEdition: editionNumber + 1,
     deliveryChannel: project.deliveryChannel === 'BOTH' ? 'Email + WhatsApp' : project.deliveryChannel === 'WHATSAPP' ? 'WhatsApp' : 'Email',
     frequency: getFrequencyLabel(project.frequency),
@@ -1302,11 +1302,11 @@ export async function generateReport(project: any, outputPath: string): Promise<
   const dateInfo = {
     weekNumber: Math.ceil(now.getDate() / 7) + now.getMonth() * 4,
     year: now.getFullYear(),
-    periodStart: periodStart.toLocaleDateString('es-MX', { day: 'numeric', month: 'short', year: 'numeric' }),
-    periodEnd: now.toLocaleDateString('es-MX', { day: 'numeric', month: 'short', year: 'numeric' }),
-    generatedAt: now.toLocaleDateString('es-MX', { weekday: 'short', hour: '2-digit', minute: '2-digit' }),
-    nextMonth: nextReport.toLocaleDateString('es-MX', { month: 'long', year: 'numeric' }),
-    nextReportDate: nextReport.toLocaleDateString('es-MX', { weekday: 'long', day: 'numeric', month: 'long' }),
+    periodStart: periodStart.toLocaleDateString('es-MX', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'America/Mexico_City' }),
+    periodEnd: now.toLocaleDateString('es-MX', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'America/Mexico_City' }),
+    generatedAt: now.toLocaleDateString('es-MX', { weekday: 'short', hour: '2-digit', minute: '2-digit', timeZone: 'America/Mexico_City' }),
+    nextMonth: nextReport.toLocaleDateString('es-MX', { month: 'long', year: 'numeric', timeZone: 'America/Mexico_City' }),
+    nextReportDate: nextReport.toLocaleDateString('es-MX', { weekday: 'long', day: 'numeric', month: 'long', timeZone: 'America/Mexico_City' }),
   }
 
   // 1. Llamar a Claude con web search
