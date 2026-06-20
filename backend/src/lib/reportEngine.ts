@@ -735,7 +735,7 @@ const ACTION_COLORS: Record<string, { color: string; borderColor: string }> = {
 // ─── Construir ReportData desde respuesta de Claude ──
 function buildReportData(project: any, aiData: any, dateInfo: any, editionNumber: number): ReportData {
   const now = new Date()
-  const nextReport = new Date(now.getTime() + getNextReportDelta(project.frequency) * 24 * 60 * 60 * 1000)
+  const nextReport = getNextReportDate(project.frequency, now)
   const companyName = project.companyName || project.name || 'Tu Empresa'
   const industry = project.setup?.industry || 'Tu industria'
   const projectCompetitors = project.setup?.directCompetitors?.filter((c: any) => c.name) || []
@@ -1214,7 +1214,63 @@ function renderTemplate(template: string, data: any): string {
   return html
 }
 
-// ─── Calcular próxima fecha de entrega según frecuencia real ──
+// ─── Calcular próxima fecha de entrega según frecuencia real,
+//     saltando fines de semana (sábado y domingo son inhábiles) ──
+function isWeekend(date: Date): boolean {
+  const day = date.getDay() // 0 = domingo, 6 = sábado
+  return day === 0 || day === 6
+}
+
+function addBusinessDays(startDate: Date, days: number): Date {
+  const result = new Date(startDate)
+  let remaining = days
+  while (remaining > 0) {
+    result.setDate(result.getDate() + 1)
+    if (!isWeekend(result)) remaining--
+  }
+  return result
+}
+
+function skipToNextBusinessDay(date: Date): Date {
+  const result = new Date(date)
+  while (isWeekend(result)) {
+    result.setDate(result.getDate() + 1)
+  }
+  return result
+}
+
+function getNextReportDate(frequency: string, from: Date): Date {
+  switch (frequency) {
+    case 'DAILY': {
+      // Diario: el próximo día hábil (salta sáb/dom automáticamente)
+      const next = new Date(from)
+      next.setDate(next.getDate() + 1)
+      return skipToNextBusinessDay(next)
+    }
+    case 'WEEKLY': {
+      const next = new Date(from)
+      next.setDate(next.getDate() + 7)
+      return skipToNextBusinessDay(next)
+    }
+    case 'BIWEEKLY': {
+      const next = new Date(from)
+      next.setDate(next.getDate() + 15)
+      return skipToNextBusinessDay(next)
+    }
+    case 'MONTHLY': {
+      const next = new Date(from)
+      next.setMonth(next.getMonth() + 1)
+      return skipToNextBusinessDay(next)
+    }
+    default: {
+      const next = new Date(from)
+      next.setDate(next.getDate() + 7)
+      return skipToNextBusinessDay(next)
+    }
+  }
+}
+
+// Mantiene compatibilidad con código existente que use días simples (no usado para fechas finales)
 function getNextReportDelta(frequency: string): number {
   switch (frequency) {
     case 'DAILY': return 1
@@ -1241,8 +1297,7 @@ export async function generateReport(project: any, outputPath: string): Promise<
 
   const now = new Date()
   const periodStart = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)
-  const reportDeltaDays = getNextReportDelta(project.frequency)
-  const nextReport = new Date(now.getTime() + reportDeltaDays * 24 * 60 * 60 * 1000)
+  const nextReport = getNextReportDate(project.frequency, now)
 
   const dateInfo = {
     weekNumber: Math.ceil(now.getDate() / 7) + now.getMonth() * 4,
