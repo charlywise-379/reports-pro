@@ -15,7 +15,7 @@ dotenv.config()
 const app = express()
 const PORT = process.env.PORT || 3001
 
-app.use(cors())
+app.use(cors({ origin: process.env.FRONTEND_URL || 'http://localhost:3000' }))
 app.set("trust proxy", 1)
 
 // Rate limiting global — 100 requests por 15 min por IP
