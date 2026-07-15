@@ -7,8 +7,6 @@ const router = Router()
 
 router.post('/competitive', requireAuth, async (req: Request, res: Response) => {
   try {
-    console.log('📦 PAYLOAD RECIBIDO:', JSON.stringify(req.body, null, 2))
-
     const {
       companyName, brand, website, industry, companySize, ciudad, pais,
       targetMarket, mainProducts, socialMedia, pitch, differentiators,
