@@ -3,6 +3,7 @@ import { prisma } from '../lib/prisma'
 import { generateReport } from '../lib/reportEngine'
 import { uploadPDFToR2 } from '../lib/r2'
 import { requireAuth } from '../middleware/auth'
+import { requireProjectOwnership } from '../middleware/ownership'
 import path from 'path'
 import fs from 'fs'
 
@@ -124,14 +125,9 @@ async function cleanupStuckReports() {
 setInterval(cleanupStuckReports, 2 * 60 * 1000)
 
 // GET /api/reports/status/:projectId — estado del reporte en curso
-router.get('/status/:projectId', requireAuth, async (req: Request, res: Response) => {
+router.get('/status/:projectId', requireAuth, requireProjectOwnership('projectId', 'project'), async (req: Request, res: Response) => {
   try {
     const projectId = req.params.projectId as string
-    const userId = req.userId!
-    const project = await prisma.project.findUnique({ where: { id: projectId } })
-    if (!project || (project as any).userId !== userId) {
-      return res.status(403).json({ error: 'No autorizado' })
-    }
     const generating = await prisma.report.findFirst({
       where: { projectId, status: 'GENERATING' as any },
       orderBy: { createdAt: 'desc' }
@@ -154,21 +150,10 @@ router.get('/status/:projectId', requireAuth, async (req: Request, res: Response
 })
 
 // GET /api/reports/signed-url/:reportId — genera URL fresca on-demand
-router.get('/signed-url/:reportId', requireAuth, async (req: Request, res: Response) => {
+router.get('/signed-url/:reportId', requireAuth, requireProjectOwnership('reportId', 'report'), async (req: Request, res: Response) => {
   try {
     const reportId = req.params.reportId as string
-    const userId = req.userId!
-
-    const report = await prisma.report.findUnique({
-      where: { id: reportId },
-      include: { project: true } as any
-    })
-
-    if (!report) return res.status(404).json({ error: 'Reporte no encontrado' })
-
-    if ((report as any).project?.userId !== userId) {
-      return res.status(403).json({ error: 'No tienes permiso para descargar este reporte' })
-    }
+    const report = req.ownedResource
 
     if (!report.r2Key) return res.status(404).json({ error: 'PDF no disponible' })
 
