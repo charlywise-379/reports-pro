@@ -186,13 +186,19 @@ router.get('/signed-url/:reportId', requireAuth, async (req: Request, res: Respo
   }
 })
 
-router.get('/download/:filename', async (req: Request, res: Response) => {
+router.get('/download/:filename', requireAuth, async (req: Request, res: Response) => {
   const filename = req.params.filename as string
+  const userId = req.userId!
   try {
     const report = await prisma.report.findFirst({
-      where: { OR: [{ r2Key: filename }, { r2Key: 'reports/' + filename }, { r2Key: filename.replace('reports/', '') }] }
+      where: { OR: [{ r2Key: filename }, { r2Key: 'reports/' + filename }, { r2Key: filename.replace('reports/', '') }] },
+      include: { project: true } as any
     })
-    if (report?.r2Url) return res.redirect(report.r2Url)
+    if (!report) return res.status(404).json({ error: 'Archivo no encontrado' })
+    if ((report as any).project?.userId !== userId) {
+      return res.status(403).json({ error: 'No tienes permiso para descargar este reporte' })
+    }
+    if (report.r2Url) return res.redirect(report.r2Url)
     const filePath = path.join(__dirname, '../../outputs', filename)
     if (fs.existsSync(filePath)) {
       res.setHeader('Content-Type', 'application/pdf')
