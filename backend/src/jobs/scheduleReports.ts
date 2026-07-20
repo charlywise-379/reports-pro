@@ -1,5 +1,6 @@
 import { reportQueue } from '../lib/queue'
 import { prisma } from '../lib/prisma'
+import { MIN_HOURS_BY_FREQUENCY } from '../lib/frequency'
 
 export async function scheduleReports() {
   try {
@@ -36,9 +37,7 @@ export async function scheduleReports() {
 
     console.log(`[Scheduler] ${projects.length} proyectos activos encontrados`)
 
-    const frecuencyHours: Record<string, number> = {
-      DAILY: 22, WEEKLY: 168, BIWEEKLY: 336, MONTHLY: 720
-    }
+    const frecuencyHours = MIN_HOURS_BY_FREQUENCY
 
     let encolados = 0
 

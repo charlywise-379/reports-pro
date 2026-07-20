@@ -6,6 +6,7 @@ import { requireAuth } from '../middleware/auth'
 import { requireProjectOwnership } from '../middleware/ownership'
 import path from 'path'
 import fs from 'fs'
+import { MIN_HOURS_BY_FREQUENCY } from '../lib/frequency'
 
 const router = Router()
 
@@ -43,9 +44,7 @@ router.post('/generate/:projectId', requireAuth, async (req: Request, res: Respo
       orderBy: { createdAt: 'desc' }
     })
     if (lastReport && (project as any).status !== 'TRIAL') {
-      const frecuencyHours: Record<string, number> = {
-        DAILY: 22, WEEKLY: 168, BIWEEKLY: 336, MONTHLY: 720
-      }
+      const frecuencyHours = MIN_HOURS_BY_FREQUENCY
       const freq = (project as any).frequency || 'WEEKLY'
       const horasMinimas = frecuencyHours[freq] || 168
       const horasTranscurridas = (Date.now() - new Date(lastReport.createdAt).getTime()) / (1000 * 60 * 60)

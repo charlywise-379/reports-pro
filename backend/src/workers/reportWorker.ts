@@ -5,6 +5,7 @@ import { generateReport } from '../lib/reportEngine'
 import { uploadPDFToR2 } from '../lib/r2'
 import path from 'path'
 import fs from 'fs'
+import { MIN_HOURS_BY_FREQUENCY } from '../lib/frequency'
 
 export function startReportWorker() {
   const worker = new Worker<ReportJobData>(
@@ -39,9 +40,7 @@ export function startReportWorker() {
       })
 
       if (lastReport && trigger === 'scheduled') {
-        const frecuencyHours: Record<string, number> = {
-          DAILY: 22, WEEKLY: 160, BIWEEKLY: 330, MONTHLY: 710
-        }
+        const frecuencyHours = MIN_HOURS_BY_FREQUENCY
         const freq = (project as any).frequency || 'WEEKLY'
         const horasMinimas = frecuencyHours[freq] || 160
         const horasTranscurridas = (Date.now() - new Date(lastReport.createdAt).getTime()) / (1000 * 60 * 60)
