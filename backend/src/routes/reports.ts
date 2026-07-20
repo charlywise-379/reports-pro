@@ -1,12 +1,11 @@
 import { Router, Request, Response } from 'express'
 import { prisma } from '../lib/prisma'
-import { generateReport } from '../lib/reportEngine'
-import { uploadPDFToR2 } from '../lib/r2'
 import { requireAuth } from '../middleware/auth'
 import { requireProjectOwnership } from '../middleware/ownership'
 import path from 'path'
 import fs from 'fs'
 import { MIN_HOURS_BY_FREQUENCY } from '../lib/frequency'
+import { reportQueue } from '../lib/queue'
 
 const router = Router()
 
@@ -61,50 +60,13 @@ router.post('/generate/:projectId', requireAuth, async (req: Request, res: Respo
       return res.status(429).json({ error: 'generating', message: 'Ya hay un reporte generándose. Espera a que termine.' })
     }
 
-    const outputDir = path.join(__dirname, '../../outputs')
-    if (!fs.existsSync(outputDir)) fs.mkdirSync(outputDir, { recursive: true })
-    const filename = 'report-' + projectId + '-' + Date.now() + '.pdf'
-    const outputPath = path.join(outputDir, filename)
-    const reportRecord = await prisma.report.create({
-      data: { projectId, status: 'GENERATING' as any, r2Key: 'reports/' + filename }
-    })
-    const projectWithSetup = { ...project, setup: (project as any).competitiveSetup, reportId: reportRecord.id }
-    await generateReport(projectWithSetup, outputPath)
-    const signedUrl = await uploadPDFToR2(outputPath, filename)
-    await prisma.report.update({
-      where: { id: reportRecord.id },
-      data: { status: 'COMPLETED' as any, pdfSizeBytes: fs.statSync(outputPath).size, r2Key: 'reports/' + filename, r2Url: signedUrl }
-    })
-    if (!fs.existsSync(outputPath)) throw new Error('El PDF no se genero correctamente')
-    const fileSize = fs.statSync(outputPath).size
-    try {
-      const setup = (project as any).competitiveSetup
-      const companyName = setup?.companyName || 'Tu empresa'
-      const reportCount = await prisma.report.count({ where: { projectId, status: 'COMPLETED' as any } })
-
-      if (project.deliveryEmail) {
-        const { sendReportEmail } = await import('../lib/email')
-        // Obtener CC emails de colegas invitados
-        const setupForCC = (project as any).competitiveSetup
-        let ccEmails: string[] = []
-        try {
-          const ctx = setupForCC?.additionalContext
-            ? (typeof setupForCC.additionalContext === 'string' ? JSON.parse(setupForCC.additionalContext) : setupForCC.additionalContext)
-            : {}
-          ccEmails = ctx.ccEmails || []
-        } catch(e) {}
-        await sendReportEmail(project.deliveryEmail, companyName, signedUrl, reportCount, reportCount, ccEmails)
-      }
-
-      const deliveryPhone = (project as any).deliveryPhone
-      const deliveryChannels = (project as any).deliveryChannels || []
-      if (deliveryPhone && deliveryChannels.includes('WHATSAPP')) {
-        const { sendReportWhatsApp } = await import('../lib/whatsapp')
-        await sendReportWhatsApp(deliveryPhone, companyName, signedUrl, reportCount)
-        console.log('[WhatsApp] Reporte enviado a ' + deliveryPhone)
-      }
-    } catch(emailErr: any) { console.error('Error enviando notificaciones:', emailErr.message) }
-    res.status(200).json({ success: true, message: 'Reporte generado correctamente', filename, fileSize: Math.round(fileSize / 1024) + 'KB' })
+    const jobId = 'manual-' + projectId + '-' + Date.now()
+    await reportQueue.add(
+      'generate-report',
+      { projectId, userId, trigger: 'manual' },
+      { jobId }
+    )
+    res.status(202).json({ success: true, message: 'Reporte encolado — se generará en los próximos minutos' })
   } catch (error: any) {
     console.error('Error generando reporte:', error)
     res.status(500).json({ error: 'Error generando reporte', detail: error.message })
