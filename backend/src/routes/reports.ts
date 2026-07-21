@@ -60,6 +60,17 @@ router.post('/generate/:projectId', requireAuth, async (req: Request, res: Respo
       return res.status(429).json({ error: 'generating', message: 'Ya hay un reporte generándose. Espera a que termine.' })
     }
 
+    // 🔒 ANTI-DUPLICADO (cola): verificar que no haya ya un job pendiente en BullMQ
+    // para este proyecto — cierra la ventana entre "el scheduler encoló" y
+    // "el worker creó la fila GENERATING", que el check anterior no cubre.
+    const waiting = await reportQueue.getWaiting()
+    const active = await reportQueue.getActive()
+    const allPending = [...waiting, ...active]
+    const yaEnCola = allPending.some(j => j.data?.projectId === projectId)
+    if (yaEnCola) {
+      return res.status(429).json({ error: 'generating', message: 'Ya hay un reporte generándose. Espera a que termine.' })
+    }
+
     const jobId = 'manual-' + projectId + '-' + Date.now()
     await reportQueue.add(
       'generate-report',
