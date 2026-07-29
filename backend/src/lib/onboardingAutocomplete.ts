@@ -16,7 +16,7 @@ export type AutocompleteResult = {
   amenazaEstimada?: number
 }
 
-const TIMEOUT_MS = 25000
+const TIMEOUT_MS = 45000
 
 function buildPrompt(nombre: string, sitioWeb: string, tipo: 'company' | 'competitor'): string {
   if (tipo === 'company') {
@@ -69,7 +69,7 @@ export async function autocompleteCompanyInfo(
   try {
     const stream = await anthropic.messages.stream({
       model: 'claude-sonnet-4-5',
-      max_tokens: 1024,
+      max_tokens: 2048,
       tools: [
         {
           type: 'web_search_20250305' as any,
