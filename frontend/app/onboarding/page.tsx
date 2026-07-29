@@ -116,7 +116,33 @@ function SectionNum({ n, label }: { n: string; label: string }) {
 // ──────────────────────────────────────────
 // PASO 1
 // ──────────────────────────────────────────
-function Step1({ data, set }: any) {
+function Step1({ data, set, runAutocomplete }: any) {
+  const [acLoading, setAcLoading] = useState(false)
+  const [acError, setAcError] = useState('')
+
+  const canAutocomplete = !!(data.companyName?.trim() && data.website?.trim())
+
+  const handleAutocomplete = async () => {
+    setAcError('')
+    setAcLoading(true)
+    try {
+      const result = await runAutocomplete(data.companyName, data.website, 'company')
+      const social = { ...data.socialMedia }
+      if (result.instagram && !social.ig) social.ig = result.instagram
+      if (result.facebook && !social.fb) social.fb = result.facebook
+      if (result.twitter && !social.x) social.x = result.twitter
+      if (result.linkedin && !social.li) social.li = result.linkedin
+      if (result.tiktok && !social.tt) social.tt = result.tiktok
+      set('socialMedia', social)
+      if (result.industria && !data.industry) set('industry', result.industria)
+      if (result.pitch && !data.pitch) set('pitch', result.pitch)
+    } catch (e: any) {
+      setAcError(e.message || 'No pudimos encontrar información automática')
+    } finally {
+      setAcLoading(false)
+    }
+  }
+
   return (
     <div>
       <div style={{ fontSize:11, fontWeight:700, letterSpacing:'0.12em', color:'#8B7BFF', marginBottom:10 }}>01 / 07 · IDENTIDAD CORPORATIVA</div>
@@ -140,6 +166,23 @@ function Step1({ data, set }: any) {
           <div>
             <label style={S.label}>Sitio web</label>
             <input style={S.input} value={data.website} onChange={e=>set('website',e.target.value)} placeholder="https://tuempresa.com" />
+          </div>
+          <div>
+            <button
+              onClick={handleAutocomplete}
+              disabled={!canAutocomplete || acLoading}
+              style={{
+                display:'flex', alignItems:'center', gap:8, padding:'9px 16px', borderRadius:20,
+                border:'1px solid rgba(139,123,255,0.3)',
+                background: canAutocomplete && !acLoading ? 'rgba(139,123,255,0.15)' : 'rgba(255,255,255,0.03)',
+                color: canAutocomplete && !acLoading ? '#8B7BFF' : '#5A627A',
+                fontSize:12, fontWeight:600,
+                cursor: canAutocomplete && !acLoading ? 'pointer' : 'not-allowed',
+              }}
+            >
+              {acLoading ? '⏳ Buscando...' : '✨ Autocompletar con IA'}
+            </button>
+            {acError && <div style={{ fontSize:11, color:'#FF6B6B', marginTop:6 }}>{acError}</div>}
           </div>
         </div>
         <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:14, marginBottom:14 }}>
@@ -1336,7 +1379,7 @@ export default function OnboardingPage() {
   }
 
   const stepContent: Record<number, React.ReactNode> = {
-    1: <Step1 data={data} set={set} />,
+    1: <Step1 data={data} set={set} runAutocomplete={runAutocomplete} />,
     2: <Step2 data={data} set={set} />,
     3: <Step3 data={data} set={set} />,
     4: <Step4 data={data} set={set} />,
