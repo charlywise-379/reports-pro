@@ -91,7 +91,7 @@ const DAYS  = ['Lun','Mar','Mié','Jue','Vie','Sáb','Dom']
 const TIMES = ['06:00','07:00','08:00','09:00','12:00','15:00','18:00','21:00']
 const COUNTRIES = ['MX','CO','PE','CL','AR','BR','ES','US','UY','EC']
 
-const emptyCompetitor = () => ({ name:'', url:'', products:'', presence:'Nacional', threat:5, ig:'', fb:'', x:'', li:'' })
+const emptyCompetitor = () => ({ name:'', url:'', products:'', presence:'Nacional', threat:5, ig:'', fb:'', x:'', li:'', tt:'' })
 const emptyIndirect   = () => ({ id: Math.random().toString(36).slice(2), name:'', industry:'', threat:5, relevance:5 })
 const emptyProduct    = () => ({ name:'', category:'', priceFrom:'', priceTo:'' })
 
@@ -576,7 +576,7 @@ function Step3({ data, set, runAutocomplete }: any) {
                   ))}
                 </div>
                 <div style={{ display:'flex', flexWrap:'wrap', gap:6 }}>
-                  {[['IG','ig'],['FB','fb'],['X','x'],['LI','li']].map(([icon,key])=>(
+                  {[['IG','ig'],['FB','fb'],['X','x'],['LI','li'],['TT','tt']].map(([icon,key])=>(
                     <div key={key} style={{ display:'flex', alignItems:'center', gap:6, background:'rgba(255,255,255,0.04)', border:'1px solid rgba(255,255,255,0.08)', borderRadius:10, padding:'6px 10px', flex:1, minWidth:100 }}>
                       <span style={{ fontSize:10, fontWeight:800, color:'#8B7BFF', flexShrink:0 }}>{icon}</span>
                       <input style={{ width:'100%', background:'transparent', border:'none', outline:'none', color:'#F0F2FF', fontSize:12 }} value={c[key]||''} onChange={e=>update(i,key,e.target.value)} placeholder="@usuario" />
