@@ -1136,6 +1136,7 @@ export default function OnboardingPage() {
   const [errorMsg, setErrorMsg] = useState('')
   const [isEditing, setIsEditing] = useState(false)
   const [dataLoaded, setDataLoaded] = useState(false)
+  const [autocompleteUsesLeft, setAutocompleteUsesLeft] = useState(8)
   const isMobile = useIsMobile()
   const mainRef = React.useRef<HTMLElement>(null)
   const BACKEND = process.env.NEXT_PUBLIC_BACKEND_URL || 'https://reports-pro-production.up.railway.app'
@@ -1155,6 +1156,29 @@ export default function OnboardingPage() {
   })
 
   const set = (key: string, val: any) => setData((prev: any) => ({ ...prev, [key]: val }))
+
+  const runAutocomplete = async (nombre: string, sitioWeb: string, tipo: 'company' | 'competitor'): Promise<any | null> => {
+    if (autocompleteUsesLeft <= 0) {
+      throw new Error('Alcanzaste el límite de autocompletados para esta sesión')
+    }
+    setAutocompleteUsesLeft(prev => prev - 1)
+    const { data: { session } } = await supabase.auth.getSession()
+    if (!session) throw new Error('Sesión no válida')
+
+    const res = await fetch(`${BACKEND}/api/onboarding/autocomplete`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + session.access_token,
+      },
+      body: JSON.stringify({ nombre, sitioWeb, tipo }),
+    })
+    const json = await res.json()
+    if (!res.ok || !json.success) {
+      throw new Error(json.error || 'No pudimos completar el autocompletado')
+    }
+    return json.data
+  }
 
   // Scroll al top cuando cambia el step
   useEffect(() => {
