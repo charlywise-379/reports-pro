@@ -17,22 +17,99 @@ export type AutocompleteResult = {
 }
 
 const TIMEOUT_MS = 45000
+const SITE_FETCH_TIMEOUT_MS = 8000
+const SITE_HTML_MAX_CHARS = 15000
 
-function buildPrompt(nombre: string, sitioWeb: string, tipo: 'company' | 'competitor'): string {
+// ─── Fetch directo del sitio como respaldo ───────────
+// web_search no siempre indexa dominios nuevos o de bajo tráfico (confirmado
+// en pruebas: un sitio real y activo puede devolver cero resultados en
+// site:dominio.com). Como el usuario ya nos da la URL exacta, la visitamos
+// directamente en paralelo a la búsqueda — así Claude tiene el HTML real del
+// sitio (con sus links de redes sociales en header/footer) aunque el motor
+// de búsqueda no lo haya rastreado.
+async function fetchSiteContext(sitioWeb: string): Promise<string | null> {
+  const url = /^https?:\/\//i.test(sitioWeb) ? sitioWeb : `https://${sitioWeb}`
+  const controller = new AbortController()
+  const timeoutId = setTimeout(() => controller.abort(), SITE_FETCH_TIMEOUT_MS)
+  try {
+    const res = await fetch(url, {
+      signal: controller.signal,
+      headers: { 'User-Agent': 'Mozilla/5.0 (compatible; OmniReportsBot/1.0)' },
+    })
+    if (!res.ok) return null
+    const html = await res.text()
+
+    // Extrae links a redes sociales conocidas del HTML crudo — no requiere
+    // parseo completo de DOM, solo captura hrefs que apunten a esos dominios.
+    const socialLinks = new Set<string>()
+    const linkRegex = /href=["']([^"']*(?:instagram\.com|facebook\.com|twitter\.com|x\.com|linkedin\.com|tiktok\.com)[^"']*)["']/gi
+    let match: RegExpExecArray | null
+    while ((match = linkRegex.exec(html)) !== null) {
+      socialLinks.add(match[1])
+    }
+
+    // Texto visible aproximado (sin scripts/estilos) para dar contexto de industria/pitch,
+    // recortado a un tamaño razonable para no inflar el prompt.
+    const textOnly = html
+      .replace(/<script[\s\S]*?<\/script>/gi, ' ')
+      .replace(/<style[\s\S]*?<\/style>/gi, ' ')
+      .replace(/<[^>]+>/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim()
+      .slice(0, SITE_HTML_MAX_CHARS)
+
+    const linksBlock = socialLinks.size > 0
+      ? `Links a redes sociales encontrados en el HTML del sitio:\n${[...socialLinks].map(l => `- ${l}`).join('\n')}`
+      : 'No se encontraron links a redes sociales en el HTML del sitio.'
+
+    return `${linksBlock}\n\nTexto visible extraído de la página (para contexto de industria/pitch):\n${textOnly}`
+  } catch {
+    return null
+  } finally {
+    clearTimeout(timeoutId)
+  }
+}
+
+const DIRECTIVAS_FIDELIDAD = `REGLAS DE FIDELIDAD — sigue todas estrictamente:
+1. Nunca asumas datos basándote en el nombre de la empresa (ej. no asumas industria o productos solo porque el nombre lo sugiere) — solo reporta lo que la búsqueda o el contenido del sitio confirmen.
+2. Cada campo que reportes debe originarse en un resultado de búsqueda real o en el contenido del sitio que se te proporcionó — nunca en tu conocimiento general o en suposiciones.
+3. Si el resultado más cercano que encuentras NO coincide exactamente con el nombre o dominio dado (ej. un dominio parecido pero distinto, una empresa con nombre similar pero de otro giro/ciudad), ignóralo por completo — no lo reportes ni como aproximación.
+4. Antes de aceptar un perfil de red social como válido, confirma que el nombre de usuario o el contenido de la página coincide razonablemente con la empresa dada — no un parecido superficial de palabras.
+5. Si tras intentar varias estrategias de búsqueda y revisar el contenido del sitio genuinamente no encuentras algo, deja ese campo vacío — es preferible un campo vacío a un dato incorrecto.
+6. No inventes ni completes campos "por completar el JSON" — cada valor no vacío debe ser verificable.`
+
+function buildPrompt(nombre: string, sitioWeb: string, tipo: 'company' | 'competitor', siteContext: string | null): string {
+  const dominio = sitioWeb.replace(/^https?:\/\//i, '').replace(/^www\./i, '').replace(/\/.*$/, '')
+
+  const estrategiaBusqueda = `ESTRATEGIA DE BÚSQUEDA — sigue este orden, no busques solo el nombre como texto libre:
+1. Ya se obtuvo el contenido del sitio ${sitioWeb} (ver bloque "CONTENIDO DEL SITIO WEB" abajo) — revísalo primero, ahí puede haber links directos a redes sociales.
+2. Busca "site:${dominio}" para encontrar páginas indexadas de ese dominio exacto.
+3. Busca "${nombre} site:instagram.com", "${nombre} site:facebook.com", "${nombre} site:linkedin.com", "${nombre} site:tiktok.com" (una consulta por red) para encontrar los perfiles reales, no genéricos.
+4. Solo si lo anterior no da resultados, intenta una búsqueda más amplia con "${nombre}" combinado con una palabra de contexto (ej. la industria o ubicación si la conoces).
+Si después de intentar estas estrategias genuinamente no encuentras nada, es válido dejar el campo vacío — pero no te rindas tras una sola búsqueda genérica del nombre.`
+
+  const siteContextBlock = siteContext
+    ? `\nCONTENIDO DEL SITIO WEB (obtenido directamente de ${sitioWeb}):\n${siteContext}\n`
+    : `\nNota: no fue posible obtener el contenido de ${sitioWeb} directamente (sitio caído, bloqueó el acceso, o URL inválida) — depende únicamente de la búsqueda web.\n`
+
   if (tipo === 'company') {
     return `Busca en la web información pública real de esta empresa antes de responder — usa la herramienta de búsqueda web, no respondas de memoria.
 Nombre: ${nombre}
 Sitio web: ${sitioWeb}
+${siteContextBlock}
+${estrategiaBusqueda}
+
+${DIRECTIVAS_FIDELIDAD}
 
 Encuentra sus perfiles de redes sociales oficiales (Instagram, Facebook, X/Twitter, LinkedIn, TikTok) y describe brevemente su industria/giro y una frase de pitch.
 
-Después de buscar, responde con un bloque JSON (puede ir precedido de texto o markdown, será extraído) con esta forma exacta (usa "" para cualquier campo que no encuentres, nunca inventes datos):
+Después de buscar, responde con un bloque JSON (puede ir precedido de texto o markdown, será extraído) con esta forma exacta (usa "" para cualquier campo que no encuentres, nunca inventes datos). Para las redes sociales acepta cualquier formato útil que encuentres — @usuario, nombre de página, o la URL completa del perfil, lo que tengas disponible:
 {
-  "instagram": "<@usuario o vacío>",
-  "facebook": "<nombre de página o vacío>",
-  "twitter": "<@usuario o vacío>",
-  "linkedin": "<slug de empresa o vacío>",
-  "tiktok": "<@usuario o vacío>",
+  "instagram": "<@usuario, nombre, o URL del perfil, o vacío>",
+  "facebook": "<@usuario, nombre, o URL del perfil, o vacío>",
+  "twitter": "<@usuario, nombre, o URL del perfil, o vacío>",
+  "linkedin": "<@usuario, nombre, o URL del perfil, o vacío>",
+  "tiktok": "<@usuario, nombre, o URL del perfil, o vacío>",
   "industria": "<industria/giro detectado o vacío>",
   "pitch": "<una frase breve describiendo a qué se dedica, máximo 160 caracteres, o vacío>"
 }`
@@ -40,16 +117,20 @@ Después de buscar, responde con un bloque JSON (puede ir precedido de texto o m
   return `Busca en la web información pública real de esta empresa competidora antes de responder — usa la herramienta de búsqueda web, no respondas de memoria.
 Nombre: ${nombre}
 Sitio web: ${sitioWeb}
+${siteContextBlock}
+${estrategiaBusqueda}
+
+${DIRECTIVAS_FIDELIDAD}
 
 Encuentra sus perfiles de redes sociales oficiales (Instagram, Facebook, X/Twitter, LinkedIn, TikTok), sus productos/servicios principales, y estima su nivel de amenaza competitiva (1-10) basándote en su tamaño y presencia digital aparente.
 
-Después de buscar, responde con un bloque JSON (puede ir precedido de texto o markdown, será extraído) con esta forma exacta (usa "" para cualquier campo de texto que no encuentres, nunca inventes datos):
+Después de buscar, responde con un bloque JSON (puede ir precedido de texto o markdown, será extraído) con esta forma exacta (usa "" para cualquier campo de texto que no encuentres, nunca inventes datos). Para las redes sociales acepta cualquier formato útil que encuentres — @usuario, nombre de página, o la URL completa del perfil, lo que tengas disponible:
 {
-  "instagram": "<@usuario o vacío>",
-  "facebook": "<nombre de página o vacío>",
-  "twitter": "<@usuario o vacío>",
-  "linkedin": "<slug de empresa o vacío>",
-  "tiktok": "<@usuario o vacío>",
+  "instagram": "<@usuario, nombre, o URL del perfil, o vacío>",
+  "facebook": "<@usuario, nombre, o URL del perfil, o vacío>",
+  "twitter": "<@usuario, nombre, o URL del perfil, o vacío>",
+  "linkedin": "<@usuario, nombre, o URL del perfil, o vacío>",
+  "tiktok": "<@usuario, nombre, o URL del perfil, o vacío>",
   "productos": "<productos o servicios principales detectados, o vacío>",
   "amenazaEstimada": <número del 1 al 10>
 }`
@@ -60,7 +141,8 @@ export async function autocompleteCompanyInfo(
   sitioWeb: string,
   tipo: 'company' | 'competitor'
 ): Promise<AutocompleteResult> {
-  const prompt = buildPrompt(nombre, sitioWeb, tipo)
+  const siteContext = await fetchSiteContext(sitioWeb)
+  const prompt = buildPrompt(nombre, sitioWeb, tipo, siteContext)
 
   const controller = new AbortController()
   const timeoutId = setTimeout(() => controller.abort(), TIMEOUT_MS)
