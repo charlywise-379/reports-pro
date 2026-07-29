@@ -37,7 +37,7 @@ router.post('/competitive', requireAuth, async (req: Request, res: Response) => 
             products: c.products?.trim() || '',
             presence: c.presence || '',
             threat: Number(c.threat) || 5,
-            ig: c.ig || '', fb: c.fb || '', x: c.x || '', li: c.li || '',
+            ig: c.ig || '', fb: c.fb || '', x: c.x || '', li: c.li || '', tt: c.tt || '',
           }))
       : []
 
@@ -48,6 +48,7 @@ router.post('/competitive', requireAuth, async (req: Request, res: Response) => 
           .map((c: any) => ({
             name: c.name?.trim() || '',
             industry: c.industry?.trim() || '',
+            url: c.url?.trim() || '',
             threat: Number(c.threat) || 5,
             relevance: Number(c.relevance) || 5,
           }))
@@ -263,12 +264,12 @@ router.post('/save', requireAuth, async (req: Request, res: Response) => {
       ? directCompetitors.filter((c: any) => c?.name?.trim()).map((c: any) => ({
           name: c.name?.trim(), url: c.url?.trim() || '', products: c.products?.trim() || '',
           presence: c.presence || '', threat: Number(c.threat) || 5,
-          ig: c.ig || '', fb: c.fb || '', x: c.x || '', li: c.li || '',
+          ig: c.ig || '', fb: c.fb || '', x: c.x || '', li: c.li || '', tt: c.tt || '',
         })) : undefined
 
     const cleanIndirect = Array.isArray(indirectCompetitors)
       ? indirectCompetitors.filter((c: any) => c?.name?.trim()).map((c: any) => ({
-          name: c.name?.trim(), industry: c.industry?.trim() || '',
+          name: c.name?.trim(), industry: c.industry?.trim() || '', url: c.url?.trim() || '',
           threat: Number(c.threat) || 5, relevance: Number(c.relevance) || 5,
         })) : undefined
 
