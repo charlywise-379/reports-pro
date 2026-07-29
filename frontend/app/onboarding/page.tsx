@@ -482,11 +482,43 @@ function Step2({ data, set }: any) {
 // ──────────────────────────────────────────
 // PASO 3
 // ──────────────────────────────────────────
-function Step3({ data, set }: any) {
+function Step3({ data, set, runAutocomplete }: any) {
   const list: any[] = data.directCompetitors || [emptyCompetitor()]
   const update = (i:number, field:string, val:any) => set('directCompetitors', list.map((c:any,idx:number)=>idx===i?{...c,[field]:val}:c))
   const add    = () => list.length<10 && set('directCompetitors',[...list, emptyCompetitor()])
   const remove = (i:number) => set('directCompetitors', list.filter((_:any,idx:number)=>idx!==i))
+
+  const [acLoadingIdx, setAcLoadingIdx] = useState<number | null>(null)
+  const [acErrors, setAcErrors] = useState<Record<number, string>>({})
+
+  const handleAutocomplete = async (i: number) => {
+    const c = list[i]
+    setAcErrors(prev => ({ ...prev, [i]: '' }))
+    setAcLoadingIdx(i)
+    try {
+      const result = await runAutocomplete(c.name, c.url, 'competitor')
+      const updated: any = { ...c }
+      let algoEncontrado = false
+      if (result.instagram && !updated.ig) { updated.ig = result.instagram; algoEncontrado = true }
+      if (result.facebook && !updated.fb) { updated.fb = result.facebook; algoEncontrado = true }
+      if (result.twitter && !updated.x) { updated.x = result.twitter; algoEncontrado = true }
+      if (result.linkedin && !updated.li) { updated.li = result.linkedin; algoEncontrado = true }
+      if (result.tiktok && !updated.tt) { updated.tt = result.tiktok; algoEncontrado = true }
+      if (result.productos && !updated.products) { updated.products = result.productos; algoEncontrado = true }
+      if (typeof result.amenazaEstimada === 'number' && (!c.threat || c.threat === 5)) {
+        updated.threat = result.amenazaEstimada
+        algoEncontrado = true
+      }
+      set('directCompetitors', list.map((item: any, idx: number) => idx === i ? updated : item))
+      if (!algoEncontrado) {
+        setAcErrors(prev => ({ ...prev, [i]: 'No encontramos información pública de este competidor — completa los campos manualmente' }))
+      }
+    } catch (e: any) {
+      setAcErrors(prev => ({ ...prev, [i]: e.message || 'No pudimos encontrar información automática' }))
+    } finally {
+      setAcLoadingIdx(null)
+    }
+  }
 
   return (
     <div>
@@ -517,8 +549,24 @@ function Step3({ data, set }: any) {
                     <input style={S.input} value={c.products} onChange={e=>update(i,'products',e.target.value)} placeholder="Productos en competencia" />
                   </div>
                 </div>
+                <button
+                  onClick={()=>handleAutocomplete(i)}
+                  disabled={!(c.name?.trim() && c.url?.trim()) || acLoadingIdx === i}
+                  style={{
+                    display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0,
+                    padding:'8px 12px', borderRadius:8,
+                    border:'1px solid rgba(139,123,255,0.3)',
+                    background: (c.name?.trim() && c.url?.trim() && acLoadingIdx !== i) ? 'rgba(139,123,255,0.15)' : 'rgba(255,255,255,0.03)',
+                    color: (c.name?.trim() && c.url?.trim() && acLoadingIdx !== i) ? '#8B7BFF' : '#5A627A',
+                    fontSize:11, fontWeight:600,
+                    cursor: (c.name?.trim() && c.url?.trim() && acLoadingIdx !== i) ? 'pointer' : 'not-allowed',
+                  }}
+                >
+                  {acLoadingIdx === i ? '⏳' : '✨ IA'}
+                </button>
                 {list.length>1&&<button onClick={()=>remove(i)} style={{ background:'rgba(255,107,107,0.1)', border:'1px solid rgba(255,107,107,0.2)', borderRadius:8, width:28, height:28, cursor:'pointer', color:'#FF6B6B', fontSize:14 }}>×</button>}
               </div>
+              {acErrors[i] && <div style={{ fontSize:11, color:'#FF6B6B', marginBottom:10 }}>{acErrors[i]}</div>}
 
 <div style={{ display:'flex', flexDirection:'column', gap:10, marginBottom:14 }}>
                 <div style={{ display:'flex', alignItems:'center', gap:8, flexWrap:'wrap' }}>
@@ -1387,7 +1435,7 @@ export default function OnboardingPage() {
   const stepContent: Record<number, React.ReactNode> = {
     1: <Step1 data={data} set={set} runAutocomplete={runAutocomplete} />,
     2: <Step2 data={data} set={set} />,
-    3: <Step3 data={data} set={set} />,
+    3: <Step3 data={data} set={set} runAutocomplete={runAutocomplete} />,
     4: <Step4 data={data} set={set} />,
     5: <Step5 data={data} set={set} />,
     6: <Step6 data={data} set={set} isMobile={isMobile} />,
