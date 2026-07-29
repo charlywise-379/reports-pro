@@ -29,8 +29,37 @@ const SITE_HTML_MAX_CHARS = 15000
 // directamente en paralelo a la búsqueda — así Claude tiene el HTML real del
 // sitio (con sus links de redes sociales en header/footer) aunque el motor
 // de búsqueda no lo haya rastreado.
+// Bloquea SSRF hacia redes privadas/loopback/link-local — el usuario controla
+// el valor de sitioWeb (campo de formulario), y este fetch corre desde el
+// backend, así que no debe poder alcanzar infraestructura interna.
+function isPrivateOrLoopbackHost(hostname: string): boolean {
+  const h = hostname.toLowerCase()
+  if (h === 'localhost' || h.endsWith('.local')) return true
+  // IPv4 literal — bloquea loopback, privadas RFC1918, link-local (incl. metadata 169.254.x.x)
+  const ipv4 = h.match(/^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/)
+  if (ipv4) {
+    const [a, b] = [Number(ipv4[1]), Number(ipv4[2])]
+    if (a === 127 || a === 10 || a === 0) return true
+    if (a === 169 && b === 254) return true
+    if (a === 172 && b >= 16 && b <= 31) return true
+    if (a === 192 && b === 168) return true
+    return false
+  }
+  if (h === '::1' || h.startsWith('fe80:') || h.startsWith('fc') || h.startsWith('fd')) return true
+  return false
+}
+
 async function fetchSiteContext(sitioWeb: string): Promise<string | null> {
   const url = /^https?:\/\//i.test(sitioWeb) ? sitioWeb : `https://${sitioWeb}`
+  let parsed: URL
+  try {
+    parsed = new URL(url)
+  } catch {
+    return null
+  }
+  if (parsed.protocol !== 'https:' && parsed.protocol !== 'http:') return null
+  if (isPrivateOrLoopbackHost(parsed.hostname)) return null
+
   const controller = new AbortController()
   const timeoutId = setTimeout(() => controller.abort(), SITE_FETCH_TIMEOUT_MS)
   try {
@@ -196,10 +225,21 @@ export async function autocompleteCompanyInfo(
   }
   const candidate = jsonText.slice(firstBrace, lastBrace + 1)
 
+  let parsed: AutocompleteResult
   try {
-    return JSON.parse(candidate) as AutocompleteResult
+    parsed = JSON.parse(candidate) as AutocompleteResult
   } catch (e) {
     console.error('❌ Error parseando JSON de autocompletado:', candidate.slice(0, 500))
     throw new Error('La IA devolvió una respuesta con formato inválido')
   }
+
+  // Claude puede devolver un número fuera de rango o no numérico pese a la
+  // instrucción del prompt — se acota aquí, en el origen del dato, en vez de
+  // confiar en que cada consumidor (frontend, futuras integraciones) lo valide.
+  if (parsed.amenazaEstimada !== undefined) {
+    const n = Number(parsed.amenazaEstimada)
+    parsed.amenazaEstimada = Number.isFinite(n) ? Math.min(10, Math.max(1, Math.round(n))) : undefined
+  }
+
+  return parsed
 }
