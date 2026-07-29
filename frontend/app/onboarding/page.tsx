@@ -92,7 +92,7 @@ const TIMES = ['06:00','07:00','08:00','09:00','12:00','15:00','18:00','21:00']
 const COUNTRIES = ['MX','CO','PE','CL','AR','BR','ES','US','UY','EC']
 
 const emptyCompetitor = () => ({ name:'', url:'', products:'', presence:'Nacional', threat:5, ig:'', fb:'', x:'', li:'', tt:'' })
-const emptyIndirect   = () => ({ id: Math.random().toString(36).slice(2), name:'', industry:'', threat:5, relevance:5 })
+const emptyIndirect   = () => ({ id: Math.random().toString(36).slice(2), name:'', industry:'', url:'', threat:5, relevance:5 })
 const emptyProduct    = () => ({ name:'', category:'', priceFrom:'', priceTo:'' })
 
 const S: Record<string, React.CSSProperties> = {
@@ -653,6 +653,7 @@ function Step4({ data, set }: any) {
               <input style={S.input} value={c.industry} onChange={e=>update(i,'industry',e.target.value)} placeholder="Industria / Categoría" />
               {list.length>1&&<button onClick={()=>remove(i)} style={{ background:'rgba(255,107,107,0.1)', border:'1px solid rgba(255,107,107,0.2)', borderRadius:8, width:28, height:28, cursor:'pointer', color:'#FF6B6B', fontSize:14 }}>×</button>}
             </div>
+            <input style={{...S.input, marginBottom:14}} value={c.url||''} onChange={e=>update(i,'url',e.target.value)} placeholder="sitio.com (opcional)" />
             <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:16 }}>
               <div>
                 <div style={{ display:'flex', justifyContent:'space-between', marginBottom:6 }}>
