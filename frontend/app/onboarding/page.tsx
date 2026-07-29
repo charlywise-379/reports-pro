@@ -3,6 +3,8 @@ import React, { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import posthog from 'posthog-js'
+import { FaInstagram, FaFacebook, FaXTwitter, FaLinkedin, FaTiktok, FaYoutube } from 'react-icons/fa6'
+import type { IconType } from 'react-icons'
 
 const STEPS = [
   { id: 1, label: 'Tu empresa' },
@@ -70,6 +72,14 @@ const INDUSTRY_GROUPS = [
   { group: 'Gobierno & Social', options: ['Gobierno y Sector Público','ONG y Organizaciones Sociales','Fundaciones y Filantropía'] },
 ]
 const DIFFS_LIB = ['Precio competitivo','Alta calidad','Servicio al cliente excepcional','Entrega rápida','Atención personalizada','Innovación constante','Tecnología avanzada','Experiencia comprobada','Especialización en el sector','Soluciones a medida','Rapidez de respuesta','Confianza y reputación','Garantía y respaldo','Cobertura nacional','Cobertura internacional','Procesos eficientes','Flexibilidad operativa','Personal altamente capacitado','Cumplimiento normativo','Seguridad y protección de datos','Sustentabilidad / enfoque ecológico','Soporte postventa','Excelente relación calidad-precio','Atención 24/7','Resultados medibles']
+const SOCIAL_ICONS: Record<string, IconType> = {
+  ig: FaInstagram,
+  fb: FaFacebook,
+  x: FaXTwitter,
+  li: FaLinkedin,
+  tt: FaTiktok,
+  yt: FaYoutube,
+}
 const AREAS = [
   { id:'industries', code:'A.01', label:'Industrias a monitorear', desc:'Movimientos macro de los sectores que elegiste como foco.', meta:'12 sources', on:true },
   { id:'prices',     code:'A.02', label:'Precios de competidores', desc:'Cambios de tarifa, descuentos, paquetes y ofertas activas.', meta:'Real-time', on:true },
