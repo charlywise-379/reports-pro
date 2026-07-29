@@ -88,7 +88,7 @@ export async function autocompleteCompanyInfo(
       }
     }
   } catch (err: any) {
-    if (err.name === 'AbortError') {
+    if (err instanceof Anthropic.APIUserAbortError) {
       throw new Error('Tiempo de espera agotado buscando información')
     }
     throw new Error(`Error consultando IA: ${err.message}`)
