@@ -20,13 +20,13 @@ const TIMEOUT_MS = 25000
 
 function buildPrompt(nombre: string, sitioWeb: string, tipo: 'company' | 'competitor'): string {
   if (tipo === 'company') {
-    return `Busca en la web información pública real de esta empresa:
+    return `Busca en la web información pública real de esta empresa antes de responder — usa la herramienta de búsqueda web, no respondas de memoria.
 Nombre: ${nombre}
 Sitio web: ${sitioWeb}
 
 Encuentra sus perfiles de redes sociales oficiales (Instagram, Facebook, X/Twitter, LinkedIn, TikTok) y describe brevemente su industria/giro y una frase de pitch.
 
-Responde ÚNICAMENTE con JSON válido, sin texto adicional ni markdown, con esta forma exacta (usa "" para cualquier campo que no encuentres, nunca inventes datos):
+Después de buscar, responde con un bloque JSON (puede ir precedido de texto o markdown, será extraído) con esta forma exacta (usa "" para cualquier campo que no encuentres, nunca inventes datos):
 {
   "instagram": "<@usuario o vacío>",
   "facebook": "<nombre de página o vacío>",
@@ -37,13 +37,13 @@ Responde ÚNICAMENTE con JSON válido, sin texto adicional ni markdown, con esta
   "pitch": "<una frase breve describiendo a qué se dedica, máximo 160 caracteres, o vacío>"
 }`
   }
-  return `Busca en la web información pública real de esta empresa competidora:
+  return `Busca en la web información pública real de esta empresa competidora antes de responder — usa la herramienta de búsqueda web, no respondas de memoria.
 Nombre: ${nombre}
 Sitio web: ${sitioWeb}
 
 Encuentra sus perfiles de redes sociales oficiales (Instagram, Facebook, X/Twitter, LinkedIn, TikTok), sus productos/servicios principales, y estima su nivel de amenaza competitiva (1-10) basándote en su tamaño y presencia digital aparente.
 
-Responde ÚNICAMENTE con JSON válido, sin texto adicional ni markdown, con esta forma exacta (usa "" para cualquier campo de texto que no encuentres, nunca inventes datos):
+Después de buscar, responde con un bloque JSON (puede ir precedido de texto o markdown, será extraído) con esta forma exacta (usa "" para cualquier campo de texto que no encuentres, nunca inventes datos):
 {
   "instagram": "<@usuario o vacío>",
   "facebook": "<nombre de página o vacío>",
@@ -78,7 +78,6 @@ export async function autocompleteCompanyInfo(
       ],
       messages: [
         { role: 'user', content: prompt },
-        { role: 'assistant', content: '{' },
       ],
     }, { signal: controller.signal })
 
@@ -100,16 +99,21 @@ export async function autocompleteCompanyInfo(
     throw new Error('La IA no devolvió resultados')
   }
 
-  jsonText = jsonText
-    .replace(/```json\s*/g, '')
-    .replace(/```\s*/g, '')
-    .trim()
-  if (!jsonText.startsWith('{')) jsonText = '{' + jsonText
+  // Claude puede anteponer texto/markdown antes del JSON (ya no usamos prefill
+  // de assistant porque bloqueaba el uso real de web_search) — extraemos el
+  // primer objeto JSON balanceado del texto en vez de asumir que empieza en '{'.
+  const firstBrace = jsonText.indexOf('{')
+  const lastBrace = jsonText.lastIndexOf('}')
+  if (firstBrace === -1 || lastBrace === -1 || lastBrace < firstBrace) {
+    console.error('❌ No se encontró JSON en la respuesta de autocompletado:', jsonText.slice(0, 500))
+    throw new Error('La IA devolvió una respuesta con formato inválido')
+  }
+  const candidate = jsonText.slice(firstBrace, lastBrace + 1)
 
   try {
-    return JSON.parse(jsonText) as AutocompleteResult
+    return JSON.parse(candidate) as AutocompleteResult
   } catch (e) {
-    console.error('❌ Error parseando JSON de autocompletado:', jsonText.slice(0, 500))
+    console.error('❌ Error parseando JSON de autocompletado:', candidate.slice(0, 500))
     throw new Error('La IA devolvió una respuesta con formato inválido')
   }
 }
