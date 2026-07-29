@@ -493,11 +493,19 @@ function Step3({ data, set, runAutocomplete }: any) {
 
   const handleAutocomplete = async (i: number) => {
     const c = list[i]
+    const requestedName = c.name
+    const requestedUrl = c.url
     setAcErrors(prev => ({ ...prev, [i]: '' }))
     setAcLoadingIdx(i)
     try {
       const result = await runAutocomplete(c.name, c.url, 'competitor')
-      const updated: any = { ...c }
+      const currentList: any[] = data.directCompetitors || []
+      const current = currentList[i]
+      if (!current || current.name !== requestedName || current.url !== requestedUrl) {
+        console.warn('Autocomplete result discarded: competitor row', i, 'changed while request was in flight')
+        return
+      }
+      const updated: any = { ...current }
       let algoEncontrado = false
       if (result.instagram && !updated.ig) { updated.ig = result.instagram; algoEncontrado = true }
       if (result.facebook && !updated.fb) { updated.fb = result.facebook; algoEncontrado = true }
@@ -505,11 +513,11 @@ function Step3({ data, set, runAutocomplete }: any) {
       if (result.linkedin && !updated.li) { updated.li = result.linkedin; algoEncontrado = true }
       if (result.tiktok && !updated.tt) { updated.tt = result.tiktok; algoEncontrado = true }
       if (result.productos && !updated.products) { updated.products = result.productos; algoEncontrado = true }
-      if (typeof result.amenazaEstimada === 'number' && (!c.threat || c.threat === 5)) {
+      if (typeof result.amenazaEstimada === 'number' && (!current.threat || current.threat === 5)) {
         updated.threat = result.amenazaEstimada
         algoEncontrado = true
       }
-      set('directCompetitors', list.map((item: any, idx: number) => idx === i ? updated : item))
+      set('directCompetitors', currentList.map((item: any, idx: number) => idx === i ? updated : item))
       if (!algoEncontrado) {
         setAcErrors(prev => ({ ...prev, [i]: 'No encontramos información pública de este competidor — completa los campos manualmente' }))
       }
