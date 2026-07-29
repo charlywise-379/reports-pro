@@ -188,7 +188,7 @@ function Step1({ data, set, runAutocomplete }: any) {
             >
               {acLoading ? '⏳ Buscando...' : '✨ Autocompletar con IA'}
             </button>
-            {acError && <div style={{ fontSize:11, color:'#FF6B6B', marginTop:6 }}>{acError}</div>}
+            {acError && <div style={{ fontSize:11, color: acError.startsWith('No encontramos') ? '#9CA3AF' : '#FF6B6B', marginTop:6 }}>{acError}</div>}
           </div>
         </div>
         <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:14, marginBottom:14 }}>
@@ -574,7 +574,7 @@ function Step3({ data, set, runAutocomplete }: any) {
                 </button>
                 {list.length>1&&<button onClick={()=>remove(i)} style={{ background:'rgba(255,107,107,0.1)', border:'1px solid rgba(255,107,107,0.2)', borderRadius:8, width:28, height:28, cursor:'pointer', color:'#FF6B6B', fontSize:14 }}>×</button>}
               </div>
-              {acErrors[i] && <div style={{ fontSize:11, color:'#FF6B6B', marginBottom:10 }}>{acErrors[i]}</div>}
+              {acErrors[i] && <div style={{ fontSize:11, color: acErrors[i].startsWith('No encontramos') ? '#9CA3AF' : '#FF6B6B', marginBottom:10 }}>{acErrors[i]}</div>}
 
 <div style={{ display:'flex', flexDirection:'column', gap:10, marginBottom:14 }}>
                 <div style={{ display:'flex', alignItems:'center', gap:8, flexWrap:'wrap' }}>
