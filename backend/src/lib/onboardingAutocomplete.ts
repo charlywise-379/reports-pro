@@ -12,6 +12,8 @@ export type AutocompleteResult = {
   tiktok?: string
   industria?: string
   pitch?: string
+  ciudad?: string
+  mercadoObjetivo?: string
   productos?: string
   amenazaEstimada?: number
 }
@@ -101,7 +103,7 @@ ${estrategiaBusqueda}
 
 ${DIRECTIVAS_FIDELIDAD}
 
-Encuentra sus perfiles de redes sociales oficiales (Instagram, Facebook, X/Twitter, LinkedIn, TikTok) y describe brevemente su industria/giro y una frase de pitch.
+Encuentra sus perfiles de redes sociales oficiales (Instagram, Facebook, X/Twitter, LinkedIn, TikTok), describe brevemente su industria/giro y una frase de pitch, y si es posible determina la ciudad donde opera principalmente y su mercado objetivo (a quién le vende — ej. "PYMES en México", "consumidores finales en CDMX", "empresas B2B en LATAM").
 
 Después de buscar, responde con un bloque JSON (puede ir precedido de texto o markdown, será extraído) con esta forma exacta (usa "" para cualquier campo que no encuentres, nunca inventes datos). Para las redes sociales acepta cualquier formato útil que encuentres — @usuario, nombre de página, o la URL completa del perfil, lo que tengas disponible:
 {
@@ -111,7 +113,9 @@ Después de buscar, responde con un bloque JSON (puede ir precedido de texto o m
   "linkedin": "<@usuario, nombre, o URL del perfil, o vacío>",
   "tiktok": "<@usuario, nombre, o URL del perfil, o vacío>",
   "industria": "<industria/giro detectado o vacío>",
-  "pitch": "<una frase breve describiendo a qué se dedica, máximo 160 caracteres, o vacío>"
+  "pitch": "<una frase breve describiendo a qué se dedica, máximo 160 caracteres, o vacío>",
+  "ciudad": "<ciudad principal de operación detectada, o vacío>",
+  "mercadoObjetivo": "<a quién le vende, en pocas palabras, o vacío>"
 }`
   }
   return `Busca en la web información pública real de esta empresa competidora antes de responder — usa la herramienta de búsqueda web, no respondas de memoria.

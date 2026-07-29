@@ -128,14 +128,20 @@ function Step1({ data, set, runAutocomplete }: any) {
     try {
       const result = await runAutocomplete(data.companyName, data.website, 'company')
       const social = { ...data.socialMedia }
-      if (result.instagram && !social.ig) social.ig = result.instagram
-      if (result.facebook && !social.fb) social.fb = result.facebook
-      if (result.twitter && !social.x) social.x = result.twitter
-      if (result.linkedin && !social.li) social.li = result.linkedin
-      if (result.tiktok && !social.tt) social.tt = result.tiktok
+      let algoEncontrado = false
+      if (result.instagram && !social.ig) { social.ig = result.instagram; algoEncontrado = true }
+      if (result.facebook && !social.fb) { social.fb = result.facebook; algoEncontrado = true }
+      if (result.twitter && !social.x) { social.x = result.twitter; algoEncontrado = true }
+      if (result.linkedin && !social.li) { social.li = result.linkedin; algoEncontrado = true }
+      if (result.tiktok && !social.tt) { social.tt = result.tiktok; algoEncontrado = true }
       set('socialMedia', social)
-      if (result.industria && !data.industry) set('industry', result.industria)
-      if (result.pitch && !data.pitch) set('pitch', result.pitch)
+      if (result.industria && !data.industry) { set('industry', result.industria); algoEncontrado = true }
+      if (result.pitch && !data.pitch) { set('pitch', result.pitch); algoEncontrado = true }
+      if (result.ciudad && !data.ciudad) { set('ciudad', result.ciudad); algoEncontrado = true }
+      if (result.mercadoObjetivo && !data.targetMarket) { set('targetMarket', result.mercadoObjetivo); algoEncontrado = true }
+      if (!algoEncontrado) {
+        setAcError('No encontramos información pública de esta empresa — completa los campos manualmente')
+      }
     } catch (e: any) {
       setAcError(e.message || 'No pudimos encontrar información automática')
     } finally {
