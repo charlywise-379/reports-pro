@@ -2,6 +2,7 @@ import { Router, Request, Response } from 'express'
 import { prisma } from '../lib/prisma'
 import { requireAuth } from '../middleware/auth'
 import { DeliveryChannel, ReportFrequency, ServiceType, ProjectStatus, SubscriptionStatus } from '@prisma/client'
+import { autocompleteCompanyInfo } from '../lib/onboardingAutocomplete'
 
 const router = Router()
 
@@ -449,5 +450,25 @@ router.post('/invite', requireAuth, async (req: Request, res: Response) => {
     res.json({ success: true, invited: emails.length })
   } catch(e: any) {
     res.status(500).json({ error: e.message })
+  }
+})
+
+// POST /api/onboarding/autocomplete — autocompletar campos con IA (redes sociales, industria, etc.)
+router.post('/autocomplete', requireAuth, async (req: Request, res: Response) => {
+  try {
+    const { nombre, sitioWeb, tipo } = req.body
+
+    if (typeof nombre !== 'string' || !nombre.trim() || typeof sitioWeb !== 'string' || !sitioWeb.trim()) {
+      return res.status(400).json({ success: false, error: 'nombre y sitioWeb son requeridos' })
+    }
+    if (tipo !== 'company' && tipo !== 'competitor') {
+      return res.status(400).json({ success: false, error: 'tipo debe ser "company" o "competitor"' })
+    }
+
+    const data = await autocompleteCompanyInfo(nombre.trim(), sitioWeb.trim(), tipo)
+    res.status(200).json({ success: true, data })
+  } catch (e: any) {
+    console.error('Error en autocompletado:', e.message)
+    res.status(502).json({ success: false, error: e.message || 'No se pudo completar el autocompletado' })
   }
 })

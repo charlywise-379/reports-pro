@@ -37,6 +37,16 @@ const generateLimiter = rateLimit({
   legacyHeaders: false,
 })
 app.use('/api/reports/generate', generateLimiter)
+
+// Rate limiting para autocompletado IA del wizard — 20 por hora por IP (respaldo del límite de sesión del frontend)
+const autocompleteLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000,
+  max: 20,
+  message: { error: 'Límite de autocompletados alcanzado. Intenta en un rato.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+})
+app.use('/api/onboarding/autocomplete', autocompleteLimiter)
 app.use("/api/stripe/webhook", express.raw({ type: "application/json" }))
 app.use(express.json())
 
