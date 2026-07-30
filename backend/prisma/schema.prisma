@@ -240,6 +240,7 @@ model Report {
   generationMs     Int?
   r2Key            String?
   r2Url            String?
+  downloadToken    String            @unique @default(cuid())
   pdfSizeBytes     Int?
   deliveredAt      DateTime?
   deliveryChannels DeliveryChannel[]
