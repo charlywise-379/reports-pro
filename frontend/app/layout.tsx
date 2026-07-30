@@ -13,7 +13,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Reports PRO · Inteligencia Competitiva con IA",
+  title: "Omni Reports · Inteligencia Competitiva con IA",
   description: "Reportes de inteligencia competitiva automatizados con IA para PYMES en México y LATAM.",
 };
 

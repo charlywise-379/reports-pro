@@ -39,7 +39,7 @@ const testimonials = [
     moduleColor: "text-green-400"
   },
   {
-    quote: "Information is power. Con Reports PRO siempre llegamos a la mesa de negociación con datos que nuestros competidores simplemente no tienen. Es ventaja competitiva real.",
+    quote: "Information is power. Con Omni Reports siempre llegamos a la mesa de negociación con datos que nuestros competidores simplemente no tienen. Es ventaja competitiva real.",
     name: "Marcela Vega",
     role: "CEO",
     company: "Vitro Flex",
@@ -83,13 +83,7 @@ export default function Home() {
       <nav className="relative z-50 border-b border-white/5 backdrop-blur-xl bg-[#060609]/80 sticky top-0">
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-2.5">
-            <div className="w-9 h-9 bg-gradient-to-br from-blue-500 to-violet-600 rounded-xl flex items-center justify-center shadow-lg shadow-blue-500/30">
-              <Zap size={18} className="text-white" />
-            </div>
-            <div>
-              <span className="font-black text-lg tracking-tight">Reports<span className="text-blue-400"> PRO</span></span>
-              <div className="text-[10px] text-gray-500 -mt-0.5 tracking-widest uppercase">AI Automated</div>
-            </div>
+            <img src="/logo-full.png" alt="Omni Reports" className="h-9 w-auto" />
           </div>
           <div className="hidden md:flex items-center gap-8 text-sm text-gray-400">
             <a href="#servicios" className="hover:text-white transition-colors">Servicios</a>
@@ -441,7 +435,7 @@ export default function Home() {
                 <div className="text-2xl font-black text-gray-600 px-2">VS</div>
                 <div className="text-center">
                   <div className="text-2xl font-black text-blue-400">desde $49</div>
-                  <div className="text-xs text-gray-500 mt-0.5">USD/mes · Reports PRO</div>
+                  <div className="text-xs text-gray-500 mt-0.5">USD/mes · Omni Reports</div>
                 </div>
               </div>
               <div className="bg-green-500/10 border border-green-500/20 rounded-2xl px-6 py-4 text-center">
@@ -489,7 +483,7 @@ export default function Home() {
             <div className="text-amber-400 text-xs font-bold uppercase tracking-widest mb-3 flex items-center justify-center gap-2">
               <Star size={12} className="fill-amber-400" /> Casos de éxito reales
             </div>
-            <h2 className="text-4xl font-black mb-4">Lo que dicen los líderes que ya usan Reports PRO</h2>
+            <h2 className="text-4xl font-black mb-4">Lo que dicen los líderes que ya usan Omni Reports</h2>
             <p className="text-gray-400 max-w-xl mx-auto">Directivos de las empresas más importantes de México y LATAM confían en nuestra plataforma AI cada semana.</p>
           </div>
 
@@ -562,7 +556,7 @@ export default function Home() {
               <div className="text-2xl font-black text-gray-600 px-2">VS</div>
               <div className="text-center">
                 <div className="text-2xl font-black text-blue-400">desde $49</div>
-                <div className="text-xs text-gray-500 mt-0.5">USD/mes · Reports PRO</div>
+                <div className="text-xs text-gray-500 mt-0.5">USD/mes · Omni Reports</div>
               </div>
             </div>
             <div className="bg-green-500/10 border border-green-500/20 rounded-2xl px-6 py-4 text-center">
@@ -642,15 +636,9 @@ export default function Home() {
       <footer className="relative border-t border-white/5 px-6 py-10">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-violet-600 rounded-lg flex items-center justify-center">
-              <Zap size={15} className="text-white" />
-            </div>
-            <div>
-              <span className="font-black">Reports<span className="text-blue-400"> PRO</span></span>
-              <div className="text-[10px] text-gray-600 -mt-0.5 tracking-widest uppercase">AI Automated Reports</div>
-            </div>
+            <img src="/logo-full.png" alt="Omni Reports" className="h-8 w-auto" />
           </div>
-          <p className="text-gray-600 text-sm">© 2026 Reports PRO · Hecho con ❤️ en Monterrey, México 🇲🇽</p>
+          <p className="text-gray-600 text-sm">© 2026 Omni Reports · Hecho con ❤️ en Monterrey, México 🇲🇽</p>
           <div className="flex items-center gap-6 text-gray-600 text-sm">
             <a href="#" className="hover:text-gray-400 transition-colors">Privacidad</a>
             <a href="#" className="hover:text-gray-400 transition-colors">Términos</a>
