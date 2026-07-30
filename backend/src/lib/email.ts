@@ -188,3 +188,102 @@ export async function sendConfirmationEmail(
 
   console.log(`📧 Email de confirmación enviado a: ${to}`)
 }
+
+export async function sendReportErrorEmail(
+  to: string,
+  companyName: string
+): Promise<void> {
+
+  const subject = `No pudimos generar tu reporte — Omni Reports`
+
+  const html = `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8"/>
+  <style>
+    body { font-family: system-ui, sans-serif; background: #F4F2FF; margin: 0; padding: 20px; }
+    .wrap { max-width: 560px; margin: 0 auto; background: #fff; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 24px rgba(83,74,183,0.12); }
+    .header { background: #1A1730; padding: 28px 32px; }
+    .body { padding: 28px 32px; }
+    .footer { background: #F4F2FF; padding: 16px 32px; text-align: center; font-size: 11px; color: #8B7BFF; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="header">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
+        <div style="width:36px;height:36px;background:#534AB7;border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:900;color:#fff;font-size:12px">OM</div>
+        <div>
+          <div style="font-size:13px;font-weight:800;color:#F0F2FF">Omni Reports · AI Automation</div>
+          <div style="font-size:9px;color:#8B7BFF;letter-spacing:.1em">INTELIGENCIA COMPETITIVA</div>
+        </div>
+      </div>
+      <div style="font-size:22px;font-weight:900;color:#F0F2FF;line-height:1.2">
+        No pudimos generar tu reporte ⚠️
+      </div>
+      <div style="font-size:12px;color:#5A627A;margin-top:6px">
+        ${companyName}
+      </div>
+    </div>
+
+    <div class="body">
+      <p style="font-size:14px;color:#444;line-height:1.6;margin-bottom:20px">
+        Tuvimos un problema técnico al generar tu reporte de inteligencia competitiva. Nuestro equipo ya fue notificado automáticamente y lo está revisando — no necesitas hacer nada por ahora.
+      </p>
+      <p style="font-size:14px;color:#444;line-height:1.6">
+        Si tienes dudas, puedes responder directamente a este correo.
+      </p>
+    </div>
+
+    <div class="footer">
+      Omni Reports · AI Automation ·
+      <a href="https://omnireports.pro" style="color:#8B7BFF">omnireports.pro</a>
+    </div>
+  </div>
+</body>
+</html>
+  `
+
+  try {
+    await resend.emails.send({
+      from: 'Omni Reports <reportes@flow11.mx>',
+      to,
+      subject,
+      html,
+    })
+    console.log(`📧 Email de error de reporte enviado a: ${to}`)
+  } catch (e) {
+    console.error('Error enviando sendReportErrorEmail:', e)
+  }
+}
+
+export async function sendReportErrorAdminAlert(
+  companyName: string,
+  projectId: string,
+  errorMessage: string
+): Promise<void> {
+
+  const subject = `🚨 Fallo generación de reporte — ${companyName}`
+
+  const html = `
+<div style="font-family:system-ui,sans-serif;font-size:14px;color:#222;line-height:1.6">
+  <p><strong>Proyecto:</strong> ${companyName}</p>
+  <p><strong>Project ID:</strong> ${projectId}</p>
+  <p><strong>Error:</strong> ${errorMessage}</p>
+  <p><strong>Fecha:</strong> ${new Date().toISOString()}</p>
+</div>
+  `
+
+  try {
+    await resend.emails.send({
+      from: 'Omni Reports <reportes@flow11.mx>',
+      to: 'admin@omnireports.pro',
+      subject,
+      html,
+    })
+    console.log(`📧 Alerta de error de reporte enviada a admin@omnireports.pro`)
+  } catch (e) {
+    console.error('Error enviando sendReportErrorAdminAlert:', e)
+  }
+}
