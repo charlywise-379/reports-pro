@@ -41,7 +41,7 @@ export async function sendReportEmail(
         </div>
       </div>
       <div style="font-size:22px;font-weight:900;color:#F0F2FF;line-height:1.2">
-        Tu reporte está listo <svg width="20" height="20" viewBox="0 0 20 20" style="vertical-align:-3px" xmlns="http://www.w3.org/2000/svg"><rect x="1" y="11" width="3.5" height="8" rx="1" fill="#8B7BFF"/><rect x="6.25" y="7" width="3.5" height="12" rx="1" fill="#8B7BFF"/><rect x="11.5" y="3" width="3.5" height="16" rx="1" fill="#8B7BFF"/><rect x="16.75" y="9" width="3.5" height="10" rx="1" fill="#8B7BFF"/></svg>
+        Tu reporte está listo 📈
       </div>
       <div style="font-size:12px;color:#5A627A;margin-top:6px">
         ${companyName} · Reporte #${edition}
@@ -72,7 +72,7 @@ export async function sendReportEmail(
       <div style="background:#F8F7FF;border:1px solid #EEEDFE;border-radius:12px;padding:16px;margin-bottom:20px">
         <div style="font-size:10px;font-weight:700;color:#8B7BFF;letter-spacing:.1em;margin-bottom:10px">CONTENIDO DEL REPORTE</div>
         <div style="font-size:12px;color:#444;line-height:1.8">
-          <svg width="13" height="13" viewBox="0 0 20 20" style="vertical-align:-2px" xmlns="http://www.w3.org/2000/svg"><rect x="1" y="11" width="3.5" height="8" rx="1" fill="#534AB7"/><rect x="6.25" y="7" width="3.5" height="12" rx="1" fill="#534AB7"/><rect x="11.5" y="3" width="3.5" height="16" rx="1" fill="#534AB7"/><rect x="16.75" y="9" width="3.5" height="10" rx="1" fill="#534AB7"/></svg> Executive Summary + Scores<br/>
+          📈 Executive Summary + Scores<br/>
           🌡️ Termómetro del mercado<br/>
           🏆 Ranking de competidores<br/>
           ⚠️ Early Warning Alerts™<br/>
@@ -80,7 +80,7 @@ export async function sendReportEmail(
           💰 Inteligencia comercial<br/>
           🎯 Opportunity Score™<br/>
           🛡️ Riesgos estratégicos<br/>
-          <svg width="13" height="13" viewBox="0 0 20 20" style="vertical-align:-2px" xmlns="http://www.w3.org/2000/svg"><rect x="1" y="11" width="3.5" height="8" rx="1" fill="#534AB7"/><rect x="6.25" y="7" width="3.5" height="12" rx="1" fill="#534AB7"/><rect x="11.5" y="3" width="3.5" height="16" rx="1" fill="#534AB7"/><rect x="16.75" y="9" width="3.5" height="10" rx="1" fill="#534AB7"/></svg> Benchmark estratégico<br/>
+          📈 Benchmark estratégico<br/>
           ✅ Recomendaciones ejecutables<br/>
           📅 Plan próximos 30 días
         </div>
