@@ -20,7 +20,7 @@ router.post('/create-checkout-session', async (req: Request, res: Response) => {
 
     // Buscar o crear customer en Stripe
     let customerId: string
-    const existingSub = await (prisma.subscription as any).findFirst({ where: { projectId: project.id } })
+    const existingSub = await prisma.subscription.findFirst({ where: { projectId: project.id } })
 
     if (existingSub?.stripeCustomerId) {
       customerId = existingSub.stripeCustomerId
@@ -88,7 +88,7 @@ router.post('/webhook', async (req: Request, res: Response) => {
         const priceId = sub.items.data[0].price.id
         const trialEnd = sub.trial_end ? new Date(sub.trial_end * 1000) : new Date(Date.now() + 7*24*60*60*1000)
 
-        await (prisma.subscription as any).upsert({
+        await prisma.subscription.upsert({
           where: { projectId },
           create: {
             projectId,
@@ -232,6 +232,7 @@ router.get('/verify-session/:sessionId', async (req: Request, res: Response) => 
       where: { projectId },
       create: {
         projectId, userId,
+        stripeCustomerId: session.customer,
         stripeSubscriptionId: sub.id,
         stripePriceId: sub.items?.data[0]?.price?.id || '',
         status: 'TRIALING', frequency: freq,
@@ -239,6 +240,7 @@ router.get('/verify-session/:sessionId', async (req: Request, res: Response) => 
         trialEndsAt: sub.trial_end ? new Date(sub.trial_end * 1000) : new Date(Date.now() + 7*24*60*60*1000),
       },
       update: {
+        stripeCustomerId: session.customer,
         stripeSubscriptionId: sub.id,
         stripePriceId: sub.items?.data[0]?.price?.id || '',
         status: sub.status === 'trialing' ? 'TRIALING' : 'ACTIVE',
