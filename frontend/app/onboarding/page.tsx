@@ -518,25 +518,32 @@ function Step3({ data, set, runAutocomplete }: any) {
     setAcLoadingIdx(i)
     try {
       const result = await runAutocomplete(c.name, c.url, 'competitor')
-      const currentList: any[] = data.directCompetitors || []
-      const current = currentList[i]
-      if (!current || current.name !== requestedName || current.url !== requestedUrl) {
+      let discarded = false
+      let algoEncontrado = false
+      set('directCompetitors', (prevList: any[]) => {
+        const currentList = prevList || []
+        const current = currentList[i]
+        if (!current || current.name !== requestedName || current.url !== requestedUrl) {
+          discarded = true
+          return currentList
+        }
+        const updated: any = { ...current }
+        if (result.instagram && !updated.ig) { updated.ig = result.instagram; algoEncontrado = true }
+        if (result.facebook && !updated.fb) { updated.fb = result.facebook; algoEncontrado = true }
+        if (result.twitter && !updated.x) { updated.x = result.twitter; algoEncontrado = true }
+        if (result.linkedin && !updated.li) { updated.li = result.linkedin; algoEncontrado = true }
+        if (result.tiktok && !updated.tt) { updated.tt = result.tiktok; algoEncontrado = true }
+        if (result.productos && !updated.products) { updated.products = result.productos; algoEncontrado = true }
+        if (typeof result.amenazaEstimada === 'number' && (!current.threat || current.threat === 5)) {
+          updated.threat = result.amenazaEstimada
+          algoEncontrado = true
+        }
+        return currentList.map((item: any, idx: number) => idx === i ? updated : item)
+      })
+      if (discarded) {
         console.warn('Autocomplete result discarded: competitor row', i, 'changed while request was in flight')
         return
       }
-      const updated: any = { ...current }
-      let algoEncontrado = false
-      if (result.instagram && !updated.ig) { updated.ig = result.instagram; algoEncontrado = true }
-      if (result.facebook && !updated.fb) { updated.fb = result.facebook; algoEncontrado = true }
-      if (result.twitter && !updated.x) { updated.x = result.twitter; algoEncontrado = true }
-      if (result.linkedin && !updated.li) { updated.li = result.linkedin; algoEncontrado = true }
-      if (result.tiktok && !updated.tt) { updated.tt = result.tiktok; algoEncontrado = true }
-      if (result.productos && !updated.products) { updated.products = result.productos; algoEncontrado = true }
-      if (typeof result.amenazaEstimada === 'number' && (!current.threat || current.threat === 5)) {
-        updated.threat = result.amenazaEstimada
-        algoEncontrado = true
-      }
-      set('directCompetitors', currentList.map((item: any, idx: number) => idx === i ? updated : item))
       if (!algoEncontrado) {
         setAcErrors(prev => ({ ...prev, [i]: 'No encontramos información pública de este competidor — completa los campos manualmente' }))
       }
@@ -1289,7 +1296,7 @@ export default function OnboardingPage() {
     deliveryEmail:'', deliveryPhone:'',
   })
 
-  const set = (key: string, val: any) => setData((prev: any) => ({ ...prev, [key]: val }))
+  const set = (key: string, val: any) => setData((prev: any) => ({ ...prev, [key]: typeof val === 'function' ? val(prev[key]) : val }))
 
   const runAutocomplete = async (nombre: string, sitioWeb: string, tipo: 'company' | 'competitor'): Promise<any | null> => {
     if (autocompleteUsesLeft <= 0) {
