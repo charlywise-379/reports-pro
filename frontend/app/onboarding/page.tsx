@@ -16,45 +16,19 @@ const STEPS = [
   { id: 7, label: 'Confirmación y activación' },
 ]
 
-const TAGS_LIB = [
-  // Manufactura
-  'Manufactura','Industria 4.0','Automatización','Cadena de suministro','Control de calidad',
-  // Comercio / Retail
-  'Retail','E-commerce','Marketplace','Omnicanal','D2C','POS',
-  // Tecnología
-  'SaaS B2B','SaaS B2C','Inteligencia Artificial','Ciberseguridad','Cloud','DevOps','API-first',
-  // Finanzas
-  'Fintech','Banking','Crédito','Pagos','Insurtech','Wealth','Roboadvisor','Web3','Trading',
-  // Salud
-  'Salud digital','Telemedicina','MedTech','Farmacia online','BioTech',
-  // Educación
-  'EdTech','E-learning','Upskilling','Educación K-12','Universidad',
-  // Alimentos
-  'FoodTech','Restaurantes','Agro-alimentos','Bebidas','Delivery de comida',
-  // Construcción
-  'PropTech','Inmobiliaria','Construcción','Infraestructura','Smart buildings',
-  // Logística
-  'Logística','Last-mile','Transporte','Flota','Supply chain',
-  // Turismo
-  'Turismo','Hospitalidad','TravelTech','Hoteles','Experiencias',
-  // Servicios profesionales
-  'Consultoría','Legal','Contabilidad','RR.HH.','Marketing digital',
-  // Automotriz
-  'Automotriz','Movilidad eléctrica','Fleet management','AutoTech',
-  // Energía
-  'Energía renovable','Oil & Gas','CleanTech','Utilities',
-  // Telecomunicaciones
-  'Telecomunicaciones','Medios digitales','Streaming','AdTech',
-  // Farmacéutica
-  'Farmacéutica','BioTech','Dispositivos médicos','CRO',
-  // Agro
-  'AgriTech','Agroindustria','Ganadería','Acuicultura',
-  // Gobierno
-  'GovTech','ONG','Sector público','Smart city',
-  // Moda
-  'Moda','Retail de lujo','Consumo masivo','Belleza',
-  // Entretenimiento
-  'Entretenimiento','Deportes','GameTech','eSports','Eventos',
+const TAGS_GROUPS: { group: string; tags: string[] }[] = [
+  { group: 'Industria y Manufactura', tags: ['Automatización e Industria 4.0', 'Automotriz y Movilidad', 'Manufactura y Ensamble', 'Química y Farmacéutica'] },
+  { group: 'Logística y Distribución', tags: ['Almacenamiento y Distribución', 'Gestión de Flotas', 'Logística y Transporte', 'Última Milla y Delivery'] },
+  { group: 'Retail y Comercio', tags: ['Consumo Masivo (FMCG)', 'E-commerce y Marketplaces', 'Moda y Belleza', 'Retail y Comercio Físico'] },
+  { group: 'Finanzas', tags: ['Banca y Servicios Financieros', 'Fintech', 'Insurtech', 'Pagos y Transferencias'] },
+  { group: 'Tecnología', tags: ['Ciberseguridad', 'Desarrollo de Software y APIs', 'Infraestructura Cloud y DevOps', 'Inteligencia Artificial y Datos', 'SaaS B2B / B2C'] },
+  { group: 'Salud', tags: ['Dispositivos Médicos y Biotech', 'MedTech y Salud Digital', 'Servicios de Salud y Hospitales'] },
+  { group: 'Agro y Alimentos', tags: ['Agricultura y Ganadería (Agtech)', 'Alimentos y Bebidas', 'Restaurantes y FoodTech'] },
+  { group: 'Bienes Raíces y Construcción', tags: ['Construcción e Infraestructura', 'Inmobiliaria y PropTech'] },
+  { group: 'Educación y Turismo', tags: ['EdTech y Educación Online', 'Entretenimiento y Eventos', 'Instituciones Educativas', 'Turismo y Hotelería'] },
+  { group: 'Energía y Servicios Públicos', tags: ['Energía y Renovables', 'Servicios Públicos (Utilities)'] },
+  { group: 'Medios y Telecomunicaciones', tags: ['Marketing y Publicidad (AdTech)', 'Medios, Streaming y Entretenimiento', 'Telecomunicaciones'] },
+  { group: 'Servicios y Sector Público', tags: ['GovTech y Sector Público', 'ONGs y Tercer Sector', 'Servicios Profesionales (Consultoría, Legal, Contabilidad, RR.HH.)'] },
 ]
 const INDUSTRY_GROUPS = [
   { group: 'Marketing & Medios', options: ['Agencia de Marketing Digital','Publicidad y Medios Tradicionales','Relaciones Públicas y Comunicación','Producción de Contenido y Video','Diseño Gráfico y Branding','SEO / SEM / Performance'] },
@@ -129,6 +103,7 @@ function SectionNum({ n, label }: { n: string; label: string }) {
 function Step1({ data, set, runAutocomplete }: any) {
   const [acLoading, setAcLoading] = useState(false)
   const [acError, setAcError] = useState('')
+  const [tagSearch, setTagSearch] = useState('')
 
   const canAutocomplete = !!(data.companyName?.trim() && data.website?.trim())
 
@@ -275,12 +250,30 @@ function Step1({ data, set, runAutocomplete }: any) {
             <label style={S.label}>Tags activos</label>
             <span style={{ fontSize:10, color:'#5A627A' }}>{(data.tags||[]).length}/10</span>
           </div>
-          <div style={{ display:'flex', flexWrap:'wrap', gap:6 }}>
-            {TAGS_LIB.map(tag=>{
-              const on=(data.tags||[]).includes(tag)
-              return <button key={tag} onClick={()=>set('tags', on ? data.tags.filter((t:string)=>t!==tag) : data.tags?.length<10 ? [...(data.tags||[]),tag] : data.tags)} style={on?{...S.pillOn}:{...S.pill}}>{tag}{on&&' ×'}</button>
-            })}
-          </div>
+          <input
+            style={{ ...S.input, marginBottom:12 }}
+            value={tagSearch}
+            onChange={e=>setTagSearch(e.target.value)}
+            placeholder="Buscar industria..."
+          />
+          {TAGS_GROUPS.map(({ group, tags }) => {
+            const q = tagSearch.trim().toLowerCase()
+            const visibleTags = tags.filter(tag =>
+              (data.tags||[]).includes(tag) || tag.toLowerCase().includes(q)
+            )
+            if (visibleTags.length === 0) return null
+            return (
+              <div key={group} style={{ marginBottom:14 }}>
+                <div style={{ fontSize:10, fontWeight:700, color:'#5A627A', letterSpacing:'0.06em', marginBottom:6 }}>{group.toUpperCase()}</div>
+                <div style={{ display:'flex', flexWrap:'wrap', gap:6 }}>
+                  {visibleTags.map(tag=>{
+                    const on=(data.tags||[]).includes(tag)
+                    return <button key={tag} onClick={()=>set('tags', on ? data.tags.filter((t:string)=>t!==tag) : data.tags?.length<10 ? [...(data.tags||[]),tag] : data.tags)} style={on?{...S.pillOn}:{...S.pill}}>{tag}{on&&' ×'}</button>
+                  })}
+                </div>
+              </div>
+            )
+          })}
         </div>
       </div>
     </div>
