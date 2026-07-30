@@ -66,8 +66,8 @@ export default function RegisterPage() {
       </div>
       <div className="relative w-full max-w-md">
         <div className="text-center mb-8">
-          <Link href="/" className="inline-flex items-center gap-2.5 mb-6">
-            <img src="/logo-full.png" alt="Omni Reports" className="h-9 w-auto" />
+          <Link href="/" className="flex items-center justify-center mb-8">
+            <img src="/logo-full.png" alt="Omni Reports" className="h-16 w-auto" />
           </Link>
           <div className="inline-flex items-center gap-2 bg-green-500/15 border border-green-500/25 text-green-400 text-xs font-bold px-3 py-1.5 rounded-full mb-4">
             <Sparkles size={12} />

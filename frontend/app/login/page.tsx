@@ -59,8 +59,8 @@ function LoginContent() {
 
         {/* Logo */}
         <div className="text-center mb-8">
-          <Link href="/" className="inline-flex items-center gap-2.5 mb-6">
-            <img src="/logo-full.png" alt="Omni Reports" className="h-9 w-auto" />
+          <Link href="/" className="flex items-center justify-center mb-8">
+            <img src="/logo-full.png" alt="Omni Reports" className="h-16 w-auto" />
           </Link>
           <h1 className="text-2xl font-black mb-2">Bienvenido de vuelta</h1>
           <p className="text-gray-400 text-sm">Ingresa a tu cuenta para ver tus reportes</p>
