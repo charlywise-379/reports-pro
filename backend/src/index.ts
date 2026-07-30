@@ -7,6 +7,7 @@ import onboardingRouter from "./routes/onboarding"
 import reportsRouter from "./routes/reports"
 import dashboardRouter from "./routes/dashboard"
 import stripeRouter from "./routes/stripe"
+import authRouter from "./routes/auth"
 import { startReportWorker } from "./workers/reportWorker"
 import { scheduleReports } from "./jobs/scheduleReports"
 
@@ -47,6 +48,16 @@ const autocompleteLimiter = rateLimit({
   legacyHeaders: false,
 })
 app.use('/api/onboarding/autocomplete', autocompleteLimiter)
+
+// Rate limiting para registro — 10 por hora por IP (previene abuso de creación de cuentas)
+const registerLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000,
+  max: 10,
+  message: { error: 'Demasiados intentos de registro. Intenta en un rato.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+})
+app.use('/api/auth/register', registerLimiter)
 app.use("/api/stripe/webhook", express.raw({ type: "application/json" }))
 app.use(express.json())
 
@@ -54,6 +65,7 @@ app.use("/api/onboarding", onboardingRouter)
 app.use("/api/reports", reportsRouter)
 app.use("/api/dashboard", dashboardRouter)
 app.use("/api/stripe", stripeRouter)
+app.use("/api/auth", authRouter)
 
 startReportWorker()
 console.log("Worker de reportes activo")
