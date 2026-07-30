@@ -1211,12 +1211,18 @@ function BriefingPanel({ step, isMobile }: { step: number; isMobile: boolean }) 
 // ──────────────────────────────────────────
 function TopNav() {
   const [isMobile, setIsMobile] = useState(false)
+  const router = useRouter()
+  const supabase = createClient()
   useEffect(() => {
     const check = () => setIsMobile(window.innerWidth < 768)
     check()
     window.addEventListener('resize', check)
     return () => window.removeEventListener('resize', check)
   }, [])
+  const handleLogout = async () => {
+    await supabase.auth.signOut()
+    router.push('/login')
+  }
   return (
     <div style={{ borderBottom:'1px solid rgba(255,255,255,0.06)', background:'#0D0F1A', flexShrink:0, padding: isMobile ? '10px 16px' : '0 24px', height: isMobile ? 'auto' : 56, display:'flex', alignItems:'center', justifyContent:'space-between', flexWrap: isMobile ? 'wrap' : 'nowrap', gap: isMobile ? 8 : 0 }}>
       <div style={{ display:'flex', alignItems:'center', gap:10 }}>
@@ -1235,6 +1241,9 @@ function TopNav() {
           <button style={{ padding:'4px 10px', borderRadius:16, border:'none', background:'#8B7BFF', color:'#fff', fontSize:11, fontWeight:700, cursor:'pointer' }}>ES</button>
           <button style={{ padding:'4px 10px', borderRadius:16, border:'none', background:'transparent', color:'#5A627A', fontSize:11, fontWeight:700, cursor:'pointer' }}>EN</button>
         </div>
+        <button onClick={handleLogout} style={{ background:'transparent', border:'1px solid rgba(255,255,255,0.1)', borderRadius:20, padding: isMobile ? '4px 10px' : '6px 14px', color:'#9CA3AF', fontSize: isMobile ? 10 : 11, fontWeight:700, cursor:'pointer', marginTop: isMobile ? 4 : 0 }}>
+          Cerrar sesión
+        </button>
       </div>
     </div>
   )
