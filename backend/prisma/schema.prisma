@@ -54,7 +54,6 @@ model User {
   fullName         String?
   avatarUrl        String?
   phone            String?
-  stripeCustomerId String?        @unique
   createdAt        DateTime       @default(now())
   updatedAt        DateTime       @updatedAt
   projects         Project[]
@@ -213,6 +212,7 @@ model Subscription {
   project                Project            @relation(fields: [projectId], references: [id], onDelete: Cascade)
   userId                 String
   user                   User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  stripeCustomerId       String?            @unique
   stripeSubscriptionId   String?            @unique
   stripePriceId          String?
   stripeCurrentPeriodEnd DateTime?
