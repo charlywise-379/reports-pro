@@ -3,7 +3,7 @@ import { useState, Suspense } from 'react'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
-import { Zap, Mail, Lock, ArrowRight, Sparkles, CheckCircle } from 'lucide-react'
+import { Mail, Lock, ArrowRight, Sparkles, CheckCircle } from 'lucide-react'
 import posthog from 'posthog-js'
 
 function LoginContent() {
@@ -60,13 +60,7 @@ function LoginContent() {
         {/* Logo */}
         <div className="text-center mb-8">
           <Link href="/" className="inline-flex items-center gap-2.5 mb-6">
-            <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-violet-600 rounded-xl flex items-center justify-center shadow-lg shadow-blue-500/30">
-              <Zap size={20} className="text-white" />
-            </div>
-            <div className="text-left">
-              <span className="font-black text-xl">Omni Reports<span className="text-blue-400"> · AI Automation</span></span>
-              <div className="text-[10px] text-gray-500 -mt-0.5 tracking-widest uppercase">AI Automation</div>
-            </div>
+            <img src="/logo-full.png" alt="Omni Reports" className="h-9 w-auto" />
           </Link>
           <h1 className="text-2xl font-black mb-2">Bienvenido de vuelta</h1>
           <p className="text-gray-400 text-sm">Ingresa a tu cuenta para ver tus reportes</p>

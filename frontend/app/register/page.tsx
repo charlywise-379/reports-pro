@@ -1,7 +1,7 @@
 'use client'
 import { useState } from 'react'
 import Link from 'next/link'
-import { Zap, Mail, Lock, User, ArrowRight, CheckCircle, Sparkles } from 'lucide-react'
+import { Mail, Lock, User, ArrowRight, CheckCircle, Sparkles } from 'lucide-react'
 import posthog from 'posthog-js'
 
 export default function RegisterPage() {
@@ -67,13 +67,7 @@ export default function RegisterPage() {
       <div className="relative w-full max-w-md">
         <div className="text-center mb-8">
           <Link href="/" className="inline-flex items-center gap-2.5 mb-6">
-            <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-violet-600 rounded-xl flex items-center justify-center shadow-lg shadow-blue-500/30">
-              <Zap size={20} className="text-white" />
-            </div>
-            <div className="text-left">
-              <span className="font-black text-xl">Omni Reports<span className="text-blue-400"> · AI Automation</span></span>
-              <div className="text-[10px] text-gray-500 -mt-0.5 tracking-widest uppercase">AI Automation</div>
-            </div>
+            <img src="/logo-full.png" alt="Omni Reports" className="h-9 w-auto" />
           </Link>
           <div className="inline-flex items-center gap-2 bg-green-500/15 border border-green-500/25 text-green-400 text-xs font-bold px-3 py-1.5 rounded-full mb-4">
             <Sparkles size={12} />
