@@ -166,4 +166,39 @@ router.get('/download/:filename', requireAuth, async (req: Request, res: Respons
   } catch(e: any) { return res.status(500).json({ error: e.message }) }
 })
 
+// GET /api/reports/public/:reportId/:token — link público permanente (usado en emails/WhatsApp), sin auth de sesión
+router.get('/public/:reportId/:token', async (req: Request, res: Response) => {
+  try {
+    const { reportId, token } = req.params as { reportId: string; token: string }
+
+    const report = await prisma.report.findUnique({ where: { id: reportId } })
+
+    if (!report || report.downloadToken !== token) {
+      return res.status(403).json({ error: 'Link inválido o expirado' })
+    }
+
+    if (!report.r2Key) {
+      return res.status(404).json({ error: 'PDF no disponible' })
+    }
+
+    const { getSignedDownloadUrl } = await import('../lib/r2')
+    const signedUrl = await getSignedDownloadUrl(report.r2Key)
+
+    const ipAddress = typeof req.ip === 'string' ? req.ip : (Array.isArray(req.ip) ? req.ip[0] : null)
+    const userAgent = typeof req.headers['user-agent'] === 'string' ? req.headers['user-agent'] : null
+
+    await prisma.reportAccessLog.create({
+      data: {
+        reportId: report.id,
+        ipAddress,
+        userAgent,
+      }
+    })
+
+    return res.redirect(signedUrl)
+  } catch (e: any) {
+    return res.status(500).json({ error: e.message })
+  }
+})
+
 export default router
