@@ -249,12 +249,15 @@ function Step1({ data, set, runAutocomplete }: any) {
       <div style={S.card}>
         <SectionNum n="02" label="Presencia digital" />
         <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:8, overflow:'hidden' }}>
-          {[['IG','ig','@usuario'],['FB','fb','@pagina'],['TT','tt','@usuario'],['YT','yt','@canal'],['LI','li','@empresa'],['X','x','@usuario']].map(([icon,key,ph])=>(
+          {[['ig','@usuario'],['fb','@pagina'],['tt','@usuario'],['yt','@canal'],['li','@empresa'],['x','@usuario']].map(([key,ph])=>{
+            const Icon = SOCIAL_ICONS[key]
+            return (
             <div key={key} style={{ display:'flex', alignItems:'center', gap:6, background:'rgba(255,255,255,0.03)', border:'1px solid rgba(255,255,255,0.07)', borderRadius:10, padding:'8px 10px', minWidth:0, overflow:'hidden' }}>
-              <span style={{ fontSize:10, fontWeight:800, color:'#8B7BFF', width:16, flexShrink:0 }}>{icon}</span>
+              <Icon size={14} color="#8B7BFF" style={{ flexShrink:0 }} />
               <input style={{ flex:1, minWidth:0, width:0, background:'transparent', border:'none', outline:'none', color:'#F0F2FF', fontSize:12 }} value={data.socialMedia?.[key]||''} onChange={e=>set('socialMedia',{...data.socialMedia,[key]:e.target.value})} placeholder={ph} />
             </div>
-          ))}
+            )
+          })}
         </div>
       </div>
 
