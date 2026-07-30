@@ -1,17 +1,19 @@
 'use client'
-import { useState } from 'react'
+import { useState, Suspense } from 'react'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
-import { Zap, Mail, Lock, ArrowRight, Sparkles } from 'lucide-react'
+import { Zap, Mail, Lock, ArrowRight, Sparkles, CheckCircle } from 'lucide-react'
 import posthog from 'posthog-js'
 
-export default function LoginPage() {
+function LoginContent() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const justConfirmed = searchParams.get('confirmed') === '1'
   const supabase = createClient()
 
   const handleLogin = async () => {
@@ -107,6 +109,13 @@ export default function LoginPage() {
               </div>
             </div>
 
+            {justConfirmed && !error && (
+              <div className="bg-green-500/10 border border-green-500/20 text-green-400 text-sm px-4 py-3 rounded-xl flex items-center gap-2">
+                <CheckCircle size={16} />
+                Cuenta confirmada. Inicia sesión para continuar.
+              </div>
+            )}
+
             {/* Error */}
             {error && (
               <div className="bg-red-500/10 border border-red-500/20 text-red-400 text-sm px-4 py-3 rounded-xl">
@@ -142,5 +151,17 @@ export default function LoginPage() {
 
       </div>
     </main>
+  )
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={
+      <main className="min-h-screen bg-[#060609] flex items-center justify-center">
+        <div className="w-10 h-10 border-2 border-white/20 border-t-white rounded-full animate-spin" />
+      </main>
+    }>
+      <LoginContent />
+    </Suspense>
   )
 }
