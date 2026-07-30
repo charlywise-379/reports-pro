@@ -125,7 +125,40 @@ export function startReportWorker() {
   )
 
   worker.on('completed', (job) => console.log(`[Worker] Job ${job.id} completado`))
-  worker.on('failed', (job, err) => console.error(`[Worker] Job ${job?.id} fallido:`, err.message))
+  worker.on('failed', async (job, err) => {
+    console.error(`[Worker] Job ${job?.id} fallido:`, err.message)
+
+    if (!job) return
+    if (job.attemptsMade < 3) return
+
+    try {
+      const project = await prisma.project.findUnique({
+        where: { id: job.data.projectId },
+        include: { competitiveSetup: true },
+      })
+      if (!project) return
+
+      const companyName = (project as any).competitiveSetup?.companyName || 'Tu empresa'
+
+      if (project.deliveryEmail) {
+        const { sendReportErrorEmail } = await import('../lib/email')
+        await sendReportErrorEmail(project.deliveryEmail, companyName)
+      }
+
+      const deliveryPhone = (project as any).deliveryPhone
+      const deliveryChannels = (project as any).deliveryChannels || []
+      if (deliveryPhone && deliveryChannels.includes('WHATSAPP')) {
+        const { sendReportErrorWhatsApp } = await import('../lib/whatsapp')
+        await sendReportErrorWhatsApp(deliveryPhone, companyName)
+      }
+
+      const { sendReportErrorAdminAlert } = await import('../lib/email')
+      await sendReportErrorAdminAlert(companyName, job.data.projectId, err.message)
+
+    } catch (notifyErr: any) {
+      console.error('[Worker] Error notificando fallo de reporte:', notifyErr.message)
+    }
+  })
 
   console.log('Worker de reportes iniciado')
   return worker
