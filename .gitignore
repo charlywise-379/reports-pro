@@ -11,3 +11,7 @@ credenciales-privadas/
 **/.DS_Store
 **/*.js.map
 **/*.ts.map
+.claude/
+OmniReports.code-workspace
+backend/nodemon.json
+docs/superpowers/

@@ -20,10 +20,11 @@ function useIsMobile() {
 
 
 const PLANS = [
-  { key:'monthly', label:'Mensual', freq:'Primer día del mes', priceUSD:49.00, priceAnnualUSD:39.20, annualTotal:470.40, monthlyId:'price_1TbAByRmWEBJMGXdUCjaNSAN', annualId:'price_1TbAC1RmWEBJMGXdTUOqMqN0', popular:false },
-  { key:'biweekly', label:'Quincenal', freq:'Cada 15 días', priceUSD:79.00, priceAnnualUSD:63.20, annualTotal:758.40, monthlyId:'price_1TbABzRmWEBJMGXdVRxXDOra', annualId:'price_1TbAC2RmWEBJMGXdpyYqw4xR', popular:false },
-  { key:'weekly', label:'Semanal', freq:'Cada lunes', priceUSD:99.00, priceAnnualUSD:79.20, annualTotal:950.40, monthlyId:'price_1TbAC0RmWEBJMGXdVhvlncr9', annualId:'price_1TbAC2RmWEBJMGXdA7AvWUtG', popular:true },
-  { key:'daily', label:'Diario', freq:'Cada día hábil', priceUSD:149.00, priceAnnualUSD:119.20, annualTotal:1430.40, monthlyId:'price_1TbAC0RmWEBJMGXd1khQ2wEJ', annualId:'price_1TbAC3RmWEBJMGXd4F7SbDYw', popular:false },
+  // STAGING: price IDs de test mode (Stripe), no de producción — ver backend/.env
+  { key:'monthly', label:'Mensual', freq:'Primer día del mes', priceUSD:49.00, priceAnnualUSD:39.20, annualTotal:470.40, monthlyId:'price_1TyZscRjVFKmb2eipwl3I17f', annualId:'price_1TyZuERjVFKmb2eiK0cjKMBC', popular:false },
+  { key:'biweekly', label:'Quincenal', freq:'Cada 15 días', priceUSD:79.00, priceAnnualUSD:63.20, annualTotal:758.40, monthlyId:'price_1TyZsxRjVFKmb2eiwfaDlRe3', annualId:'price_1TyZuwRjVFKmb2eivFLQ3gGR', popular:false },
+  { key:'weekly', label:'Semanal', freq:'Cada lunes', priceUSD:99.00, priceAnnualUSD:79.20, annualTotal:950.40, monthlyId:'price_1TyZtHRjVFKmb2eisRMAdZWF', annualId:'price_1TyZvMRjVFKmb2eiybeTVuHY', popular:true },
+  { key:'daily', label:'Diario', freq:'Cada día hábil', priceUSD:149.00, priceAnnualUSD:119.20, annualTotal:1430.40, monthlyId:'price_1TyZtXRjVFKmb2ei92tjJNNX', annualId:'price_1TyZvyRjVFKmb2eiAx2BLyRm', popular:false },
 ]
 
 export default function CheckoutPage() {
