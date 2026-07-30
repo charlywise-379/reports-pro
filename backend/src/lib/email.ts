@@ -33,12 +33,8 @@ export async function sendReportEmail(
 <body>
   <div class="wrap">
     <div class="header">
-      <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
-        <div style="width:36px;height:36px;background:#534AB7;border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:900;color:#fff;font-size:12px">OM</div>
-        <div>
-          <div style="font-size:13px;font-weight:800;color:#F0F2FF">Omni Reports · AI Automation</div>
-          <div style="font-size:9px;color:#8B7BFF;letter-spacing:.1em">INTELIGENCIA COMPETITIVA</div>
-        </div>
+      <div style="margin-bottom:16px">
+        <img src="https://omnireports.pro/logo-full.png" height="32" alt="Omni Reports" style="display:block;height:32px;width:auto">
       </div>
       <div style="font-size:22px;font-weight:900;color:#F0F2FF;line-height:1.2">
         Tu reporte está listo 📈
@@ -142,12 +138,8 @@ export async function sendConfirmationEmail(
 <body>
   <div class="wrap">
     <div class="header">
-      <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
-        <div style="width:36px;height:36px;background:#534AB7;border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:900;color:#fff;font-size:12px">OM</div>
-        <div>
-          <div style="font-size:13px;font-weight:800;color:#F0F2FF">Omni Reports · AI Automation</div>
-          <div style="font-size:9px;color:#8B7BFF;letter-spacing:.1em">INTELIGENCIA COMPETITIVA</div>
-        </div>
+      <div style="margin-bottom:16px">
+        <img src="https://omnireports.pro/logo-full.png" height="32" alt="Omni Reports" style="display:block;height:32px;width:auto">
       </div>
       <div style="font-size:22px;font-weight:900;color:#F0F2FF;line-height:1.2">
         Confirma tu cuenta 👋
@@ -212,12 +204,8 @@ export async function sendReportErrorEmail(
 <body>
   <div class="wrap">
     <div class="header">
-      <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
-        <div style="width:36px;height:36px;background:#534AB7;border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:900;color:#fff;font-size:12px">OM</div>
-        <div>
-          <div style="font-size:13px;font-weight:800;color:#F0F2FF">Omni Reports · AI Automation</div>
-          <div style="font-size:9px;color:#8B7BFF;letter-spacing:.1em">INTELIGENCIA COMPETITIVA</div>
-        </div>
+      <div style="margin-bottom:16px">
+        <img src="https://omnireports.pro/logo-full.png" height="32" alt="Omni Reports" style="display:block;height:32px;width:auto">
       </div>
       <div style="font-size:22px;font-weight:900;color:#F0F2FF;line-height:1.2">
         No pudimos generar tu reporte ⚠️
