@@ -62,3 +62,33 @@ export async function sendReportWhatsApp(
 
   console.log('[WhatsApp] Reporte enviado a ' + toPhone + ' via template')
 }
+
+export async function sendReportErrorWhatsApp(
+  phone: string,
+  companyName: string
+): Promise<void> {
+  const errorTemplateSid = process.env.TWILIO_WHATSAPP_ERROR_TEMPLATE_SID
+
+  if (!errorTemplateSid) {
+    console.log('[WhatsApp] TWILIO_WHATSAPP_ERROR_TEMPLATE_SID no configurado — se omite notificación de error por WhatsApp')
+    return
+  }
+
+  const cleanPhone = phone.replace(/\s+/g, '').replace(/[^+\d]/g, '')
+  const toPhone = cleanPhone.startsWith('+') ? cleanPhone : '+52' + cleanPhone
+  const to = 'whatsapp:' + toPhone
+
+  try {
+    await client.messages.create({
+      from: FROM,
+      to,
+      contentSid: errorTemplateSid,
+      contentVariables: JSON.stringify({
+        "1": companyName,
+      }),
+    })
+    console.log('[WhatsApp] Notificación de error enviada a ' + toPhone)
+  } catch (e) {
+    console.error('Error enviando sendReportErrorWhatsApp:', e)
+  }
+}
