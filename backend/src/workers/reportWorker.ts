@@ -86,6 +86,9 @@ export function startReportWorker() {
         const companyName = setup?.companyName || 'Tu empresa'
         const reportCount = await prisma.report.count({ where: { projectId, status: 'COMPLETED' as any } })
 
+        const BACKEND_URL = process.env.BACKEND_URL || 'https://reports-pro-production.up.railway.app'
+        const publicDownloadUrl = `${BACKEND_URL}/api/reports/public/${reportRecord.id}/${reportRecord.downloadToken}`
+
         if (project.deliveryEmail) {
           const { sendReportEmail } = await import('../lib/email')
           const setupForCC = (project as any).competitiveSetup
@@ -96,14 +99,14 @@ export function startReportWorker() {
               : {}
             ccEmails = ctx.ccEmails || []
           } catch(e) {}
-          await sendReportEmail(project.deliveryEmail, companyName, signedUrl, reportCount, reportCount, ccEmails)
+          await sendReportEmail(project.deliveryEmail, companyName, publicDownloadUrl, reportCount, reportCount, ccEmails)
         }
 
         const deliveryPhone = (project as any).deliveryPhone
         const deliveryChannels = (project as any).deliveryChannels || []
         if (deliveryPhone && deliveryChannels.includes('WHATSAPP')) {
           const { sendReportWhatsApp } = await import('../lib/whatsapp')
-          await sendReportWhatsApp(deliveryPhone, companyName, signedUrl, reportCount)
+          await sendReportWhatsApp(deliveryPhone, companyName, publicDownloadUrl, reportCount)
           console.log('[WhatsApp] Reporte enviado a ' + deliveryPhone)
         }
 
