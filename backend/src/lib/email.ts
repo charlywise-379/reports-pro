@@ -87,7 +87,7 @@ export async function sendReportEmail(
       </div>
 
       <div style="text-align:center">
-        <a href="${reportUrl}" class="btn">
+        <a href="${reportUrl}" class="btn" style="display:inline-block;background:linear-gradient(135deg,#534AB7,#1D9E75);color:#ffffff;text-decoration:none;padding:14px 28px;border-radius:20px;font-weight:700;font-size:14px;margin:20px 0">
           Descargar Reporte PDF →
         </a>
       </div>
