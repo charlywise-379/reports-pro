@@ -470,11 +470,8 @@ export default function DashboardPage() {
       {/* NAVBAR */}
       <nav style={{ borderBottom:`1px solid ${T.navBorder}`, background:T.navBg, position:'sticky', top:0, zIndex:50, padding: isMobile ? '10px 16px' : '0 28px', height: isMobile ? 'auto' : 56, display:'flex', alignItems:'center', justifyContent:'space-between', flexWrap: isMobile ? 'wrap' : 'nowrap', gap: isMobile ? 8 : 0 }}>
         <div style={{ display:'flex', alignItems:'center', gap:10 }}>
-          <div style={{ width:34, height:34, borderRadius:10, background:'linear-gradient(135deg,#8B7BFF,#5DD4D4)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:11, fontWeight:900, color:'#0D0F1A', flexShrink:0 }}>OM</div>
-          <div>
-            <div style={{ fontSize:13, fontWeight:800, color: isDark ? T.text : '#F0F2FF' }}>Omni Reports · AI Automation</div>
-            <div style={{ fontSize:10, color: isDark ? T.textMuted : "#AFA9EC" }}>Inteligencia Competitiva · AI</div>
-          </div>
+          <img src={isDark ? '/logo-full.png' : '/logo-full-dark.png'} alt="Omni Reports" style={{ height: isMobile ? 28 : 34, width:'auto' }} />
+          <div style={{ fontSize:10, color: isDark ? T.textMuted : "#AFA9EC" }}>Inteligencia Competitiva · AI</div>
         </div>
         <div style={{ display:'flex', flexDirection: isMobile ? 'column' : 'row', alignItems: isMobile ? 'flex-end' : 'center', gap: isMobile ? 4 : 14 }}>
           <div style={{ display:'flex', alignItems:'center', gap:6, background:'rgba(110,231,164,0.1)', border:'1px solid rgba(110,231,164,0.2)', borderRadius:20, padding:'4px 10px' }}>
