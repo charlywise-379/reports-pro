@@ -1,7 +1,6 @@
 'use client'
 import { useState } from 'react'
 import Link from 'next/link'
-import { createClient } from '@/lib/supabase/client'
 import { Zap, Mail, Lock, User, ArrowRight, CheckCircle, Sparkles } from 'lucide-react'
 import posthog from 'posthog-js'
 
@@ -12,7 +11,6 @@ export default function RegisterPage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState(false)
-  const supabase = createClient()
 
   const handleRegister = async () => {
     if (password.length < 6) {
@@ -21,23 +19,25 @@ export default function RegisterPage() {
     }
     setLoading(true)
     setError('')
-    const { error, data } = await supabase.auth.signUp({
-      email,
-      password,
-      options: { data: { full_name: fullName } }
-    })
-    if (error) {
-      setError(error.message === 'User already registered'
-        ? 'Este email ya está registrado.'
-        : 'Ocurrió un error. Intenta de nuevo.')
-      posthog.captureException(new Error(error.message), { email })
-      setLoading(false)
-    } else {
-      if (data.user) {
-        posthog.identify(data.user.id, { email: data.user.email, name: fullName })
-        posthog.capture('user_signed_up', { email, name: fullName })
+    try {
+      const BACKEND = process.env.NEXT_PUBLIC_BACKEND_URL || 'https://reports-pro-production.up.railway.app'
+      const res = await fetch(`${BACKEND}/api/auth/register`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ fullName, email, password }),
+      })
+      const result = await res.json()
+      if (!res.ok) {
+        setError(result.error || 'Ocurrió un error. Intenta de nuevo.')
+        posthog.captureException(new Error(result.error || 'register_failed'), { email })
+        setLoading(false)
+        return
       }
+      posthog.capture('user_signed_up', { email, name: fullName })
       setSuccess(true)
+    } catch (e) {
+      setError('Ocurrió un error. Intenta de nuevo.')
+      setLoading(false)
     }
   }
 
