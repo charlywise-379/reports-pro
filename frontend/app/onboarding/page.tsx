@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase/client'
 import posthog from 'posthog-js'
 import { FaInstagram, FaFacebook, FaXTwitter, FaLinkedin, FaTiktok, FaYoutube } from 'react-icons/fa6'
 import type { IconType } from 'react-icons'
+import { Search } from 'lucide-react'
 
 const STEPS = [
   { id: 1, label: 'Tu empresa' },
@@ -250,12 +251,15 @@ function Step1({ data, set, runAutocomplete }: any) {
             <label style={S.label}>Tags activos</label>
             <span style={{ fontSize:10, color:'#5A627A' }}>{(data.tags||[]).length}/10</span>
           </div>
-          <input
-            style={{ ...S.input, marginBottom:12 }}
-            value={tagSearch}
-            onChange={e=>setTagSearch(e.target.value)}
-            placeholder="Buscar industria..."
-          />
+          <div style={{ position:'relative', marginBottom:12 }}>
+            <Search size={14} color="#5A627A" style={{ position:'absolute', left:14, top:'50%', transform:'translateY(-50%)', pointerEvents:'none' }} />
+            <input
+              style={{ ...S.input, paddingLeft:38 }}
+              value={tagSearch}
+              onChange={e=>setTagSearch(e.target.value)}
+              placeholder="Buscar industria..."
+            />
+          </div>
           {TAGS_GROUPS.map(({ group, tags }) => {
             const q = tagSearch.trim().toLowerCase()
             const visibleTags = tags.filter(tag =>
