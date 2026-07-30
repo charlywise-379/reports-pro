@@ -260,10 +260,18 @@ function Step1({ data, set, runAutocomplete }: any) {
               placeholder="Buscar industria..."
             />
           </div>
-          {TAGS_GROUPS.map(({ group, tags }) => {
-            const q = tagSearch.trim().toLowerCase()
+          {(() => {
+            const norm = (s: string) => s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '')
+            const q = norm(tagSearch.trim())
+            const allKnownTags = new Set(TAGS_GROUPS.flatMap(g => g.tags))
+            const orphanTags: string[] = (data.tags||[]).filter((t: string) => !allKnownTags.has(t))
+            const groupsWithOrphans: { group: string; tags: string[] }[] = orphanTags.length > 0
+              ? [...TAGS_GROUPS, { group: 'Otros', tags: orphanTags }]
+              : TAGS_GROUPS
+            return groupsWithOrphans.map(({ group, tags }: { group: string; tags: string[] }) => {
+            const groupMatches = norm(group).includes(q)
             const visibleTags = tags.filter(tag =>
-              (data.tags||[]).includes(tag) || tag.toLowerCase().includes(q)
+              (data.tags||[]).includes(tag) || groupMatches || norm(tag).includes(q)
             )
             if (visibleTags.length === 0) return null
             return (
@@ -277,11 +285,12 @@ function Step1({ data, set, runAutocomplete }: any) {
                 </div>
               </div>
             )
-          })}
+            })
+          })()}
         </div>
       </div>
     </div>
-    
+
   )
 }
 
