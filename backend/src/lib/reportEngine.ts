@@ -1353,7 +1353,9 @@ export async function generateReport(project: any, outputPath: string): Promise<
   // 3. Cargar y renderizar template
   const templatePath = path.join(__dirname, '../templates/competitive-report.html')
   const template = fs.readFileSync(templatePath, 'utf-8')
-  const html = renderTemplate(template, data)
+  const logoPath = path.join(__dirname, '../assets/logo-icon.png')
+  const logoBase64 = 'data:image/png;base64,' + fs.readFileSync(logoPath).toString('base64')
+  const html = renderTemplate(template, { ...data, logoBase64 })
 
   // 4. Generar PDF via Browserless
   const BLESS = process.env.BLESS_KEY
