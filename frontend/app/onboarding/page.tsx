@@ -597,12 +597,15 @@ function Step3({ data, set, runAutocomplete }: any) {
                   ))}
                 </div>
                 <div style={{ display:'flex', flexWrap:'wrap', gap:6 }}>
-                  {[['IG','ig'],['FB','fb'],['X','x'],['LI','li'],['TT','tt']].map(([icon,key])=>(
+                  {['ig','fb','x','li','tt'].map((key)=>{
+                    const Icon = SOCIAL_ICONS[key]
+                    return (
                     <div key={key} style={{ display:'flex', alignItems:'center', gap:6, background:'rgba(255,255,255,0.04)', border:'1px solid rgba(255,255,255,0.08)', borderRadius:10, padding:'6px 10px', flex:1, minWidth:100 }}>
-                      <span style={{ fontSize:10, fontWeight:800, color:'#8B7BFF', flexShrink:0 }}>{icon}</span>
+                      <Icon size={14} color="#8B7BFF" style={{ flexShrink:0 }} />
                       <input style={{ width:'100%', background:'transparent', border:'none', outline:'none', color:'#F0F2FF', fontSize:12 }} value={c[key]||''} onChange={e=>update(i,key,e.target.value)} placeholder="@usuario" />
                     </div>
-                  ))}
+                    )
+                  })}
                 </div>
               </div>
 
