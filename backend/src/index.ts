@@ -10,6 +10,7 @@ import dashboardRouter from "./routes/dashboard"
 import stripeRouter from "./routes/stripe"
 import authRouter from "./routes/auth"
 import operationsAuthRouter from "./routes/operations/auth"
+import operationsDashboardRouter from "./routes/operations/dashboard"
 import { startReportWorker } from "./workers/reportWorker"
 import { scheduleReports } from "./jobs/scheduleReports"
 
@@ -98,6 +99,7 @@ app.use("/api/dashboard", dashboardRouter)
 app.use("/api/stripe", stripeRouter)
 app.use("/api/auth", authRouter)
 app.use("/api/operations/auth", operationsAuthRouter)
+app.use("/api/operations/dashboard", operationsDashboardRouter)
 
 startReportWorker()
 console.log("Worker de reportes activo")
