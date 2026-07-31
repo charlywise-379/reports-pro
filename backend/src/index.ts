@@ -2,6 +2,7 @@ import "./instrument"
 import express from "express"
 import rateLimit from "express-rate-limit"
 import cors from "cors"
+import cookieParser from "cookie-parser"
 import dotenv from "dotenv"
 import onboardingRouter from "./routes/onboarding"
 import reportsRouter from "./routes/reports"
@@ -36,6 +37,7 @@ app.use(cors({
   },
 }))
 app.set("trust proxy", 1)
+app.use(cookieParser())
 
 // Rate limiting global — 100 requests por 15 min por IP
 const globalLimiter = rateLimit({
