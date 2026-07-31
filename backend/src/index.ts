@@ -9,6 +9,7 @@ import reportsRouter from "./routes/reports"
 import dashboardRouter from "./routes/dashboard"
 import stripeRouter from "./routes/stripe"
 import authRouter from "./routes/auth"
+import operationsAuthRouter from "./routes/operations/auth"
 import { startReportWorker } from "./workers/reportWorker"
 import { scheduleReports } from "./jobs/scheduleReports"
 
@@ -78,6 +79,16 @@ const registerLimiter = rateLimit({
   legacyHeaders: false,
 })
 app.use('/api/auth/register', registerLimiter)
+
+// Rate limiting estricto para login de administradores — 5 por 15 min por IP
+const adminLoginLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 5,
+  message: { error: 'Demasiados intentos de inicio de sesión. Intenta en 15 minutos.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+})
+app.use('/api/operations/auth/login', adminLoginLimiter)
 app.use("/api/stripe/webhook", express.raw({ type: "application/json" }))
 app.use(express.json())
 
@@ -86,6 +97,7 @@ app.use("/api/reports", reportsRouter)
 app.use("/api/dashboard", dashboardRouter)
 app.use("/api/stripe", stripeRouter)
 app.use("/api/auth", authRouter)
+app.use("/api/operations/auth", operationsAuthRouter)
 
 startReportWorker()
 console.log("Worker de reportes activo")
