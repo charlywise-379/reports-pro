@@ -1,4 +1,4 @@
-import { S3Client, PutObjectCommand, GetObjectCommand } from '@aws-sdk/client-s3'
+import { S3Client, PutObjectCommand, GetObjectCommand, DeleteObjectCommand } from '@aws-sdk/client-s3'
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner'
 import fs from 'fs'
 
@@ -49,4 +49,12 @@ export async function uploadPDFToR2(localPath: string, filename: string): Promis
   )
 
   return signedUrl
+}
+
+export async function deleteFromR2(r2Key: string): Promise<void> {
+  const key = r2Key.startsWith('reports/') ? r2Key : `reports/${r2Key}`
+  await r2.send(new DeleteObjectCommand({
+    Bucket: process.env.R2_BUCKET_NAME || 'reports-pro-pdfs',
+    Key: key,
+  }))
 }
