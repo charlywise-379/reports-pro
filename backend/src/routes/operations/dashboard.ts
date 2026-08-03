@@ -26,7 +26,7 @@ router.get('/', requireAdmin, async (req: Request, res: Response) => {
     startOfWeek.setDate(now.getDate() - now.getDay())
     startOfWeek.setHours(0, 0, 0, 0)
 
-    const [activeReports, activeUsers, activeSubs, subsThisMonth, subsThisWeek, subsByFrequency] = await Promise.all([
+    const [activeReports, activeUsers, activeSubs, subsCreatedThisMonth, subsCreatedThisWeek, subsByFrequency] = await Promise.all([
       prisma.report.count({
         where: { status: { in: ['GENERATING', 'QUEUED'] }, ...moduleWhere(module) },
       }),
@@ -55,8 +55,8 @@ router.get('/', requireAdmin, async (req: Request, res: Response) => {
     ])
 
     const monthlyRevenue = activeSubs.reduce((sum, s) => sum + s.pricePerMonth, 0)
-    const revenueThisMonth = subsThisMonth.reduce((sum, s) => sum + s.pricePerMonth, 0)
-    const revenueThisWeek = subsThisWeek.reduce((sum, s) => sum + s.pricePerMonth, 0)
+    const newMrrThisMonth = subsCreatedThisMonth.reduce((sum, s) => sum + s.pricePerMonth, 0)
+    const newMrrThisWeek = subsCreatedThisWeek.reduce((sum, s) => sum + s.pricePerMonth, 0)
 
     // Tendencia de ingresos y nuevas suscripciones — últimos 6 meses
     const sixMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 5, 1)
@@ -89,14 +89,15 @@ router.get('/', requireAdmin, async (req: Request, res: Response) => {
       activeReports,
       activeUsers: activeUsers.length,
       activeSubscriptions: activeSubs.length,
-      revenueThisMonth,
-      revenueThisWeek,
+      newMrrThisMonth,
+      newMrrThisWeek,
       monthlyRecurringRevenue: monthlyRevenue,
       subscriptionsByFrequency: subsByFrequency.map(f => ({ frequency: f.frequency, count: f._count })),
       trend,
     })
   } catch (e: any) {
-    res.status(500).json({ error: e.message })
+    console.error('[operations] error:', e)
+    res.status(500).json({ error: 'Error interno' })
   }
 })
 

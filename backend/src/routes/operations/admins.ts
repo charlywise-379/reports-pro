@@ -16,7 +16,8 @@ router.get('/', async (req: Request, res: Response) => {
     })
     res.json({ admins })
   } catch (e: any) {
-    res.status(500).json({ error: e.message })
+    console.error('[operations] error:', e)
+    res.status(500).json({ error: 'Error interno' })
   }
 })
 
@@ -51,7 +52,8 @@ router.post('/', async (req: Request, res: Response) => {
 
     res.status(201).json({ id: admin.id, email: admin.email, fullName: admin.fullName, role: admin.role })
   } catch (e: any) {
-    res.status(500).json({ error: e.message })
+    console.error('[operations] error:', e)
+    res.status(500).json({ error: 'Error interno' })
   }
 })
 
@@ -87,7 +89,8 @@ router.patch('/:id', async (req: Request, res: Response) => {
 
     res.json({ id: updated.id, email: updated.email, fullName: updated.fullName, role: updated.role })
   } catch (e: any) {
-    res.status(500).json({ error: e.message })
+    console.error('[operations] error:', e)
+    res.status(500).json({ error: 'Error interno' })
   }
 })
 
@@ -109,7 +112,8 @@ router.delete('/:id', async (req: Request, res: Response) => {
 
     res.json({ ok: true })
   } catch (e: any) {
-    res.status(500).json({ error: e.message })
+    console.error('[operations] error:', e)
+    res.status(500).json({ error: 'Error interno' })
   }
 })
 

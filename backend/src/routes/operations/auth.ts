@@ -15,7 +15,11 @@ const loginSchema = z.object({
 const COOKIE_OPTIONS = {
   httpOnly: true as const,
   secure: true as const,
-  sameSite: 'strict' as const,
+  // Frontend (Vercel) y backend (Railway) son dominios registrables distintos — cross-site real.
+  // 'none' es necesario para que la cookie se envíe en requests cross-site; requiere secure: true (ya presente).
+  // Tradeoff aceptado deliberadamente: mitigado porque todos los endpoints que cambian estado son JSON-only
+  // y CORS está restringido a FRONTEND_URL.
+  sameSite: 'none' as const,
   maxAge: 12 * 60 * 60 * 1000,
   path: '/',
 }
@@ -51,19 +55,25 @@ router.post('/login', async (req: Request, res: Response) => {
 
     res.json({ ok: true, admin: { id: admin.id, email: admin.email, fullName: admin.fullName, role: admin.role } })
   } catch (e: any) {
-    res.status(500).json({ error: e.message })
+    console.error('[operations] error:', e)
+    res.status(500).json({ error: 'Error interno' })
   }
 })
 
 router.post('/logout', requireAdmin, async (req: Request, res: Response) => {
-  res.clearCookie('admin_session', { path: '/' })
+  res.clearCookie('admin_session', { path: '/', sameSite: 'none', secure: true })
   res.json({ ok: true })
 })
 
 router.get('/me', requireAdmin, async (req: Request, res: Response) => {
-  const admin = await prisma.adminUser.findUnique({ where: { id: req.adminId! } })
-  if (!admin) return res.status(404).json({ error: 'Administrador no encontrado' })
-  res.json({ id: admin.id, email: admin.email, fullName: admin.fullName, role: admin.role })
+  try {
+    const admin = await prisma.adminUser.findUnique({ where: { id: req.adminId! } })
+    if (!admin) return res.status(404).json({ error: 'Administrador no encontrado' })
+    res.json({ id: admin.id, email: admin.email, fullName: admin.fullName, role: admin.role })
+  } catch (e: any) {
+    console.error('[operations] error:', e)
+    res.status(500).json({ error: 'Error interno' })
+  }
 })
 
 export default router

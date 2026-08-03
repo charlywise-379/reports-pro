@@ -1,7 +1,8 @@
 'use client'
 import { useEffect, useState } from 'react'
 import { adminFetch } from '@/lib/operations/api'
-import { getStoredTheme, palette } from '@/lib/operations/theme'
+import { palette } from '@/lib/operations/theme'
+import { useTheme } from '@/lib/operations/ThemeContext'
 
 type UserRow = {
   id: string; email: string; fullName: string | null; phone: string | null
@@ -16,15 +17,16 @@ export default function OperationsUsersPage() {
   const [status, setStatus] = useState('')
   const [selected, setSelected] = useState<UserRow | null>(null)
   const [suspendReason, setSuspendReason] = useState('')
-  const T = palette[getStoredTheme()]
+  const { theme } = useTheme()
+  const T = palette[theme]
 
   const load = () => {
     const params = new URLSearchParams({ page: String(page), pageSize: '25' })
     if (search) params.set('search', search)
     if (status) params.set('status', status)
     adminFetch(`/api/operations/users?${params}`)
-      .then(res => res.json())
-      .then(data => { setUsers(data.users); setTotal(data.total) })
+      .then(res => res.ok ? res.json() : { users: [], total: 0 })
+      .then(data => { setUsers(data.users || []); setTotal(data.total || 0) })
   }
 
   useEffect(() => { load() }, [page, search, status])
@@ -104,7 +106,7 @@ export default function OperationsUsersPage() {
                 <td style={{ padding: '10px 14px', display: 'flex', gap: 8 }}>
                   {u.isSuspended
                     ? <button onClick={() => handleReactivate(u.id)} style={{ fontSize: 11, background: 'none', border: `1px solid ${T.border}`, borderRadius: 6, padding: '4px 8px', color: T.text, cursor: 'pointer' }}>Reactivar</button>
-                    : <button onClick={() => setSelected(u)} style={{ fontSize: 11, background: 'none', border: `1px solid ${T.border}`, borderRadius: 6, padding: '4px 8px', color: T.text, cursor: 'pointer' }}>Suspender</button>}
+                    : <button disabled title="Aún no implementado: suspender no bloquea el login del cliente todavía" onClick={() => setSelected(u)} style={{ fontSize: 11, background: 'none', border: `1px solid ${T.border}`, borderRadius: 6, padding: '4px 8px', color: T.text, cursor: 'not-allowed', opacity: 0.5 }}>Suspender</button>}
                   <button onClick={() => handleResetPassword(u.id)} style={{ fontSize: 11, background: 'none', border: `1px solid ${T.border}`, borderRadius: 6, padding: '4px 8px', color: T.text, cursor: 'pointer' }}>Reset password</button>
                   <button onClick={() => handleDelete(u.id)} style={{ fontSize: 11, background: 'none', border: `1px solid ${T.danger}`, borderRadius: 6, padding: '4px 8px', color: T.danger, cursor: 'pointer' }}>Eliminar</button>
                 </td>

@@ -1,7 +1,8 @@
 'use client'
 import { useEffect, useState } from 'react'
 import { adminFetch } from '@/lib/operations/api'
-import { getStoredTheme, palette } from '@/lib/operations/theme'
+import { palette } from '@/lib/operations/theme'
+import { useTheme } from '@/lib/operations/ThemeContext'
 
 type ReportRow = {
   id: string; status: string; createdAt: string; pdfSizeBytes: number | null; errorMessage: string | null
@@ -15,14 +16,15 @@ export default function OperationsReportsPage() {
   const [total, setTotal] = useState(0)
   const [page, setPage] = useState(1)
   const [status, setStatus] = useState('')
-  const T = palette[getStoredTheme()]
+  const { theme } = useTheme()
+  const T = palette[theme]
 
   const load = () => {
     const params = new URLSearchParams({ page: String(page), pageSize: '25' })
     if (status) params.set('status', status)
     adminFetch(`/api/operations/reports?${params}`)
-      .then(res => res.json())
-      .then(data => { setReports(data.reports); setTotal(data.total) })
+      .then(res => res.ok ? res.json() : { reports: [], total: 0 })
+      .then(data => { setReports(data.reports || []); setTotal(data.total || 0) })
   }
 
   useEffect(() => { load() }, [page, status])

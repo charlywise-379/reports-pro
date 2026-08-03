@@ -30,7 +30,8 @@ router.get('/', requireAdmin, async (req: Request, res: Response) => {
 
     res.json({ subscriptions, total, page: parseInt(page), pageSize: take })
   } catch (e: any) {
-    res.status(500).json({ error: e.message })
+    console.error('[operations] error:', e)
+    res.status(500).json({ error: 'Error interno' })
   }
 })
 
@@ -59,7 +60,8 @@ router.get('/export', requireAdmin, async (req: Request, res: Response) => {
     res.setHeader('Content-Disposition', 'attachment; filename="suscripciones.csv"')
     res.send(header + rows)
   } catch (e: any) {
-    res.status(500).json({ error: e.message })
+    console.error('[operations] error:', e)
+    res.status(500).json({ error: 'Error interno' })
   }
 })
 
@@ -73,7 +75,8 @@ router.get('/:id', requireAdmin, async (req: Request, res: Response) => {
     if (!subscription) return res.status(404).json({ error: 'Suscripción no encontrada' })
     res.json(subscription)
   } catch (e: any) {
-    res.status(500).json({ error: e.message })
+    console.error('[operations] error:', e)
+    res.status(500).json({ error: 'Error interno' })
   }
 })
 
@@ -98,7 +101,8 @@ router.post('/:id/cancel', requireAdmin, async (req: Request, res: Response) => 
 
     res.json(updated)
   } catch (e: any) {
-    res.status(500).json({ error: e.message })
+    console.error('[operations] error:', e)
+    res.status(500).json({ error: 'Error interno' })
   }
 })
 
@@ -127,7 +131,8 @@ router.post('/:id/extend-trial', requireAdmin, async (req: Request, res: Respons
 
     res.json(updated)
   } catch (e: any) {
-    res.status(500).json({ error: e.message })
+    console.error('[operations] error:', e)
+    res.status(500).json({ error: 'Error interno' })
   }
 })
 
@@ -153,7 +158,8 @@ router.patch('/:id/frequency', requireAdmin, async (req: Request, res: Response)
 
     res.json(updatedSub)
   } catch (e: any) {
-    res.status(500).json({ error: e.message })
+    console.error('[operations] error:', e)
+    res.status(500).json({ error: 'Error interno' })
   }
 })
 

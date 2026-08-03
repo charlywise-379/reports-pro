@@ -2,7 +2,8 @@
 import { useEffect, useState } from 'react'
 import { useAdmin } from '@/lib/operations/AdminContext'
 import { adminFetch } from '@/lib/operations/api'
-import { getStoredTheme, palette } from '@/lib/operations/theme'
+import { palette } from '@/lib/operations/theme'
+import { useTheme } from '@/lib/operations/ThemeContext'
 
 type AdminRow = { id: string; email: string; fullName: string; role: 'SUPER_ADMIN' | 'ADMIN'; createdAt: string }
 
@@ -12,13 +13,16 @@ export default function OperationsAdminsPage() {
   const [showCreate, setShowCreate] = useState(false)
   const [form, setForm] = useState({ email: '', fullName: '', password: '', role: 'ADMIN' as 'ADMIN' | 'SUPER_ADMIN' })
   const [error, setError] = useState('')
-  const T = palette[getStoredTheme()]
+  const { theme } = useTheme()
+  const T = palette[theme]
 
   const load = () => {
-    adminFetch('/api/operations/admins').then(res => res.json()).then(data => setAdmins(data.admins || []))
+    adminFetch('/api/operations/admins').then(res => res.ok ? res.json() : { admins: [] }).then(data => setAdmins(data.admins || []))
   }
 
-  useEffect(() => { load() }, [])
+  useEffect(() => {
+    if (admin?.role === 'SUPER_ADMIN') load()
+  }, [admin])
 
   if (admin && admin.role !== 'SUPER_ADMIN') {
     return <div style={{ color: T.danger }}>No tienes permiso para ver esta sección.</div>

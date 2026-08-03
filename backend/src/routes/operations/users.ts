@@ -50,7 +50,8 @@ router.get('/', requireAdmin, async (req: Request, res: Response) => {
       pageSize: take,
     })
   } catch (e: any) {
-    res.status(500).json({ error: e.message })
+    console.error('[operations] error:', e)
+    res.status(500).json({ error: 'Error interno' })
   }
 })
 
@@ -85,7 +86,8 @@ router.get('/export', requireAdmin, async (req: Request, res: Response) => {
     res.setHeader('Content-Disposition', 'attachment; filename="usuarios.csv"')
     res.send(header + rows)
   } catch (e: any) {
-    res.status(500).json({ error: e.message })
+    console.error('[operations] error:', e)
+    res.status(500).json({ error: 'Error interno' })
   }
 })
 
@@ -101,7 +103,8 @@ router.get('/:id', requireAdmin, async (req: Request, res: Response) => {
     if (!user) return res.status(404).json({ error: 'Usuario no encontrado' })
     res.json(user)
   } catch (e: any) {
-    res.status(500).json({ error: e.message })
+    console.error('[operations] error:', e)
+    res.status(500).json({ error: 'Error interno' })
   }
 })
 
@@ -124,7 +127,8 @@ router.patch('/:id', requireAdmin, async (req: Request, res: Response) => {
 
     res.json(user)
   } catch (e: any) {
-    res.status(500).json({ error: e.message })
+    console.error('[operations] error:', e)
+    res.status(500).json({ error: 'Error interno' })
   }
 })
 
@@ -147,7 +151,8 @@ router.post('/:id/suspend', requireAdmin, async (req: Request, res: Response) =>
 
     res.json(user)
   } catch (e: any) {
-    res.status(500).json({ error: e.message })
+    console.error('[operations] error:', e)
+    res.status(500).json({ error: 'Error interno' })
   }
 })
 
@@ -165,7 +170,8 @@ router.post('/:id/reactivate', requireAdmin, async (req: Request, res: Response)
 
     res.json(user)
   } catch (e: any) {
-    res.status(500).json({ error: e.message })
+    console.error('[operations] error:', e)
+    res.status(500).json({ error: 'Error interno' })
   }
 })
 
@@ -187,7 +193,8 @@ router.post('/:id/reset-password', requireAdmin, async (req: Request, res: Respo
 
     res.json({ ok: true })
   } catch (e: any) {
-    res.status(500).json({ error: e.message })
+    console.error('[operations] error:', e)
+    res.status(500).json({ error: 'Error interno' })
   }
 })
 
@@ -205,7 +212,8 @@ router.delete('/:id', requireAdmin, async (req: Request, res: Response) => {
 
     res.json({ ok: true })
   } catch (e: any) {
-    res.status(500).json({ error: e.message })
+    console.error('[operations] error:', e)
+    res.status(500).json({ error: 'Error interno' })
   }
 })
 

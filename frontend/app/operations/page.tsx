@@ -1,7 +1,8 @@
 'use client'
 import { useEffect, useState } from 'react'
 import { adminFetch } from '@/lib/operations/api'
-import { getStoredTheme, palette } from '@/lib/operations/theme'
+import { palette } from '@/lib/operations/theme'
+import { useTheme } from '@/lib/operations/ThemeContext'
 
 const MODULES = [
   { value: '', label: 'Todos los módulos' },
@@ -14,8 +15,8 @@ type DashboardData = {
   activeReports: number
   activeUsers: number
   activeSubscriptions: number
-  revenueThisMonth: number
-  revenueThisWeek: number
+  newMrrThisMonth: number
+  newMrrThisWeek: number
   monthlyRecurringRevenue: number
   subscriptionsByFrequency: { frequency: string; count: number }[]
   trend: { month: string; revenue: number; newSubs: number }[]
@@ -33,7 +34,8 @@ function Card({ label, value, T }: { label: string; value: string; T: any }) {
 export default function OperationsDashboardPage() {
   const [data, setData] = useState<DashboardData | null>(null)
   const [module, setModule] = useState('')
-  const T = palette[getStoredTheme()]
+  const { theme } = useTheme()
+  const T = palette[theme]
 
   useEffect(() => {
     adminFetch(`/api/operations/dashboard${module ? `?module=${module}` : ''}`)
@@ -59,8 +61,8 @@ export default function OperationsDashboardPage() {
         <Card label="Reportes activos" value={String(data.activeReports)} T={T} />
         <Card label="Usuarios activos" value={String(data.activeUsers)} T={T} />
         <Card label="Suscripciones activas" value={String(data.activeSubscriptions)} T={T} />
-        <Card label="Ingresos del mes" value={`$${data.revenueThisMonth.toFixed(2)}`} T={T} />
-        <Card label="Ingresos de la semana" value={`$${data.revenueThisWeek.toFixed(2)}`} T={T} />
+        <Card label="Nuevo MRR del mes" value={`$${data.newMrrThisMonth.toFixed(2)}`} T={T} />
+        <Card label="Nuevo MRR de la semana" value={`$${data.newMrrThisWeek.toFixed(2)}`} T={T} />
         <Card label="MRR (recurrente)" value={`$${data.monthlyRecurringRevenue.toFixed(2)}`} T={T} />
       </div>
 

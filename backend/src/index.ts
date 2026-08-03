@@ -41,7 +41,12 @@ app.use(cors({
       callback(new Error('Not allowed by CORS'))
     }
   },
+  credentials: true,
 }))
+// Asume exactamente un hop de reverse proxy antes de la app (topología actual de Railway).
+// Si el rate limiting de login de admin parece afectar a todos los usuarios a la vez (bucket compartido)
+// o no atribuye correctamente por IP, verificar el req.ip real visto por la app en logs de producción
+// y ajustar este número según la cadena real de proxies de Railway.
 app.set("trust proxy", 1)
 app.use(cookieParser())
 

@@ -16,3 +16,4 @@ OmniReports.code-workspace
 backend/nodemon.json
 docs/superpowers/
 /pnpm-lock.yaml
+outputs/

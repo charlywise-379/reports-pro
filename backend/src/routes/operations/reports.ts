@@ -32,7 +32,8 @@ router.get('/', requireAdmin, async (req: Request, res: Response) => {
 
     res.json({ reports, total, page: parseInt(page), pageSize: take })
   } catch (e: any) {
-    res.status(500).json({ error: e.message })
+    console.error('[operations] error:', e)
+    res.status(500).json({ error: 'Error interno' })
   }
 })
 
@@ -60,7 +61,8 @@ router.get('/export', requireAdmin, async (req: Request, res: Response) => {
     res.setHeader('Content-Disposition', 'attachment; filename="reportes.csv"')
     res.send(header + rows)
   } catch (e: any) {
-    res.status(500).json({ error: e.message })
+    console.error('[operations] error:', e)
+    res.status(500).json({ error: 'Error interno' })
   }
 })
 
@@ -73,7 +75,8 @@ router.get('/:id', requireAdmin, async (req: Request, res: Response) => {
     if (!report) return res.status(404).json({ error: 'Reporte no encontrado' })
     res.json(report)
   } catch (e: any) {
-    res.status(500).json({ error: e.message })
+    console.error('[operations] error:', e)
+    res.status(500).json({ error: 'Error interno' })
   }
 })
 
@@ -86,7 +89,8 @@ router.get('/:id/download', requireAdmin, async (req: Request, res: Response) =>
     const signedUrl = await getSignedDownloadUrl(report.r2Key)
     res.redirect(signedUrl)
   } catch (e: any) {
-    res.status(500).json({ error: e.message })
+    console.error('[operations] error:', e)
+    res.status(500).json({ error: 'Error interno' })
   }
 })
 
@@ -94,6 +98,21 @@ router.post('/:id/regenerate', requireAdmin, async (req: Request, res: Response)
   try {
     const report = await prisma.report.findUnique({ where: { id: req.params.id as string }, include: { project: true } })
     if (!report) return res.status(404).json({ error: 'Reporte no encontrado' })
+
+    // Replicar el mismo chequeo de suscripcion activa/trial vigente que hace el worker
+    // (backend/src/workers/reportWorker.ts) para evitar encolar jobs que el worker va a saltar en silencio.
+    const now = new Date()
+    const trialVigente = (report.project as any).trialEndsAt && new Date((report.project as any).trialEndsAt) > now
+    const sub = await (prisma.subscription as any).findFirst({ where: { projectId: report.projectId } })
+    const tieneStripe = sub?.stripeSubscriptionId != null &&
+      ['active', 'trialing'].includes((sub?.status || '').toLowerCase())
+
+    if (!trialVigente && !tieneStripe) {
+      return res.status(409).json({
+        error: 'subscription_inactive',
+        message: 'Este proyecto no tiene suscripción activa ni trial vigente — el reporte no se generará.',
+      })
+    }
 
     const jobId = 'admin-regenerate-' + report.projectId + '-' + Date.now()
     await reportQueue.add('generate-report', { projectId: report.projectId, userId: report.project.userId, trigger: 'manual' }, { jobId })
@@ -104,7 +123,8 @@ router.post('/:id/regenerate', requireAdmin, async (req: Request, res: Response)
 
     res.status(202).json({ ok: true, message: 'Reporte encolado para regeneración' })
   } catch (e: any) {
-    res.status(500).json({ error: e.message })
+    console.error('[operations] error:', e)
+    res.status(500).json({ error: 'Error interno' })
   }
 })
 
@@ -124,7 +144,8 @@ router.delete('/:id', requireAdmin, async (req: Request, res: Response) => {
 
     res.json({ ok: true })
   } catch (e: any) {
-    res.status(500).json({ error: e.message })
+    console.error('[operations] error:', e)
+    res.status(500).json({ error: 'Error interno' })
   }
 })
 
