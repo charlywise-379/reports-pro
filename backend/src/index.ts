@@ -13,6 +13,7 @@ import operationsAuthRouter from "./routes/operations/auth"
 import operationsDashboardRouter from "./routes/operations/dashboard"
 import operationsUsersRouter from "./routes/operations/users"
 import operationsReportsRouter from "./routes/operations/reports"
+import operationsSubscriptionsRouter from "./routes/operations/subscriptions"
 import { startReportWorker } from "./workers/reportWorker"
 import { scheduleReports } from "./jobs/scheduleReports"
 
@@ -104,6 +105,7 @@ app.use("/api/operations/auth", operationsAuthRouter)
 app.use("/api/operations/dashboard", operationsDashboardRouter)
 app.use("/api/operations/users", operationsUsersRouter)
 app.use("/api/operations/reports", operationsReportsRouter)
+app.use("/api/operations/subscriptions", operationsSubscriptionsRouter)
 
 startReportWorker()
 console.log("Worker de reportes activo")
