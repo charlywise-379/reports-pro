@@ -4,6 +4,19 @@ import { NextResponse, type NextRequest } from 'next/server'
 const PUBLIC_ROUTES = ['/', '/login', '/register', '/reset-password']
 
 export async function proxy(request: NextRequest) {
+  const pathname = request.nextUrl.pathname
+
+  if (pathname.startsWith('/operations')) {
+    if (pathname === '/operations/login') {
+      return NextResponse.next({ request })
+    }
+    const adminSession = request.cookies.get('admin_session')
+    if (!adminSession) {
+      return NextResponse.redirect(new URL('/operations/login', request.url))
+    }
+    return NextResponse.next({ request })
+  }
+
   let response = NextResponse.next({ request })
 
   const supabase = createServerClient(
@@ -27,7 +40,7 @@ export async function proxy(request: NextRequest) {
 
   const { data: { user } } = await supabase.auth.getUser()
 
-  const isPublicRoute = PUBLIC_ROUTES.includes(request.nextUrl.pathname)
+  const isPublicRoute = PUBLIC_ROUTES.includes(pathname)
 
   if (!user && !isPublicRoute) {
     const loginUrl = new URL('/login', request.url)
