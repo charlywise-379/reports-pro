@@ -1,5 +1,5 @@
 import * as readline from 'readline'
-import bcrypt from 'bcrypt'
+import bcrypt from 'bcryptjs'
 import { prisma } from '../src/lib/prisma'
 
 function ask(question: string, hidden = false): Promise<string> {

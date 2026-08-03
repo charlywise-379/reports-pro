@@ -1,5 +1,5 @@
 import { Router, Request, Response } from 'express'
-import bcrypt from 'bcrypt'
+import bcrypt from 'bcryptjs'
 import { z } from 'zod'
 import { prisma } from '../../lib/prisma'
 import { requireAdmin, requireSuperAdmin } from '../../middleware/requireAdmin'
