@@ -529,15 +529,41 @@ function Step2({ data, set }: any) {
 // ──────────────────────────────────────────
 // PASO 3
 // ──────────────────────────────────────────
+// Tras eliminar la fila `removedIdx`, recalcula un índice de estado (loading/modal)
+// para que siga apuntando a la misma fila lógica.
+function remapIndexAfterRemoval(idx: number | null, removedIdx: number): number | null {
+  if (idx === null) return null
+  if (idx === removedIdx) return null
+  return idx > removedIdx ? idx - 1 : idx
+}
+
+// Igual que remapIndexAfterRemoval pero para un mapa de errores por índice:
+// descarta la entrada de la fila eliminada y desplaza hacia abajo las claves posteriores.
+function remapErrorsAfterRemoval(errors: Record<number, string>, removedIdx: number): Record<number, string> {
+  const next: Record<number, string> = {}
+  for (const key of Object.keys(errors)) {
+    const idx = Number(key)
+    if (idx === removedIdx) continue
+    next[idx > removedIdx ? idx - 1 : idx] = errors[idx]
+  }
+  return next
+}
+
 function Step3({ data, set, runAutocomplete }: any) {
   const list: any[] = data.directCompetitors || [emptyCompetitor()]
   const update = (i:number, field:string, val:any) => set('directCompetitors', list.map((c:any,idx:number)=>idx===i?{...c,[field]:val}:c))
   const add    = () => list.length<10 && set('directCompetitors',[...list, emptyCompetitor()])
-  const remove = (i:number) => set('directCompetitors', list.filter((_:any,idx:number)=>idx!==i))
 
   const [acLoadingIdx, setAcLoadingIdx] = useState<number | null>(null)
   const [acErrors, setAcErrors] = useState<Record<number, string>>({})
   const [noInfoModalIdx, setNoInfoModalIdx] = useState<number | null>(null)
+
+  const remove = (i:number) => {
+    set('directCompetitors', list.filter((_:any,idx:number)=>idx!==i))
+    setAcErrors(prev => remapErrorsAfterRemoval(prev, i))
+    setNoInfoModalIdx(prev => remapIndexAfterRemoval(prev, i))
+    setAcLoadingIdx(prev => remapIndexAfterRemoval(prev, i))
+  }
 
   const handleAutocomplete = async (i: number) => {
     const c = list[i]
@@ -571,6 +597,7 @@ function Step3({ data, set, runAutocomplete }: any) {
       })
       if (discarded) {
         console.warn('Autocomplete result discarded: competitor row', i, 'changed while request was in flight')
+        setAcErrors(prev => ({ ...prev, [i]: 'La búsqueda se completó pero los datos de esta fila cambiaron mientras tanto — vuelve a intentar si lo necesitas.' }))
         return
       }
       if (!algoEncontrado) {
