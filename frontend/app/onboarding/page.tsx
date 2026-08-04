@@ -545,6 +545,7 @@ function Step3({ data, set, runAutocomplete }: any) {
 
   const [acLoadingIdx, setAcLoadingIdx] = useState<number | null>(null)
   const [acErrors, setAcErrors] = useState<Record<number, string>>({})
+  const [noInfoModalIdx, setNoInfoModalIdx] = useState<number | null>(null)
 
   const handleAutocomplete = async (i: number) => {
     const c = list[i]
@@ -581,7 +582,8 @@ function Step3({ data, set, runAutocomplete }: any) {
         return
       }
       if (!algoEncontrado) {
-        setAcErrors(prev => ({ ...prev, [i]: 'No encontramos información pública de este competidor — completa los campos manualmente' }))
+        setAcErrors(prev => ({ ...prev, [i]: result.razonNoEncontrado || 'No encontramos información pública de este competidor. Completa los campos manualmente.' }))
+        setNoInfoModalIdx(i)
       }
     } catch (e: any) {
       setAcErrors(prev => ({ ...prev, [i]: e.message || 'No pudimos encontrar información automática' }))
@@ -632,11 +634,15 @@ function Step3({ data, set, runAutocomplete }: any) {
                     cursor: (c.name?.trim() && c.url?.trim() && acLoadingIdx !== i) ? 'pointer' : 'not-allowed',
                   }}
                 >
-                  {acLoadingIdx === i ? '⏳' : '✨ IA'}
+                  {acLoadingIdx === i ? 'Buscando...' : '✨ IA'}
                 </button>
                 {list.length>1&&<button onClick={()=>remove(i)} style={{ background:'rgba(255,107,107,0.1)', border:'1px solid rgba(255,107,107,0.2)', borderRadius:8, width:28, height:28, cursor:'pointer', color:'#FF6B6B', fontSize:14 }}>×</button>}
               </div>
-              {acErrors[i] && <div style={{ fontSize:11, color: acErrors[i].startsWith('No encontramos') ? '#9CA3AF' : '#FF6B6B', marginBottom:10 }}>{acErrors[i]}</div>}
+              {acLoadingIdx === i && <LoadingBar />}
+              {acErrors[i] && acLoadingIdx !== i && noInfoModalIdx !== i && <div style={{ fontSize:11, color:'#FF6B6B', marginBottom:10 }}>{acErrors[i]}</div>}
+              {noInfoModalIdx === i && (
+                <NoInfoModal message={acErrors[i]} onClose={() => { setNoInfoModalIdx(null); setAcErrors(prev => ({ ...prev, [i]: '' })) }} />
+              )}
 
 <div style={{ display:'flex', flexDirection:'column', gap:10, marginBottom:14 }}>
                 <div style={{ display:'flex', alignItems:'center', gap:8, flexWrap:'wrap' }}>
