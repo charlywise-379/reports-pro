@@ -54,6 +54,10 @@ model User {
   fullName         String?
   avatarUrl        String?
   phone            String?
+  company          String?
+  city             String?
+  state            String?
+  country          String?
   isSuspended      Boolean        @default(false)
   suspendedAt      DateTime?
   suspendedReason  String?
