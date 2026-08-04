@@ -301,27 +301,19 @@ function Step1({ data, set, runAutocomplete }: any) {
             const q = norm(tagSearch.trim())
             const allKnownTags = new Set(TAGS_GROUPS.flatMap(g => g.tags))
             const orphanTags: string[] = (data.tags||[]).filter((t: string) => !allKnownTags.has(t))
-            const groupsWithOrphans: { group: string; tags: string[] }[] = orphanTags.length > 0
-              ? [...TAGS_GROUPS, { group: 'Otros', tags: orphanTags }]
-              : TAGS_GROUPS
-            return groupsWithOrphans.map(({ group, tags }: { group: string; tags: string[] }) => {
-            const groupMatches = norm(group).includes(q)
-            const visibleTags = tags.filter(tag =>
-              (data.tags||[]).includes(tag) || groupMatches || norm(tag).includes(q)
+            const allTags = [...TAGS_GROUPS.flatMap(g => g.tags), ...orphanTags]
+              .sort((a, b) => a.localeCompare(b, 'es'))
+            const visibleTags = allTags.filter(tag =>
+              (data.tags||[]).includes(tag) || norm(tag).includes(q)
             )
-            if (visibleTags.length === 0) return null
             return (
-              <div key={group} style={{ marginBottom:14 }}>
-                <div style={{ fontSize:10, fontWeight:700, color:'#5A627A', letterSpacing:'0.06em', marginBottom:6 }}>{group.toUpperCase()}</div>
-                <div style={{ display:'flex', flexWrap:'wrap', gap:6 }}>
-                  {visibleTags.map(tag=>{
-                    const on=(data.tags||[]).includes(tag)
-                    return <button key={tag} onClick={()=>set('tags', on ? data.tags.filter((t:string)=>t!==tag) : data.tags?.length<10 ? [...(data.tags||[]),tag] : data.tags)} style={on?{...S.pillOn}:{...S.pill}}>{tag}{on&&' ×'}</button>
-                  })}
-                </div>
+              <div style={{ display:'flex', flexWrap:'wrap', gap:6 }}>
+                {visibleTags.map(tag=>{
+                  const on=(data.tags||[]).includes(tag)
+                  return <button key={tag} onClick={()=>set('tags', on ? data.tags.filter((t:string)=>t!==tag) : data.tags?.length<10 ? [...(data.tags||[]),tag] : data.tags)} style={on?{...S.pillOn}:{...S.pill}}>{tag}{on&&' ×'}</button>
+                })}
               </div>
             )
-            })
           })()}
         </div>
       </div>
