@@ -1,12 +1,33 @@
 'use client'
 import { useEffect, useState } from 'react'
+import { Download, Clock, CheckCircle, AlertTriangle, XCircle, AlertCircle, RotateCw, Ban } from 'lucide-react'
 import { adminFetch } from '@/lib/operations/api'
 import { palette } from '@/lib/operations/theme'
 import { useTheme } from '@/lib/operations/ThemeContext'
+import { StatusBadge } from '@/lib/operations/StatusBadge'
 
 type SubRow = {
   id: string; status: string; frequency: string; pricePerMonth: number; trialEndsAt: string
   user: { email: string }; project: { name: string; serviceType: string }
+}
+
+const actionBtn = (T: any, danger?: boolean): React.CSSProperties => ({
+  display: 'inline-flex', alignItems: 'center', gap: 5,
+  fontSize: 11, fontWeight: 600, background: 'none',
+  border: `1px solid ${danger ? T.danger : T.border}`, borderRadius: 6,
+  padding: '5px 9px', color: danger ? T.danger : T.text, cursor: 'pointer',
+})
+
+function SubStatusBadge({ status, T }: { status: string; T: any }) {
+  const map: Record<string, { label: string; color: string; icon: any }> = {
+    TRIALING: { label: 'Trial', color: T.warning, icon: Clock },
+    ACTIVE: { label: 'Activa', color: T.success, icon: CheckCircle },
+    PAST_DUE: { label: 'Pago vencido', color: T.warning, icon: AlertTriangle },
+    CANCELLED: { label: 'Cancelada', color: T.danger, icon: XCircle },
+    UNPAID: { label: 'Sin pagar', color: T.danger, icon: AlertCircle },
+  }
+  const s = map[status] || { label: status, color: T.textMuted, icon: AlertCircle }
+  return <StatusBadge label={s.label} color={s.color} icon={s.icon} T={T} />
 }
 
 export default function OperationsSubscriptionsPage() {
@@ -48,10 +69,10 @@ export default function OperationsSubscriptionsPage() {
 
   return (
     <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20, flexWrap: 'wrap', gap: 10 }}>
         <h1 style={{ fontSize: 20, fontWeight: 800 }}>Suscripciones</h1>
-        <button onClick={handleExport} style={{ background: T.accent, border: 'none', borderRadius: 8, padding: '8px 16px', color: '#fff', fontWeight: 700, cursor: 'pointer', fontSize: 12 }}>
-          Exportar CSV
+        <button onClick={handleExport} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: T.accent, border: 'none', borderRadius: 8, padding: '8px 16px', color: '#fff', fontWeight: 700, cursor: 'pointer', fontSize: 12 }}>
+          <Download size={13} /> Exportar CSV
         </button>
       </div>
 
@@ -65,8 +86,8 @@ export default function OperationsSubscriptionsPage() {
         <option value="UNPAID">Sin pagar</option>
       </select>
 
-      <div style={{ background: T.surface, border: `1px solid ${T.border}`, borderRadius: 12, overflow: 'hidden' }}>
-        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
+      <div style={{ background: T.surface, border: `1px solid ${T.border}`, borderRadius: 12, overflow: 'auto' }}>
+        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13, minWidth: 700 }}>
           <thead>
             <tr style={{ borderBottom: `1px solid ${T.border}`, textAlign: 'left' }}>
               {['Usuario', 'Proyecto', 'Módulo', 'Frecuencia', 'Precio', 'Estado', 'Acciones'].map(h => (
@@ -82,12 +103,14 @@ export default function OperationsSubscriptionsPage() {
                 <td style={{ padding: '10px 14px', fontSize: 11, color: T.textMuted }}>{s.project.serviceType}</td>
                 <td style={{ padding: '10px 14px' }}>{s.frequency}</td>
                 <td style={{ padding: '10px 14px' }}>${s.pricePerMonth.toFixed(2)}</td>
-                <td style={{ padding: '10px 14px', fontWeight: 700, fontSize: 11 }}>{s.status}</td>
-                <td style={{ padding: '10px 14px', display: 'flex', gap: 8 }}>
-                  <button onClick={() => handleExtendTrial(s.id)} style={{ fontSize: 11, background: 'none', border: `1px solid ${T.border}`, borderRadius: 6, padding: '4px 8px', color: T.text, cursor: 'pointer' }}>Extender trial</button>
-                  {s.status !== 'CANCELLED' && (
-                    <button onClick={() => handleCancel(s.id)} style={{ fontSize: 11, background: 'none', border: `1px solid ${T.danger}`, borderRadius: 6, padding: '4px 8px', color: T.danger, cursor: 'pointer' }}>Cancelar</button>
-                  )}
+                <td style={{ padding: '10px 14px' }}><SubStatusBadge status={s.status} T={T} /></td>
+                <td style={{ padding: '10px 14px' }}>
+                  <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                    <button onClick={() => handleExtendTrial(s.id)} style={actionBtn(T)}><RotateCw size={11} /> Extender trial</button>
+                    {s.status !== 'CANCELLED' && (
+                      <button onClick={() => handleCancel(s.id)} style={actionBtn(T, true)}><Ban size={11} /> Cancelar</button>
+                    )}
+                  </div>
                 </td>
               </tr>
             ))}
@@ -95,7 +118,7 @@ export default function OperationsSubscriptionsPage() {
         </table>
       </div>
 
-      <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 14, fontSize: 12, color: T.textMuted }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 14, fontSize: 12, color: T.textMuted, flexWrap: 'wrap', gap: 8 }}>
         <span>{total} suscripciones en total</span>
         <div style={{ display: 'flex', gap: 8 }}>
           <button onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1} style={{ background: 'none', border: `1px solid ${T.border}`, borderRadius: 6, padding: '4px 10px', color: T.text, cursor: 'pointer' }}>Anterior</button>
