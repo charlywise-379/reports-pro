@@ -16,6 +16,7 @@ export type AutocompleteResult = {
   mercadoObjetivo?: string
   productos?: string
   amenazaEstimada?: number
+  razonNoEncontrado?: string
 }
 
 const TIMEOUT_MS = 45000
@@ -134,6 +135,8 @@ ${DIRECTIVAS_FIDELIDAD}
 
 Encuentra sus perfiles de redes sociales oficiales (Instagram, Facebook, X/Twitter, LinkedIn, TikTok), describe brevemente su industria/giro y una frase de pitch, y si es posible determina la ciudad donde opera principalmente y su mercado objetivo (a quién le vende — ej. "PYMES en México", "consumidores finales en CDMX", "empresas B2B en LATAM").
 
+Si después de aplicar la estrategia de búsqueda genuinamente no encontraste ningún dato verificable (ningún campo con información real), incluye el campo "razonNoEncontrado" con una explicación breve en español (una frase) del motivo probable — por ejemplo "El sitio no respondió a la solicitud", "No se encontraron perfiles públicos verificables con ese nombre", "El dominio no está indexado en buscadores". Si sí encontraste al menos un dato, omite este campo o déjalo vacío.
+
 Después de buscar, responde con un bloque JSON (puede ir precedido de texto o markdown, será extraído) con esta forma exacta (usa "" para cualquier campo que no encuentres, nunca inventes datos). Para las redes sociales acepta cualquier formato útil que encuentres — @usuario, nombre de página, o la URL completa del perfil, lo que tengas disponible:
 {
   "instagram": "<@usuario, nombre, o URL del perfil, o vacío>",
@@ -144,7 +147,8 @@ Después de buscar, responde con un bloque JSON (puede ir precedido de texto o m
   "industria": "<industria/giro detectado o vacío>",
   "pitch": "<una frase breve describiendo a qué se dedica, máximo 160 caracteres, o vacío>",
   "ciudad": "<ciudad principal de operación detectada, o vacío>",
-  "mercadoObjetivo": "<a quién le vende, en pocas palabras, o vacío>"
+  "mercadoObjetivo": "<a quién le vende, en pocas palabras, o vacío>",
+  "razonNoEncontrado": "<explicación breve si no se encontró nada, o vacío>"
 }`
   }
   return `Busca en la web información pública real de esta empresa competidora antes de responder — usa la herramienta de búsqueda web, no respondas de memoria.
@@ -157,6 +161,8 @@ ${DIRECTIVAS_FIDELIDAD}
 
 Encuentra sus perfiles de redes sociales oficiales (Instagram, Facebook, X/Twitter, LinkedIn, TikTok), sus productos/servicios principales, y estima su nivel de amenaza competitiva (1-10) basándote en su tamaño y presencia digital aparente.
 
+Si después de aplicar la estrategia de búsqueda genuinamente no encontraste ningún dato verificable (ningún campo con información real), incluye el campo "razonNoEncontrado" con una explicación breve en español (una frase) del motivo probable — por ejemplo "El sitio no respondió a la solicitud", "No se encontraron perfiles públicos verificables con ese nombre", "El dominio no está indexado en buscadores". Si sí encontraste al menos un dato, omite este campo o déjalo vacío.
+
 Después de buscar, responde con un bloque JSON (puede ir precedido de texto o markdown, será extraído) con esta forma exacta (usa "" para cualquier campo de texto que no encuentres, nunca inventes datos). Para las redes sociales acepta cualquier formato útil que encuentres — @usuario, nombre de página, o la URL completa del perfil, lo que tengas disponible:
 {
   "instagram": "<@usuario, nombre, o URL del perfil, o vacío>",
@@ -165,7 +171,8 @@ Después de buscar, responde con un bloque JSON (puede ir precedido de texto o m
   "linkedin": "<@usuario, nombre, o URL del perfil, o vacío>",
   "tiktok": "<@usuario, nombre, o URL del perfil, o vacío>",
   "productos": "<productos o servicios principales detectados, o vacío>",
-  "amenazaEstimada": <número del 1 al 10>
+  "amenazaEstimada": <número del 1 al 10>,
+  "razonNoEncontrado": "<explicación breve si no se encontró nada, o vacío>"
 }`
 }
 
