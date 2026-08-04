@@ -133,6 +133,7 @@ function Step1({ data, set, runAutocomplete }: any) {
   const [acLoading, setAcLoading] = useState(false)
   const [acError, setAcError] = useState('')
   const [tagSearch, setTagSearch] = useState('')
+  const [showNoInfoModal, setShowNoInfoModal] = useState(false)
 
   const canAutocomplete = !!(data.companyName?.trim() && data.website?.trim())
 
@@ -154,7 +155,8 @@ function Step1({ data, set, runAutocomplete }: any) {
       if (result.ciudad && !data.ciudad) { set('ciudad', result.ciudad); algoEncontrado = true }
       if (result.mercadoObjetivo && !data.targetMarket) { set('targetMarket', result.mercadoObjetivo); algoEncontrado = true }
       if (!algoEncontrado) {
-        setAcError('No encontramos información pública de esta empresa — completa los campos manualmente')
+        setAcError(result.razonNoEncontrado || 'No encontramos información pública de esta empresa. Completa los campos manualmente.')
+        setShowNoInfoModal(true)
       }
     } catch (e: any) {
       setAcError(e.message || 'No pudimos encontrar información automática')
@@ -200,10 +202,16 @@ function Step1({ data, set, runAutocomplete }: any) {
                 cursor: canAutocomplete && !acLoading ? 'pointer' : 'not-allowed',
               }}
             >
-              {acLoading ? '⏳ Buscando...' : '✨ Autocompletar con IA'}
+              {acLoading ? 'Buscando...' : '✨ Autocompletar con IA'}
             </button>
-            {acError && <div style={{ fontSize:11, color: acError.startsWith('No encontramos') ? '#9CA3AF' : '#FF6B6B', marginTop:6 }}>{acError}</div>}
+            {acLoading && <LoadingBar />}
+            {acError && !acLoading && !showNoInfoModal && (
+              <div style={{ fontSize:11, color:'#FF6B6B', marginTop:6 }}>{acError}</div>
+            )}
           </div>
+          {showNoInfoModal && (
+            <NoInfoModal message={acError} onClose={() => { setShowNoInfoModal(false); setAcError('') }} />
+          )}
         </div>
         <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:14, marginBottom:14 }}>
           <div>
