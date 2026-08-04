@@ -1,5 +1,5 @@
 'use client'
-import { ReactNode } from 'react'
+import { ReactNode, useEffect } from 'react'
 import Link from 'next/link'
 import { useRouter, usePathname } from 'next/navigation'
 import { useAdmin } from './AdminContext'
@@ -28,12 +28,22 @@ export default function OperationsLayout({ children }: { children: ReactNode }) 
 
   const T = palette[theme]
 
+  useEffect(() => {
+    if (!loading && admin && pathname === '/operations/login') {
+      router.replace('/operations')
+    }
+  }, [loading, admin, pathname, router])
+
   if (loading) {
     return <div style={{ minHeight: '100vh', background: T.bg, color: T.text, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>Cargando...</div>
   }
 
   if (!admin) {
     return <>{children}</>
+  }
+
+  if (pathname === '/operations/login') {
+    return <div style={{ minHeight: '100vh', background: T.bg, color: T.text, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>Redirigiendo...</div>
   }
 
   return (

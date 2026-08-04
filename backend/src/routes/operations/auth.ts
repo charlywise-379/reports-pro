@@ -15,11 +15,9 @@ const loginSchema = z.object({
 const COOKIE_OPTIONS = {
   httpOnly: true as const,
   secure: true as const,
-  // Frontend (Vercel) y backend (Railway) son dominios registrables distintos — cross-site real.
-  // 'none' es necesario para que la cookie se envíe en requests cross-site; requiere secure: true (ya presente).
-  // Tradeoff aceptado deliberadamente: mitigado porque todos los endpoints que cambian estado son JSON-only
-  // y CORS está restringido a FRONTEND_URL.
-  sameSite: 'none' as const,
+  // Backend responde desde api.omnireports.pro (subdominio del mismo dominio del frontend) —
+  // relacion same-site real, 'lax' es correcto y mas seguro que 'none'.
+  sameSite: 'lax' as const,
   maxAge: 12 * 60 * 60 * 1000,
   path: '/',
 }
@@ -61,7 +59,7 @@ router.post('/login', async (req: Request, res: Response) => {
 })
 
 router.post('/logout', requireAdmin, async (req: Request, res: Response) => {
-  res.clearCookie('admin_session', { path: '/', sameSite: 'none', secure: true })
+  res.clearCookie('admin_session', { path: '/', sameSite: 'lax', secure: true })
   res.json({ ok: true })
 })
 

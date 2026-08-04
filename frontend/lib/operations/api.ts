@@ -1,4 +1,4 @@
-const BACKEND = process.env.NEXT_PUBLIC_BACKEND_URL || 'https://reports-pro-production.up.railway.app'
+const BACKEND = process.env.NEXT_PUBLIC_BACKEND_URL || 'https://api.omnireports.pro'
 
 export async function adminFetch(path: string, options: RequestInit = {}): Promise<Response> {
   const res = await fetch(`${BACKEND}${path}`, {

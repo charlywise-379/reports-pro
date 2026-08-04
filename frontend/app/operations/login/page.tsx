@@ -14,15 +14,20 @@ export default function OperationsLoginPage() {
     e.preventDefault()
     setLoading(true)
     setError('')
-    const res = await adminFetch('/api/operations/auth/login', {
-      method: 'POST',
-      body: JSON.stringify({ email, password }),
-    })
-    if (res.ok) {
-      router.push('/operations')
-    } else {
-      const data = await res.json().catch(() => ({}))
-      setError(data.error || 'Error al iniciar sesión')
+    try {
+      const res = await adminFetch('/api/operations/auth/login', {
+        method: 'POST',
+        body: JSON.stringify({ email, password }),
+      })
+      if (res.ok) {
+        router.push('/operations')
+      } else {
+        const data = await res.json().catch(() => ({}))
+        setError(data.error || 'Error al iniciar sesión')
+        setLoading(false)
+      }
+    } catch {
+      setError('No se pudo conectar con el servidor. Intenta de nuevo.')
       setLoading(false)
     }
   }
