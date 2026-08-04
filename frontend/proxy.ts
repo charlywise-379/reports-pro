@@ -11,6 +11,11 @@ export async function proxy(request: NextRequest) {
       return NextResponse.next({ request })
     }
     const adminSession = request.cookies.get('admin_session')
+    console.log('[proxy-debug]', {
+      pathname,
+      hasCookie: !!adminSession,
+      allCookieNames: request.cookies.getAll().map(c => c.name),
+    })
     if (!adminSession) {
       return NextResponse.redirect(new URL('/operations/login', request.url))
     }
