@@ -127,7 +127,7 @@ export default function OperationsUsersPage() {
                     {u.isSuspended
                       ? <button onClick={() => handleReactivate(u.id)} style={actionBtn(T)}><RotateCcw size={11} /> Reactivar</button>
                       : <button disabled title="Aún no implementado: suspender no bloquea el login del cliente todavía" onClick={() => setSelected(u)} style={{ ...actionBtn(T), cursor: 'not-allowed', opacity: 0.5 }}><Ban size={11} /> Suspender</button>}
-                    <button onClick={() => handleResetPassword(u.id)} style={actionBtn(T)}><KeyRound size={11} /> Reset</button>
+                    <button onClick={() => handleResetPassword(u.id)} style={actionBtn(T)}><KeyRound size={11} /> Reset password</button>
                     <button onClick={() => handleDelete(u.id)} style={actionBtn(T, true)}><Trash2 size={11} /> Eliminar</button>
                   </div>
                 </td>
