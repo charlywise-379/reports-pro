@@ -1,8 +1,10 @@
 'use client'
 import { useEffect, useState } from 'react'
+import { Download, RefreshCw, Trash2, CheckCircle, XCircle, Loader } from 'lucide-react'
 import { adminFetch } from '@/lib/operations/api'
 import { palette } from '@/lib/operations/theme'
 import { useTheme } from '@/lib/operations/ThemeContext'
+import { StatusBadge, Avatar } from '@/lib/operations/StatusBadge'
 
 type ReportRow = {
   id: string; status: string; createdAt: string; pdfSizeBytes: number | null; errorMessage: string | null
@@ -10,6 +12,19 @@ type ReportRow = {
 }
 
 const STATUS_OPTIONS = ['', 'QUEUED', 'GENERATING', 'COMPLETED', 'FAILED']
+
+const actionBtn = (T: any, danger?: boolean): React.CSSProperties => ({
+  display: 'inline-flex', alignItems: 'center', gap: 5,
+  fontSize: 11, fontWeight: 600, background: 'none',
+  border: `1px solid ${danger ? T.danger : T.border}`, borderRadius: 6,
+  padding: '5px 9px', color: danger ? T.danger : T.text, cursor: 'pointer', textDecoration: 'none',
+})
+
+function ReportStatusBadge({ status, T }: { status: string; T: any }) {
+  if (status === 'COMPLETED') return <StatusBadge label="Completado" color={T.success} icon={CheckCircle} T={T} />
+  if (status === 'FAILED') return <StatusBadge label="Fallido" color={T.danger} icon={XCircle} T={T} />
+  return <StatusBadge label={status === 'QUEUED' ? 'En cola' : 'Generando'} color={T.info} icon={Loader} T={T} spin />
+}
 
 export default function OperationsReportsPage() {
   const [reports, setReports] = useState<ReportRow[]>([])
@@ -47,14 +62,12 @@ export default function OperationsReportsPage() {
     window.open(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/operations/reports/export?${params}`, '_blank')
   }
 
-  const statusColor = (s: string) => s === 'COMPLETED' ? T.success : s === 'FAILED' ? T.danger : T.textMuted
-
   return (
     <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20, flexWrap: 'wrap', gap: 10 }}>
         <h1 style={{ fontSize: 20, fontWeight: 800 }}>Reportes</h1>
-        <button onClick={handleExport} style={{ background: T.accent, border: 'none', borderRadius: 8, padding: '8px 16px', color: '#fff', fontWeight: 700, cursor: 'pointer', fontSize: 12 }}>
-          Exportar CSV
+        <button onClick={handleExport} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: T.accent, border: 'none', borderRadius: 8, padding: '8px 16px', color: '#fff', fontWeight: 700, cursor: 'pointer', fontSize: 12 }}>
+          <Download size={13} /> Exportar CSV
         </button>
       </div>
 
@@ -63,8 +76,8 @@ export default function OperationsReportsPage() {
         {STATUS_OPTIONS.map(s => <option key={s} value={s}>{s || 'Todos los estados'}</option>)}
       </select>
 
-      <div style={{ background: T.surface, border: `1px solid ${T.border}`, borderRadius: 12, overflow: 'hidden' }}>
-        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
+      <div style={{ background: T.surface, border: `1px solid ${T.border}`, borderRadius: 12, overflow: 'auto' }}>
+        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13, minWidth: 700 }}>
           <thead>
             <tr style={{ borderBottom: `1px solid ${T.border}`, textAlign: 'left' }}>
               {['Proyecto', 'Usuario', 'Módulo', 'Estado', 'Fecha', 'Acciones'].map(h => (
@@ -76,17 +89,25 @@ export default function OperationsReportsPage() {
             {reports.map(r => (
               <tr key={r.id} style={{ borderBottom: `1px solid ${T.border}` }}>
                 <td style={{ padding: '10px 14px' }}>{r.project.name}</td>
-                <td style={{ padding: '10px 14px' }}>{r.project.user.email}</td>
+                <td style={{ padding: '10px 14px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <Avatar name={r.project.user.email} T={T} />
+                    <span style={{ fontSize: 12 }}>{r.project.user.email}</span>
+                  </div>
+                </td>
                 <td style={{ padding: '10px 14px', fontSize: 11, color: T.textMuted }}>{r.project.serviceType}</td>
-                <td style={{ padding: '10px 14px', fontWeight: 700, fontSize: 11, color: statusColor(r.status) }}>{r.status}</td>
+                <td style={{ padding: '10px 14px' }}><ReportStatusBadge status={r.status} T={T} /></td>
                 <td style={{ padding: '10px 14px', fontSize: 12 }}>{new Date(r.createdAt).toLocaleDateString()}</td>
-                <td style={{ padding: '10px 14px', display: 'flex', gap: 8 }}>
-                  {r.status === 'COMPLETED' && (
-                    <a href={`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/operations/reports/${r.id}/download`} target="_blank" rel="noreferrer"
-                      style={{ fontSize: 11, border: `1px solid ${T.border}`, borderRadius: 6, padding: '4px 8px', color: T.text, textDecoration: 'none' }}>Descargar</a>
-                  )}
-                  <button onClick={() => handleRegenerate(r.id)} style={{ fontSize: 11, background: 'none', border: `1px solid ${T.border}`, borderRadius: 6, padding: '4px 8px', color: T.text, cursor: 'pointer' }}>Regenerar</button>
-                  <button onClick={() => handleDelete(r.id)} style={{ fontSize: 11, background: 'none', border: `1px solid ${T.danger}`, borderRadius: 6, padding: '4px 8px', color: T.danger, cursor: 'pointer' }}>Eliminar</button>
+                <td style={{ padding: '10px 14px' }}>
+                  <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                    {r.status === 'COMPLETED' && (
+                      <a href={`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/operations/reports/${r.id}/download`} target="_blank" rel="noreferrer" style={actionBtn(T)}>
+                        <Download size={11} /> Descargar
+                      </a>
+                    )}
+                    <button onClick={() => handleRegenerate(r.id)} style={actionBtn(T)}><RefreshCw size={11} /> Regenerar</button>
+                    <button onClick={() => handleDelete(r.id)} style={actionBtn(T, true)}><Trash2 size={11} /> Eliminar</button>
+                  </div>
                 </td>
               </tr>
             ))}
@@ -94,7 +115,7 @@ export default function OperationsReportsPage() {
         </table>
       </div>
 
-      <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 14, fontSize: 12, color: T.textMuted }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 14, fontSize: 12, color: T.textMuted, flexWrap: 'wrap', gap: 8 }}>
         <span>{total} reportes en total</span>
         <div style={{ display: 'flex', gap: 8 }}>
           <button onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1} style={{ background: 'none', border: `1px solid ${T.border}`, borderRadius: 6, padding: '4px 10px', color: T.text, cursor: 'pointer' }}>Anterior</button>
