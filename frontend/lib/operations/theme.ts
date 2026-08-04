@@ -23,6 +23,8 @@ export const palette = {
     accentHover: '#9D8FFF',
     danger: '#F87171',
     success: '#4ADE80',
+    warning: '#FBBF24',
+    info: '#60A5FA',
   },
   light: {
     bg: '#F5F6FA',
@@ -35,5 +37,7 @@ export const palette = {
     accentHover: '#5D4FD0',
     danger: '#DC2626',
     success: '#16A34A',
+    warning: '#D97706',
+    info: '#2563EB',
   },
 }
