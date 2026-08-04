@@ -1,6 +1,5 @@
 'use client'
 import { useState } from 'react'
-import { useRouter } from 'next/navigation'
 import { adminFetch } from '@/lib/operations/api'
 
 export default function OperationsLoginPage() {
@@ -8,7 +7,6 @@ export default function OperationsLoginPage() {
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
-  const router = useRouter()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -20,7 +18,12 @@ export default function OperationsLoginPage() {
         body: JSON.stringify({ email, password }),
       })
       if (res.ok) {
-        router.push('/operations')
+        // Navegacion de pagina completa (no router.push) — asegura que la cookie
+        // recien seteada este disponible desde el primer render del nuevo documento.
+        // router.push (navegacion SPA) podia montar el dashboard antes de que el
+        // navegador confirmara la cookie, dejando AdminContext sin sesion detectada
+        // hasta un refresh manual.
+        window.location.href = '/operations'
       } else {
         const data = await res.json().catch(() => ({}))
         setError(data.error || 'Error al iniciar sesión')
