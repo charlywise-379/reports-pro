@@ -1,6 +1,6 @@
 import { LucideIcon } from 'lucide-react'
 
-export function StatusBadge({ label, color, icon: Icon, T, spin }: { label: string; color: string; icon: LucideIcon; T: any; spin?: boolean }) {
+export function StatusBadge({ label, color, icon: Icon, spin }: { label: string; color: string; icon: LucideIcon; spin?: boolean }) {
   return (
     <span style={{
       display: 'inline-flex', alignItems: 'center', gap: 5,

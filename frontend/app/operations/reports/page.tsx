@@ -21,9 +21,9 @@ const actionBtn = (T: any, danger?: boolean): React.CSSProperties => ({
 })
 
 function ReportStatusBadge({ status, T }: { status: string; T: any }) {
-  if (status === 'COMPLETED') return <StatusBadge label="Completado" color={T.success} icon={CheckCircle} T={T} />
-  if (status === 'FAILED') return <StatusBadge label="Fallido" color={T.danger} icon={XCircle} T={T} />
-  return <StatusBadge label={status === 'QUEUED' ? 'En cola' : 'Generando'} color={T.info} icon={Loader} T={T} spin />
+  if (status === 'COMPLETED') return <StatusBadge label="Completado" color={T.success} icon={CheckCircle} />
+  if (status === 'FAILED') return <StatusBadge label="Fallido" color={T.danger} icon={XCircle} />
+  return <StatusBadge label={status === 'QUEUED' ? 'En cola' : 'Generando'} color={T.info} icon={Loader} spin />
 }
 
 export default function OperationsReportsPage() {

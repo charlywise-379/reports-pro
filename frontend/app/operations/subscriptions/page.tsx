@@ -4,7 +4,7 @@ import { Download, Clock, CheckCircle, AlertTriangle, XCircle, AlertCircle, Rota
 import { adminFetch } from '@/lib/operations/api'
 import { palette } from '@/lib/operations/theme'
 import { useTheme } from '@/lib/operations/ThemeContext'
-import { StatusBadge } from '@/lib/operations/StatusBadge'
+import { StatusBadge, Avatar } from '@/lib/operations/StatusBadge'
 
 type SubRow = {
   id: string; status: string; frequency: string; pricePerMonth: number; trialEndsAt: string
@@ -27,7 +27,7 @@ function SubStatusBadge({ status, T }: { status: string; T: any }) {
     UNPAID: { label: 'Sin pagar', color: T.danger, icon: AlertCircle },
   }
   const s = map[status] || { label: status, color: T.textMuted, icon: AlertCircle }
-  return <StatusBadge label={s.label} color={s.color} icon={s.icon} T={T} />
+  return <StatusBadge label={s.label} color={s.color} icon={s.icon} />
 }
 
 export default function OperationsSubscriptionsPage() {
@@ -98,7 +98,12 @@ export default function OperationsSubscriptionsPage() {
           <tbody>
             {subs.map(s => (
               <tr key={s.id} style={{ borderBottom: `1px solid ${T.border}` }}>
-                <td style={{ padding: '10px 14px' }}>{s.user.email}</td>
+                <td style={{ padding: '10px 14px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <Avatar name={s.user.email} T={T} />
+                    <span style={{ fontSize: 12 }}>{s.user.email}</span>
+                  </div>
+                </td>
                 <td style={{ padding: '10px 14px' }}>{s.project.name}</td>
                 <td style={{ padding: '10px 14px', fontSize: 11, color: T.textMuted }}>{s.project.serviceType}</td>
                 <td style={{ padding: '10px 14px' }}>{s.frequency}</td>

@@ -119,8 +119,8 @@ export default function OperationsUsersPage() {
                 <td style={{ padding: '10px 14px', fontSize: 11, color: T.textMuted }}>{u.modules.join(', ') || '—'}</td>
                 <td style={{ padding: '10px 14px' }}>
                   {u.isSuspended
-                    ? <StatusBadge label="Suspendido" color={T.danger} icon={Ban} T={T} />
-                    : <StatusBadge label="Activo" color={T.success} icon={CheckCircle} T={T} />}
+                    ? <StatusBadge label="Suspendido" color={T.danger} icon={Ban} />
+                    : <StatusBadge label="Activo" color={T.success} icon={CheckCircle} />}
                 </td>
                 <td style={{ padding: '10px 14px' }}>
                   <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>

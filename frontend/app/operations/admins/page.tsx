@@ -92,8 +92,8 @@ export default function OperationsAdminsPage() {
                 </td>
                 <td style={{ padding: '10px 14px' }}>
                   {a.role === 'SUPER_ADMIN'
-                    ? <StatusBadge label="Super Admin" color={T.accent} icon={ShieldCheck} T={T} />
-                    : <StatusBadge label="Admin" color={T.textMuted} icon={Shield} T={T} />}
+                    ? <StatusBadge label="Super Admin" color={T.accent} icon={ShieldCheck} />
+                    : <StatusBadge label="Admin" color={T.textMuted} icon={Shield} />}
                 </td>
                 <td style={{ padding: '10px 14px', fontSize: 12 }}>{new Date(a.createdAt).toLocaleDateString()}</td>
                 <td style={{ padding: '10px 14px' }}>
