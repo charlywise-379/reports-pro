@@ -20,6 +20,10 @@ const COOKIE_OPTIONS = {
   sameSite: 'lax' as const,
   maxAge: 12 * 60 * 60 * 1000,
   path: '/',
+  // Sin domain explicito, la cookie solo es visible para api.omnireports.pro (el emisor).
+  // El middleware de Next.js corre en www.omnireports.pro y necesita leerla tambien —
+  // .omnireports.pro la comparte entre todos los subdominios del dominio raiz.
+  domain: '.omnireports.pro',
 }
 
 router.post('/login', async (req: Request, res: Response) => {
@@ -59,7 +63,7 @@ router.post('/login', async (req: Request, res: Response) => {
 })
 
 router.post('/logout', requireAdmin, async (req: Request, res: Response) => {
-  res.clearCookie('admin_session', { path: '/', sameSite: 'lax', secure: true })
+  res.clearCookie('admin_session', { path: '/', sameSite: 'lax', secure: true, domain: '.omnireports.pro' })
   res.json({ ok: true })
 })
 

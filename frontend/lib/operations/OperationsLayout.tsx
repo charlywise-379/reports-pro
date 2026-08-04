@@ -29,9 +29,7 @@ export default function OperationsLayout({ children }: { children: ReactNode }) 
   const T = palette[theme]
 
   useEffect(() => {
-    console.log('[operations-debug]', { loading, admin: admin?.email, pathname, cookies: typeof document !== 'undefined' ? document.cookie : 'n/a' })
     if (!loading && admin && pathname === '/operations/login') {
-      console.log('[operations-debug] calling router.replace(/operations)')
       router.replace('/operations')
     }
   }, [loading, admin, pathname, router])
