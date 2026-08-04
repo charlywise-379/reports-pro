@@ -98,6 +98,34 @@ function SectionNum({ n, label }: { n: string; label: string }) {
   )
 }
 
+function NoInfoModal({ message, onClose }: { message: string; onClose: () => void }) {
+  return (
+    <div style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.6)', display:'flex', alignItems:'center', justifyContent:'center', zIndex:200, padding:16 }}>
+      <div style={{ background:'#171923', border:'1px solid rgba(255,255,255,0.08)', borderRadius:16, padding:28, width:420, maxWidth:'100%' }}>
+        <div style={{ fontSize:16, fontWeight:800, color:'#F0F2FF', marginBottom:12 }}>No encontramos información</div>
+        <p style={{ fontSize:13, color:'#9CA3AF', lineHeight:1.6, marginBottom:20 }}>{message}</p>
+        <button onClick={onClose} style={{ width:'100%', padding:'10px 16px', borderRadius:10, border:'none', background:'#8B7BFF', color:'#fff', fontWeight:700, fontSize:13, cursor:'pointer' }}>
+          Entendido, completar manualmente
+        </button>
+      </div>
+    </div>
+  )
+}
+
+function LoadingBar() {
+  return (
+    <div style={{ position:'relative', width:'100%', height:4, borderRadius:2, background:'rgba(139,123,255,0.15)', overflow:'hidden', marginTop:8 }}>
+      <style>{`
+        @keyframes onboarding-loading-slide {
+          0% { left:-30%; }
+          100% { left:100%; }
+        }
+      `}</style>
+      <div style={{ position:'absolute', top:0, left:'-30%', width:'30%', height:'100%', borderRadius:2, background:'#8B7BFF', animation:'onboarding-loading-slide 1.2s ease-in-out infinite' }} />
+    </div>
+  )
+}
+
 // ──────────────────────────────────────────
 // PASO 1
 // ──────────────────────────────────────────
