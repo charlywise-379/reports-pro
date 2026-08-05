@@ -113,12 +113,12 @@ const DIRECTIVAS_FIDELIDAD = `REGLAS DE FIDELIDAD — sigue todas estrictamente:
 function buildPrompt(nombre: string, sitioWeb: string, tipo: 'company' | 'competitor', siteContext: string | null): string {
   const dominio = sitioWeb.replace(/^https?:\/\//i, '').replace(/^www\./i, '').replace(/\/.*$/, '')
 
-  const estrategiaBusqueda = `ESTRATEGIA DE BÚSQUEDA — sigue este orden, no busques solo el nombre como texto libre:
+  const estrategiaBusqueda = `ESTRATEGIA DE BÚSQUEDA — ejecuta TODAS estas búsquedas antes de concluir que no hay información, no te detengas tras la primera que no dé resultados:
 1. Ya se obtuvo el contenido del sitio ${sitioWeb} (ver bloque "CONTENIDO DEL SITIO WEB" abajo) — revísalo primero, ahí puede haber links directos a redes sociales.
 2. Busca "site:${dominio}" para encontrar páginas indexadas de ese dominio exacto.
 3. Busca "${nombre} site:instagram.com", "${nombre} site:facebook.com", "${nombre} site:linkedin.com", "${nombre} site:tiktok.com" (una consulta por red) para encontrar los perfiles reales, no genéricos.
-4. Solo si lo anterior no da resultados, intenta una búsqueda más amplia con "${nombre}" combinado con una palabra de contexto (ej. la industria o ubicación si la conoces).
-Si después de intentar estas estrategias genuinamente no encuentras nada, es válido dejar el campo vacío — pero no te rindas tras una sola búsqueda genérica del nombre.`
+4. Además de lo anterior — SIEMPRE, no solo si las búsquedas previas fallaron — realiza también una búsqueda general con el nombre "${nombre}" combinado con cualquier contexto disponible (ciudad, industria, o el contenido del sitio ya obtenido), ya que a veces la empresa tiene presencia pública real bajo un patrón distinto al dominio o handles esperados.
+Combina los hallazgos de todas estas búsquedas. Solo concluye que no hay información si, tras intentar las 4, genuinamente no encontraste nada verificable.`
 
   const siteContextBlock = siteContext
     ? `\nCONTENIDO DEL SITIO WEB (obtenido directamente de ${sitioWeb}):\n${siteContext}\n`
