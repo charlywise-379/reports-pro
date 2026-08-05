@@ -9,6 +9,7 @@ import reportsRouter from "./routes/reports"
 import dashboardRouter from "./routes/dashboard"
 import stripeRouter from "./routes/stripe"
 import authRouter from "./routes/auth"
+import accountRouter from "./routes/account"
 import operationsAuthRouter from "./routes/operations/auth"
 import operationsDashboardRouter from "./routes/operations/dashboard"
 import operationsUsersRouter from "./routes/operations/users"
@@ -107,6 +108,7 @@ app.use("/api/reports", reportsRouter)
 app.use("/api/dashboard", dashboardRouter)
 app.use("/api/stripe", stripeRouter)
 app.use("/api/auth", authRouter)
+app.use("/api/account", accountRouter)
 app.use("/api/operations/auth", operationsAuthRouter)
 app.use("/api/operations/dashboard", operationsDashboardRouter)
 app.use("/api/operations/users", operationsUsersRouter)
