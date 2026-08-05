@@ -3,6 +3,7 @@ import { z } from 'zod'
 import { prisma } from '../../lib/prisma'
 import { requireAdmin } from '../../middleware/requireAdmin'
 import { supabaseAdmin } from '../../lib/supabaseAdmin'
+import { reportQueue } from '../../lib/queue'
 
 const router = Router()
 
@@ -204,10 +205,26 @@ router.delete('/:id', requireAdmin, async (req: Request, res: Response) => {
     const user = await prisma.user.findUnique({ where: { id } })
     if (!user) return res.status(404).json({ error: 'Usuario no encontrado' })
 
+    let jobsRemoved = 0
+    try {
+      const projects = await prisma.project.findMany({ where: { userId: id }, select: { id: true } })
+      if (projects.length > 0) {
+        const projectIds = new Set(projects.map(p => p.id))
+        const waiting = await reportQueue.getWaiting()
+        const jobsToRemove = waiting.filter(job => projectIds.has(job.data?.projectId))
+        for (const job of jobsToRemove) {
+          await job.remove()
+          jobsRemoved++
+        }
+      }
+    } catch (queueError: any) {
+      console.error('[operations] error limpiando cola de jobs al eliminar usuario:', queueError)
+    }
+
     await prisma.user.delete({ where: { id } })
 
     await prisma.auditLog.create({
-      data: { userId: req.adminId!, event: 'admin_delete_user', metadata: { targetUserId: id, email: user.email } },
+      data: { userId: req.adminId!, event: 'admin_delete_user', metadata: { targetUserId: id, email: user.email, jobsRemoved } },
     })
 
     res.json({ ok: true })
