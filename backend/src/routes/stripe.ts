@@ -2,6 +2,7 @@ import { Router, Request, Response } from 'express'
 import { stripe, PLANS, MXN_RATE } from '../lib/stripe'
 import { prisma } from '../lib/prisma'
 import { getPriceAmountMXN } from '../lib/stripePriceMap'
+import { requireAuth } from '../middleware/auth'
 
 const router = Router()
 
@@ -175,10 +176,13 @@ router.post('/webhook', async (req: Request, res: Response) => {
 })
 
 // POST /api/stripe/portal — genera link al portal de Stripe para gestionar suscripcion
-router.post('/portal', async (req: Request, res: Response) => {
+router.post('/portal', requireAuth, async (req: Request, res: Response) => {
   try {
     const { userId } = req.body
     if (!userId) return res.status(400).json({ error: 'userId requerido' })
+    if (userId !== req.userId) {
+      return res.status(403).json({ error: 'No tienes permiso para acceder a esta suscripción' })
+    }
 
     const project = await (prisma.project as any).findFirst({
       where: { userId },

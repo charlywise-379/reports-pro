@@ -171,11 +171,15 @@ export default function CuentaPage() {
   const handleManageSubscription = async () => {
     const res = await fetch(`${BACKEND}/api/stripe/portal`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token },
       body: JSON.stringify({ userId }),
     })
     const data = await res.json()
-    if (data.url) window.location.href = data.url
+    if (data.url) {
+      window.location.href = data.url
+    } else {
+      alert('Error al abrir el portal de suscripción: ' + (data.error || 'intenta de nuevo'))
+    }
   }
 
   if (loading) {
