@@ -1,20 +1,42 @@
 'use client'
 import { useState } from 'react'
 import Link from 'next/link'
-import { Mail, Lock, User, ArrowRight, CheckCircle, Sparkles } from 'lucide-react'
+import { Mail, Lock, User, Phone, Building2, MapPin, ArrowRight, ArrowLeft, CheckCircle, Sparkles } from 'lucide-react'
 import posthog from 'posthog-js'
 
 export default function RegisterPage() {
-  const [fullName, setFullName] = useState('')
+  const [step, setStep] = useState<1 | 2>(1)
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [firstName, setFirstName] = useState('')
+  const [lastName, setLastName] = useState('')
+  const [phone, setPhone] = useState('')
+  const [company, setCompany] = useState('')
+  const [city, setCity] = useState('')
+  const [state, setState] = useState('')
+  const [country, setCountry] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState(false)
 
-  const handleRegister = async () => {
+  const canAdvanceToStep2 = email.trim() && password.length >= 6
+
+  const handleAdvance = () => {
     if (password.length < 6) {
       setError('La contraseña debe tener al menos 6 caracteres')
+      return
+    }
+    setError('')
+    setStep(2)
+  }
+
+  const handleRegister = async () => {
+    if (!firstName.trim()) {
+      setError('El nombre es requerido')
+      return
+    }
+    if (!lastName.trim()) {
+      setError('El apellido es requerido')
       return
     }
     setLoading(true)
@@ -24,7 +46,7 @@ export default function RegisterPage() {
       const res = await fetch(`${BACKEND}/api/auth/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ fullName, email, password }),
+        body: JSON.stringify({ firstName, lastName, email, password, phone, company, city, state, country }),
       })
       const result = await res.json()
       if (!res.ok) {
@@ -33,7 +55,7 @@ export default function RegisterPage() {
         setLoading(false)
         return
       }
-      posthog.capture('user_signed_up', { email, name: fullName })
+      posthog.capture('user_signed_up', { email, name: `${firstName} ${lastName}` })
       setSuccess(true)
     } catch (e) {
       setError('Ocurrió un error. Intenta de nuevo.')
@@ -76,41 +98,112 @@ export default function RegisterPage() {
           <h1 className="text-2xl font-black mb-2">Crea tu cuenta gratis</h1>
           <p className="text-gray-400 text-sm">Tu primer reporte AI en menos de 5 minutos</p>
         </div>
+
+        <div className="flex items-center justify-center gap-2 mb-6">
+          <div className={`h-1.5 w-10 rounded-full ${step >= 1 ? 'bg-blue-500' : 'bg-white/10'}`} />
+          <div className={`h-1.5 w-10 rounded-full ${step >= 2 ? 'bg-blue-500' : 'bg-white/10'}`} />
+        </div>
+
         <div className="relative bg-white/3 border border-white/8 rounded-3xl p-8 backdrop-blur-sm">
-          <div className="space-y-4">
-            <div>
-              <label className="text-sm text-gray-400 font-medium mb-1.5 block">Nombre completo</label>
-              <div className="relative">
-                <User size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-500" />
-                <input type="text" value={fullName} onChange={e => setFullName(e.target.value)} placeholder="Carlos Mendoza"
-                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 pl-10 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-violet-500/50 transition-all" />
+          {step === 1 && (
+            <div className="space-y-4">
+              <div>
+                <label className="text-sm text-gray-400 font-medium mb-1.5 block">Email empresarial</label>
+                <div className="relative">
+                  <Mail size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-500" />
+                  <input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="carlos@empresa.com"
+                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 pl-10 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-violet-500/50 transition-all" />
+                </div>
+              </div>
+              <div>
+                <label className="text-sm text-gray-400 font-medium mb-1.5 block">Contraseña</label>
+                <div className="relative">
+                  <Lock size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-500" />
+                  <input type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="Mínimo 6 caracteres"
+                    onKeyDown={e => e.key === 'Enter' && canAdvanceToStep2 && handleAdvance()}
+                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 pl-10 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-violet-500/50 transition-all" />
+                </div>
+              </div>
+              {error && (
+                <div className="bg-red-500/10 border border-red-500/20 text-red-400 text-sm px-4 py-3 rounded-xl">{error}</div>
+              )}
+              <button onClick={handleAdvance} disabled={!canAdvanceToStep2}
+                className="w-full bg-gradient-to-r from-blue-600 to-violet-600 text-white font-bold py-3.5 rounded-xl transition-all hover:shadow-lg hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2">
+                Continuar<ArrowRight size={16} />
+              </button>
+            </div>
+          )}
+
+          {step === 2 && (
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-sm text-gray-400 font-medium mb-1.5 block">Nombre</label>
+                  <div className="relative">
+                    <User size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-500" />
+                    <input type="text" value={firstName} onChange={e => setFirstName(e.target.value)} placeholder="Carlos"
+                      className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 pl-10 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-violet-500/50 transition-all" />
+                  </div>
+                </div>
+                <div>
+                  <label className="text-sm text-gray-400 font-medium mb-1.5 block">Apellido</label>
+                  <input type="text" value={lastName} onChange={e => setLastName(e.target.value)} placeholder="Mendoza"
+                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-violet-500/50 transition-all" />
+                </div>
+              </div>
+              <div>
+                <label className="text-sm text-gray-400 font-medium mb-1.5 block">Teléfono (opcional)</label>
+                <div className="relative">
+                  <Phone size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-500" />
+                  <input type="tel" value={phone} onChange={e => setPhone(e.target.value)} placeholder="+52 55 1234 5678"
+                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 pl-10 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-violet-500/50 transition-all" />
+                </div>
+              </div>
+              <div>
+                <label className="text-sm text-gray-400 font-medium mb-1.5 block">Empresa (opcional)</label>
+                <div className="relative">
+                  <Building2 size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-500" />
+                  <input type="text" value={company} onChange={e => setCompany(e.target.value)} placeholder="Mi Empresa S.A."
+                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 pl-10 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-violet-500/50 transition-all" />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-sm text-gray-400 font-medium mb-1.5 block">Ciudad (opcional)</label>
+                  <div className="relative">
+                    <MapPin size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-500" />
+                    <input type="text" value={city} onChange={e => setCity(e.target.value)} placeholder="Ciudad de México"
+                      className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 pl-10 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-violet-500/50 transition-all" />
+                  </div>
+                </div>
+                <div>
+                  <label className="text-sm text-gray-400 font-medium mb-1.5 block">Estado (opcional)</label>
+                  <input type="text" value={state} onChange={e => setState(e.target.value)} placeholder="CDMX"
+                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-violet-500/50 transition-all" />
+                </div>
+              </div>
+              <div>
+                <label className="text-sm text-gray-400 font-medium mb-1.5 block">País (opcional)</label>
+                <input type="text" value={country} onChange={e => setCountry(e.target.value)} placeholder="México"
+                  onKeyDown={e => e.key === 'Enter' && firstName.trim() && lastName.trim() && handleRegister()}
+                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-violet-500/50 transition-all" />
+              </div>
+              {error && (
+                <div className="bg-red-500/10 border border-red-500/20 text-red-400 text-sm px-4 py-3 rounded-xl">{error}</div>
+              )}
+              <div className="flex gap-3">
+                <button onClick={() => { setError(''); setStep(1) }} type="button"
+                  className="flex-shrink-0 bg-white/5 border border-white/10 text-white font-bold py-3.5 px-4 rounded-xl transition-all hover:bg-white/10 flex items-center justify-center gap-2">
+                  <ArrowLeft size={16} />
+                </button>
+                <button onClick={handleRegister} disabled={loading || !firstName.trim() || !lastName.trim()}
+                  className="flex-1 bg-gradient-to-r from-blue-600 to-violet-600 text-white font-bold py-3.5 rounded-xl transition-all hover:shadow-lg hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2">
+                  {loading ? <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : <><Sparkles size={16} />Crear cuenta y comenzar gratis<ArrowRight size={16} /></>}
+                </button>
               </div>
             </div>
-            <div>
-              <label className="text-sm text-gray-400 font-medium mb-1.5 block">Email empresarial</label>
-              <div className="relative">
-                <Mail size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-500" />
-                <input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="carlos@empresa.com"
-                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 pl-10 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-violet-500/50 transition-all" />
-              </div>
-            </div>
-            <div>
-              <label className="text-sm text-gray-400 font-medium mb-1.5 block">Contraseña</label>
-              <div className="relative">
-                <Lock size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-500" />
-                <input type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="Mínimo 6 caracteres"
-                  onKeyDown={e => e.key === 'Enter' && handleRegister()}
-                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 pl-10 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-violet-500/50 transition-all" />
-              </div>
-            </div>
-            {error && (
-              <div className="bg-red-500/10 border border-red-500/20 text-red-400 text-sm px-4 py-3 rounded-xl">{error}</div>
-            )}
-            <button onClick={handleRegister} disabled={loading || !email || !password || !fullName}
-              className="w-full bg-gradient-to-r from-blue-600 to-violet-600 text-white font-bold py-3.5 rounded-xl transition-all hover:shadow-lg hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2">
-              {loading ? <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : <><Sparkles size={16} />Crear cuenta y comenzar gratis<ArrowRight size={16} /></>}
-            </button>
-          </div>
+          )}
+
           <div className="mt-6 text-center text-sm text-gray-500">
             ¿Ya tienes cuenta?{' '}
             <Link href="/login" className="text-blue-400 hover:text-blue-300 font-semibold transition-colors">Iniciar sesión</Link>

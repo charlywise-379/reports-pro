@@ -1,15 +1,19 @@
 import { Router, Request, Response } from 'express'
 import { supabaseAdmin } from '../lib/supabaseAdmin'
 import { sendConfirmationEmail } from '../lib/email'
+import { prisma } from '../lib/prisma'
 
 const router = Router()
 
 router.post('/register', async (req: Request, res: Response) => {
   try {
-    const { fullName, email, password } = req.body
+    const { firstName, lastName, email, password, phone, company, city, state, country } = req.body
 
-    if (typeof fullName !== 'string' || !fullName.trim()) {
-      return res.status(400).json({ error: 'Nombre completo requerido' })
+    if (typeof firstName !== 'string' || !firstName.trim()) {
+      return res.status(400).json({ error: 'Nombre requerido' })
+    }
+    if (typeof lastName !== 'string' || !lastName.trim()) {
+      return res.status(400).json({ error: 'Apellido requerido' })
     }
     if (typeof email !== 'string' || !email.trim()) {
       return res.status(400).json({ error: 'Email requerido' })
@@ -18,6 +22,7 @@ router.post('/register', async (req: Request, res: Response) => {
       return res.status(400).json({ error: 'La contraseña debe tener al menos 6 caracteres' })
     }
 
+    const fullName = `${firstName.trim()} ${lastName.trim()}`
     const normalizedEmail = email.trim().toLowerCase()
     const existingRes = await fetch(
       `${process.env.SUPABASE_URL}/auth/v1/admin/users?filter=${encodeURIComponent(normalizedEmail)}`,
@@ -42,7 +47,7 @@ router.post('/register', async (req: Request, res: Response) => {
       email: email.trim(),
       password,
       options: {
-        data: { full_name: fullName.trim() },
+        data: { full_name: fullName },
         redirectTo,
       },
     })
@@ -55,7 +60,24 @@ router.post('/register', async (req: Request, res: Response) => {
       return res.status(500).json({ error: 'Ocurrió un error. Intenta de nuevo.' })
     }
 
-    await sendConfirmationEmail(email.trim(), fullName.trim(), data.properties.action_link)
+    try {
+      await prisma.user.create({
+        data: {
+          id: data.user.id,
+          email: normalizedEmail,
+          fullName,
+          phone: typeof phone === 'string' && phone.trim() ? phone.trim() : null,
+          company: typeof company === 'string' && company.trim() ? company.trim() : null,
+          city: typeof city === 'string' && city.trim() ? city.trim() : null,
+          state: typeof state === 'string' && state.trim() ? state.trim() : null,
+          country: typeof country === 'string' && country.trim() ? country.trim() : null,
+        },
+      })
+    } catch (userCreateError) {
+      console.error('Error creando User en Prisma tras registro en Supabase:', userCreateError)
+    }
+
+    await sendConfirmationEmail(email.trim(), fullName, data.properties.action_link)
 
     return res.json({ ok: true })
   } catch (e: any) {
