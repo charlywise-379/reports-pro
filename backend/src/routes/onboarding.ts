@@ -507,7 +507,7 @@ router.post('/autocomplete', requireAuth, async (req: Request, res: Response) =>
 
     const reachable = await isUrlReachable(sitioWeb.trim())
     if (!reachable) {
-      return res.status(200).json({ success: false, error: 'No pudimos acceder a esa URL — verifica que esté bien escrita y el sitio esté disponible.' })
+      return res.status(200).json({ success: false, error: 'No pudimos acceder a esa URL — verifica que esté bien escrita y el sitio esté disponible.', urlUnreachable: true })
     }
 
     const data = await autocompleteCompanyInfo(nombre.trim(), sitioWeb.trim(), tipo)
