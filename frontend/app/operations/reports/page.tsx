@@ -1,6 +1,6 @@
 'use client'
 import { useEffect, useState } from 'react'
-import { Download, RefreshCw, Trash2, CheckCircle, XCircle, Loader } from 'lucide-react'
+import { Download, RefreshCw, Trash2, CheckCircle, XCircle, Loader, Mail, MessageCircle } from 'lucide-react'
 import { adminFetch } from '@/lib/operations/api'
 import { palette } from '@/lib/operations/theme'
 import { useTheme } from '@/lib/operations/ThemeContext'
@@ -8,7 +8,7 @@ import { StatusBadge, Avatar } from '@/lib/operations/StatusBadge'
 
 type ReportRow = {
   id: string; status: string; createdAt: string; pdfSizeBytes: number | null; errorMessage: string | null
-  project: { name: string; serviceType: string; user: { email: string } }
+  project: { name: string; serviceType: string; user: { email: string }; deliveryChannels: string[]; deliveryEmail: string | null; deliveryPhone: string | null }
 }
 
 const STATUS_OPTIONS = ['', 'QUEUED', 'GENERATING', 'COMPLETED', 'FAILED']
@@ -24,6 +24,22 @@ function ReportStatusBadge({ status, T }: { status: string; T: any }) {
   if (status === 'COMPLETED') return <StatusBadge label="Completado" color={T.success} icon={CheckCircle} />
   if (status === 'FAILED') return <StatusBadge label="Fallido" color={T.danger} icon={XCircle} />
   return <StatusBadge label={status === 'QUEUED' ? 'En cola' : 'Generando'} color={T.info} icon={Loader} spin />
+}
+
+function DeliveryChannelBadge({ channels, email, phone, T }: { channels: string[]; email: string | null; phone: string | null; T: any }) {
+  const hasEmail = channels.includes('EMAIL')
+  const hasWhatsapp = channels.includes('WHATSAPP')
+  if (!hasEmail && !hasWhatsapp) return <span style={{ fontSize: 12, color: T.textMuted }}>—</span>
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+      <div style={{ display: 'flex', gap: 6 }}>
+        {hasEmail && <StatusBadge label="Email" color={T.info} icon={Mail} />}
+        {hasWhatsapp && <StatusBadge label="WhatsApp" color={T.success} icon={MessageCircle} />}
+      </div>
+      {hasEmail && email && <span style={{ fontSize: 10, color: T.textMuted }}>{email}</span>}
+      {hasWhatsapp && phone && <span style={{ fontSize: 10, color: T.textMuted }}>{phone}</span>}
+    </div>
+  )
 }
 
 export default function OperationsReportsPage() {
@@ -80,7 +96,7 @@ export default function OperationsReportsPage() {
         <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13, minWidth: 700 }}>
           <thead>
             <tr style={{ borderBottom: `1px solid ${T.border}`, textAlign: 'left' }}>
-              {['Proyecto', 'Usuario', 'Módulo', 'Estado', 'Fecha', 'Acciones'].map(h => (
+              {['Proyecto', 'Usuario', 'Módulo', 'Canal de envío', 'Estado', 'Fecha', 'Acciones'].map(h => (
                 <th key={h} style={{ padding: '10px 14px', color: T.textMuted, fontWeight: 600, fontSize: 11 }}>{h}</th>
               ))}
             </tr>
@@ -96,6 +112,9 @@ export default function OperationsReportsPage() {
                   </div>
                 </td>
                 <td style={{ padding: '10px 14px', fontSize: 11, color: T.textMuted }}>{r.project.serviceType}</td>
+                <td style={{ padding: '10px 14px' }}>
+                  <DeliveryChannelBadge channels={r.project.deliveryChannels} email={r.project.deliveryEmail} phone={r.project.deliveryPhone} T={T} />
+                </td>
                 <td style={{ padding: '10px 14px' }}><ReportStatusBadge status={r.status} T={T} /></td>
                 <td style={{ padding: '10px 14px', fontSize: 12 }}>{new Date(r.createdAt).toLocaleDateString()}</td>
                 <td style={{ padding: '10px 14px' }}>
