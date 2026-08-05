@@ -1,6 +1,7 @@
 'use client'
 import React, { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import posthog from 'posthog-js'
 import { FaInstagram, FaFacebook, FaXTwitter, FaLinkedin, FaTiktok, FaYoutube } from 'react-icons/fa6'
@@ -1306,6 +1307,9 @@ function TopNav() {
           <button style={{ padding:'4px 10px', borderRadius:16, border:'none', background:'#8B7BFF', color:'#fff', fontSize:11, fontWeight:700, cursor:'pointer' }}>ES</button>
           <button style={{ padding:'4px 10px', borderRadius:16, border:'none', background:'transparent', color:'#5A627A', fontSize:11, fontWeight:700, cursor:'pointer' }}>EN</button>
         </div>
+        <Link href="/cuenta" style={{ color:'#9CA3AF', fontSize: isMobile ? 10 : 11, fontWeight:700, textDecoration:'none', marginTop: isMobile ? 4 : 0 }}>
+          Mi cuenta
+        </Link>
         <button onClick={handleLogout} style={{ background:'transparent', border:'1px solid rgba(255,255,255,0.1)', borderRadius:20, padding: isMobile ? '4px 10px' : '6px 14px', color:'#9CA3AF', fontSize: isMobile ? 10 : 11, fontWeight:700, cursor:'pointer', marginTop: isMobile ? 4 : 0 }}>
           Cerrar sesión
         </button>
