@@ -25,7 +25,7 @@ router.get('/', requireAdmin, async (req: Request, res: Response) => {
         skip,
         take,
         orderBy: { createdAt: 'desc' },
-        include: { project: { select: { name: true, serviceType: true, userId: true, user: { select: { email: true } } } } },
+        include: { project: { select: { name: true, serviceType: true, userId: true, user: { select: { email: true } }, deliveryChannels: true, deliveryEmail: true, deliveryPhone: true } } },
       }),
       prisma.report.count({ where }),
     ])
@@ -47,12 +47,12 @@ router.get('/export', requireAdmin, async (req: Request, res: Response) => {
     const reports = await prisma.report.findMany({
       where,
       orderBy: { createdAt: 'desc' },
-      include: { project: { select: { name: true, serviceType: true, user: { select: { email: true } } } } },
+      include: { project: { select: { name: true, serviceType: true, user: { select: { email: true } }, deliveryChannels: true, deliveryEmail: true, deliveryPhone: true } } },
     })
 
-    const header = 'id,projectName,userEmail,module,status,pdfSizeBytes,createdAt\n'
+    const header = 'id,projectName,userEmail,module,status,pdfSizeBytes,createdAt,deliveryChannels,deliveryEmail,deliveryPhone\n'
     const rows = reports.map(r =>
-      [r.id, r.project.name, r.project.user.email, r.project.serviceType, r.status, r.pdfSizeBytes || '', r.createdAt.toISOString()]
+      [r.id, r.project.name, r.project.user.email, r.project.serviceType, r.status, r.pdfSizeBytes || '', r.createdAt.toISOString(), r.project.deliveryChannels.join('|'), r.project.deliveryEmail || '', r.project.deliveryPhone || '']
         .map(v => `"${String(v).replace(/"/g, '""')}"`)
         .join(',')
     ).join('\n')
