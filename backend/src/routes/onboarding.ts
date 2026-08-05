@@ -2,7 +2,7 @@ import { Router, Request, Response } from 'express'
 import { prisma } from '../lib/prisma'
 import { requireAuth } from '../middleware/auth'
 import { DeliveryChannel, ReportFrequency, ServiceType, ProjectStatus, SubscriptionStatus } from '@prisma/client'
-import { autocompleteCompanyInfo } from '../lib/onboardingAutocomplete'
+import { autocompleteCompanyInfo, isPrivateOrLoopbackHost } from '../lib/onboardingAutocomplete'
 
 const router = Router()
 
@@ -454,6 +454,45 @@ router.post('/invite', requireAuth, async (req: Request, res: Response) => {
   }
 })
 
+const URL_REACHABILITY_TIMEOUT_MS = 3000
+
+async function isUrlReachable(sitioWeb: string): Promise<boolean> {
+  const url = /^https?:\/\//i.test(sitioWeb) ? sitioWeb : `https://${sitioWeb}`
+  let parsed: URL
+  try {
+    parsed = new URL(url)
+  } catch {
+    return false
+  }
+  if (parsed.protocol !== 'https:' && parsed.protocol !== 'http:') return false
+  if (isPrivateOrLoopbackHost(parsed.hostname)) return false
+
+  const controller = new AbortController()
+  const timeoutId = setTimeout(() => controller.abort(), URL_REACHABILITY_TIMEOUT_MS)
+  try {
+    const res = await fetch(url, {
+      method: 'HEAD',
+      signal: controller.signal,
+      headers: { 'User-Agent': 'Mozilla/5.0 (compatible; OmniReportsBot/1.0)' },
+    })
+    if (res.status >= 500) return false
+    return true
+  } catch {
+    try {
+      const res = await fetch(url, {
+        method: 'GET',
+        signal: controller.signal,
+        headers: { 'User-Agent': 'Mozilla/5.0 (compatible; OmniReportsBot/1.0)' },
+      })
+      return res.status < 500
+    } catch {
+      return true
+    }
+  } finally {
+    clearTimeout(timeoutId)
+  }
+}
+
 // POST /api/onboarding/autocomplete — autocompletar campos con IA (redes sociales, industria, etc.)
 router.post('/autocomplete', requireAuth, async (req: Request, res: Response) => {
   try {
@@ -464,6 +503,11 @@ router.post('/autocomplete', requireAuth, async (req: Request, res: Response) =>
     }
     if (tipo !== 'company' && tipo !== 'competitor') {
       return res.status(400).json({ success: false, error: 'tipo debe ser "company" o "competitor"' })
+    }
+
+    const reachable = await isUrlReachable(sitioWeb.trim())
+    if (!reachable) {
+      return res.status(200).json({ success: false, error: 'No pudimos acceder a esa URL — verifica que esté bien escrita y el sitio esté disponible.' })
     }
 
     const data = await autocompleteCompanyInfo(nombre.trim(), sitioWeb.trim(), tipo)

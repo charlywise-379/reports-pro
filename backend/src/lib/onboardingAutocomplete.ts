@@ -33,7 +33,7 @@ const SITE_HTML_MAX_CHARS = 15000
 // Bloquea SSRF hacia redes privadas/loopback/link-local — el usuario controla
 // el valor de sitioWeb (campo de formulario), y este fetch corre desde el
 // backend, así que no debe poder alcanzar infraestructura interna.
-function isPrivateOrLoopbackHost(hostname: string): boolean {
+export function isPrivateOrLoopbackHost(hostname: string): boolean {
   const h = hostname.toLowerCase()
   if (h === 'localhost' || h.endsWith('.local')) return true
   // IPv4 literal — bloquea loopback, privadas RFC1918, link-local (incl. metadata 169.254.x.x)
