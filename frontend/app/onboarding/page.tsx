@@ -32,6 +32,19 @@ const TAGS_GROUPS: { group: string; tags: string[] }[] = [
   { group: 'Medios y Telecomunicaciones', tags: ['Marketing y Publicidad (AdTech)', 'Medios, Streaming y Entretenimiento', 'Telecomunicaciones'] },
   { group: 'Servicios y Sector Público', tags: ['GovTech y Sector Público', 'ONGs y Tercer Sector', 'Servicios Profesionales (Consultoría, Legal, Contabilidad, RR.HH.)'] },
 ]
+
+function normalizeUrl(input: string): { normalized: string; valid: boolean } {
+  const trimmed = input.trim()
+  if (!trimmed) return { normalized: '', valid: false }
+  const withProtocol = /^https?:\/\//i.test(trimmed) ? trimmed : `https://${trimmed}`
+  try {
+    const parsed = new URL(withProtocol)
+    if (!parsed.hostname.includes('.')) return { normalized: withProtocol, valid: false }
+    return { normalized: withProtocol, valid: true }
+  } catch {
+    return { normalized: withProtocol, valid: false }
+  }
+}
 const INDUSTRY_GROUPS = [
   { group: 'Marketing & Medios', options: ['Agencia de Marketing Digital','Publicidad y Medios Tradicionales','Relaciones Públicas y Comunicación','Producción de Contenido y Video','Diseño Gráfico y Branding','SEO / SEM / Performance'] },
   { group: 'Tecnología', options: ['Software y SaaS','Desarrollo Web y Apps','Inteligencia Artificial y Machine Learning','Ciberseguridad','Cloud Computing','E-commerce y Plataformas Digitales','Fintech','Edtech','Healthtech','Proptech'] },
@@ -136,7 +149,7 @@ function Step1({ data, set, runAutocomplete }: any) {
   const [tagSearch, setTagSearch] = useState('')
   const [showNoInfoModal, setShowNoInfoModal] = useState(false)
 
-  const canAutocomplete = !!(data.companyName?.trim() && data.website?.trim())
+  const canAutocomplete = !!(data.companyName?.trim() && data.website?.trim() && normalizeUrl(data.website).valid)
 
   const handleAutocomplete = async () => {
     setAcError('')
@@ -188,7 +201,20 @@ function Step1({ data, set, runAutocomplete }: any) {
           </div>
           <div>
             <label style={S.label}>Sitio web</label>
-            <input style={S.input} value={data.website} onChange={e=>set('website',e.target.value)} placeholder="https://tuempresa.com" />
+            <input
+              style={S.input}
+              value={data.website}
+              onChange={e=>set('website',e.target.value)}
+              onBlur={() => {
+                if (!data.website?.trim()) return
+                const { normalized, valid } = normalizeUrl(data.website)
+                if (valid) set('website', normalized)
+              }}
+              placeholder="https://tuempresa.com"
+            />
+            {data.website?.trim() && !normalizeUrl(data.website).valid && (
+              <div style={{ fontSize:11, color:'#FF6B6B', marginTop:6 }}>Ingresa una URL válida, por ejemplo: https://tuempresa.com</div>
+            )}
           </div>
           <div>
             <button
@@ -637,21 +663,31 @@ function Step3({ data, set, runAutocomplete }: any) {
                 <div style={{ flex:1, display:'flex', flexDirection:'column', gap:8 }}>
                   <input style={S.input} value={c.name} onChange={e=>update(i,'name',e.target.value)} placeholder="Nombre del competidor" />
                   <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:8 }}>
-                    <input style={S.input} value={c.url} onChange={e=>update(i,'url',e.target.value)} placeholder="sitio.com" />
+                    <input
+                      style={S.input}
+                      value={c.url}
+                      onChange={e=>update(i,'url',e.target.value)}
+                      onBlur={() => {
+                        if (!c.url?.trim()) return
+                        const { normalized, valid } = normalizeUrl(c.url)
+                        if (valid) update(i, 'url', normalized)
+                      }}
+                      placeholder="sitio.com"
+                    />
                     <input style={S.input} value={c.products} onChange={e=>update(i,'products',e.target.value)} placeholder="Productos en competencia" />
                   </div>
                 </div>
                 <button
                   onClick={()=>handleAutocomplete(i)}
-                  disabled={!(c.name?.trim() && c.url?.trim()) || acLoadingIdx === i}
+                  disabled={!(c.name?.trim() && c.url?.trim() && normalizeUrl(c.url).valid) || acLoadingIdx === i}
                   style={{
                     display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0,
                     padding:'8px 12px', borderRadius:8,
                     border:'1px solid rgba(139,123,255,0.3)',
-                    background: (c.name?.trim() && c.url?.trim() && acLoadingIdx !== i) ? 'rgba(139,123,255,0.15)' : 'rgba(255,255,255,0.03)',
-                    color: (c.name?.trim() && c.url?.trim() && acLoadingIdx !== i) ? '#8B7BFF' : '#5A627A',
+                    background: (c.name?.trim() && c.url?.trim() && normalizeUrl(c.url).valid && acLoadingIdx !== i) ? 'rgba(139,123,255,0.15)' : 'rgba(255,255,255,0.03)',
+                    color: (c.name?.trim() && c.url?.trim() && normalizeUrl(c.url).valid && acLoadingIdx !== i) ? '#8B7BFF' : '#5A627A',
                     fontSize:11, fontWeight:600,
-                    cursor: (c.name?.trim() && c.url?.trim() && acLoadingIdx !== i) ? 'pointer' : 'not-allowed',
+                    cursor: (c.name?.trim() && c.url?.trim() && normalizeUrl(c.url).valid && acLoadingIdx !== i) ? 'pointer' : 'not-allowed',
                   }}
                 >
                   {acLoadingIdx === i ? 'Buscando...' : '✨ IA'}
@@ -659,6 +695,7 @@ function Step3({ data, set, runAutocomplete }: any) {
                 {list.length>1&&<button onClick={()=>remove(i)} style={{ background:'rgba(255,107,107,0.1)', border:'1px solid rgba(255,107,107,0.2)', borderRadius:8, width:28, height:28, cursor:'pointer', color:'#FF6B6B', fontSize:14 }}>×</button>}
               </div>
               {acLoadingIdx === i && <LoadingBar />}
+              {c.url?.trim() && !normalizeUrl(c.url).valid && <div style={{ fontSize:11, color:'#FF6B6B', marginBottom:10 }}>Ingresa una URL válida, por ejemplo: sitio.com</div>}
               {acErrors[i] && acLoadingIdx !== i && noInfoModalIdx !== i && <div style={{ fontSize:11, color:'#FF6B6B', marginBottom:10 }}>{acErrors[i]}</div>}
               {noInfoModalIdx === i && (
                 <NoInfoModal message={acErrors[i]} onClose={() => { setNoInfoModalIdx(null); setAcErrors(prev => ({ ...prev, [i]: '' })) }} />
