@@ -98,7 +98,7 @@ export default function OperationsUsersPage() {
         <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13, minWidth: 700 }}>
           <thead>
             <tr style={{ borderBottom: `1px solid ${T.border}`, textAlign: 'left' }}>
-              {['Usuario', 'Proyectos', 'Módulos', 'Estado', 'Acciones'].map(h => (
+              {['Usuario', 'Teléfono', 'Proyectos', 'Módulos', 'Estado', 'Acciones'].map(h => (
                 <th key={h} style={{ padding: '10px 14px', color: T.textMuted, fontWeight: 600, fontSize: 11 }}>{h}</th>
               ))}
             </tr>
@@ -115,6 +115,7 @@ export default function OperationsUsersPage() {
                     </div>
                   </div>
                 </td>
+                <td style={{ padding: '10px 14px', fontSize: 12, color: T.text }}>{u.phone || '—'}</td>
                 <td style={{ padding: '10px 14px' }}>{u.projectCount}</td>
                 <td style={{ padding: '10px 14px', fontSize: 11, color: T.textMuted }}>{u.modules.join(', ') || '—'}</td>
                 <td style={{ padding: '10px 14px' }}>
