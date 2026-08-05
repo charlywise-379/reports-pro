@@ -55,6 +55,7 @@ export default function CuentaPage() {
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [saveMsg, setSaveMsg] = useState('')
+  const [saveError, setSaveError] = useState(false)
   const [accountData, setAccountData] = useState<any>(null)
   const [invoices, setInvoices] = useState<any[]>([])
   const [invoicesError, setInvoicesError] = useState(false)
@@ -137,16 +138,34 @@ export default function CuentaPage() {
       })
       const data = await res.json()
       if (!res.ok) {
+        setSaveError(true)
         setSaveMsg(data.error || 'Ocurrió un error al guardar.')
         setSaving(false)
         return
       }
       setAccountData((prev: any) => ({ ...prev, user: data.user }))
+      setSaveError(false)
       setSaveMsg('Cambios guardados.')
     } catch {
+      setSaveError(true)
       setSaveMsg('Ocurrió un error al guardar.')
     }
     setSaving(false)
+  }
+
+  const handleDownload = async (reportId: string) => {
+    try {
+      if (!token) return
+      const res = await fetch(`${BACKEND}/api/reports/signed-url/${reportId}`, {
+        headers: { Authorization: 'Bearer ' + token },
+      })
+      const data = await res.json()
+      if (data.url) {
+        window.location.href = data.url
+      } else {
+        alert('Error al descargar: ' + (data.error || 'intenta de nuevo'))
+      }
+    } catch (e) { console.error('Error descargando:', e) }
   }
 
   const handleManageSubscription = async () => {
@@ -243,10 +262,10 @@ export default function CuentaPage() {
               <input style={inputStyle} value={country} onChange={e => setCountry(e.target.value)} />
             </div>
           </div>
-          {saveMsg && <div style={{ fontSize: 12, color: T.textMuted, marginBottom: 12 }}>{saveMsg}</div>}
-          <button onClick={handleSave} disabled={saving} style={{
+          {saveMsg && <div style={{ fontSize: 12, color: saveError ? '#EF4444' : T.textMuted, marginBottom: 12 }}>{saveMsg}</div>}
+          <button onClick={handleSave} disabled={saving || !firstName.trim() || !lastName.trim()} style={{
             background: T.accent, color: '#fff', border: 'none', borderRadius: 10,
-            padding: '10px 20px', fontSize: 13, fontWeight: 700, cursor: 'pointer', opacity: saving ? 0.6 : 1,
+            padding: '10px 20px', fontSize: 13, fontWeight: 700, cursor: 'pointer', opacity: (saving || !firstName.trim() || !lastName.trim()) ? 0.6 : 1,
           }}>
             {saving ? 'Guardando...' : 'Guardar cambios'}
           </button>
@@ -307,10 +326,10 @@ export default function CuentaPage() {
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                     <StatusPill label={r.status} status={r.status} />
-                    {r.status === 'COMPLETED' && r.r2Url && (
-                      <a href={r.r2Url} target="_blank" rel="noreferrer" style={{ fontSize: 11, fontWeight: 700, color: T.accent, textDecoration: 'none' }}>
+                    {r.status === 'COMPLETED' && (
+                      <button onClick={() => handleDownload(r.id)} style={{ background: 'transparent', border: 'none', fontSize: 11, fontWeight: 700, color: T.accent, textDecoration: 'none', cursor: 'pointer', padding: 0 }}>
                         Descargar →
-                      </a>
+                      </button>
                     )}
                   </div>
                 </div>

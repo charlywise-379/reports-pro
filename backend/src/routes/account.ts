@@ -33,7 +33,10 @@ router.get('/:userId', requireAuth, async (req: Request, res: Response) => {
       orderBy: { createdAt: 'desc' },
       include: {
         subscription: true,
-        reports: { orderBy: { createdAt: 'desc' } },
+        reports: {
+          orderBy: { createdAt: 'desc' },
+          select: { id: true, createdAt: true, reportTitle: true, status: true },
+        },
       },
     })
 
@@ -60,8 +63,6 @@ router.get('/:userId', requireAuth, async (req: Request, res: Response) => {
         createdAt: r.createdAt,
         reportTitle: r.reportTitle,
         status: r.status,
-        r2Url: r.r2Url,
-        downloadToken: r.downloadToken,
       }))
     )
 
