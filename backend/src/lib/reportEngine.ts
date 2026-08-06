@@ -289,10 +289,15 @@ Tendencias del sector:
   → "${businessType} ${setup.city || setup.country || 'México'} noticias ${mesActual}"
   Detecta: nuevas tecnologías, cambios regulatorios, oportunidades de nicho
 
-Posicionamiento en Google:
-  → "${businessType} ${setup.city || setup.country || 'México'}"
-  Anota: quién aparece en top 5 orgánico, quién está haciendo Google Ads
-  → "${companyName}" — anota qué aparece del cliente
+Posicionamiento en buscadores — ejecutar POR CADA entidad (cliente + cada competidor directo registrado):
+  → "[nombre de la entidad]" — ¿aparece en resultados? ¿con qué dominio?
+  → "site:[dominio de la entidad, si se conoce]" — ¿está indexado? ¿aproximadamente cuántas páginas?
+  → "${businessType} ${setup.city || setup.country || 'México'}" — ¿aparece esta entidad en estos resultados?
+REGISTRA para cada entidad, y NADA MÁS que esto:
+  a) las queries exactas que ejecutaste para esa entidad
+  b) si la entidad apareció o no en los resultados de cada query
+  c) el dominio que apareció, si alguno
+PROHIBIDO derivar de esto un número de posición en Google — reporta presencia/ausencia por query, nunca una posición inferida.
 
 Contexto económico:
   → "mercado ${setup.industry || businessType} México ${mesActual} ${now.getFullYear()}"
