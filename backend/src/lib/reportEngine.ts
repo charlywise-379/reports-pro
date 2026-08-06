@@ -675,15 +675,26 @@ REGLA DE ORO: Cada dato debe poder ser verificado por el cliente. Si no puedes v
         ],
       })
 
-      // Recolectar texto del stream
+      // Recolectar texto del stream + eventos de búsqueda para diagnóstico
+      const searchLog: Array<{ type: 'query' | 'result'; data: unknown }> = []
       for await (const event of stream) {
         if (event.type === 'content_block_delta' && event.delta?.type === 'text_delta') {
           jsonText += event.delta.text
+        }
+        if (event.type === 'content_block_start') {
+          const block = event.content_block as any
+          if (block?.type === 'server_tool_use' && block?.name === 'web_search') {
+            searchLog.push({ type: 'query', data: block.input })
+          }
+          if (block?.type === 'web_search_tool_result') {
+            searchLog.push({ type: 'result', data: block.content })
+          }
         }
       }
 
       const finalMessage = await stream.finalMessage()
       console.log(`✅ Claude respondió — stop_reason: ${finalMessage.stop_reason} — chars: ${jsonText.length}`)
+      console.log(`🔍 ${searchLog.length} eventos de búsqueda registrados:`, JSON.stringify(searchLog).slice(0, 5000))
       break
 
     } catch (err: any) {
