@@ -337,6 +337,7 @@ Promedio ponderado = clientScore.overall
 • Usar anglicismos innecesarios — español de México siempre
 • Dejar campos vacíos — si no hay datos: "Sin datos públicos disponibles"
 • Dar recomendaciones genéricas como "mejorar redes sociales" sin especificidad
+• Declarar una posición numérica de Google (#3, #7, "top 5") como dato duro. La herramienta de búsqueda NO devuelve posiciones de SERP reales. Solo puedes afirmar presencia o ausencia en resultados para una query específica que ejecutaste, y DEBES nombrar esa query. Si no ejecutaste la búsqueda para una entidad, escribe "Sin verificar" — es preferible una celda "Sin verificar" a una posición inventada, porque el cliente puede comprobar su propio posicionamiento en segundos y una cifra incorrecta destruye la credibilidad de todo el reporte.
 
 ━━━ ESTÁNDAR DE CALIDAD — EJEMPLOS OBLIGATORIOS ━━━━━━━━━━━━
 
@@ -551,7 +552,7 @@ Responde ÚNICAMENTE con JSON válido comenzando con { sin texto previo ni markd
     { "factor": "Servicios ofrecidos", "client": "<descripción breve>", "comp1": "<o N/A>", "comp2": "<o N/A>", "comp3": "<o N/A>", "comp4": "<o N/A>", "comp5": "<o N/A>", "position": "<posición>" },
     { "factor": "Presencia digital", "client": "<ALTA/MEDIA/BAJA>", "comp1": "<o N/A>", "comp2": "<o N/A>", "comp3": "<o N/A>", "comp4": "<o N/A>", "comp5": "<o N/A>", "position": "<posición>" },
     { "factor": "Redes sociales", "client": "<plataforma activa · frecuencia>", "comp1": "<o N/A>", "comp2": "<o N/A>", "comp3": "<o N/A>", "comp4": "<o N/A>", "comp5": "<o N/A>", "position": "<posición>" },
-    { "factor": "SEO / Posicionamiento Google", "client": "<posición estimada>", "comp1": "<o N/A>", "comp2": "<o N/A>", "comp3": "<o N/A>", "comp4": "<o N/A>", "comp5": "<o N/A>", "position": "<posición>" },
+    { "factor": "SEO / Posicionamiento Google", "client": "<Top 3 orgánico · verificado con [query] | Top 10 orgánico · verificado con [query] | Aparece en resultados · sin posición confirmada | No aparece en resultados · verificado con [query] | Sin verificar>", "comp1": "<mismo formato o 'Sin verificar'>", "comp2": "<mismo formato o 'Sin verificar'>", "comp3": "<mismo formato o 'Sin verificar'>", "comp4": "<mismo formato o 'Sin verificar'>", "comp5": "<mismo formato o 'Sin verificar'>", "position": "<posición>" },
     { "factor": "Casos de éxito / Portafolio", "client": "<SÍ visible|NO visible|PARCIAL>", "comp1": "<o N/A>", "comp2": "<o N/A>", "comp3": "<o N/A>", "comp4": "<o N/A>", "comp5": "<o N/A>", "position": "<posición>" },
     { "factor": "Presencia de Mercado", "client": "<años estimados>", "comp1": "<o N/A>", "comp2": "<o N/A>", "comp3": "<o N/A>", "comp4": "<o N/A>", "comp5": "<o N/A>", "position": "<posición>" },
     { "factor": "Especialización", "client": "<descripción breve>", "comp1": "<o N/A>", "comp2": "<o N/A>", "comp3": "<o N/A>", "comp4": "<o N/A>", "comp5": "<o N/A>", "position": "<posición>" },
