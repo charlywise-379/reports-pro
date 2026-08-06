@@ -237,11 +237,12 @@ router.delete('/:id', requireAdmin, async (req: Request, res: Response) => {
       console.error('[operations] error limpiando cola de jobs al eliminar usuario:', queueError)
     }
 
-    await prisma.user.delete({ where: { id } })
-
-    await prisma.auditLog.create({
-      data: { userId: req.adminId!, event: 'admin_delete_user', metadata: { targetUserId: id, email: user.email, jobsRemoved, cancelledStripeSubscriptionIds } },
-    })
+    await prisma.$transaction([
+      prisma.user.delete({ where: { id } }),
+      prisma.auditLog.create({
+        data: { userId: req.adminId!, event: 'admin_delete_user', metadata: { targetUserId: id, email: user.email, jobsRemoved, cancelledStripeSubscriptionIds } },
+      }),
+    ])
 
     res.json({ ok: true })
   } catch (e: any) {
