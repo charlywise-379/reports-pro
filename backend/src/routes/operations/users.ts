@@ -5,6 +5,7 @@ import { requireAdmin } from '../../middleware/requireAdmin'
 import { supabaseAdmin } from '../../lib/supabaseAdmin'
 import { reportQueue } from '../../lib/queue'
 import { stripe } from '../../lib/stripe'
+import { deleteFromR2 } from '../../lib/r2'
 
 const router = Router()
 
@@ -237,12 +238,25 @@ router.delete('/:id', requireAdmin, async (req: Request, res: Response) => {
       console.error('[operations] error limpiando cola de jobs al eliminar usuario:', queueError)
     }
 
+    const reportsWithR2Keys = await prisma.report.findMany({
+      where: { project: { userId: id }, r2Key: { not: null } },
+      select: { r2Key: true },
+    })
+
     await prisma.$transaction([
       prisma.user.delete({ where: { id } }),
       prisma.auditLog.create({
         data: { userId: req.adminId!, event: 'admin_delete_user', metadata: { targetUserId: id, email: user.email, jobsRemoved, cancelledStripeSubscriptionIds } },
       }),
     ])
+
+    for (const report of reportsWithR2Keys) {
+      try {
+        await deleteFromR2(report.r2Key!)
+      } catch (r2Error: any) {
+        console.error('[operations] error borrando PDF de R2 tras eliminar usuario:', report.r2Key, r2Error)
+      }
+    }
 
     res.json({ ok: true })
   } catch (e: any) {
