@@ -260,6 +260,7 @@ model Report {
   sentryEventId    String?
   createdAt        DateTime          @default(now())
   updatedAt        DateTime          @updatedAt
+  accessLogs       ReportAccessLog[]
 
   @@map("reports")
 }
@@ -267,6 +268,7 @@ model Report {
 model ReportAccessLog {
   id         String   @id @default(cuid())
   reportId   String
+  report     Report   @relation(fields: [reportId], references: [id], onDelete: Cascade)
   ipAddress  String?
   userAgent  String?
   accessedAt DateTime @default(now())
