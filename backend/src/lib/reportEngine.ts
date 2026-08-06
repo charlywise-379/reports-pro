@@ -958,6 +958,8 @@ function buildReportData(project: any, aiData: any, dateInfo: any, editionNumber
         const comp1 = row.comp1 || 'N/A'
         const comp2 = row.comp2 || 'N/A'
         const comp3 = row.comp3 || 'N/A'
+        const comp4 = row.comp4 || 'N/A'
+        const comp5 = row.comp5 || 'N/A'
         const pos = row.position || '—'
         const posColor = pos.includes('1') ? '#1D9E75' : pos.includes('2') ? '#BA7517' : '#888'
         return `<tr style="${bg}">
@@ -966,12 +968,14 @@ function buildReportData(project: any, aiData: any, dateInfo: any, editionNumber
           <td style="text-align:center;font-size:9px;color:#555;font-weight:600">${comp1}</td>
           <td style="text-align:center;font-size:9px;color:#555;font-weight:600">${comp2}</td>
           <td style="text-align:center;font-size:9px;color:#555;font-weight:600">${comp3}</td>
+          <td style="text-align:center;font-size:9px;color:#555;font-weight:600">${comp4}</td>
+          <td style="text-align:center;font-size:9px;color:#555;font-weight:600">${comp5}</td>
           <td style="text-align:center;font-size:9px;font-weight:700;color:${posColor}">${pos}</td>
         </tr>`
       }).join('\n')
     : ['💰 Precio', '⭐ Servicios', '💡 Innovación', '🚀 Velocidad', '🏆 Marca', '📊 Presencia digital', '🔄 Retención', '🌍 Cobertura'].map((factor, i) => {
         const bg = i % 2 === 1 ? 'background:#FAFAFA;' : ''
-        return `<tr style="${bg}"><td style="font-size:10px;font-weight:600;color:#1A1730">${factor}</td><td style="text-align:center"><span style="background:#EAF3DE;color:#27500A;font-size:9px;font-weight:700;padding:2px 7px;border-radius:6px">N/A</span></td><td style="text-align:center;font-size:9px;color:#888">N/A</td><td style="text-align:center;font-size:9px;color:#888">N/A</td><td style="text-align:center;font-size:9px;color:#888">N/A</td><td style="text-align:center;font-size:9px;color:#888">—</td></tr>`
+        return `<tr style="${bg}"><td style="font-size:10px;font-weight:600;color:#1A1730">${factor}</td><td style="text-align:center"><span style="background:#EAF3DE;color:#27500A;font-size:9px;font-weight:700;padding:2px 7px;border-radius:6px">N/A</span></td><td style="text-align:center;font-size:9px;color:#888">N/A</td><td style="text-align:center;font-size:9px;color:#888">N/A</td><td style="text-align:center;font-size:9px;color:#888">N/A</td><td style="text-align:center;font-size:9px;color:#888">N/A</td><td style="text-align:center;font-size:9px;color:#888">N/A</td><td style="text-align:center;font-size:9px;color:#888">—</td></tr>`
       }).join('\n')
 
   // Weekly plans HTML
@@ -1128,7 +1132,7 @@ function buildReportData(project: any, aiData: any, dateInfo: any, editionNumber
 
     // Página 9
     benchmarkFactors: 8,
-    benchmarkCompetitors: competitors.slice(0, 3).map((c: any) => ({ name: c.name })),
+    benchmarkCompetitors: competitors.slice(0, 5).map((c: any) => ({ name: c.name })),
     benchmarkRowsHTML,
     radarPoints: '0,-56 49,-20 55,28 0,65 -55,28 -46,-24',
     strengths: (aiData.strengths || ['Servicio personalizado', 'Retención de clientes', 'Agilidad de respuesta', 'Conocimiento del mercado local', 'Flexibilidad operativa']).slice(0, 5),
