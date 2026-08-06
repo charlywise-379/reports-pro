@@ -127,11 +127,8 @@ router.post('/webhook', async (req: Request, res: Response) => {
         const updateData: any = {
           status: sub.status.toUpperCase(),
         }
-        if (sub.current_period_start) {
-          updateData.currentPeriodStart = new Date(sub.current_period_start * 1000)
-        }
         if (sub.current_period_end) {
-          updateData.currentPeriodEnd = new Date(sub.current_period_end * 1000)
+          updateData.stripeCurrentPeriodEnd = new Date(sub.current_period_end * 1000)
         }
 
         await (prisma.subscription as any).updateMany({
@@ -145,7 +142,7 @@ router.post('/webhook', async (req: Request, res: Response) => {
         const sub = event.data.object
         await (prisma.subscription as any).updateMany({
           where: { stripeSubscriptionId: sub.id },
-          data: { status: 'CANCELED' }
+          data: { status: 'CANCELLED' }
         })
         break
       }
