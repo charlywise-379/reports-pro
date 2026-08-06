@@ -4,6 +4,7 @@ import { prisma } from '../../lib/prisma'
 import { requireAdmin } from '../../middleware/requireAdmin'
 import { supabaseAdmin } from '../../lib/supabaseAdmin'
 import { reportQueue } from '../../lib/queue'
+import { stripe } from '../../lib/stripe'
 
 const router = Router()
 
@@ -205,6 +206,21 @@ router.delete('/:id', requireAdmin, async (req: Request, res: Response) => {
     const user = await prisma.user.findUnique({ where: { id } })
     if (!user) return res.status(404).json({ error: 'Usuario no encontrado' })
 
+    const subscriptionsWithStripe = await prisma.subscription.findMany({
+      where: { userId: id, stripeSubscriptionId: { not: null } },
+    })
+
+    const cancelledStripeSubscriptionIds: string[] = []
+    for (const sub of subscriptionsWithStripe) {
+      try {
+        await stripe.subscriptions.cancel(sub.stripeSubscriptionId!)
+        cancelledStripeSubscriptionIds.push(sub.stripeSubscriptionId!)
+      } catch (stripeError: any) {
+        console.error('[operations] error cancelando suscripcion de Stripe al eliminar usuario:', stripeError)
+        return res.status(500).json({ error: `No se pudo cancelar la suscripción de Stripe ${sub.stripeSubscriptionId} — la eliminación fue abortada. Revisa la suscripción manualmente e intenta de nuevo.` })
+      }
+    }
+
     let jobsRemoved = 0
     try {
       const projects = await prisma.project.findMany({ where: { userId: id }, select: { id: true } })
@@ -224,7 +240,7 @@ router.delete('/:id', requireAdmin, async (req: Request, res: Response) => {
     await prisma.user.delete({ where: { id } })
 
     await prisma.auditLog.create({
-      data: { userId: req.adminId!, event: 'admin_delete_user', metadata: { targetUserId: id, email: user.email, jobsRemoved } },
+      data: { userId: req.adminId!, event: 'admin_delete_user', metadata: { targetUserId: id, email: user.email, jobsRemoved, cancelledStripeSubscriptionIds } },
     })
 
     res.json({ ok: true })
