@@ -42,12 +42,12 @@ interface ReportData {
   needleY: number
   signalsCount: string
   signalsDelta: number
-  movementsCount: number
-  criticalMovements: number
+  movementsCount: number | string
+  criticalMovements: number | string
   minorMovements: number
   alertsCount: number
   activeCompetitors: number
-  totalChanges: number
+  totalChanges: number | string
   clientScore?: {
     overall: number
     price: number
@@ -908,8 +908,8 @@ function buildReportData(project: any, aiData: any, dateInfo: any, editionNumber
 
   // Sector metrics derivados
   const sectorMetrics = [
-    { label: 'SEÑALES DETECTADAS', value: aiData.signalsCount || '800+', sub: 'esta semana', color: '#534AB7' },
-    { label: 'MOVIMIENTOS', value: String(aiData.movementsCount || 10), sub: `en ${competitors.length} competidores`, color: '#E24B4A' },
+    { label: 'SEÑALES DETECTADAS', value: aiData.signalsCount || 'Sin datos', sub: 'esta semana', color: '#534AB7' },
+    { label: 'MOVIMIENTOS', value: aiData.movementsCount != null ? String(aiData.movementsCount) : 'Sin datos', sub: `en ${competitors.length} competidores`, color: '#E24B4A' },
     { label: 'ALERTAS CRÍTICAS', value: String(criticalAlerts.length), sub: 'requieren acción', color: '#BA7517' },
     { label: 'OPORTUNIDADES', value: String(opportunities.length), sub: 'identificadas', color: '#1D9E75' },
     { label: 'NIVEL DE RIESGO', value: aiData.riskLevel || 'MEDIO', sub: 'mercado actual', color: '#8B7BFF' },
@@ -917,9 +917,7 @@ function buildReportData(project: any, aiData: any, dateInfo: any, editionNumber
 
   // Target segments
   const targetSegments = aiData.targetSegments || [
-    { name: 'SEGMENTO PRINCIPAL', pct: 80, color: '#1D9E75', bg: '#EAF3DE', trackColor: '#C0DD97', desc: `${competitors.length} competidores enfocados aquí` },
-    { name: 'PYMES Y EMPRESARIOS', pct: 55, color: '#BA7517', bg: '#FAEEDA', trackColor: '#FAC775', desc: 'Segmento en crecimiento' },
-    { name: 'MID-MARKET CORPORATIVO', pct: 30, color: '#534AB7', bg: '#F8F7FF', trackColor: '#CECBF6', desc: 'Poco explorado — oportunidad' },
+    { name: 'SEGMENTO PRINCIPAL', pct: 0, color: '#1D9E75', bg: '#EAF3DE', trackColor: '#C0DD97', desc: `${competitors.length} competidores registrados — sin datos suficientes para segmentar` },
   ]
 
   // New channels — fallback rota entre un pool más amplio si Claude no genera recomendaciones,
@@ -1065,14 +1063,14 @@ function buildReportData(project: any, aiData: any, dateInfo: any, editionNumber
     needleY: gauge.needleY,
 
     // KPIs
-    signalsCount: aiData.signalsCount || '800+',
+    signalsCount: aiData.signalsCount || 'Sin datos',
     signalsDelta: aiData.signalsDelta ?? 10,
-    movementsCount: aiData.movementsCount ?? 10,
-    criticalMovements: aiData.criticalMovements ?? 3,
+    movementsCount: aiData.movementsCount ?? 'Sin datos',
+    criticalMovements: aiData.criticalMovements ?? 'Sin datos',
     minorMovements: aiData.minorMovements ?? 7,
     alertsCount: criticalAlerts.length,
     activeCompetitors: competitors.length,
-    totalChanges: aiData.totalChanges ?? 8,
+    totalChanges: aiData.totalChanges ?? 'Sin datos',
 
     // Página 1
     insights,
