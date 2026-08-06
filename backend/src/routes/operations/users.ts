@@ -258,6 +258,12 @@ router.delete('/:id', requireAdmin, async (req: Request, res: Response) => {
       }
     }
 
+    try {
+      await supabaseAdmin.auth.admin.deleteUser(id)
+    } catch (authError: any) {
+      console.error('[operations] error eliminando cuenta de Supabase Auth tras eliminar usuario:', authError)
+    }
+
     res.json({ ok: true })
   } catch (e: any) {
     console.error('[operations] error:', e)
