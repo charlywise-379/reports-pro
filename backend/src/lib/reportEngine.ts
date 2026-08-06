@@ -1132,7 +1132,7 @@ function buildReportData(project: any, aiData: any, dateInfo: any, editionNumber
 
     // Página 9
     benchmarkFactors: 8,
-    benchmarkCompetitors: competitors.slice(0, 5).map((c: any) => ({ name: c.name })),
+    benchmarkCompetitors: Array.from({ length: 5 }, (_, i) => ({ name: competitors[i]?.name || '—' })),
     benchmarkRowsHTML,
     radarPoints: '0,-56 49,-20 55,28 0,65 -55,28 -46,-24',
     strengths: (aiData.strengths || ['Servicio personalizado', 'Retención de clientes', 'Agilidad de respuesta', 'Conocimiento del mercado local', 'Flexibilidad operativa']).slice(0, 5),
