@@ -662,7 +662,7 @@ REGLA DE ORO: Cada dato debe poder ser verificado por el cliente. Si no puedes v
       const stream = await anthropic.messages.stream({
         model: 'claude-sonnet-4-5',
         system: systemPrompt,
-        max_tokens: 20000,
+        max_tokens: 32000,
         tools: [
           {
             type: 'web_search_20250305' as any,
@@ -695,6 +695,12 @@ REGLA DE ORO: Cada dato debe poder ser verificado por el cliente. Si no puedes v
       const finalMessage = await stream.finalMessage()
       console.log(`✅ Claude respondió — stop_reason: ${finalMessage.stop_reason} — chars: ${jsonText.length}`)
       console.log(`🔍 ${searchLog.length} eventos de búsqueda registrados:`, JSON.stringify(searchLog).slice(0, 5000))
+
+      if (finalMessage.stop_reason === 'max_tokens' && attempt < MAX_RETRIES) {
+        console.error(`⚠️ Respuesta truncada por max_tokens en intento ${attempt}/${MAX_RETRIES} — reintentando`)
+        continue
+      }
+
       break
 
     } catch (err: any) {
