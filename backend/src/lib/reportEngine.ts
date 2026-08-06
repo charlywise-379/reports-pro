@@ -317,6 +317,7 @@ Promedio ponderado = clientScore.overall
 ━━━ REGLAS ABSOLUTAS ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 ✓ SIEMPRE HACER:
+• La fidelidad de la información es prioridad absoluta — cada dato debe tener fuente y frescura
 • Incluir todos los competidores directos registrados
 • Cada alerta y movimiento debe tener fuente (URL, medio, o "Estimado")
 • Precios realistas para el mercado mexicano de ${businessType}
@@ -325,6 +326,7 @@ Promedio ponderado = clientScore.overall
 • Indicar frescura de cada dato según la Regla de Frescura
 • Mínimo 10 búsquedas web antes de estructurar la respuesta
 • Recomendaciones variadas — categorías a usar esta semana: ${selectedCategories}
+• Validación y Revisión exhaustiva de cada dato antes de incluirlo en el reporte, principalmente posicionamiento SEO, precios, campañas activas, vacantes y reseñas de competidores y toda información que sea facilmente verificable en web. No incluir datos sin haberlos verificado primero.
 
 ✗ NUNCA HACER:
 • Inventar movimientos, precios o campañas de competidores
