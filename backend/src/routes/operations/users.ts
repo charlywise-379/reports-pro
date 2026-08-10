@@ -217,6 +217,10 @@ router.delete('/:id', requireAdmin, async (req: Request, res: Response) => {
         await stripe.subscriptions.cancel(sub.stripeSubscriptionId!)
         cancelledStripeSubscriptionIds.push(sub.stripeSubscriptionId!)
       } catch (stripeError: any) {
+        if (stripeError?.code === 'resource_missing') {
+          console.warn('[operations] suscripción ya inexistente en Stripe, continuando:', sub.stripeSubscriptionId)
+          continue
+        }
         console.error('[operations] error cancelando suscripcion de Stripe al eliminar usuario:', stripeError)
         return res.status(500).json({ error: `No se pudo cancelar la suscripción de Stripe ${sub.stripeSubscriptionId} — la eliminación fue abortada. Revisa la suscripción manualmente e intenta de nuevo.` })
       }
@@ -259,7 +263,10 @@ router.delete('/:id', requireAdmin, async (req: Request, res: Response) => {
     }
 
     try {
-      await supabaseAdmin.auth.admin.deleteUser(id)
+      const { error: authError } = await supabaseAdmin.auth.admin.deleteUser(id)
+      if (authError) {
+        console.error('[operations] error eliminando cuenta de Supabase Auth tras eliminar usuario:', authError)
+      }
     } catch (authError: any) {
       console.error('[operations] error eliminando cuenta de Supabase Auth tras eliminar usuario:', authError)
     }
