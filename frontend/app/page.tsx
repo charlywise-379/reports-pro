@@ -620,11 +620,11 @@ export default function Home() {
             <p className="text-gray-400 mb-8 max-w-lg mx-auto text-lg">Regístrate ahora, configura tu empresa y recibe tu primer reporte de inteligencia AI antes de que termines tu café.</p>
             <Link href="/register" className="inline-flex items-center gap-2 bg-gradient-to-r from-blue-600 to-violet-600 text-white font-black px-8 py-4 md:px-12 md:py-5 rounded-2xl transition-all hover:shadow-2xl hover:shadow-blue-500/30 hover:scale-105 text-base md:text-xl w-full md:w-auto justify-center">
               <Sparkles size={22} />
-              Comenzar gratis ahora
+              Generar reporte ahora
               <ArrowRight size={22} />
             </Link>
             <div className="flex items-center justify-center gap-8 mt-8 text-sm text-gray-500 flex-wrap">
-              <div className="flex items-center gap-2"><CheckCircle size={14} className="text-green-400" /> 7 días completamente gratis</div>
+              <div className="flex items-center gap-2"><CheckCircle size={14} className="text-green-400" /> Tu primer reporte gratis</div>
               <div className="flex items-center gap-2"><CheckCircle size={14} className="text-green-400" /> Sin tarjeta de crédito</div>
               <div className="flex items-center gap-2"><CheckCircle size={14} className="text-green-400" /> Cancela con un clic</div>
             </div>
