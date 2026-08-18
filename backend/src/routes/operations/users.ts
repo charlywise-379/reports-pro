@@ -262,16 +262,30 @@ router.delete('/:id', requireAdmin, async (req: Request, res: Response) => {
       }
     }
 
+    let authAccountDeleted = true
     try {
       const { error: authError } = await supabaseAdmin.auth.admin.deleteUser(id)
       if (authError) {
-        console.error('[operations] error eliminando cuenta de Supabase Auth tras eliminar usuario:', authError)
+        authAccountDeleted = false
+        console.error('[operations] error eliminando cuenta de Supabase Auth tras eliminar usuario:', user.email, id, authError)
       }
     } catch (authError: any) {
-      console.error('[operations] error eliminando cuenta de Supabase Auth tras eliminar usuario:', authError)
+      authAccountDeleted = false
+      console.error('[operations] error eliminando cuenta de Supabase Auth tras eliminar usuario:', user.email, id, authError)
     }
 
-    res.json({ ok: true })
+    if (!authAccountDeleted) {
+      await prisma.auditLog.create({
+        data: { userId: req.adminId!, event: 'admin_delete_user_auth_cleanup_failed', metadata: { targetUserId: id, email: user.email } },
+      })
+    }
+
+    res.json({
+      ok: true,
+      ...(authAccountDeleted ? {} : {
+        warning: `El usuario se eliminó de la base de datos, pero la cuenta de Supabase Auth (${user.email}) no pudo eliminarse. Ese correo seguirá bloqueado para registro hasta que se borre manualmente en Supabase.`,
+      }),
+    })
   } catch (e: any) {
     console.error('[operations] error:', e)
     res.status(500).json({ error: 'Error interno' })

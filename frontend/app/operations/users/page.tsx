@@ -55,7 +55,9 @@ export default function OperationsUsersPage() {
 
   const handleDelete = async (id: string) => {
     if (!confirm('¿Eliminar este usuario permanentemente? Esta acción no se puede deshacer.')) return
-    await adminFetch(`/api/operations/users/${id}`, { method: 'DELETE' })
+    const res = await adminFetch(`/api/operations/users/${id}`, { method: 'DELETE' })
+    const data = await res.json().catch(() => null)
+    if (data?.warning) alert(data.warning)
     load()
   }
 
