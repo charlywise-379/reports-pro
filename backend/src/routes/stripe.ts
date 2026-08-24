@@ -135,6 +135,13 @@ router.post('/webhook', async (req: Request, res: Response) => {
           where: { stripeSubscriptionId: sub.id },
           data: updateData
         })
+
+        if (sub.status === 'active') {
+          await (prisma.project as any).update({
+            where: { id: projectId },
+            data: { status: 'ACTIVE' },
+          })
+        }
         break
       }
 
