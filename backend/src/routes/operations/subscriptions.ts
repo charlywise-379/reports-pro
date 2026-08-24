@@ -117,7 +117,7 @@ router.post('/:id/extend-trial', requireAdmin, async (req: Request, res: Respons
     const subscription = await prisma.subscription.findUnique({ where: { id } })
     if (!subscription) return res.status(404).json({ error: 'Suscripción no encontrada' })
 
-    const currentTrialEnd = subscription.trialEndsAt > new Date() ? subscription.trialEndsAt : new Date()
+    const currentTrialEnd = subscription.trialEndsAt && subscription.trialEndsAt > new Date() ? subscription.trialEndsAt : new Date()
     const newTrialEnd = new Date(currentTrialEnd.getTime() + parsed.data.days * 24 * 60 * 60 * 1000)
 
     const updated = await prisma.subscription.update({

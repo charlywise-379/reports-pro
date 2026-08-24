@@ -63,6 +63,7 @@ model User {
   suspendedReason  String?
   createdAt        DateTime       @default(now())
   updatedAt        DateTime       @updatedAt
+  freeReportUsedAt DateTime?
   projects         Project[]
   subscriptions    Subscription[]
 
@@ -227,7 +228,7 @@ model Subscription {
   frequency              ReportFrequency
   pricePerMonth          Float
   trialStartedAt         DateTime           @default(now())
-  trialEndsAt            DateTime
+  trialEndsAt            DateTime?
   cancelledAt            DateTime?
   cancelReason           String?
   createdAt              DateTime           @default(now())
@@ -241,6 +242,7 @@ model Report {
   projectId        String
   project          Project           @relation(fields: [projectId], references: [id], onDelete: Cascade)
   status           ReportStatus      @default(QUEUED)
+  isTeaser         Boolean           @default(false)
   claudeModel      String?
   promptTokens     Int?
   completionTokens Int?
