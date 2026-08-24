@@ -8,6 +8,13 @@
   *{box-sizing:border-box;margin:0;padding:0;-webkit-print-color-adjust:exact;print-color-adjust:exact}
   body{font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;background:#fff;color:#1A1730;font-size:12px;line-height:1.4}
   .page{width:297mm;min-height:210mm;padding:0;background:#fff;page-break-after:always;position:relative;overflow:hidden}
+  .teaser-overlay{display:none}
+  body.is-teaser .page:nth-of-type(n+6){filter:blur(6px);pointer-events:none}
+  body.is-teaser .page:nth-of-type(n+6) .teaser-overlay{
+    display:flex;position:absolute;inset:0;align-items:center;justify-content:center;
+    background:rgba(255,255,255,.35);font-size:24px;font-weight:700;color:#1c2333;text-align:center;
+    z-index:10;padding:40px;
+  }
   .page:last-child{page-break-after:auto}
   @media print{.page{page-break-after:always;width:297mm;height:210mm}}
   @page{size:A4 landscape;margin:0}
@@ -35,7 +42,7 @@
   tr:nth-child(even){background:#FAFAFA}
 </style>
 </head>
-<body><!-- ═══════════════════════════════════════════
+<body class="{{bodyClass}}"><!-- ═══════════════════════════════════════════
      PÁG 1 — EXECUTIVE SUMMARY
 ═══════════════════════════════════════════ -->
 <div class="page">
@@ -567,6 +574,7 @@
     </div>
   </div>
   <div class="footer"><div class="footer-l">Omni Reports · Confidencial · No distribuir</div><div class="footer-r">{{companyName}} · Reporte #{{edition}} · {{year}} · Pág. 6 de 11</div></div>
+  <div class="teaser-overlay">Activa tu suscripción para el reporte completo</div>
 </div>
 
 
@@ -667,6 +675,7 @@
     </div>
   </div>
   <div class="footer"><div class="footer-l">Omni Reports · Confidencial · No distribuir</div><div class="footer-r">{{companyName}} · Reporte #{{edition}} · {{year}} · Pág. 7 de 11</div></div>
+  <div class="teaser-overlay">Activa tu suscripción para el reporte completo</div>
 </div>
 
 
@@ -721,6 +730,7 @@
     </div>
   </div>
   <div class="footer"><div class="footer-l">Omni Reports · Confidencial · No distribuir</div><div class="footer-r">{{companyName}} · Reporte #{{edition}} · {{year}} · Pág. 8 de 11</div></div>
+  <div class="teaser-overlay">Activa tu suscripción para el reporte completo</div>
 </div>
 
 
@@ -774,6 +784,7 @@
     </div>
   </div>
   <div class="footer"><div class="footer-l">Omni Reports · Confidencial · No distribuir</div><div class="footer-r">{{companyName}} · Reporte #{{edition}} · {{year}} · Pág. 9 de 11</div></div>
+  <div class="teaser-overlay">Activa tu suscripción para el reporte completo</div>
 </div>
 
 
@@ -808,6 +819,7 @@
     </div>
   </div>
   <div class="footer"><div class="footer-l">Omni Reports · Confidencial · No distribuir</div><div class="footer-r">{{companyName}} · Reporte #{{edition}} · {{year}} · Pág. 10 de 11</div></div>
+  <div class="teaser-overlay">Activa tu suscripción para el reporte completo</div>
 </div>
 
 
@@ -875,6 +887,7 @@
     </div>
   </div>
   <div class="footer"><div class="footer-l">Omni Reports · Confidencial · No distribuir</div><div class="footer-r">{{companyName}} · Reporte #{{edition}} · {{year}} · Pág. 11 de 11 · Fin del reporte</div></div>
+  <div class="teaser-overlay">Activa tu suscripción para el reporte completo</div>
 </div>
 
 </body>

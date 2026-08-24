@@ -11,6 +11,7 @@ const anthropic = new Anthropic({
 
 // ─── Tipos ───────────────────────────────────────────
 interface ReportData {
+  bodyClass: string
   companyName: string
   industry: string
   targetMarket: string
@@ -758,7 +759,7 @@ const ACTION_COLORS: Record<string, { color: string; borderColor: string }> = {
 }
 
 // ─── Construir ReportData desde respuesta de Claude ──
-function buildReportData(project: any, aiData: any, dateInfo: any, editionNumber: number): ReportData {
+function buildReportData(project: any, aiData: any, dateInfo: any, editionNumber: number, teaser: boolean): ReportData {
   const now = new Date()
   const nextReport = getNextReportDate(project.frequency, now)
   const companyName = project.companyName || project.name || 'Tu Empresa'
@@ -1019,6 +1020,8 @@ function buildReportData(project: any, aiData: any, dateInfo: any, editionNumber
   </div>`
 
   return {
+    bodyClass: teaser ? 'is-teaser' : '',
+
     // Meta
     companyName,
     industry,
@@ -1331,7 +1334,7 @@ function getFrequencyLabel(frequency: string): string {
 }
 
 // ─── Función principal: generar PDF ──────────────────
-export async function generateReport(project: any, outputPath: string): Promise<string> {
+export async function generateReport(project: any, outputPath: string, options?: { teaser?: boolean }): Promise<string> {
   console.log(`📄 Generando reporte REAL para: ${project.companyName || project.name || 'Sin nombre'}`)
 
   const now = new Date()
@@ -1375,7 +1378,7 @@ export async function generateReport(project: any, outputPath: string): Promise<
 
   // 2. Construir datos completos del reporte
   const editionNumber = await prisma.report.count({ where: { projectId: project.id, status: 'COMPLETED' as any } }) + 1
-  const data = buildReportData(project, aiData, dateInfo, editionNumber)
+  const data = buildReportData(project, aiData, dateInfo, editionNumber, options?.teaser === true)
 
   // 3. Cargar y renderizar template
   const templatePath = path.join(__dirname, '../templates/competitive-report.html')
