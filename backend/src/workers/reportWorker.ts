@@ -37,11 +37,11 @@ export function startReportWorker() {
         where: { id: project.userId },
         select: { freeReportUsedAt: true },
       })
-      const esTrial = trialVigente || (sub?.status || '').toLowerCase() === 'trialing' || !sub
-      const esTeaser = esTrial && !user?.freeReportUsedAt
+      const hasPaid = (sub?.status || '').toLowerCase() === 'active'
+      const isTeaser = !hasPaid && !user?.freeReportUsedAt
 
-      if (esTrial && user?.freeReportUsedAt) {
-        console.log(`[Worker] Usuario ${project.userId} ya uso su reporte gratis — saltando`)
+      if (!hasPaid && user?.freeReportUsedAt) {
+        console.log(`[Worker] User ${project.userId} already used their free report — skipping`)
         return { skipped: true, reason: 'free_report_already_used' }
       }
 
@@ -81,10 +81,10 @@ export function startReportWorker() {
           reportId: reportRecord.id,
         }
 
-        await generateReport(projectWithSetup, outputPath, { teaser: esTeaser })
+        await generateReport(projectWithSetup, outputPath, { teaser: isTeaser })
         const signedUrl = await uploadPDFToR2(outputPath, filename)
 
-        if (esTeaser) {
+        if (isTeaser) {
           await prisma.$transaction([
             prisma.report.update({
               where: { id: reportRecord.id },
