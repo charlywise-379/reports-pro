@@ -33,6 +33,18 @@ export function startReportWorker() {
         return { skipped: true, reason: 'no_active_subscription' }
       }
 
+      const user = await prisma.user.findUnique({
+        where: { id: project.userId },
+        select: { freeReportUsedAt: true },
+      })
+      const esTrial = trialVigente || (sub?.status || '').toLowerCase() === 'trialing' || !sub
+      const esTeaser = esTrial && !user?.freeReportUsedAt
+
+      if (esTrial && user?.freeReportUsedAt) {
+        console.log(`[Worker] Usuario ${project.userId} ya uso su reporte gratis — saltando`)
+        return { skipped: true, reason: 'free_report_already_used' }
+      }
+
       // Verificar restriccion por frecuencia
       const lastReport = await prisma.report.findFirst({
         where: { projectId, status: 'COMPLETED' as any },
@@ -69,18 +81,37 @@ export function startReportWorker() {
           reportId: reportRecord.id,
         }
 
-        await generateReport(projectWithSetup, outputPath)
+        await generateReport(projectWithSetup, outputPath, { teaser: esTeaser })
         const signedUrl = await uploadPDFToR2(outputPath, filename)
 
-        await prisma.report.update({
-          where: { id: reportRecord.id },
-          data: {
-            status: 'COMPLETED' as any,
-            pdfSizeBytes: fs.statSync(outputPath).size,
-            r2Key: 'reports/' + filename,
-            r2Url: signedUrl,
-          }
-        })
+        if (esTeaser) {
+          await prisma.$transaction([
+            prisma.report.update({
+              where: { id: reportRecord.id },
+              data: {
+                status: 'COMPLETED' as any,
+                pdfSizeBytes: fs.statSync(outputPath).size,
+                r2Key: 'reports/' + filename,
+                r2Url: signedUrl,
+                isTeaser: true,
+              }
+            }),
+            prisma.user.update({
+              where: { id: project.userId },
+              data: { freeReportUsedAt: new Date() },
+            }),
+          ])
+        } else {
+          await prisma.report.update({
+            where: { id: reportRecord.id },
+            data: {
+              status: 'COMPLETED' as any,
+              pdfSizeBytes: fs.statSync(outputPath).size,
+              r2Key: 'reports/' + filename,
+              r2Url: signedUrl,
+            }
+          })
+        }
 
         const setup = (project as any).competitiveSetup
         const companyName = setup?.companyName || 'Tu empresa'
