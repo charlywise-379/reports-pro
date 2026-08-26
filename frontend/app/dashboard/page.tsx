@@ -59,6 +59,35 @@ export default function DashboardPage() {
   const [inviteEmails, setInviteEmails] = useState('')
   const [inviteSent, setInviteSent] = useState(false)
   const [stripeConfirmado, setStripeConfirmado] = useState(false)
+  const [endingTrial, setEndingTrial] = useState(false)
+
+  const handleEndTrial = async () => {
+    if (!user) return
+    setEndingTrial(true)
+    try {
+      const { data: { session: s2 } } = await supabase.auth.getSession()
+      if (!s2) return
+      const res = await fetch(`${BACKEND}/api/account/${user.id}/end-trial`, {
+        method: 'POST',
+        headers: { 'Authorization': 'Bearer ' + s2.access_token },
+      })
+      const data = await res.json()
+      if (data.status === 'active') {
+        const dashRes = await fetch(BACKEND + '/api/dashboard/' + user.id, {
+          headers: { 'Authorization': 'Bearer ' + s2.access_token }
+        })
+        setDashData(await dashRes.json())
+      } else if (data.status === 'past_due') {
+        alert('Tu tarjeta fue rechazada. Actualiza tu método de pago para activar tu plan.')
+      } else if (data.error) {
+        alert('Error: ' + data.error)
+      }
+    } catch (e: any) {
+      alert('Error: ' + e.message)
+    } finally {
+      setEndingTrial(false)
+    }
+  }
   // Bug #5: Modal de confirmación antes de generar
   const [showConfirmModal, setShowConfirmModal] = useState(false)
   // Bug #6: Modal elegante de límite de frecuencia
@@ -505,7 +534,15 @@ export default function DashboardPage() {
                 {tieneStripe ? (
                   <span style={{ fontSize:11, color:'#6EE7A4', fontWeight:700, background:'rgba(110,231,164,0.1)', border:'1px solid rgba(110,231,164,0.2)', borderRadius:20, padding:'3px 10px' }}>✓ Plan {frequency} activo</span>
                 ) : (
-                  <span style={{ fontSize:11, color:'#F2C063', fontWeight:700, background:'rgba(242,192,99,0.1)', border:'1px solid rgba(242,192,99,0.2)', borderRadius:20, padding:'3px 10px' }}>Trial · {trialDaysLeft} días restantes</span>
+                  <>
+                    <span style={{ fontSize:11, color:'#F2C063', fontWeight:700, background:'rgba(242,192,99,0.1)', border:'1px solid rgba(242,192,99,0.2)', borderRadius:20, padding:'3px 10px' }}>Trial · {trialDaysLeft} días restantes</span>
+                    {dashData?.subscription?.status === 'TRIALING' && (
+                      <button onClick={handleEndTrial} disabled={endingTrial}
+                        style={{ fontSize:11, fontWeight:700, color:'#8B7BFF', background:'rgba(139,123,255,0.1)', border:'1px solid rgba(139,123,255,0.25)', borderRadius:20, padding:'3px 10px', cursor: endingTrial ? 'not-allowed' : 'pointer' }}>
+                        {endingTrial ? 'Activando...' : 'Activar ahora'}
+                      </button>
+                    )}
+                  </>
                 )}
               </div>
             </div>

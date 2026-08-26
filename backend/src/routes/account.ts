@@ -148,4 +148,24 @@ router.get('/:userId/invoices', requireAuth, async (req: Request, res: Response)
   }
 })
 
+router.post('/:userId/end-trial', requireAuth, async (req: Request, res: Response) => {
+  try {
+    const { userId } = req.params
+    if (userId !== req.userId) {
+      return res.status(403).json({ error: 'No tienes permiso para esta cuenta' })
+    }
+
+    const sub = await prisma.subscription.findFirst({ where: { userId } })
+    if (!sub?.stripeSubscriptionId || sub.status !== 'TRIALING') {
+      return res.status(400).json({ error: 'No hay un trial activo para terminar' })
+    }
+
+    const updated = await stripe.subscriptions.update(sub.stripeSubscriptionId, { trial_end: 'now' })
+
+    res.json({ status: updated.status })
+  } catch (e: any) {
+    res.status(500).json({ error: e.message })
+  }
+})
+
 export default router
