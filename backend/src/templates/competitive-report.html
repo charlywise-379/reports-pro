@@ -10,9 +10,10 @@
   .page{width:297mm;min-height:210mm;padding:0;background:#fff;page-break-after:always;position:relative;overflow:hidden}
   .teaser-overlay{display:none}
   body.is-teaser .page:nth-of-type(n+6){pointer-events:none}
+  body.is-teaser .page:nth-of-type(n+6) .page-content{filter:blur(6px)}
   body.is-teaser .page:nth-of-type(n+6) .teaser-overlay{
     display:flex;position:absolute;inset:0;align-items:center;justify-content:center;
-    background:rgba(255,255,255,.35);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);
+    background:rgba(255,255,255,.35);
     font-size:24px;font-weight:700;color:#1c2333;text-align:center;
     z-index:10;padding:40px;
   }
@@ -463,6 +464,7 @@
      PÁG 6 — PLAN 30 DÍAS + TERMÓMETROS
 ═══════════════════════════════════════════ -->
 <div class="page">
+  <div class="page-content">
   <div class="hdr"><div class="hdr-logo"><div class="hdr-badge"><img src="{{logoBase64}}" alt="Omni Reports"></div><div><div class="hdr-name">Omni Reports · AI Automation</div><div class="hdr-sub">INTELIGENCIA COMPETITIVA</div></div></div><div class="hdr-right"><div class="hdr-meta">{{companyName}} · Reporte #{{edition}} · {{year}}</div><div class="hdr-pag">Pág. 6 de 11</div></div></div>
   <div style="background:linear-gradient(135deg,#1A1730,#2A1F4E);padding:10px 28px;border-bottom:2px solid #8B7BFF">
     <div style="display:flex;justify-content:space-between;align-items:center">
@@ -575,6 +577,7 @@
     </div>
   </div>
   <div class="footer"><div class="footer-l">Omni Reports · Confidencial · No distribuir</div><div class="footer-r">{{companyName}} · Reporte #{{edition}} · {{year}} · Pág. 6 de 11</div></div>
+  </div>
   <div class="teaser-overlay">Activa tu suscripción para el reporte completo</div>
 </div>
 
@@ -583,6 +586,7 @@
      PÁG 7 — INTELIGENCIA COMERCIAL
 ═══════════════════════════════════════════ -->
 <div class="page">
+  <div class="page-content">
   <div class="hdr"><div class="hdr-logo"><div class="hdr-badge"><img src="{{logoBase64}}" alt="Omni Reports"></div><div><div class="hdr-name">Omni Reports · AI Automation</div><div class="hdr-sub">INTELIGENCIA COMPETITIVA</div></div></div><div class="hdr-right"><div class="hdr-meta">{{companyName}} · Reporte #{{edition}} · {{year}}</div><div class="hdr-pag">Pág. 7 de 11</div></div></div>
   <div class="title-band"><div><span class="title-bar"></span><span class="title-text">Inteligencia Comercial</span></div><div class="title-sub">Dónde están ganando dinero tus competidores · Reporte #{{edition}} · {{year}}</div></div>
   <div class="body-wrap">
@@ -676,6 +680,7 @@
     </div>
   </div>
   <div class="footer"><div class="footer-l">Omni Reports · Confidencial · No distribuir</div><div class="footer-r">{{companyName}} · Reporte #{{edition}} · {{year}} · Pág. 7 de 11</div></div>
+  </div>
   <div class="teaser-overlay">Activa tu suscripción para el reporte completo</div>
 </div>
 
@@ -684,6 +689,7 @@
      PÁG 8 — OPORTUNIDADES
 ═══════════════════════════════════════════ -->
 <div class="page">
+  <div class="page-content">
   <div class="hdr"><div class="hdr-logo"><div class="hdr-badge"><img src="{{logoBase64}}" alt="Omni Reports"></div><div><div class="hdr-name">Omni Reports · AI Automation</div><div class="hdr-sub">INTELIGENCIA COMPETITIVA</div></div></div><div class="hdr-right"><div class="hdr-meta">{{companyName}} · Reporte #{{edition}} · {{year}}</div><div class="hdr-pag">Pág. 8 de 11</div></div></div>
   <div style="background:linear-gradient(135deg,#0A3D2B,#1A1730);padding:10px 28px;border-bottom:2px solid #1D9E75">
     <div style="display:flex;justify-content:space-between;align-items:center">
@@ -731,6 +737,7 @@
     </div>
   </div>
   <div class="footer"><div class="footer-l">Omni Reports · Confidencial · No distribuir</div><div class="footer-r">{{companyName}} · Reporte #{{edition}} · {{year}} · Pág. 8 de 11</div></div>
+  </div>
   <div class="teaser-overlay">Activa tu suscripción para el reporte completo</div>
 </div>
 
@@ -739,6 +746,7 @@
      PÁG 9 — RIESGOS ESTRATÉGICOS
 ═══════════════════════════════════════════ -->
 <div class="page">
+  <div class="page-content">
   <div class="hdr"><div class="hdr-logo"><div class="hdr-badge"><img src="{{logoBase64}}" alt="Omni Reports"></div><div><div class="hdr-name">Omni Reports · AI Automation</div><div class="hdr-sub">INTELIGENCIA COMPETITIVA</div></div></div><div class="hdr-right"><div class="hdr-meta">{{companyName}} · Reporte #{{edition}} · {{year}}</div><div class="hdr-pag">Pág. 9 de 11</div></div></div>
   <div style="background:linear-gradient(135deg,#2D0A0A,#1A1730);padding:10px 28px;border-bottom:2px solid #E24B4A">
     <div style="display:flex;justify-content:space-between;align-items:center">
@@ -785,6 +793,7 @@
     </div>
   </div>
   <div class="footer"><div class="footer-l">Omni Reports · Confidencial · No distribuir</div><div class="footer-r">{{companyName}} · Reporte #{{edition}} · {{year}} · Pág. 9 de 11</div></div>
+  </div>
   <div class="teaser-overlay">Activa tu suscripción para el reporte completo</div>
 </div>
 
@@ -793,6 +802,7 @@
      PÁG 10 — BENCHMARK ESTRATÉGICO
 ═══════════════════════════════════════════ -->
 <div class="page">
+  <div class="page-content">
   <div class="hdr"><div class="hdr-logo"><div class="hdr-badge"><img src="{{logoBase64}}" alt="Omni Reports"></div><div><div class="hdr-name">Omni Reports · AI Automation</div><div class="hdr-sub">INTELIGENCIA COMPETITIVA</div></div></div><div class="hdr-right"><div class="hdr-meta">{{companyName}} · Reporte #{{edition}} · {{year}}</div><div class="hdr-pag">Pág. 10 de 11</div></div></div>
   <div class="title-band"><div><span class="title-bar"></span><span class="title-text">Benchmark Estratégico</span></div><div class="title-sub">Tu empresa vs el mercado · 8 factores clave · Semana {{weekNumber}}</div></div>
   <div class="body-wrap">
@@ -820,6 +830,7 @@
     </div>
   </div>
   <div class="footer"><div class="footer-l">Omni Reports · Confidencial · No distribuir</div><div class="footer-r">{{companyName}} · Reporte #{{edition}} · {{year}} · Pág. 10 de 11</div></div>
+  </div>
   <div class="teaser-overlay">Activa tu suscripción para el reporte completo</div>
 </div>
 
@@ -828,6 +839,7 @@
      PÁG 11 — RECOMENDACIONES EJECUTABLES
 ═══════════════════════════════════════════ -->
 <div class="page">
+  <div class="page-content">
   <div class="hdr"><div class="hdr-logo"><div class="hdr-badge"><img src="{{logoBase64}}" alt="Omni Reports"></div><div><div class="hdr-name">Omni Reports · AI Automation</div><div class="hdr-sub">INTELIGENCIA COMPETITIVA</div></div></div><div class="hdr-right"><div class="hdr-meta">{{companyName}} · Reporte #{{edition}} · {{year}}</div><div class="hdr-pag">Pág. 11 de 11</div></div></div>
   <div class="title-band"><div><span class="title-bar"></span><span class="title-text">Recomendaciones Ejecutables</span></div><div class="title-sub">No teoría. Acción inmediata. · Responsable + Tiempo estimado + Impacto</div></div>
   <div class="body-wrap">
@@ -888,6 +900,7 @@
     </div>
   </div>
   <div class="footer"><div class="footer-l">Omni Reports · Confidencial · No distribuir</div><div class="footer-r">{{companyName}} · Reporte #{{edition}} · {{year}} · Pág. 11 de 11 · Fin del reporte</div></div>
+  </div>
   <div class="teaser-overlay">Activa tu suscripción para el reporte completo</div>
 </div>
 
