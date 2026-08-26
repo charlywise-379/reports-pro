@@ -539,15 +539,13 @@ export default function DashboardPage() {
                 {tieneStripe ? (
                   <span style={{ fontSize:11, color:'#6EE7A4', fontWeight:700, background:'rgba(110,231,164,0.1)', border:'1px solid rgba(110,231,164,0.2)', borderRadius:20, padding:'3px 10px' }}>✓ Plan {frequency} activo</span>
                 ) : (
-                  <>
-                    <span style={{ fontSize:11, color:'#F2C063', fontWeight:700, background:'rgba(242,192,99,0.1)', border:'1px solid rgba(242,192,99,0.2)', borderRadius:20, padding:'3px 10px' }}>Trial · {trialDaysLeft} días restantes</span>
-                    {dashData?.subscription?.status === 'TRIALING' && (
-                      <button onClick={handleEndTrial} disabled={endingTrial}
-                        style={{ fontSize:11, fontWeight:700, color:'#8B7BFF', background:'rgba(139,123,255,0.1)', border:'1px solid rgba(139,123,255,0.25)', borderRadius:20, padding:'3px 10px', cursor: endingTrial ? 'not-allowed' : 'pointer' }}>
-                        {endingTrial ? 'Activando...' : 'Activar ahora'}
-                      </button>
-                    )}
-                  </>
+                  <span style={{ fontSize:11, color:'#F2C063', fontWeight:700, background:'rgba(242,192,99,0.1)', border:'1px solid rgba(242,192,99,0.2)', borderRadius:20, padding:'3px 10px' }}>Trial · {trialDaysLeft} días restantes</span>
+                )}
+                {dashData?.subscription?.status === 'TRIALING' && dashData?.subscription?.stripeSubscriptionId != null && (
+                  <button onClick={handleEndTrial} disabled={endingTrial}
+                    style={{ fontSize:11, fontWeight:700, color:'#8B7BFF', background:'rgba(139,123,255,0.1)', border:'1px solid rgba(139,123,255,0.25)', borderRadius:20, padding:'3px 10px', cursor: endingTrial ? 'not-allowed' : 'pointer' }}>
+                    {endingTrial ? 'Activando...' : 'Activar ahora'}
+                  </button>
                 )}
               </div>
             </div>
