@@ -38,7 +38,7 @@ router.post('/create-checkout-session', async (req: Request, res: Response) => {
 
     // Verificar si el usuario ya uso su trial
     const existingSubCheck = await (prisma.subscription as any).findFirst({ where: { projectId: project.id } })
-    const yaUsoTrial = existingSubCheck?.trialStartedAt != null
+    const yaUsoTrial = existingSubCheck?.stripeSubscriptionId != null
 
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
@@ -237,6 +237,7 @@ router.get('/verify-session/:sessionId', async (req: Request, res: Response) => 
     if (!sub || typeof sub === 'string') return res.json({ ready: false, reason: 'no_subscription' })
     const proj = await (prisma.project as any).findUnique({ where: { id: projectId } })
     const freq = proj?.frequency || 'WEEKLY'
+    const localStatus = sub.status === 'active' ? 'ACTIVE' : 'TRIALING'
     await (prisma.subscription as any).upsert({
       where: { projectId },
       create: {
@@ -244,19 +245,19 @@ router.get('/verify-session/:sessionId', async (req: Request, res: Response) => 
         stripeCustomerId: session.customer,
         stripeSubscriptionId: sub.id,
         stripePriceId: sub.items?.data[0]?.price?.id || '',
-        status: 'TRIALING', frequency: freq,
+        status: localStatus, frequency: freq,
         pricePerMonth: getPriceAmountMXN(sub.items?.data[0]?.price?.id),
-        trialEndsAt: sub.trial_end ? new Date(sub.trial_end * 1000) : new Date(Date.now() + 7*24*60*60*1000),
+        trialEndsAt: sub.trial_end ? new Date(sub.trial_end * 1000) : null,
       },
       update: {
         stripeCustomerId: session.customer,
         stripeSubscriptionId: sub.id,
         stripePriceId: sub.items?.data[0]?.price?.id || '',
-        status: sub.status === 'trialing' ? 'TRIALING' : 'ACTIVE',
+        status: localStatus,
         trialEndsAt: sub.trial_end ? new Date(sub.trial_end * 1000) : undefined,
       }
     })
-    await (prisma.project as any).update({ where: { id: projectId }, data: { status: 'TRIAL' } })
+    await (prisma.project as any).update({ where: { id: projectId }, data: { status: localStatus === 'ACTIVE' ? 'ACTIVE' : 'TRIAL' } })
     console.log('[VerifySession] OK:', projectId)
     res.json({ ready: true, projectId, status: sub.status })
   } catch (e: any) {
