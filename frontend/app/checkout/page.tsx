@@ -48,7 +48,7 @@ export default function CheckoutPage() {
     })
   }, [])
 
-  const handleCheckout = async () => {
+  const handleCheckout = async (skipTrial: boolean = false) => {
     if (!user) return
     setLoading(true)
     const plan = PLANS.find(p => p.key === selected)!
@@ -59,13 +59,14 @@ export default function CheckoutPage() {
       billing_cycle: billing,
       price_usd: price,
       is_reactivation: isExpired,
+      skip_trial: skipTrial,
     })
 
     try {
       const res = await fetch(`${BACKEND}/api/stripe/create-checkout-session`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId: user.id, priceId, billingCycle: billing })
+        body: JSON.stringify({ userId: user.id, priceId, billingCycle: billing, skipTrial })
       })
       const data = await res.json()
       if (data.url) window.location.href = data.url
@@ -135,10 +136,16 @@ export default function CheckoutPage() {
       </div>
 
       {/* Botón activar */}
-      <button onClick={handleCheckout} disabled={loading}
+      <button onClick={() => handleCheckout(false)} disabled={loading}
         style={{ background:'linear-gradient(135deg,#8B7BFF,#5DD4D4)', border:'none', borderRadius:20, padding:'14px 40px', color:'#0D0F1A', fontSize:15, fontWeight:900, cursor: loading ? 'not-allowed' : 'pointer', opacity: loading ? 0.7 : 1, marginBottom:12 }}>
         {loading ? 'Redirigiendo a Stripe...' : isExpired ? 'Activar ahora →' : 'Activar gratis por 7 días →'}
       </button>
+      {!isExpired && (
+        <button onClick={() => handleCheckout(true)} disabled={loading}
+          style={{ background:'transparent', border:'none', color:'#9CA3AF', fontSize:12, fontWeight:600, cursor: loading ? 'not-allowed' : 'pointer', textDecoration:'underline', marginBottom:12 }}>
+          Omitir prueba y pagar ahora
+        </button>
+      )}
       <p style={{ fontSize:11, color:'#5A627A' }}>{isExpired ? 'Powered by Stripe · Pago 100% seguro' : 'Powered by Stripe · Pago 100% seguro · Tu tarjeta no se cobra hoy'}</p>
     </main>
   )

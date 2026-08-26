@@ -9,7 +9,7 @@ const router = Router()
 // POST /api/stripe/create-checkout-session
 router.post('/create-checkout-session', async (req: Request, res: Response) => {
   try {
-    const { userId, priceId, billingCycle } = req.body
+    const { userId, priceId, billingCycle, skipTrial } = req.body
 
     if (!userId || !priceId) {
       return res.status(400).json({ error: 'userId y priceId requeridos' })
@@ -46,7 +46,7 @@ router.post('/create-checkout-session', async (req: Request, res: Response) => {
       line_items: [{ price: priceId, quantity: 1 }],
       mode: 'subscription',
       subscription_data: {
-        ...(yaUsoTrial ? {} : { trial_period_days: 7 }),
+        ...(yaUsoTrial || skipTrial ? {} : { trial_period_days: 7 }),
         metadata: { userId, projectId: project.id, billingCycle: billingCycle || 'monthly' }
       },
       success_url: `${FRONTEND_URL}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
@@ -87,7 +87,8 @@ router.post('/webhook', async (req: Request, res: Response) => {
         const freq = proj?.frequency || 'WEEKLY'
 
         const priceId = sub.items.data[0].price.id
-        const trialEnd = sub.trial_end ? new Date(sub.trial_end * 1000) : new Date(Date.now() + 7*24*60*60*1000)
+        const trialEnd = sub.trial_end ? new Date(sub.trial_end * 1000) : null
+        const localStatus = sub.status === 'active' ? 'ACTIVE' : 'TRIALING'
 
         await prisma.subscription.upsert({
           where: { projectId },
@@ -97,7 +98,7 @@ router.post('/webhook', async (req: Request, res: Response) => {
             stripeCustomerId: session.customer,
             stripeSubscriptionId: session.subscription,
             stripePriceId: priceId,
-            status: 'TRIALING',
+            status: localStatus as any,
             frequency: freq,
             pricePerMonth: getPriceAmountMXN(priceId),
             trialEndsAt: trialEnd,
@@ -106,7 +107,7 @@ router.post('/webhook', async (req: Request, res: Response) => {
             stripeCustomerId: session.customer,
             stripeSubscriptionId: session.subscription,
             stripePriceId: priceId,
-            status: 'TRIALING',
+            status: localStatus as any,
             pricePerMonth: getPriceAmountMXN(priceId),
             trialEndsAt: trialEnd,
           }
@@ -114,7 +115,7 @@ router.post('/webhook', async (req: Request, res: Response) => {
 
         await (prisma.project as any).update({
           where: { id: projectId },
-          data: { status: 'TRIAL' }
+          data: { status: localStatus === 'ACTIVE' ? 'ACTIVE' : 'TRIAL' }
         })
         break
       }
