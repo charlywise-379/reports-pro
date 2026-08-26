@@ -9,10 +9,11 @@
   body{font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;background:#fff;color:#1A1730;font-size:12px;line-height:1.4}
   .page{width:297mm;min-height:210mm;padding:0;background:#fff;page-break-after:always;position:relative;overflow:hidden}
   .teaser-overlay{display:none}
-  body.is-teaser .page:nth-of-type(n+6){filter:blur(6px);pointer-events:none}
+  body.is-teaser .page:nth-of-type(n+6){pointer-events:none}
   body.is-teaser .page:nth-of-type(n+6) .teaser-overlay{
     display:flex;position:absolute;inset:0;align-items:center;justify-content:center;
-    background:rgba(255,255,255,.35);font-size:24px;font-weight:700;color:#1c2333;text-align:center;
+    background:rgba(255,255,255,.35);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);
+    font-size:24px;font-weight:700;color:#1c2333;text-align:center;
     z-index:10;padding:40px;
   }
   .page:last-child{page-break-after:auto}
