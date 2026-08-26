@@ -73,10 +73,15 @@ export default function DashboardPage() {
       })
       const data = await res.json()
       if (data.status === 'active') {
-        const dashRes = await fetch(BACKEND + '/api/dashboard/' + user.id, {
-          headers: { 'Authorization': 'Bearer ' + s2.access_token }
-        })
-        setDashData(await dashRes.json())
+        for (let attempt = 0; attempt < 5; attempt++) {
+          const dashRes = await fetch(BACKEND + '/api/dashboard/' + user.id, {
+            headers: { 'Authorization': 'Bearer ' + s2.access_token }
+          })
+          const freshData = await dashRes.json()
+          setDashData(freshData)
+          if (freshData?.subscription?.status !== 'TRIALING') break
+          if (attempt < 4) await new Promise(resolve => setTimeout(resolve, 1500))
+        }
       } else if (data.status === 'past_due') {
         alert('Tu tarjeta fue rechazada. Actualiza tu método de pago para activar tu plan.')
       } else if (data.error) {
