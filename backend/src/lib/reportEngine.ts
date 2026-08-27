@@ -120,7 +120,7 @@ interface ReportData {
 function calcGauge(value: number) {
   const angle = -180 + (value / 100) * 180
   const rad = (angle * Math.PI) / 180
-  const cx = 180, cy = 180, r = 140
+  const cx = 170, cy = 175, r = 130
   const endX = cx + r * Math.cos(rad)
   const endY = cy + r * Math.sin(rad)
   const needleX = Math.round(cx + 110 * Math.cos(rad))
