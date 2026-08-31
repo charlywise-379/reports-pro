@@ -73,6 +73,10 @@ router.post('/', requireAdmin, async (req: Request, res: Response) => {
 
     if (!created) return res.status(409).json({ error: 'No se pudo generar un codigo unico, intenta de nuevo' })
 
+    await prisma.auditLog.create({
+      data: { userId: req.adminId!, event: 'admin_create_promo_code', metadata: { promoCodeId: created.id, code: created.code, maxRedemptions: created.maxRedemptions } },
+    })
+
     res.status(201).json({ success: true, code: created })
   } catch (e: any) {
     if (e.code === 'P2002') {
@@ -92,6 +96,11 @@ router.patch('/:id/toggle', requireAdmin, async (req: Request, res: Response) =>
       where: { id: req.params.id },
       data: { active: !existing.active },
     })
+
+    await prisma.auditLog.create({
+      data: { userId: req.adminId!, event: 'admin_toggle_promo_code', metadata: { promoCodeId: updated.id, code: updated.code, active: updated.active } },
+    })
+
     res.json({ success: true, active: updated.active })
   } catch (e: any) {
     res.status(500).json({ error: e.message })
