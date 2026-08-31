@@ -640,8 +640,8 @@ export default function Home() {
           </div>
           <p className="text-gray-600 text-sm">© 2026 Omni Reports · Hecho con ❤️ en Monterrey, México 🇲🇽</p>
           <div className="flex items-center gap-6 text-gray-600 text-sm">
-            <a href="#" className="hover:text-gray-400 transition-colors">Privacidad</a>
-            <a href="#" className="hover:text-gray-400 transition-colors">Términos</a>
+            <Link href="/legal/aviso-de-privacidad" className="hover:text-gray-400 transition-colors">Privacidad</Link>
+            <Link href="/legal/terminos-y-condiciones" className="hover:text-gray-400 transition-colors">Términos</Link>
             <a href="#" className="hover:text-gray-400 transition-colors">Contacto</a>
           </div>
         </div>

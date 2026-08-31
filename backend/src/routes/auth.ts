@@ -5,9 +5,12 @@ import { prisma } from '../lib/prisma'
 
 const router = Router()
 
+// Version del Aviso de Privacidad / Terminos y Condiciones vigente al momento del registro
+const LEGAL_DOCS_VERSION = '2026-08-31'
+
 router.post('/register', async (req: Request, res: Response) => {
   try {
-    const { firstName, lastName, email, password, phone, company, city, state, country } = req.body
+    const { firstName, lastName, email, password, phone, company, city, state, country, acceptedTerms } = req.body
 
     if (typeof firstName !== 'string' || !firstName.trim()) {
       return res.status(400).json({ error: 'Nombre requerido' })
@@ -20,6 +23,9 @@ router.post('/register', async (req: Request, res: Response) => {
     }
     if (typeof password !== 'string' || password.length < 6) {
       return res.status(400).json({ error: 'La contraseña debe tener al menos 6 caracteres' })
+    }
+    if (acceptedTerms !== true) {
+      return res.status(400).json({ error: 'Debes aceptar el Aviso de Privacidad y los Términos y Condiciones' })
     }
 
     const fullName = `${firstName.trim()} ${lastName.trim()}`
@@ -75,6 +81,19 @@ router.post('/register', async (req: Request, res: Response) => {
       })
     } catch (userCreateError) {
       console.error('Error creando User en Prisma tras registro en Supabase:', userCreateError)
+    }
+
+    try {
+      const ip = (req.headers['x-forwarded-for'] as string)?.split(',')[0]?.trim() || req.socket.remoteAddress || null
+      await prisma.auditLog.create({
+        data: {
+          userId: data.user.id,
+          event: 'terms_privacy_accepted',
+          metadata: { version: LEGAL_DOCS_VERSION, ip, context: 'register' },
+        },
+      })
+    } catch (auditError) {
+      console.error('Error registrando aceptación de términos:', auditError)
     }
 
     await sendConfirmationEmail(email.trim(), fullName, data.properties.action_link)

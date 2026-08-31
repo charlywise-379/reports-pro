@@ -15,6 +15,7 @@ export default function RegisterPage() {
   const [city, setCity] = useState('')
   const [state, setState] = useState('')
   const [country, setCountry] = useState('')
+  const [acceptedTerms, setAcceptedTerms] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState(false)
@@ -39,6 +40,10 @@ export default function RegisterPage() {
       setError('El apellido es requerido')
       return
     }
+    if (!acceptedTerms) {
+      setError('Debes aceptar el Aviso de Privacidad y los Términos y Condiciones')
+      return
+    }
     setLoading(true)
     setError('')
     try {
@@ -46,7 +51,7 @@ export default function RegisterPage() {
       const res = await fetch(`${BACKEND}/api/auth/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ firstName, lastName, email, password, phone, company, city, state, country }),
+        body: JSON.stringify({ firstName, lastName, email, password, phone, company, city, state, country, acceptedTerms: true }),
       })
       const result = await res.json()
       if (!res.ok) {
@@ -188,6 +193,17 @@ export default function RegisterPage() {
                   onKeyDown={e => e.key === 'Enter' && firstName.trim() && lastName.trim() && handleRegister()}
                   className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-violet-500/50 transition-all" />
               </div>
+              <label className="flex items-start gap-2.5 cursor-pointer select-none">
+                <input type="checkbox" checked={acceptedTerms} onChange={e => setAcceptedTerms(e.target.checked)}
+                  className="mt-0.5 h-4 w-4 rounded border-white/20 bg-white/5 accent-blue-600 flex-shrink-0" />
+                <span className="text-xs text-gray-400 leading-relaxed">
+                  He leído y acepto el{' '}
+                  <Link href="/legal/aviso-de-privacidad" target="_blank" className="text-blue-400 hover:text-blue-300 underline">Aviso de Privacidad</Link>
+                  {' '}y los{' '}
+                  <Link href="/legal/terminos-y-condiciones" target="_blank" className="text-blue-400 hover:text-blue-300 underline">Términos y Condiciones</Link>
+                  , incluyendo la política de no reembolso.
+                </span>
+              </label>
               {error && (
                 <div className="bg-red-500/10 border border-red-500/20 text-red-400 text-sm px-4 py-3 rounded-xl">{error}</div>
               )}
@@ -196,7 +212,7 @@ export default function RegisterPage() {
                   className="flex-shrink-0 bg-white/5 border border-white/10 text-white font-bold py-3.5 px-4 rounded-xl transition-all hover:bg-white/10 flex items-center justify-center gap-2">
                   <ArrowLeft size={16} />
                 </button>
-                <button onClick={handleRegister} disabled={loading || !firstName.trim() || !lastName.trim()}
+                <button onClick={handleRegister} disabled={loading || !firstName.trim() || !lastName.trim() || !acceptedTerms}
                   className="flex-1 bg-gradient-to-r from-blue-600 to-violet-600 text-white font-bold py-3.5 rounded-xl transition-all hover:shadow-lg hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2">
                   {loading ? <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : <><Sparkles size={16} />Crear cuenta y comenzar gratis<ArrowRight size={16} /></>}
                 </button>
