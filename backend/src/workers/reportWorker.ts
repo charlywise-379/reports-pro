@@ -39,9 +39,10 @@ export function startReportWorker() {
       })
       const hasPromoAccess = await (prisma as any).promoCodeRedemption.findUnique({ where: { projectId } }) != null
       const hasPaid = (sub?.status || '').toLowerCase() === 'active'
-      const isTeaser = !hasPaid && !hasPromoAccess && !user?.freeReportUsedAt
+      const isFreeReport = !hasPaid && !user?.freeReportUsedAt
+      const isTeaser = isFreeReport && !hasPromoAccess
 
-      if (!hasPaid && !hasPromoAccess && user?.freeReportUsedAt) {
+      if (!hasPaid && user?.freeReportUsedAt) {
         console.log(`[Worker] User ${project.userId} already used their free report — skipping`)
         return { skipped: true, reason: 'free_report_already_used' }
       }
@@ -85,7 +86,7 @@ export function startReportWorker() {
         await generateReport(projectWithSetup, outputPath, { teaser: isTeaser })
         const signedUrl = await uploadPDFToR2(outputPath, filename)
 
-        if (isTeaser) {
+        if (isFreeReport) {
           await prisma.$transaction([
             prisma.report.update({
               where: { id: reportRecord.id },
@@ -94,7 +95,7 @@ export function startReportWorker() {
                 pdfSizeBytes: fs.statSync(outputPath).size,
                 r2Key: 'reports/' + filename,
                 r2Url: signedUrl,
-                isTeaser: true,
+                isTeaser,
               }
             }),
             prisma.user.update({
