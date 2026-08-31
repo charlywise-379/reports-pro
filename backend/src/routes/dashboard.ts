@@ -30,6 +30,7 @@ router.get('/:userId', requireAuth, async (req: Request, res: Response) => {
             status: true,
             reportTitle: true,
             sectionsJson: true,
+            isTeaser: true,
           }
         }
       }

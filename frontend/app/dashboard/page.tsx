@@ -60,6 +60,7 @@ export default function DashboardPage() {
   const [inviteSent, setInviteSent] = useState(false)
   const [stripeConfirmado, setStripeConfirmado] = useState(false)
   const [endingTrial, setEndingTrial] = useState(false)
+  const [firstFullClicked, setFirstFullClicked] = useState(false)
 
   const handleEndTrial = async () => {
     if (!user) return
@@ -91,6 +92,28 @@ export default function DashboardPage() {
       alert('Error: ' + e.message)
     } finally {
       setEndingTrial(false)
+    }
+  }
+
+  const handleGenerateFirstFull = async () => {
+    if (!dashData?.project?.id) return
+    setFirstFullClicked(true)
+    startPolling()
+    try {
+      const res = await fetch(`${BACKEND}/api/reports/generate-first-full/${dashData.project.id}`, {
+        method: 'POST',
+        headers: { 'Authorization': 'Bearer ' + token }
+      })
+      const data = await res.json()
+      if (data.success) {
+        posthog.capture('first_full_report_generated', { project_id: dashData.project.id })
+      } else {
+        stopPolling()
+        alert(data.message || 'No se pudo generar el reporte. Intenta de nuevo más tarde.')
+      }
+    } catch (e: any) {
+      stopPolling()
+      alert('Error: ' + e.message)
     }
   }
   // Bug #5: Modal de confirmación antes de generar
@@ -472,6 +495,8 @@ export default function DashboardPage() {
 
   // Bloqueo trial vencido: si trialEndsAt ya paso Y no hay stripeSubscriptionId activo
   const tieneStripe = dashData?.subscription?.stripeSubscriptionId != null || stripeConfirmado
+  const tieneReporteCompleto = (dashData?.reports || []).some((r: any) => r.status === 'COMPLETED' && r.isTeaser === false)
+  const puedeGenerarPrimerCompleto = tieneStripe && !tieneReporteCompleto && !firstFullClicked
   const trialVencido = !tieneStripe &&
     dashData?.project?.trialEndsAt &&
     new Date(dashData.project.trialEndsAt) < new Date()
@@ -613,6 +638,20 @@ export default function DashboardPage() {
                 )}
                 {generating ? `Generando... ${Math.floor(countdown/60)}:${String(countdown%60).padStart(2,'0')}` : canGenerate ? 'Generar reporte' : 'No disponible aún'}
               </button>
+              {puedeGenerarPrimerCompleto && (
+                <button
+                  onClick={!generating ? handleGenerateFirstFull : undefined}
+                  disabled={generating}
+                  style={{
+                    width:'100%', padding:'11px 14px', borderRadius:20, border:'1px solid rgba(139,123,255,0.4)',
+                    fontSize:13, fontWeight:700, cursor: generating ? 'not-allowed' : 'pointer',
+                    background:'linear-gradient(135deg,#8B7BFF,#5DD4D4)', color:'#0D0F1A',
+                    display:'flex', alignItems:'center', justifyContent:'center', gap:8,
+                    opacity: generating ? 0.6 : 1
+                  }}>
+                  ✨ Generar tu primer reporte completo
+                </button>
+              )}
             </div>
           </div>
         </div>

@@ -84,6 +84,60 @@ router.post('/generate/:projectId', requireAuth, async (req: Request, res: Respo
   }
 })
 
+// POST /api/reports/generate-first-full/:projectId — genera el primer reporte
+// completo (sin blur) para un usuario recien activado, sin esperar el limite
+// de frecuencia normal. Solo aplica una vez: si ya existe un reporte completo
+// (isTeaser: false), este endpoint se rechaza y el flujo normal toma el control.
+router.post('/generate-first-full/:projectId', requireAuth, async (req: Request, res: Response) => {
+  const projectId = req.params.projectId as string
+  const userId = req.userId!
+  try {
+    const project = await prisma.project.findUnique({
+      where: { id: projectId },
+      include: { competitiveSetup: true },
+    })
+    if (!project) return res.status(404).json({ error: 'Proyecto no encontrado' })
+    if ((project as any).userId !== userId) return res.status(403).json({ error: 'No tienes permiso para generar este reporte' })
+
+    if ((project as any).status !== 'ACTIVE') {
+      return res.status(403).json({ error: 'not_active', message: 'Esta accion requiere una suscripcion activa.' })
+    }
+
+    const yaTieneReporteCompleto = await prisma.report.findFirst({
+      where: { projectId, status: 'COMPLETED' as any, isTeaser: false } as any,
+    })
+    if (yaTieneReporteCompleto) {
+      return res.status(409).json({ error: 'already_has_full_report', message: 'Este proyecto ya tiene un reporte completo.' })
+    }
+
+    const hayGenerando = await prisma.report.findFirst({
+      where: { projectId, status: 'GENERATING' as any }
+    })
+    if (hayGenerando) {
+      return res.status(429).json({ error: 'generating', message: 'Ya hay un reporte generándose. Espera a que termine.' })
+    }
+
+    const waiting = await reportQueue.getWaiting()
+    const active = await reportQueue.getActive()
+    const allPending = [...waiting, ...active]
+    const yaEnCola = allPending.some(j => j.data?.projectId === projectId)
+    if (yaEnCola) {
+      return res.status(429).json({ error: 'generating', message: 'Ya hay un reporte generándose. Espera a que termine.' })
+    }
+
+    const jobId = 'first-full-' + projectId + '-' + Date.now()
+    await reportQueue.add(
+      'generate-report',
+      { projectId, userId, trigger: 'manual' },
+      { jobId }
+    )
+    res.status(202).json({ success: true, message: 'Reporte completo encolado — se generará en los próximos minutos' })
+  } catch (error: any) {
+    console.error('Error generando primer reporte completo:', error)
+    res.status(500).json({ error: 'Error generando reporte', detail: error.message })
+  }
+})
+
 async function cleanupStuckReports() {
   try {
     const cutoff = new Date(Date.now() - 10 * 60 * 1000)
