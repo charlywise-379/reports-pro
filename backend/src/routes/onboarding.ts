@@ -221,14 +221,14 @@ router.post('/competitive', requireAuth, async (req: Request, res: Response) => 
     // ── Canjear promo code (opcional) ───────────────────
     let promoCodeApplied = false
     if (typeof promoCode === 'string' && promoCode.trim()) {
-      const normalizedCode = promoCode.trim().toUpperCase()
-      const promo = await (prisma as any).promoCode.findUnique({ where: { code: normalizedCode } })
-      const valido = promo && promo.active &&
-        (!promo.expiresAt || new Date(promo.expiresAt) > new Date()) &&
-        promo.redemptionCount < promo.maxRedemptions
+      try {
+        const normalizedCode = promoCode.trim().toUpperCase()
+        const promo = await (prisma as any).promoCode.findUnique({ where: { code: normalizedCode } })
+        const valido = promo && promo.active &&
+          (!promo.expiresAt || new Date(promo.expiresAt) > new Date()) &&
+          promo.redemptionCount < promo.maxRedemptions
 
-      if (valido) {
-        try {
+        if (valido) {
           await prisma.$transaction(async (tx) => {
             const updated = await (tx as any).promoCode.updateMany({
               where: { id: promo.id, redemptionCount: { lt: promo.maxRedemptions } },
@@ -240,9 +240,9 @@ router.post('/competitive', requireAuth, async (req: Request, res: Response) => 
             })
           })
           promoCodeApplied = true
-        } catch (e) {
-          console.log('[Onboarding] Promo code no aplicado:', (e as Error).message)
         }
+      } catch (e) {
+        console.log('[Onboarding] Promo code no aplicado:', (e as Error).message)
       }
     }
 
