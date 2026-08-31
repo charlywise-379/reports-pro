@@ -2,7 +2,7 @@
 import { ReactNode, useEffect, useState } from 'react'
 import Link from 'next/link'
 import { useRouter, usePathname } from 'next/navigation'
-import { LayoutDashboard, Users, FileText, CreditCard, ShieldCheck, Menu, X, Sun, Moon, LogOut } from 'lucide-react'
+import { LayoutDashboard, Users, FileText, CreditCard, Ticket, ShieldCheck, Menu, X, Sun, Moon, LogOut } from 'lucide-react'
 import { useAdmin } from './AdminContext'
 import { adminFetch } from './api'
 import { useTheme } from './ThemeContext'
@@ -13,6 +13,7 @@ const NAV_ITEMS = [
   { href: '/operations/users', label: 'Usuarios', icon: Users },
   { href: '/operations/reports', label: 'Reportes', icon: FileText },
   { href: '/operations/subscriptions', label: 'Suscripciones', icon: CreditCard },
+  { href: '/operations/promo-codes', label: 'Códigos Promocionales', icon: Ticket },
   { href: '/operations/admins', label: 'Administradores', icon: ShieldCheck, superAdminOnly: true },
 ]
 
