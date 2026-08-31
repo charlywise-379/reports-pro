@@ -302,6 +302,34 @@ model AdminUser {
   role         AdminRole @default(ADMIN)
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
+  promoCodes   PromoCode[]
 
   @@map("admin_users")
+}
+
+model PromoCode {
+  id               String    @id @default(cuid())
+  code             String    @unique
+  createdByAdminId String
+  createdByAdmin   AdminUser @relation(fields: [createdByAdminId], references: [id])
+  trialDays        Int       @default(7)
+  maxRedemptions   Int       @default(1)
+  redemptionCount  Int       @default(0)
+  active           Boolean   @default(true)
+  expiresAt        DateTime?
+  createdAt        DateTime  @default(now())
+  redemptions      PromoCodeRedemption[]
+
+  @@map("promo_codes")
+}
+
+model PromoCodeRedemption {
+  id          String    @id @default(cuid())
+  promoCodeId String
+  promoCode   PromoCode @relation(fields: [promoCodeId], references: [id], onDelete: Cascade)
+  userId      String
+  projectId   String    @unique
+  redeemedAt  DateTime  @default(now())
+
+  @@map("promo_code_redemptions")
 }
