@@ -37,10 +37,11 @@ export function startReportWorker() {
         where: { id: project.userId },
         select: { freeReportUsedAt: true },
       })
+      const hasPromoAccess = await (prisma as any).promoCodeRedemption.findUnique({ where: { projectId } }) != null
       const hasPaid = (sub?.status || '').toLowerCase() === 'active'
-      const isTeaser = !hasPaid && !user?.freeReportUsedAt
+      const isTeaser = !hasPaid && !hasPromoAccess && !user?.freeReportUsedAt
 
-      if (!hasPaid && user?.freeReportUsedAt) {
+      if (!hasPaid && !hasPromoAccess && user?.freeReportUsedAt) {
         console.log(`[Worker] User ${project.userId} already used their free report — skipping`)
         return { skipped: true, reason: 'free_report_already_used' }
       }
