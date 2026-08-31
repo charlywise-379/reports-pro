@@ -15,6 +15,7 @@ router.post('/competitive', requireAuth, async (req: Request, res: Response) => 
       monitorAreas, areaDepth, frequency, deliveryChannel, deliveryEmail, deliveryPhone,
       deliveryDay, deliveryTime, tags,
       presenceRegional, presenceNational, presenceInternational,
+      promoCode,
     } = req.body
 
     // userId siempre viene del token JWT — nunca del body
@@ -217,6 +218,34 @@ router.post('/competitive', requireAuth, async (req: Request, res: Response) => 
       }
     })
 
+    // ── Canjear promo code (opcional) ───────────────────
+    let promoCodeApplied = false
+    if (typeof promoCode === 'string' && promoCode.trim()) {
+      const normalizedCode = promoCode.trim().toUpperCase()
+      const promo = await (prisma as any).promoCode.findUnique({ where: { code: normalizedCode } })
+      const valido = promo && promo.active &&
+        (!promo.expiresAt || new Date(promo.expiresAt) > new Date()) &&
+        promo.redemptionCount < promo.maxRedemptions
+
+      if (valido) {
+        try {
+          await prisma.$transaction(async (tx) => {
+            const updated = await (tx as any).promoCode.updateMany({
+              where: { id: promo.id, redemptionCount: { lt: promo.maxRedemptions } },
+              data: { redemptionCount: { increment: 1 } },
+            })
+            if (updated.count === 0) throw new Error('promo_code_exhausted')
+            await (tx as any).promoCodeRedemption.create({
+              data: { promoCodeId: promo.id, userId: user.id, projectId: newProject.id },
+            })
+          })
+          promoCodeApplied = true
+        } catch (e) {
+          console.log('[Onboarding] Promo code no aplicado:', (e as Error).message)
+        }
+      }
+    }
+
 
     // ── BUG #2 FIX: NO generar reporte aquí ────────────────
     // El primer reporte lo genera el usuario manualmente desde el dashboard
@@ -227,6 +256,7 @@ router.post('/competitive', requireAuth, async (req: Request, res: Response) => 
       projectId: newProject.id,
       message: 'Módulo activado correctamente',
       trialEndsAt,
+      promoCodeApplied,
     })
 
   } catch (error: any) {

@@ -1025,6 +1025,12 @@ function Step6({ data, set, isMobile }: any) {
           </div>
         )}
       </div>
+
+      {/* Promo code */}
+      <div style={S.card}>
+        <SectionNum n="05" label="Código promocional (opcional)" />
+        <input style={S.input} value={data.promoCode||''} onChange={e=>set('promoCode',e.target.value)} placeholder="Ej. PROMO2026" />
+      </div>
     </div>
   )
 }
@@ -1395,7 +1401,7 @@ export default function OnboardingPage() {
     areaDepth:{},
     frequency:'WEEKLY', annualBilling:false,
     deliveryDay:0, deliveryTime:0, deliveryChannel:'EMAIL',
-    deliveryEmail:'', deliveryPhone:'',
+    deliveryEmail:'', deliveryPhone:'', promoCode:'',
   })
 
   const set = (key: string, val: any) => setData((prev: any) => ({ ...prev, [key]: typeof val === 'function' ? val(prev[key]) : val }))
