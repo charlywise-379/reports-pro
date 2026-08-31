@@ -46,7 +46,8 @@ router.post('/', requireAdmin, async (req: Request, res: Response) => {
   try {
     const { code, trialDays, maxRedemptions, expiresAt } = req.body
 
-    let finalCode = typeof code === 'string' && code.trim() ? code.trim().toUpperCase() : generateCode()
+    const wasProvided = typeof code === 'string' && code.trim().length > 0
+    let finalCode = wasProvided ? code.trim().toUpperCase() : generateCode()
 
     let created: any = null
     for (let attempt = 0; attempt < 3 && !created; attempt++) {
@@ -61,7 +62,7 @@ router.post('/', requireAdmin, async (req: Request, res: Response) => {
           },
         })
       } catch (e: any) {
-        if (e.code === 'P2002' && !code) {
+        if (e.code === 'P2002' && !wasProvided) {
           // Colision de codigo autogenerado — reintentar con uno nuevo
           finalCode = generateCode()
           continue
