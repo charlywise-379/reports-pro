@@ -246,6 +246,37 @@ export async function sendReportErrorEmail(
   }
 }
 
+export async function sendContactFormEmail(
+  name: string,
+  email: string,
+  message: string
+): Promise<void> {
+
+  const subject = `📩 Nuevo mensaje de contacto — ${name}`
+
+  const escapedMessage = message.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\n/g, '<br/>')
+
+  const html = `
+<div style="font-family:system-ui,sans-serif;font-size:14px;color:#222;line-height:1.6">
+  <p><strong>Nombre:</strong> ${name}</p>
+  <p><strong>Email:</strong> ${email}</p>
+  <p><strong>Mensaje:</strong></p>
+  <p>${escapedMessage}</p>
+  <p><strong>Fecha:</strong> ${new Date().toISOString()}</p>
+</div>
+  `
+
+  await resend.emails.send({
+    from: 'Omni Reports <reportes@flow11.mx>',
+    to: 'info@omnireports.pro',
+    replyTo: email,
+    subject,
+    html,
+  })
+
+  console.log(`📧 Mensaje de contacto enviado a info@omnireports.pro de ${email}`)
+}
+
 export async function sendReportErrorAdminAlert(
   companyName: string,
   projectId: string,

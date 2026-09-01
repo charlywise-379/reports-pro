@@ -6,6 +6,7 @@ import {
   Brain, ShieldAlert, HeartPulse, Cpu, BarChart2, Activity,
   Globe, Clock, CheckCircle, Sparkles, Building2, Users
 } from 'lucide-react'
+import ContactModal from '../components/ContactModal'
 
 const testimonials = [
   {
@@ -63,6 +64,7 @@ const testimonials = [
 export default function Home() {
   const [activeTestimonial, setActiveTestimonial] = useState(0)
   const [anual, setAnual] = useState(false)
+  const [contactOpen, setContactOpen] = useState(false)
 
   const prev = () => setActiveTestimonial(i => (i - 1 + testimonials.length) % testimonials.length)
   const next = () => setActiveTestimonial(i => (i + 1) % testimonials.length)
@@ -642,10 +644,12 @@ export default function Home() {
           <div className="flex items-center gap-6 text-gray-600 text-sm">
             <Link href="/legal/aviso-de-privacidad" className="hover:text-gray-400 transition-colors">Privacidad</Link>
             <Link href="/legal/terminos-y-condiciones" className="hover:text-gray-400 transition-colors">Términos</Link>
-            <a href="#" className="hover:text-gray-400 transition-colors">Contacto</a>
+            <button onClick={() => setContactOpen(true)} className="hover:text-gray-400 transition-colors">Contacto</button>
           </div>
         </div>
       </footer>
+
+      {contactOpen && <ContactModal onClose={() => setContactOpen(false)} />}
 
     </main>
   )

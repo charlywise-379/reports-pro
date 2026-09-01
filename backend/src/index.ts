@@ -17,6 +17,7 @@ import operationsReportsRouter from "./routes/operations/reports"
 import operationsSubscriptionsRouter from "./routes/operations/subscriptions"
 import operationsAdminsRouter from "./routes/operations/admins"
 import operationsPromoCodesRouter from "./routes/operations/promoCodes"
+import contactRouter from "./routes/contact"
 import { startReportWorker } from "./workers/reportWorker"
 import { scheduleReports } from "./jobs/scheduleReports"
 
@@ -101,6 +102,17 @@ const adminLoginLimiter = rateLimit({
   legacyHeaders: false,
 })
 app.use('/api/operations/auth/login', adminLoginLimiter)
+
+// Rate limiting para formulario de contacto — 10 por hora por IP (previene abuso)
+const contactLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000,
+  max: 10,
+  message: { error: 'Demasiados mensajes enviados. Intenta en un rato.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+})
+app.use('/api/contact', contactLimiter)
+
 app.use("/api/stripe/webhook", express.raw({ type: "application/json" }))
 app.use(express.json())
 
@@ -110,6 +122,7 @@ app.use("/api/dashboard", dashboardRouter)
 app.use("/api/stripe", stripeRouter)
 app.use("/api/auth", authRouter)
 app.use("/api/account", accountRouter)
+app.use("/api/contact", contactRouter)
 app.use("/api/operations/auth", operationsAuthRouter)
 app.use("/api/operations/dashboard", operationsDashboardRouter)
 app.use("/api/operations/users", operationsUsersRouter)
