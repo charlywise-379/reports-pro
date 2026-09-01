@@ -4,6 +4,8 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import posthog from 'posthog-js'
+import TutorialModal, { hasSeenTutorial } from '../../components/TutorialModal'
+import { dashboardTutorialSteps } from '../../lib/tutorials'
 
 const S: Record<string, React.CSSProperties> = {
   card: { background:'rgba(255,255,255,0.03)', border:'1px solid rgba(255,255,255,0.07)', borderRadius:14, padding:16, marginBottom:14 },
@@ -61,6 +63,7 @@ export default function DashboardPage() {
   const [stripeConfirmado, setStripeConfirmado] = useState(false)
   const [endingTrial, setEndingTrial] = useState(false)
   const [firstFullClicked, setFirstFullClicked] = useState(false)
+  const [showTutorial, setShowTutorial] = useState(false)
 
   const handleEndTrial = async () => {
     if (!user) return
@@ -213,6 +216,9 @@ export default function DashboardPage() {
         if (latest) setSelectedReport(latest)
       } catch(e) { console.error('Dashboard data error:', e) }
       setLoading(false)
+
+      const tutorialKey = `omnireports_tutorial_dashboard_${user.id}`
+      if (!hasSeenTutorial(tutorialKey)) setShowTutorial(true)
     }
     getUser()
   }, [])
@@ -542,6 +548,7 @@ export default function DashboardPage() {
           <button onClick={toggleTheme} style={{ fontSize:18, background:'none', border:'none', cursor:'pointer', padding:'4px 6px', borderRadius:8, lineHeight:1, opacity: isDark ? 1 : 0.9 }} title={isDark ? 'Modo claro' : 'Modo oscuro'}>
             {isDark ? '☀️' : '🌙'}
           </button>
+          <button onClick={() => setShowTutorial(true)} style={{ fontSize:11, color: isDark ? T.textMuted : "#AFA9EC", background:'none', border:'none', cursor:'pointer', fontWeight:600, marginTop: isMobile ? 4 : 0, padding:0 }}>¿Cómo funciona?</button>
           <Link href="/cuenta" style={{ fontSize:11, color: isDark ? T.textMuted : "#AFA9EC", fontWeight:600, textDecoration:'none', marginTop: isMobile ? 4 : 0 }}>Mi cuenta</Link>
           <button onClick={handleLogout} style={{ fontSize:11, color: isDark ? T.textMuted : "#AFA9EC", background:'none', border:'none', cursor:'pointer', fontWeight:600, marginTop: isMobile ? 4 : 0 }}>Salir →</button>
         </div>
@@ -1231,6 +1238,14 @@ export default function DashboardPage() {
           </div>
         </div>
       </div>
+    )}
+
+    {showTutorial && user && (
+      <TutorialModal
+        steps={dashboardTutorialSteps}
+        storageKey={`omnireports_tutorial_dashboard_${user.id}`}
+        onClose={() => setShowTutorial(false)}
+      />
     )}
 
     </main>

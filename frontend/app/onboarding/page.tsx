@@ -6,7 +6,9 @@ import { createClient } from '@/lib/supabase/client'
 import posthog from 'posthog-js'
 import { FaInstagram, FaFacebook, FaXTwitter, FaLinkedin, FaTiktok, FaYoutube } from 'react-icons/fa6'
 import type { IconType } from 'react-icons'
-import { Search } from 'lucide-react'
+import { Search, HelpCircle } from 'lucide-react'
+import TutorialModal, { hasSeenTutorial } from '../../components/TutorialModal'
+import { competitiveOnboardingTutorialSteps } from '../../lib/tutorials'
 
 const STEPS = [
   { id: 1, label: 'Tu empresa' },
@@ -1386,6 +1388,8 @@ export default function OnboardingPage() {
   const [isEditing, setIsEditing] = useState(false)
   const [dataLoaded, setDataLoaded] = useState(false)
   const [autocompleteUsesLeft, setAutocompleteUsesLeft] = useState(8)
+  const [showTutorial, setShowTutorial] = useState(false)
+  const [userId, setUserId] = useState<string | null>(null)
   const isMobile = useIsMobile()
   const mainRef = React.useRef<HTMLElement>(null)
   const BACKEND = process.env.NEXT_PUBLIC_BACKEND_URL || 'https://reports-pro-production.up.railway.app'
@@ -1446,6 +1450,9 @@ export default function OnboardingPage() {
       if (!session) return
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) return
+      setUserId(user.id)
+      const tutorialKey = `omnireports_tutorial_onboarding_competitive_${user.id}`
+      if (!initialStep && !hasSeenTutorial(tutorialKey)) setShowTutorial(true)
       try {
         const res = await fetch(`${BACKEND}/api/dashboard/${session.user.id}`, {
           headers: { 'Authorization': 'Bearer ' + session.access_token }
@@ -1667,6 +1674,21 @@ export default function OnboardingPage() {
         </main>
         <BriefingPanel step={step} isMobile={isMobile} />
       </div>
+
+      <button
+        onClick={() => setShowTutorial(true)}
+        title="Ver tutorial de este formulario"
+        style={{ position:'fixed', bottom: isMobile ? 76 : 24, right:24, zIndex:60, width:44, height:44, borderRadius:'50%', background:'#1A1730', border:'1px solid rgba(255,255,255,0.15)', color:'#8B7BFF', display:'flex', alignItems:'center', justifyContent:'center', cursor:'pointer', boxShadow:'0 4px 16px rgba(0,0,0,0.4)' }}>
+        <HelpCircle size={20} />
+      </button>
+
+      {showTutorial && userId && (
+        <TutorialModal
+          steps={competitiveOnboardingTutorialSteps}
+          storageKey={`omnireports_tutorial_onboarding_competitive_${userId}`}
+          onClose={() => setShowTutorial(false)}
+        />
+      )}
     </div>
   )
 }
