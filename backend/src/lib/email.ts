@@ -277,6 +277,48 @@ export async function sendContactFormEmail(
   console.log(`📧 Mensaje de contacto enviado a info@omnireports.pro de ${email}`)
 }
 
+export async function sendSupportEmail(
+  userName: string,
+  userEmail: string,
+  message: string,
+  chatContext: { role: 'user' | 'assistant'; content: string }[] = []
+): Promise<void> {
+
+  const subject = `🆘 Soporte — ${userName}`
+
+  const escapeHtml = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+
+  const contextHtml = chatContext.length > 0
+    ? `
+      <p><strong>Conversación previa con el Agente IA:</strong></p>
+      <div style="background:#F8F7FF;border:1px solid #EEEDFE;border-radius:8px;padding:12px;margin-bottom:16px">
+        ${chatContext.map(m => `<p style="margin:4px 0"><strong>${m.role === 'user' ? escapeHtml(userName) : 'Agente IA'}:</strong> ${escapeHtml(m.content)}</p>`).join('')}
+      </div>
+    `
+    : ''
+
+  const html = `
+<div style="font-family:system-ui,sans-serif;font-size:14px;color:#222;line-height:1.6">
+  <p><strong>Usuario:</strong> ${escapeHtml(userName)}</p>
+  <p><strong>Email:</strong> ${escapeHtml(userEmail)}</p>
+  ${contextHtml}
+  <p><strong>Mensaje:</strong></p>
+  <p>${escapeHtml(message).replace(/\n/g, '<br/>')}</p>
+  <p><strong>Fecha:</strong> ${new Date().toISOString()}</p>
+</div>
+  `
+
+  await resend.emails.send({
+    from: 'Omni Reports <reportes@flow11.mx>',
+    to: 'soporte@omnireports.pro',
+    replyTo: userEmail,
+    subject,
+    html,
+  })
+
+  console.log(`📧 Mensaje de soporte enviado a soporte@omnireports.pro de ${userEmail}`)
+}
+
 export async function sendReportErrorAdminAlert(
   companyName: string,
   projectId: string,
