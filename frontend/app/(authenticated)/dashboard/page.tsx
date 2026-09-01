@@ -4,8 +4,8 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import posthog from 'posthog-js'
-import TutorialModal, { hasSeenTutorial } from '../../components/TutorialModal'
-import { dashboardTutorialSteps } from '../../lib/tutorials'
+import TutorialModal, { hasSeenTutorial } from '../../../components/TutorialModal'
+import { dashboardTutorialSteps } from '../../../lib/tutorials'
 
 const S: Record<string, React.CSSProperties> = {
   card: { background:'rgba(255,255,255,0.03)', border:'1px solid rgba(255,255,255,0.07)', borderRadius:14, padding:16, marginBottom:14 },

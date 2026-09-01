@@ -7,8 +7,8 @@ import posthog from 'posthog-js'
 import { FaInstagram, FaFacebook, FaXTwitter, FaLinkedin, FaTiktok, FaYoutube } from 'react-icons/fa6'
 import type { IconType } from 'react-icons'
 import { Search, HelpCircle } from 'lucide-react'
-import TutorialModal, { hasSeenTutorial } from '../../components/TutorialModal'
-import { competitiveOnboardingTutorialSteps } from '../../lib/tutorials'
+import TutorialModal, { hasSeenTutorial } from '../../../components/TutorialModal'
+import { competitiveOnboardingTutorialSteps } from '../../../lib/tutorials'
 
 const STEPS = [
   { id: 1, label: 'Tu empresa' },
