@@ -54,23 +54,23 @@ export default function TutorialModal({
         </button>
 
         {step.image && (
-          <div className="bg-[#060609] border-b border-white/10">
+          <div className="bg-[#060609] border-b border-white/10 h-64 flex items-center justify-center overflow-hidden">
             <img
               src={step.image}
               alt={step.title}
-              className="w-full aspect-[16/10] object-cover object-top"
+              className="max-w-full max-h-full object-contain"
             />
           </div>
         )}
 
-        <div className="p-7">
-          <div className="text-[11px] font-bold tracking-wider text-blue-400 mb-2">
+        <div className="p-8">
+          <div className="text-[11px] font-bold tracking-wider text-blue-400 mb-3">
             PASO {index + 1} DE {steps.length}
           </div>
-          <h2 className="text-lg font-black mb-2 leading-snug">{step.title}</h2>
-          <p className="text-gray-400 text-sm leading-relaxed mb-6">{step.body}</p>
+          <h2 className="text-lg font-black mb-3 leading-snug">{step.title}</h2>
+          <p className="text-gray-400 text-sm leading-relaxed mb-8">{step.body}</p>
 
-          <div className="flex items-center gap-1.5 mb-6">
+          <div className="flex items-center gap-1.5 mb-7">
             {steps.map((_, i) => (
               <div
                 key={i}
@@ -79,22 +79,22 @@ export default function TutorialModal({
             ))}
           </div>
 
-          <div className="flex items-center justify-between gap-3">
+          <div className="flex items-center justify-between gap-4">
             <button onClick={finish} className="text-xs text-gray-500 hover:text-gray-300 transition-colors font-medium">
               Saltar tutorial
             </button>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-3">
               {index > 0 && (
                 <button
                   onClick={() => setIndex(i => i - 1)}
-                  className="bg-white/5 border border-white/10 text-white font-bold py-2.5 px-3.5 rounded-xl transition-all hover:bg-white/10 flex items-center justify-center"
+                  className="bg-white/5 border border-white/10 text-white font-bold py-3 px-4 rounded-xl transition-all hover:bg-white/10 flex items-center justify-center"
                 >
                   <ArrowLeft size={15} />
                 </button>
               )}
               <button
                 onClick={() => (isLast ? finish() : setIndex(i => i + 1))}
-                className="bg-gradient-to-r from-blue-600 to-violet-600 text-white font-bold py-2.5 px-5 rounded-xl transition-all hover:shadow-lg flex items-center justify-center gap-2 text-sm"
+                className="bg-gradient-to-r from-blue-600 to-violet-600 text-white font-bold py-3 px-6 rounded-xl transition-all hover:shadow-lg hover:scale-[1.02] flex items-center justify-center gap-2 text-sm"
               >
                 {isLast ? 'Entendido' : 'Siguiente'}<ArrowRight size={15} />
               </button>
