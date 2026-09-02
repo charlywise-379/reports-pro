@@ -280,11 +280,12 @@ export async function sendContactFormEmail(
 export async function sendSupportEmail(
   userName: string,
   userEmail: string,
+  userSubject: string,
   message: string,
   chatContext: { role: 'user' | 'assistant'; content: string }[] = []
 ): Promise<void> {
 
-  const subject = `🆘 Soporte — ${userName}`
+  const emailSubject = `🆘 Soporte — ${userSubject} — ${userName}`
 
   const escapeHtml = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
 
@@ -301,6 +302,7 @@ export async function sendSupportEmail(
 <div style="font-family:system-ui,sans-serif;font-size:14px;color:#222;line-height:1.6">
   <p><strong>Usuario:</strong> ${escapeHtml(userName)}</p>
   <p><strong>Email:</strong> ${escapeHtml(userEmail)}</p>
+  <p><strong>Asunto:</strong> ${escapeHtml(userSubject)}</p>
   ${contextHtml}
   <p><strong>Mensaje:</strong></p>
   <p>${escapeHtml(message).replace(/\n/g, '<br/>')}</p>
@@ -312,7 +314,7 @@ export async function sendSupportEmail(
     from: 'Omni Reports <reportes@flow11.mx>',
     to: 'soporte@omnireports.pro',
     replyTo: userEmail,
-    subject,
+    subject: emailSubject,
     html,
   })
 

@@ -78,8 +78,14 @@ router.post('/chat', chatLimiter, async (req: Request, res: Response) => {
 
 router.post('/contact-human', contactLimiter, async (req: Request, res: Response) => {
   try {
-    const { message, chatContext } = req.body
+    const { subject, message, chatContext } = req.body
 
+    if (typeof subject !== 'string' || !subject.trim()) {
+      return res.status(400).json({ error: 'Asunto requerido' })
+    }
+    if (subject.length > 200) {
+      return res.status(400).json({ error: 'El asunto excede el largo permitido' })
+    }
     if (typeof message !== 'string' || !message.trim()) {
       return res.status(400).json({ error: 'Mensaje requerido' })
     }
@@ -98,7 +104,7 @@ router.post('/contact-human', contactLimiter, async (req: Request, res: Response
           .filter((m: any) => (m.role === 'user' || m.role === 'assistant') && typeof m.content === 'string')
       : []
 
-    await sendSupportEmail(user.fullName || user.email, user.email, message.trim(), context)
+    await sendSupportEmail(user.fullName || user.email, user.email, subject.trim(), message.trim(), context)
 
     return res.json({ ok: true })
   } catch (e: any) {

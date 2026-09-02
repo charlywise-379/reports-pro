@@ -32,12 +32,16 @@ function LoginContent() {
         const BACKEND = process.env.NEXT_PUBLIC_BACKEND_URL || 'https://reports-pro-production.up.railway.app'
         const res = await fetch(`${BACKEND}/api/dashboard/${data.user?.id}`)
         const dashData = await res.json()
-        // Ir al dashboard solo si tiene proyecto con nombre real y setup completo
-        const hasRealProject = dashData?.project && 
-          dashData?.setup?.companyName && 
+        // Ir al dashboard si tiene proyecto con nombre real y setup completo,
+        // o si ya tiene al menos un reporte generado (aunque el setup se vea
+        // incompleto) — un usuario con reportes ya pasó por el onboarding.
+        const hasRealProject = dashData?.project &&
+          dashData?.setup?.companyName &&
           dashData.setup.companyName !== 'Sin nombre' &&
           dashData.setup.companyName.trim() !== ''
-        if (hasRealProject) {
+        const hasGeneratedReport = Array.isArray(dashData?.reports) &&
+          dashData.reports.some((r: any) => r.status === 'COMPLETED')
+        if (hasRealProject || hasGeneratedReport) {
           router.push('/dashboard')
         } else {
           router.push('/onboarding')

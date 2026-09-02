@@ -57,10 +57,12 @@ export default function SupportWidget() {
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [humanSubject, setHumanSubject] = useState('')
   const [humanMessage, setHumanMessage] = useState('')
   const [humanSent, setHumanSent] = useState(false)
   const [humanLoading, setHumanLoading] = useState(false)
   const [humanError, setHumanError] = useState('')
+  const [account, setAccount] = useState<{ fullName: string; email: string } | null>(null)
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -69,6 +71,24 @@ export default function SupportWidget() {
       if (saved) setMessages(JSON.parse(saved))
     } catch {}
   }, [])
+
+  useEffect(() => {
+    if (view !== 'human' || account) return
+    const loadAccount = async () => {
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session) return
+      try {
+        const res = await fetch(`${BACKEND}/api/account/${session.user.id}`, {
+          headers: { Authorization: 'Bearer ' + session.access_token },
+        })
+        const data = await res.json()
+        if (res.ok && data.user) {
+          setAccount({ fullName: data.user.fullName || '', email: data.user.email || '' })
+        }
+      } catch {}
+    }
+    loadAccount()
+  }, [view, account])
 
   useEffect(() => {
     if (view === 'chat') messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -113,7 +133,7 @@ export default function SupportWidget() {
   }
 
   const handleSendHuman = async () => {
-    if (!humanMessage.trim() || humanLoading) return
+    if (!humanSubject.trim() || !humanMessage.trim() || humanLoading) return
     const token = await getToken()
     if (!token) return
     setHumanLoading(true)
@@ -122,7 +142,7 @@ export default function SupportWidget() {
       const res = await fetch(`${BACKEND}/api/support/contact-human`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token },
-        body: JSON.stringify({ message: humanMessage.trim(), chatContext: messages.slice(-6) }),
+        body: JSON.stringify({ subject: humanSubject.trim(), message: humanMessage.trim(), chatContext: messages.slice(-6) }),
       })
       const data = await res.json()
       if (!res.ok) {
@@ -257,24 +277,52 @@ export default function SupportWidget() {
           )}
 
           {view === 'human' && (
-            <div className="!p-4">
+            <div className="!p-4 overflow-y-auto">
               {humanSent ? (
                 <p className="text-sm text-gray-300 text-center !py-6">
                   Listo, recibimos tu mensaje. Te respondemos a tu correo registrado en menos de 1 hora en horario laboral.
                 </p>
               ) : (
                 <>
-                  <textarea
-                    value={humanMessage}
-                    onChange={e => setHumanMessage(e.target.value)}
-                    placeholder="Cuéntanos en qué podemos ayudarte..."
-                    rows={5}
-                    className="w-full bg-white/5 border border-white/10 rounded-xl !px-3 !py-2.5 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-violet-500/50 resize-none !mb-3"
-                  />
+                  <div className="!mb-3">
+                    <label className="block text-xs text-gray-500 !mb-1">Nombre completo</label>
+                    <div className="w-full bg-white/5 border border-white/10 rounded-xl !px-3 !py-2.5 text-sm text-gray-400">
+                      {account?.fullName || '—'}
+                    </div>
+                  </div>
+                  <div className="!mb-3">
+                    <label className="block text-xs text-gray-500 !mb-1">Correo</label>
+                    <div className="w-full bg-white/5 border border-white/10 rounded-xl !px-3 !py-2.5 text-sm text-gray-400">
+                      {account?.email || '—'}
+                    </div>
+                  </div>
+                  <div className="!mb-3">
+                    <label className="block text-xs text-gray-500 !mb-1">Asunto</label>
+                    <input
+                      type="text"
+                      value={humanSubject}
+                      onChange={e => setHumanSubject(e.target.value)}
+                      placeholder="¿Sobre qué quieres hablar?"
+                      className="w-full bg-white/5 border border-white/10 rounded-xl !px-3 !py-2.5 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-violet-500/50"
+                    />
+                  </div>
+                  <div className="!mb-3">
+                    <label className="block text-xs text-gray-500 !mb-1">Mensaje</label>
+                    <textarea
+                      value={humanMessage}
+                      onChange={e => setHumanMessage(e.target.value)}
+                      placeholder="Cuéntanos en qué podemos ayudarte..."
+                      rows={4}
+                      className="w-full bg-white/5 border border-white/10 rounded-xl !px-3 !py-2.5 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-violet-500/50 resize-none"
+                    />
+                  </div>
+                  <p className="text-xs text-gray-500 !mb-3">
+                    Esta información se enviará al equipo de soporte de Omni Reports. Recibirás una respuesta en menos de 1 hora, en horario laboral.
+                  </p>
                   {humanError && <p className="text-xs text-red-400 !mb-3">{humanError}</p>}
                   <button
                     onClick={handleSendHuman}
-                    disabled={!humanMessage.trim() || humanLoading}
+                    disabled={!humanSubject.trim() || !humanMessage.trim() || humanLoading}
                     className="w-full bg-gradient-to-r from-blue-600 to-violet-600 text-white font-bold !py-3 rounded-xl disabled:opacity-50"
                   >
                     {humanLoading ? 'Enviando...' : 'Enviar mensaje'}
