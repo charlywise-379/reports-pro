@@ -1,6 +1,6 @@
 'use client'
-import { useEffect, useRef, useState } from 'react'
-import { MessageCircle, X, ArrowLeft, Send, Mail, Sparkles } from 'lucide-react'
+import { useEffect, useRef, useState, type ReactNode } from 'react'
+import { MessageCircle, X, ArrowLeft, Send, Mail, Bot } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 
 type ChatMessage = { role: 'user' | 'assistant'; content: string }
@@ -8,6 +8,47 @@ type PanelView = 'closed' | 'menu' | 'chat' | 'human'
 
 const CHAT_STORAGE_KEY = 'omnireports_chat_history'
 const BACKEND = process.env.NEXT_PUBLIC_BACKEND_URL || 'https://reports-pro-production.up.railway.app'
+
+// Formateo ligero de markdown para las respuestas del Agente IA (Claude
+// responde con **negritas**, encabezados ## / ### y listas -), sin traer una
+// librería de markdown completa para un widget de chat pequeño. Solo se usa
+// para mensajes del asistente — lo que escribe el usuario se muestra tal cual.
+function renderInline(text: string, keyPrefix: string): ReactNode[] {
+  return text.split(/(\*\*[^*]+\*\*)/g).map((part, i) =>
+    part.startsWith('**') && part.endsWith('**')
+      ? <strong key={`${keyPrefix}-${i}`} className="font-bold text-white">{part.slice(2, -2)}</strong>
+      : <span key={`${keyPrefix}-${i}`}>{part}</span>
+  )
+}
+
+function renderMarkdownLite(content: string): ReactNode[] {
+  const blocks: ReactNode[] = []
+  let listItems: string[] = []
+
+  const flushList = (key: string) => {
+    if (listItems.length === 0) return
+    blocks.push(
+      <ul key={key} className="list-disc !pl-4 !my-1.5 !space-y-1">
+        {listItems.map((item, i) => <li key={i}>{renderInline(item, `li-${key}-${i}`)}</li>)}
+      </ul>
+    )
+    listItems = []
+  }
+
+  content.split('\n').forEach((rawLine, idx) => {
+    const line = rawLine.trim()
+    if (!line) { flushList(`l${idx}`); return }
+    if (/^-{3,}$/.test(line)) { flushList(`l${idx}`); blocks.push(<hr key={`hr${idx}`} className="border-white/10 !my-2" />); return }
+    const heading = line.match(/^#{1,3}\s+(.*)$/)
+    if (heading) { flushList(`l${idx}`); blocks.push(<p key={`h${idx}`} className="font-bold text-white !mt-2 !mb-1 first:!mt-0">{renderInline(heading[1], `h${idx}`)}</p>); return }
+    const bullet = line.match(/^[-•]\s+(.*)$/)
+    if (bullet) { listItems.push(bullet[1]); return }
+    flushList(`l${idx}`)
+    blocks.push(<p key={`p${idx}`} className="!mb-1.5 last:!mb-0">{renderInline(line, `p${idx}`)}</p>)
+  })
+  flushList('l-end')
+  return blocks
+}
 
 export default function SupportWidget() {
   const supabase = createClient()
@@ -141,7 +182,7 @@ export default function SupportWidget() {
                 className="flex items-center gap-3 !p-4 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 transition-colors text-left"
               >
                 <span className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-600 to-violet-600 flex items-center justify-center flex-shrink-0">
-                  <Sparkles size={18} className="text-white" />
+                  <Bot size={18} className="text-white" />
                 </span>
                 <span>
                   <span className="block text-sm font-bold text-white">Agente IA</span>
@@ -180,7 +221,7 @@ export default function SupportWidget() {
                           : 'bg-white/5 border border-white/10 text-gray-200'
                       }`}
                     >
-                      {m.content}
+                      {m.role === 'assistant' ? renderMarkdownLite(m.content) : m.content}
                     </div>
                   </div>
                 ))}

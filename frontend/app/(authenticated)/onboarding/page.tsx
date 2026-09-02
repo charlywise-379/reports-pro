@@ -6,7 +6,7 @@ import { createClient } from '@/lib/supabase/client'
 import posthog from 'posthog-js'
 import { FaInstagram, FaFacebook, FaXTwitter, FaLinkedin, FaTiktok, FaYoutube } from 'react-icons/fa6'
 import type { IconType } from 'react-icons'
-import { Search, HelpCircle } from 'lucide-react'
+import { Search, HelpCircle, Bot } from 'lucide-react'
 import TutorialModal, { hasSeenTutorial } from '../../../components/TutorialModal'
 import { competitiveOnboardingTutorialSteps } from '../../../lib/tutorials'
 
@@ -231,7 +231,7 @@ function Step1({ data, set, runAutocomplete }: any) {
                 cursor: canAutocomplete && !acLoading ? 'pointer' : 'not-allowed',
               }}
             >
-              {acLoading ? 'Buscando...' : '✨ Autocompletar con IA'}
+              {acLoading ? 'Buscando...' : <><Bot size={14} />Autocompletar con IA</>}
             </button>
             {acLoading && <LoadingBar />}
             {acError && !acLoading && !showNoInfoModal && (
@@ -683,7 +683,7 @@ function Step3({ data, set, runAutocomplete }: any) {
                   onClick={()=>handleAutocomplete(i)}
                   disabled={!(c.name?.trim() && c.url?.trim() && normalizeUrl(c.url).valid) || acLoadingIdx === i}
                   style={{
-                    display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0,
+                    display:'flex', alignItems:'center', justifyContent:'center', gap:4, flexShrink:0,
                     padding:'8px 12px', borderRadius:8,
                     border:'1px solid rgba(139,123,255,0.3)',
                     background: (c.name?.trim() && c.url?.trim() && normalizeUrl(c.url).valid && acLoadingIdx !== i) ? 'rgba(139,123,255,0.15)' : 'rgba(255,255,255,0.03)',
@@ -692,7 +692,7 @@ function Step3({ data, set, runAutocomplete }: any) {
                     cursor: (c.name?.trim() && c.url?.trim() && normalizeUrl(c.url).valid && acLoadingIdx !== i) ? 'pointer' : 'not-allowed',
                   }}
                 >
-                  {acLoadingIdx === i ? 'Buscando...' : '✨ IA'}
+                  {acLoadingIdx === i ? 'Buscando...' : <><Bot size={12} />IA</>}
                 </button>
                 {list.length>1&&<button onClick={()=>remove(i)} style={{ background:'rgba(255,107,107,0.1)', border:'1px solid rgba(255,107,107,0.2)', borderRadius:8, width:28, height:28, cursor:'pointer', color:'#FF6B6B', fontSize:14 }}>×</button>}
               </div>
@@ -1678,7 +1678,7 @@ export default function OnboardingPage() {
       <button
         onClick={() => setShowTutorial(true)}
         title="Ver tutorial de este formulario"
-        style={{ position:'fixed', bottom: isMobile ? 76 : 24, right:24, zIndex:60, width:44, height:44, borderRadius:'50%', background:'#1A1730', border:'1px solid rgba(255,255,255,0.15)', color:'#8B7BFF', display:'flex', alignItems:'center', justifyContent:'center', cursor:'pointer', boxShadow:'0 4px 16px rgba(0,0,0,0.4)' }}>
+        style={{ position:'fixed', bottom: isMobile ? 144 : 92, right:24, zIndex:60, width:44, height:44, borderRadius:'50%', background:'#1A1730', border:'1px solid rgba(255,255,255,0.15)', color:'#8B7BFF', display:'flex', alignItems:'center', justifyContent:'center', cursor:'pointer', boxShadow:'0 4px 16px rgba(0,0,0,0.4)' }}>
         <HelpCircle size={20} />
       </button>
 
