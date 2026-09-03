@@ -1,6 +1,6 @@
 'use client'
 import { useEffect, useState } from 'react'
-import { CheckCircle, XCircle } from 'lucide-react'
+import { CheckCircle, XCircle, Sparkles, Ticket } from 'lucide-react'
 import { adminFetch } from '@/lib/operations/api'
 import { palette } from '@/lib/operations/theme'
 import { useTheme } from '@/lib/operations/ThemeContext'
@@ -9,6 +9,7 @@ import { StatusBadge } from '@/lib/operations/StatusBadge'
 type PromoCodeRow = {
   id: string
   code: string
+  type: 'STANDARD' | 'FULL_ACCESS_NO_TRIAL'
   trialDays: number
   maxRedemptions: number
   redemptionCount: number
@@ -22,6 +23,7 @@ export default function OperationsPromoCodesPage() {
   const [codes, setCodes] = useState<PromoCodeRow[]>([])
   const [newCode, setNewCode] = useState('')
   const [newMaxRedemptions, setNewMaxRedemptions] = useState('1')
+  const [newType, setNewType] = useState<'STANDARD' | 'FULL_ACCESS_NO_TRIAL'>('STANDARD')
   const [creating, setCreating] = useState(false)
   const { theme } = useTheme()
   const T = palette[theme]
@@ -42,12 +44,14 @@ export default function OperationsPromoCodesPage() {
         body: JSON.stringify({
           code: newCode.trim() || undefined,
           maxRedemptions: Number(newMaxRedemptions) || 1,
+          type: newType,
         }),
       })
       const data = await res.json()
       if (!res.ok) { alert(data.error || 'Error al crear el codigo'); return }
       setNewCode('')
       setNewMaxRedemptions('1')
+      setNewType('STANDARD')
       load()
     } finally {
       setCreating(false)
@@ -78,6 +82,14 @@ export default function OperationsPromoCodesPage() {
           placeholder="Máx. canjes"
           style={{ padding: '6px 10px', borderRadius: 6, border: `1px solid ${T.border}`, background: 'transparent', color: T.text, fontSize: 13, width: 100 }}
         />
+        <select
+          value={newType}
+          onChange={e => setNewType(e.target.value as 'STANDARD' | 'FULL_ACCESS_NO_TRIAL')}
+          style={{ padding: '6px 10px', borderRadius: 6, border: `1px solid ${T.border}`, background: T.surface, color: T.text, fontSize: 13 }}
+        >
+          <option value="STANDARD">Estándar (requiere trial)</option>
+          <option value="FULL_ACCESS_NO_TRIAL">Acceso completo sin trial</option>
+        </select>
         <button
           onClick={handleCreate}
           disabled={creating}
@@ -91,6 +103,7 @@ export default function OperationsPromoCodesPage() {
         <thead>
           <tr style={{ borderBottom: `1px solid ${T.border}`, textAlign: 'left' }}>
             <th style={{ padding: '8px 10px' }}>Código</th>
+            <th style={{ padding: '8px 10px' }}>Tipo</th>
             <th style={{ padding: '8px 10px' }}>Canjes</th>
             <th style={{ padding: '8px 10px' }}>Estado</th>
             <th style={{ padding: '8px 10px' }}>Creado por</th>
@@ -102,6 +115,13 @@ export default function OperationsPromoCodesPage() {
           {codes.map(c => (
             <tr key={c.id} style={{ borderBottom: `1px solid ${T.border}` }}>
               <td style={{ padding: '10px' }}><code>{c.code}</code></td>
+              <td style={{ padding: '10px' }}>
+                <StatusBadge
+                  label={c.type === 'FULL_ACCESS_NO_TRIAL' ? 'Sin trial' : 'Estándar'}
+                  color={c.type === 'FULL_ACCESS_NO_TRIAL' ? '#8B7BFF' : T.textMuted}
+                  icon={c.type === 'FULL_ACCESS_NO_TRIAL' ? Sparkles : Ticket}
+                />
+              </td>
               <td style={{ padding: '10px' }}>{c.redemptionCount} / {c.maxRedemptions}</td>
               <td style={{ padding: '10px' }}>
                 <StatusBadge

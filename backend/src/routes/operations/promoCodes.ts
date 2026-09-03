@@ -27,6 +27,7 @@ router.get('/', requireAdmin, async (req: Request, res: Response) => {
       codes: codes.map((c: any) => ({
         id: c.id,
         code: c.code,
+        type: c.type,
         trialDays: c.trialDays,
         maxRedemptions: c.maxRedemptions,
         redemptionCount: c.redemptionCount,
@@ -44,7 +45,8 @@ router.get('/', requireAdmin, async (req: Request, res: Response) => {
 // POST /api/operations/promo-codes
 router.post('/', requireAdmin, async (req: Request, res: Response) => {
   try {
-    const { code, trialDays, maxRedemptions, expiresAt } = req.body
+    const { code, trialDays, maxRedemptions, expiresAt, type } = req.body
+    const finalType = type === 'FULL_ACCESS_NO_TRIAL' ? 'FULL_ACCESS_NO_TRIAL' : 'STANDARD'
 
     const wasProvided = typeof code === 'string' && code.trim().length > 0
     let finalCode = wasProvided ? code.trim().toUpperCase() : generateCode()
@@ -59,6 +61,7 @@ router.post('/', requireAdmin, async (req: Request, res: Response) => {
             trialDays: Number(trialDays) || 7,
             maxRedemptions: Number(maxRedemptions) || 1,
             expiresAt: expiresAt ? new Date(expiresAt) : null,
+            type: finalType,
           },
         })
       } catch (e: any) {
@@ -74,7 +77,7 @@ router.post('/', requireAdmin, async (req: Request, res: Response) => {
     if (!created) return res.status(409).json({ error: 'No se pudo generar un codigo unico, intenta de nuevo' })
 
     await prisma.auditLog.create({
-      data: { userId: req.adminId!, event: 'admin_create_promo_code', metadata: { promoCodeId: created.id, code: created.code, maxRedemptions: created.maxRedemptions } },
+      data: { userId: req.adminId!, event: 'admin_create_promo_code', metadata: { promoCodeId: created.id, code: created.code, maxRedemptions: created.maxRedemptions, type: created.type } },
     })
 
     res.status(201).json({ success: true, code: created })
