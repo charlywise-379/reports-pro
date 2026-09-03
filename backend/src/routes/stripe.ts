@@ -40,13 +40,19 @@ router.post('/create-checkout-session', async (req: Request, res: Response) => {
     const existingSubCheck = await (prisma.subscription as any).findFirst({ where: { projectId: project.id } })
     const yaUsoTrial = existingSubCheck?.stripeSubscriptionId != null
 
+    const promoRedemption = await (prisma as any).promoCodeRedemption.findUnique({
+      where: { projectId: project.id },
+      include: { promoCode: true },
+    })
+    const hasFullAccessPromo = promoRedemption?.promoCode?.type === 'FULL_ACCESS_NO_TRIAL'
+
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
       payment_method_types: ['card'],
       line_items: [{ price: priceId, quantity: 1 }],
       mode: 'subscription',
       subscription_data: {
-        ...(yaUsoTrial || skipTrial ? {} : { trial_period_days: 7 }),
+        ...(yaUsoTrial || skipTrial || hasFullAccessPromo ? {} : { trial_period_days: 7 }),
         metadata: { userId, projectId: project.id, billingCycle: billingCycle || 'monthly' }
       },
       success_url: `${FRONTEND_URL}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
