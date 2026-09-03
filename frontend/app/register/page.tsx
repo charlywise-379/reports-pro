@@ -1,7 +1,7 @@
 'use client'
 import { useState } from 'react'
 import Link from 'next/link'
-import { Mail, Lock, User, Phone, Building2, MapPin, ArrowRight, ArrowLeft, CheckCircle, Sparkles } from 'lucide-react'
+import { Mail, Lock, User, Phone, Building2, MapPin, Ticket, ArrowRight, ArrowLeft, CheckCircle, Sparkles } from 'lucide-react'
 import posthog from 'posthog-js'
 
 export default function RegisterPage() {
@@ -15,6 +15,7 @@ export default function RegisterPage() {
   const [city, setCity] = useState('')
   const [state, setState] = useState('')
   const [country, setCountry] = useState('')
+  const [promoCode, setPromoCode] = useState('')
   const [acceptedTerms, setAcceptedTerms] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
@@ -51,7 +52,7 @@ export default function RegisterPage() {
       const res = await fetch(`${BACKEND}/api/auth/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ firstName, lastName, email, password, phone, company, city, state, country, acceptedTerms: true }),
+        body: JSON.stringify({ firstName, lastName, email, password, phone, company, city, state, country, acceptedTerms: true, promoCode }),
       })
       const result = await res.json()
       if (!res.ok) {
@@ -192,6 +193,14 @@ export default function RegisterPage() {
                 <input type="text" value={country} onChange={e => setCountry(e.target.value)} placeholder="México"
                   onKeyDown={e => e.key === 'Enter' && firstName.trim() && lastName.trim() && handleRegister()}
                   className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-violet-500/50 transition-all" />
+              </div>
+              <div>
+                <label className="text-sm text-gray-400 font-medium mb-1.5 block">Código promocional (opcional)</label>
+                <div className="relative">
+                  <Ticket size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-500" />
+                  <input type="text" value={promoCode} onChange={e => setPromoCode(e.target.value)} placeholder="Ej. PROMO2026"
+                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 pl-10 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-violet-500/50 transition-all" />
+                </div>
               </div>
               <label className="flex items-start gap-2.5 cursor-pointer select-none">
                 <input type="checkbox" checked={acceptedTerms} onChange={e => setAcceptedTerms(e.target.checked)}

@@ -10,7 +10,7 @@ const LEGAL_DOCS_VERSION = '2026-08-31'
 
 router.post('/register', async (req: Request, res: Response) => {
   try {
-    const { firstName, lastName, email, password, phone, company, city, state, country, acceptedTerms } = req.body
+    const { firstName, lastName, email, password, phone, company, city, state, country, acceptedTerms, promoCode } = req.body
 
     if (typeof firstName !== 'string' || !firstName.trim()) {
       return res.status(400).json({ error: 'Nombre requerido' })
@@ -26,6 +26,19 @@ router.post('/register', async (req: Request, res: Response) => {
     }
     if (acceptedTerms !== true) {
       return res.status(400).json({ error: 'Debes aceptar el Aviso de Privacidad y los Términos y Condiciones' })
+    }
+
+    let normalizedPromoCode: string | null = null
+    if (typeof promoCode === 'string' && promoCode.trim()) {
+      const candidate = promoCode.trim().toUpperCase()
+      const promo = await (prisma as any).promoCode.findUnique({ where: { code: candidate } })
+      const valido = promo && promo.active &&
+        (!promo.expiresAt || new Date(promo.expiresAt) > new Date()) &&
+        promo.redemptionCount < promo.maxRedemptions
+      if (!valido) {
+        return res.status(400).json({ error: 'El código promocional no es válido o ya fue utilizado' })
+      }
+      normalizedPromoCode = candidate
     }
 
     const fullName = `${firstName.trim()} ${lastName.trim()}`
@@ -77,6 +90,7 @@ router.post('/register', async (req: Request, res: Response) => {
           city: typeof city === 'string' && city.trim() ? city.trim() : null,
           state: typeof state === 'string' && state.trim() ? state.trim() : null,
           country: typeof country === 'string' && country.trim() ? country.trim() : null,
+          pendingPromoCode: normalizedPromoCode,
         },
       })
     } catch (userCreateError) {
