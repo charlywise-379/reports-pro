@@ -48,6 +48,11 @@ enum SubscriptionStatus {
   UNPAID
 }
 
+enum PromoCodeType {
+  STANDARD
+  FULL_ACCESS_NO_TRIAL
+}
+
 model User {
   id               String         @id @default(uuid())
   email            String         @unique
@@ -64,6 +69,7 @@ model User {
   createdAt        DateTime       @default(now())
   updatedAt        DateTime       @updatedAt
   freeReportUsedAt DateTime?
+  pendingPromoCode String?
   projects         Project[]
   subscriptions    Subscription[]
 
@@ -318,6 +324,7 @@ model PromoCode {
   active           Boolean   @default(true)
   expiresAt        DateTime?
   createdAt        DateTime  @default(now())
+  type             PromoCodeType @default(STANDARD)
   redemptions      PromoCodeRedemption[]
 
   @@map("promo_codes")
