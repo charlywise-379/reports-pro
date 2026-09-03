@@ -21,23 +21,33 @@ export function startReportWorker() {
 
       if (!project) throw new Error('Proyecto no encontrado: ' + projectId)
 
-      // Verificar que el proyecto tiene suscripcion activa o trial vigente
+      // Verificar que el proyecto tiene suscripcion activa, trial vigente,
+      // o un promo code de tipo FULL_ACCESS_NO_TRIAL sin usar aun
       const now = new Date()
       const trialVigente = (project as any).trialEndsAt && new Date((project as any).trialEndsAt) > now
       const sub = await (prisma.subscription as any).findFirst({ where: { projectId } })
-      const tieneStripe = sub?.stripeSubscriptionId != null && 
+      const tieneStripe = sub?.stripeSubscriptionId != null &&
         ['active', 'trialing'].includes((sub?.status || '').toLowerCase())
 
-      if (!trialVigente && !tieneStripe) {
+      const promoRedemption = await (prisma as any).promoCodeRedemption.findUnique({
+        where: { projectId },
+        include: { promoCode: true },
+      })
+      const hasFullAccessPromo = promoRedemption?.promoCode?.type === 'FULL_ACCESS_NO_TRIAL'
+
+      const userForGate = await prisma.user.findUnique({
+        where: { id: project.userId },
+        select: { freeReportUsedAt: true },
+      })
+      const eligibleViaFullAccessPromo = hasFullAccessPromo && !userForGate?.freeReportUsedAt
+
+      if (!trialVigente && !tieneStripe && !eligibleViaFullAccessPromo) {
         console.log(`[Worker] Proyecto ${projectId} sin suscripcion activa — saltando`)
         return { skipped: true, reason: 'no_active_subscription' }
       }
 
-      const user = await prisma.user.findUnique({
-        where: { id: project.userId },
-        select: { freeReportUsedAt: true },
-      })
-      const hasPromoAccess = await (prisma as any).promoCodeRedemption.findUnique({ where: { projectId } }) != null
+      const user = userForGate
+      const hasPromoAccess = promoRedemption != null
       const hasPaid = (sub?.status || '').toLowerCase() === 'active'
       const isFreeReport = !hasPaid && !user?.freeReportUsedAt
       const isTeaser = isFreeReport && !hasPromoAccess
