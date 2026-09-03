@@ -15,7 +15,6 @@ router.post('/competitive', requireAuth, async (req: Request, res: Response) => 
       monitorAreas, areaDepth, frequency, deliveryChannel, deliveryEmail, deliveryPhone,
       deliveryDay, deliveryTime, tags,
       presenceRegional, presenceNational, presenceInternational,
-      promoCode,
     } = req.body
 
     // userId siempre viene del token JWT — nunca del body
@@ -218,11 +217,11 @@ router.post('/competitive', requireAuth, async (req: Request, res: Response) => 
       }
     })
 
-    // ── Canjear promo code (opcional) ───────────────────
+    // ── Canjear promo code pendiente del registro (opcional) ─
     let promoCodeApplied = false
-    if (typeof promoCode === 'string' && promoCode.trim()) {
+    if (typeof user.pendingPromoCode === 'string' && user.pendingPromoCode.trim()) {
       try {
-        const normalizedCode = promoCode.trim().toUpperCase()
+        const normalizedCode = user.pendingPromoCode.trim().toUpperCase()
         const promo = await (prisma as any).promoCode.findUnique({ where: { code: normalizedCode } })
         const valido = promo && promo.active &&
           (!promo.expiresAt || new Date(promo.expiresAt) > new Date()) &&
@@ -243,6 +242,8 @@ router.post('/competitive', requireAuth, async (req: Request, res: Response) => 
         }
       } catch (e) {
         console.log('[Onboarding] Promo code no aplicado:', (e as Error).message)
+      } finally {
+        await prisma.user.update({ where: { id: user.id }, data: { pendingPromoCode: null } })
       }
     }
 
