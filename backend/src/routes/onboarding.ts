@@ -220,6 +220,7 @@ router.post('/competitive', requireAuth, async (req: Request, res: Response) => 
     // ── Canjear promo code pendiente del registro (opcional) ─
     let promoCodeApplied = false
     if (typeof user.pendingPromoCode === 'string' && user.pendingPromoCode.trim()) {
+      let shouldClearPendingCode = false
       try {
         const normalizedCode = user.pendingPromoCode.trim().toUpperCase()
         const promo = await (prisma as any).promoCode.findUnique({ where: { code: normalizedCode } })
@@ -228,22 +229,37 @@ router.post('/competitive', requireAuth, async (req: Request, res: Response) => 
           promo.redemptionCount < promo.maxRedemptions
 
         if (valido) {
-          await prisma.$transaction(async (tx) => {
-            const updated = await (tx as any).promoCode.updateMany({
-              where: { id: promo.id, redemptionCount: { lt: promo.maxRedemptions } },
-              data: { redemptionCount: { increment: 1 } },
+          try {
+            await prisma.$transaction(async (tx) => {
+              const updated = await (tx as any).promoCode.updateMany({
+                where: { id: promo.id, redemptionCount: { lt: promo.maxRedemptions } },
+                data: { redemptionCount: { increment: 1 } },
+              })
+              if (updated.count === 0) throw new Error('promo_code_exhausted')
+              await (tx as any).promoCodeRedemption.create({
+                data: { promoCodeId: promo.id, userId: user.id, projectId: newProject.id },
+              })
             })
-            if (updated.count === 0) throw new Error('promo_code_exhausted')
-            await (tx as any).promoCodeRedemption.create({
-              data: { promoCodeId: promo.id, userId: user.id, projectId: newProject.id },
-            })
-          })
-          promoCodeApplied = true
+            promoCodeApplied = true
+            shouldClearPendingCode = true
+          } catch (txError) {
+            if ((txError as Error).message === 'promo_code_exhausted') {
+              // Race real: el código se agotó entre el check y la transacción.
+              // Terminal — reintentar no ayudará.
+              shouldClearPendingCode = true
+            }
+            throw txError
+          }
+        } else {
+          // Código inválido/inactivo/expirado/agotado según el check síncrono — terminal.
+          shouldClearPendingCode = true
         }
       } catch (e) {
         console.log('[Onboarding] Promo code no aplicado:', (e as Error).message)
       } finally {
-        await prisma.user.update({ where: { id: user.id }, data: { pendingPromoCode: null } })
+        if (shouldClearPendingCode) {
+          await prisma.user.update({ where: { id: user.id }, data: { pendingPromoCode: null } })
+        }
       }
     }
 
