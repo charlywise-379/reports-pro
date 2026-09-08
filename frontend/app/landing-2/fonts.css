@@ -1,0 +1,29 @@
+/* Newake — fuente de despliegue para títulos. El archivo es la versión de
+   distribución del foundry y solo incluye A-Z, a-z, 0-9, espacio y las
+   vocales acentuadas del español (á é í ó ú ñ y mayúsculas) — no incluye
+   signos de puntuación. Para no perder fidelidad pixel-perfect en los
+   títulos que sí llevan puntuación ("...necesita.", "¿Te ha pasado...?"),
+   se declara un segundo @font-face bajo el mismo font-family con
+   unicode-range restringido exactamente a los glifos que a Newake le
+   faltan y que el diseño realmente usa ($ % - . ? © ¿ " ") — el navegador
+   resuelve automáticamente cada carácter con la cara que lo cubre. */
+
+@font-face {
+  font-family: 'Newake';
+  src: url('/landing-2/fonts/Newake.otf') format('opentype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+0020, U+0030-0039, U+0041-005A, U+0061-007A, U+00A0, U+00A7, U+00AD,
+    U+00C0-00C5, U+00C7-00CF, U+00D1-00D6, U+00D8-00DD, U+00E0-00E5, U+00E7-00EF,
+    U+00F1-00F6, U+00F8-00FD, U+00FF, U+0178;
+}
+
+@font-face {
+  font-family: 'Newake';
+  src: url('/landing-2/fonts/DMSans-Bold.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+0024, U+0025, U+002D, U+002E, U+003F, U+00A9, U+00BF, U+201C, U+201D;
+}
