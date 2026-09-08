@@ -2,17 +2,31 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
-import {
-  ArrowRight, Menu, X, Plus, Clock, Mail, Phone, User as UserIcon, MessageSquare,
-} from 'lucide-react'
+import { Mail, Phone, User as UserIcon, MessageSquare } from 'lucide-react'
 import Reveal from './Reveal'
 
 const NAVY = '#191462'
 const CREAM = '#F7F5F2'
 const PURPLE = '#AC97F7'
+const WHITE = '#FFFFFF'
 const BLACK = '#000000'
 
-const newake = { fontFamily: 'Newake, sans-serif' }
+// Regla A (Figma textCase=UPPER en el 100% de los nodos Newake): el
+// transform va horneado en el estilo base, nunca se omite.
+const newake = { fontFamily: 'Newake, sans-serif', textTransform: 'uppercase' as const }
+const dmSans = { fontFamily: 'var(--font-dm-sans)' }
+// Regla A también aplica a rótulos cortos en DM Sans (botones, badges,
+// nav, "Ideal para:", precios) — el copy largo de párrafo se excluye
+// explícitamente en cada bloque de texto abajo (sin esta clase).
+const dmSansUpper = { fontFamily: 'var(--font-dm-sans)', textTransform: 'uppercase' as const }
+
+function withAlpha(hex: string, alpha: number) {
+  const n = parseInt(hex.slice(1), 16)
+  const r = (n >> 16) & 255
+  const g = (n >> 8) & 255
+  const b = n & 255
+  return `rgba(${r},${g},${b},${alpha})`
+}
 
 const testimonials = [
   {
@@ -61,34 +75,39 @@ const faqs = [
   { q: '8 - ¿cuánto  puedo monitorear?', a: 'Hasta 10 competidores simultáneamente por proyecto, monitoreados 24/7 sin que se te escape nada.' },
 ]
 
+// Regla D (opacidad de relleno 0.2 sobre color base + sombra de color a 0.8):
+// colores exactos del nodo de Figma, no tonos planos.
 const modules = [
   {
-    n: '01', title: 'Inteligencia Competitiva Sectorial', color: '#51A2FF', shadow: 'rgba(81,162,255,0.8)',
+    n: '01', title: 'Inteligencia Competitiva Sectorial', color: '#51A2FF',
     body: 'Sabe exactamente qué está haciendo tu competencia — antes de que llegue a tus clientes.\n\nOmnireports escanea automáticamente sitios, directorios, redes sociales, sitios de reclutamiento, bolsas de trabajo, medios, bases de patentes y fuentes regulatorias.\n\nLlega en minutos.',
+    bullets: [
+      'Movimientos y estrategias de tus competidores principales',
+      'Cambios de precios y nuevas campañas activas',
+      'Lanzamientos de productos y nuevas funcionalidades',
+      'Regulaciones y cambios normativos que afectan tu sector',
+      'Cobertura en medios y menciones en redes sociales',
+    ],
     idealLabel: 'Ideal para:', ideal: 'Directores comerciales | marketing | estrategia | Fundadores',
-    textColor: NAVY,
-    active: true,
+    textColor: NAVY, cornerClass: 'rounded-tr-none', active: true,
   },
   {
-    n: '02', title: 'Radar de Ciberseguridad Empresarial', color: '#05DF72', shadow: 'rgba(5,223,114,0.8)',
+    n: '02', title: 'Radar de Ciberseguridad Empresarial', color: '#05DF72',
     body: 'Tu empresa tiene vulnerabilidades que no sabes que existen. Este módulo las detecta antes de que alguien las explote.\n\nMonitoreo continuo de CVEs, brechas en tu sector y postura de seguridad de tu dominio. Tu equipo de seguridad disponible 24/7, sin el costo de uno.',
     idealLabel: 'Ideal para:', ideal: 'CISOs | CTOs | Equipos de tecnología',
-    textColor: BLACK,
-    active: false,
+    textColor: BLACK, cornerClass: 'rounded-bl-none', active: false,
   },
   {
-    n: '03', title: 'Salud Corporativa para RRHH', color: '#A684FF', shadow: 'rgba(166,132,255,0.8)',
+    n: '03', title: 'Salud Corporativa para RRHH', color: '#A684FF',
     body: 'Retén talento antes de perderlo. Detecta señales de burnout, rotación y clima laboral antes de que se conviertan en un problema.\n\nIA especializada en psicología organizacional y bienestar laboral. Analiza tendencias globales y las adapta a tu empresa, industria y cultura de trabajo específica.',
     idealLabel: 'Ideal para:', ideal: 'Directores de RRHH | Gerentes de Personas | CEO',
-    textColor: NAVY,
-    active: false,
+    textColor: NAVY, cornerClass: 'rounded-tr-none', active: false,
   },
   {
-    n: '04', title: 'Perfil Clave Ejecutivo', color: '#FFB900', shadow: 'rgba(255,185,0,0.8)',
+    n: '04', title: 'Perfil Clave Ejecutivo', color: '#FFB900',
     body: 'Entra a cada negociación sabiendo más que tu contraparte.\n\nConstruimos un perfil 360° de cualquier ejecutivo: estilo de liderazgo, red de contactos, historial de decisiones y palancas de influencia para negociación estratégica.',
     idealLabel: 'Ideal para:', ideal: 'CEOs | Directores Comerciales | M&A | Equipos de ventas enterprise',
-    textColor: BLACK,
-    active: false,
+    textColor: BLACK, cornerClass: 'rounded-bl-none', active: false,
   },
 ]
 
@@ -98,6 +117,27 @@ const plans = [
   { freq: 'Semanal', price: 99, desc: 'Tu primer reporte es gratis.  \nCancelas en 2 clics.\nSin llamadas, sin formularios.', badge: 'Cada semana', featured: false },
   { freq: 'Diario', price: 149, desc: 'Tu primer reporte es gratis.  \nCancelas en 2 clics.\nSin llamadas, sin formularios.', badge: 'Cada día hábil', featured: false },
 ]
+
+// Regla F (carrusel): botón circular morado con flecha, apuntando en la
+// dirección indicada por `dir` (izquierda o derecha), usando el asset real.
+function CarouselArrow({ dir, onClick, ariaLabel }: { dir: 'left' | 'right'; onClick?: () => void; ariaLabel: string }) {
+  return (
+    <button
+      onClick={onClick}
+      aria-label={ariaLabel}
+      className="w-[75px] h-[35px] rounded-full flex items-center justify-center flex-shrink-0 transition-transform hover:scale-105"
+      style={{ background: PURPLE }}
+    >
+      <Image
+        src="/landing-2/icon-carousel-arrow.png"
+        alt=""
+        width={20}
+        height={20}
+        style={{ transform: dir === 'right' ? 'rotate(-90deg)' : 'rotate(90deg)' }}
+      />
+    </button>
+  )
+}
 
 export default function Landing2Page() {
   const [mobileOpen, setMobileOpen] = useState(false)
@@ -179,23 +219,28 @@ export default function Landing2Page() {
             ))}
           </nav>
           <div className="hidden md:flex items-center gap-3">
+            {/* Regla E: botón de dos líneas explícitas */}
             <Link
               href="/register"
-              className="rounded-full px-5 py-2.5 text-sm font-medium shadow-[0_0_30px_-10px_rgba(0,0,0,0.15)] transition-transform hover:scale-105"
-              style={{ background: PURPLE, color: NAVY }}
+              className="rounded-full px-5 py-2.5 text-sm text-center leading-tight shadow-[0_0_30px_-10px_rgba(0,0,0,0.15)] transition-transform hover:scale-105"
+              style={{ background: PURPLE, color: NAVY, ...dmSansUpper }}
             >
               Iniciar sesión
             </Link>
             <Link
               href="/register"
-              className="rounded-full px-5 py-2.5 text-sm font-medium shadow-[0_0_30px_-10px_rgba(0,0,0,0.15)] transition-transform hover:scale-105"
-              style={{ background: CREAM, color: NAVY }}
+              className="rounded-full px-5 py-2.5 text-sm text-center leading-tight shadow-[0_0_30px_-10px_rgba(0,0,0,0.15)] transition-transform hover:scale-105"
+              style={{ background: CREAM, color: NAVY, ...dmSansUpper }}
             >
-              Prueba Gratis 7 días
+              Prueba Gratis<br />7 días
             </Link>
           </div>
           <button className="md:hidden" onClick={() => setMobileOpen(o => !o)} aria-label="Menú">
-            {mobileOpen ? <X size={26} /> : <Menu size={26} />}
+            <div className="w-6 h-5 relative flex flex-col justify-between">
+              <span className="block h-0.5 w-full" style={{ background: NAVY }} />
+              <span className="block h-0.5 w-full" style={{ background: NAVY }} />
+              <span className="block h-0.5 w-full" style={{ background: NAVY }} />
+            </div>
           </button>
         </div>
         {mobileOpen && (
@@ -203,8 +248,8 @@ export default function Landing2Page() {
             {navLinks.map(l => (
               <a key={l.href} href={l.href} onClick={() => setMobileOpen(false)} className="text-base">{l.label}</a>
             ))}
-            <Link href="/register" className="rounded-full px-5 py-3 text-sm font-medium text-center" style={{ background: PURPLE, color: NAVY, fontFamily: 'var(--font-dm-sans)' }}>Iniciar sesión</Link>
-            <Link href="/register" className="rounded-full px-5 py-3 text-sm font-medium text-center border" style={{ borderColor: NAVY, fontFamily: 'var(--font-dm-sans)' }}>Prueba Gratis 7 días</Link>
+            <Link href="/register" className="rounded-full px-5 py-3 text-sm text-center" style={{ background: PURPLE, color: NAVY, ...dmSansUpper }}>Iniciar sesión</Link>
+            <Link href="/register" className="rounded-full px-5 py-3 text-sm text-center border" style={{ borderColor: NAVY, ...dmSansUpper }}>Prueba Gratis 7 días</Link>
           </div>
         )}
       </header>
@@ -219,13 +264,13 @@ export default function Landing2Page() {
         </div>
 
         <Reveal className="relative max-w-4xl mx-auto">
-          <p className="text-base font-medium mb-4" style={{ color: BLACK, fontFamily: 'var(--font-dm-sans)' }}>
+          <p className="text-base mb-4" style={{ color: BLACK, ...dmSansUpper }}>
             Inteligencia de Mercados&nbsp;&nbsp;|&nbsp;&nbsp;Automatización AI&nbsp;&nbsp;|&nbsp;&nbsp;Reportes en tiempo real
           </p>
           <h1 className="text-[2.75rem] leading-[1.111] md:text-7xl lg:text-[5.625rem] lg:leading-[6.25rem] mb-7 text-balance" style={{ ...newake, color: NAVY }}>
             Inteligencia competitiva que tu empresa necesita.
           </h1>
-          <p className="text-base md:text-xl leading-relaxed max-w-2xl mx-auto mb-8" style={{ color: BLACK, fontFamily: 'var(--font-dm-sans)' }}>
+          <p className="text-base md:text-xl leading-relaxed max-w-2xl mx-auto mb-8" style={{ color: BLACK, ...dmSans }}>
             Analiza automáticamente a tus competidores — precios, contrataciones, campañas, patentes y más.
             <br className="hidden md:block" />
             En español. Sin analistas. Sin dashboards. En tu inbox diario, semanal o mensual.
@@ -233,30 +278,33 @@ export default function Landing2Page() {
           <div className="flex justify-center mb-6">
             <Link
               href="/register"
-              className="inline-flex items-center gap-2.5 rounded-full px-8 py-4 text-sm md:text-base font-medium uppercase tracking-wide transition-transform hover:scale-105 shadow-[0_0_30px_-10px_rgba(0,0,0,0.15)]"
-              style={{ background: PURPLE, color: CREAM }}
+              className="inline-flex items-center gap-2.5 rounded-full px-8 py-4 text-sm md:text-base tracking-wide transition-transform hover:scale-105 shadow-[0_0_30px_-10px_rgba(0,0,0,0.15)]"
+              style={{ background: PURPLE, color: CREAM, ...dmSansUpper }}
             >
               Generar mi primer reporte gratis
               <Image src="/landing-2/icon-arrow-blue.png" alt="" width={20} height={20} />
             </Link>
           </div>
-          <p className="text-sm md:text-base" style={{ color: BLACK, fontFamily: 'var(--font-dm-sans)' }}>Tu primer reporte llega en minutos · Cancela cuando quieras</p>
+          <p className="text-sm md:text-base" style={{ color: BLACK, ...dmSansUpper }}>Tu primer reporte llega en minutos · Cancela cuando quieras</p>
         </Reveal>
 
-        <Reveal delay={150} className="relative mt-16 md:mt-20 max-w-6xl mx-auto h-[280px] sm:h-[380px] md:h-[520px]">
-          <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[62%] sm:w-[56%] md:w-[46%] aspect-[870/660] rounded-3xl overflow-hidden shadow-[0_0_30px_-10px_rgba(0,0,0,0.15)] z-20">
-            <Image src="/landing-2/reporte-01.png" alt="Reporte de inteligencia competitiva Omni Reports" fill sizes="60vw" className="object-cover" />
+        {/* Regla G: sin rotación, sangrado casi edge-to-edge del viewport
+            (reporte-02 arranca fuera del canvas por la izquierda, reporte-03
+            casi toca el borde derecho) */}
+        <Reveal delay={150} className="relative left-1/2 -translate-x-1/2 w-screen mt-16 md:mt-20 h-[280px] sm:h-[380px] md:h-[500px]">
+          <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[45.3%] aspect-[870/660] rounded-3xl overflow-hidden shadow-[0_0_30px_-10px_rgba(0,0,0,0.15)] z-20">
+            <Image src="/landing-2/reporte-01.png" alt="Reporte de inteligencia competitiva Omni Reports" fill sizes="45vw" className="object-cover" />
           </div>
-          <div className="absolute left-[2%] sm:left-[6%] top-[18%] w-[42%] sm:w-[36%] md:w-[30%] aspect-[720/546] rounded-3xl overflow-hidden shadow-[0_0_30px_-10px_rgba(0,0,0,0.15)] z-10 hidden sm:block">
-            <Image src="/landing-2/reporte-02.png" alt="Dashboard Omni Reports" fill sizes="30vw" className="object-cover" />
+          <div className="absolute left-[-6%] top-1/2 -translate-y-1/2 w-[37.5%] aspect-[720/546] rounded-3xl overflow-hidden shadow-[0_0_30px_-10px_rgba(0,0,0,0.15)] z-10 hidden sm:block">
+            <Image src="/landing-2/reporte-02.png" alt="Dashboard Omni Reports" fill sizes="37vw" className="object-cover" />
           </div>
-          <div className="absolute right-[2%] sm:right-[6%] top-[18%] w-[42%] sm:w-[36%] md:w-[30%] aspect-[720/546] rounded-3xl overflow-hidden shadow-[0_0_30px_-10px_rgba(0,0,0,0.15)] z-10 hidden sm:block">
-            <Image src="/landing-2/reporte-03.png" alt="Reporte ejecutivo Omni Reports" fill sizes="30vw" className="object-cover" />
+          <div className="absolute right-[-1.8%] top-1/2 -translate-y-1/2 w-[37.5%] aspect-[720/546] rounded-3xl overflow-hidden shadow-[0_0_30px_-10px_rgba(0,0,0,0.15)] z-10 hidden sm:block">
+            <Image src="/landing-2/reporte-03.png" alt="Reporte ejecutivo Omni Reports" fill sizes="37vw" className="object-cover" />
           </div>
         </Reveal>
       </section>
 
-      {/* ── ¿TE HA PASADO? ─────────────────────────────────── */}
+      {/* ── ¿TE HA PASADO? (carrusel) ───────────────────────── */}
       <section className="px-6 lg:px-[200px] py-16 md:py-20">
         <div className="max-w-6xl mx-auto grid md:grid-cols-[minmax(0,340px)_1fr] gap-10 md:gap-16 items-center">
           <Reveal>
@@ -264,7 +312,7 @@ export default function Landing2Page() {
               ¿Te ha pasado alguna de estas?
             </h2>
           </Reveal>
-          <Reveal delay={150}>
+          <Reveal delay={150} className="relative">
             <div
               className="rounded-[30px] bg-white p-8 md:p-14 text-center shadow-[0_0_30px_-10px_rgba(0,0,0,0.15)]"
               style={{ border: `2px solid ${PURPLE}` }}
@@ -272,15 +320,23 @@ export default function Landing2Page() {
               <h3 className="text-3xl lg:text-[40px] mb-4 leading-[1.05] lg:leading-[38.72px]" style={{ ...newake, color: NAVY }}>
                 &ldquo;Me enteré en la reunión con el cliente&rdquo;
               </h3>
-              <p className="text-base md:text-lg max-w-xl mx-auto" style={{ color: NAVY, fontFamily: 'var(--font-dm-sans)' }}>
+              <p className="text-base md:text-lg max-w-xl mx-auto" style={{ color: NAVY, ...dmSans }}>
                 Tu competidor lanzó un descuento o un producto nuevo — y lo supiste cuando tu cliente te lo mencionó, no antes. Ya era tarde para reaccionar.
               </p>
               <div
                 className="mt-8 mx-auto max-w-lg rounded-tl-none rounded-[24px] px-8 py-6 text-sm md:text-base"
-                style={{ background: PURPLE, color: CREAM, fontFamily: 'var(--font-dm-sans)' }}
+                style={{ background: PURPLE, color: CREAM, ...dmSansUpper }}
               >
                 Si te identificaste con alguna de estas, Omnireports fue diseñado exactamente para ti.
               </div>
+            </div>
+            {/* controles de carrusel — pareja de flechas circulares a los
+                costados de la pleca inferior, como en el diseño */}
+            <div className="absolute left-4 md:left-10 bottom-16 md:bottom-20">
+              <CarouselArrow dir="left" ariaLabel="Anterior" />
+            </div>
+            <div className="absolute right-4 md:right-10 bottom-16 md:bottom-20">
+              <CarouselArrow dir="right" ariaLabel="Siguiente" />
             </div>
           </Reveal>
         </div>
@@ -304,10 +360,11 @@ export default function Landing2Page() {
             { n: 'paso 03', title: 'Recibes el análisis', body: 'El reporte ejecutivo llega a tu email o WhatsApp en el horario que elijas — diario, semanal, quincenal o mensual. En PDF. En español. Listo para leer.' },
           ].map((step, i) => (
             <Reveal key={step.n} delay={i * 120}>
-              <div className="h-full rounded-[30px] p-8 shadow-[0_0_30px_-10px_rgba(0,0,0,0.15)]" style={{ background: CREAM }}>
+              {/* Regla C: esquina superior-izquierda recta (radii=[0,30,30,30]) */}
+              <div className="h-full rounded-[30px] rounded-tl-none p-8 shadow-[0_0_30px_-10px_rgba(0,0,0,0.15)]" style={{ background: CREAM }}>
                 <div className="text-4xl lg:text-[50px] leading-[1.1] lg:leading-[48.4px] mb-4" style={{ ...newake, color: NAVY }}>{step.n}</div>
                 <h3 className="text-2xl lg:text-[35px] leading-[1.1] lg:leading-[33.88px] mb-3" style={{ ...newake, color: NAVY }}>{step.title}</h3>
-                <p className="text-sm md:text-base leading-relaxed" style={{ color: NAVY, fontFamily: 'var(--font-dm-sans)' }}>{step.body}</p>
+                <p className="text-sm md:text-base leading-relaxed" style={{ color: NAVY, ...dmSans }}>{step.body}</p>
               </div>
             </Reveal>
           ))}
@@ -320,13 +377,13 @@ export default function Landing2Page() {
           <Reveal>
             <div className="rounded-[30px] bg-white p-8 md:p-10 max-w-xl">
               <h3 className="text-4xl lg:text-[50px] leading-[1.1] lg:leading-[48.4px] mb-4" style={{ ...newake, color: NAVY }}>Hasta 10 competidores monitoreados</h3>
-              <p className="text-base md:text-lg mb-8" style={{ color: BLACK, fontFamily: 'var(--font-dm-sans)', textAlign: 'justify' }}>
+              <p className="text-base md:text-lg mb-8" style={{ color: BLACK, ...dmSans, textAlign: 'justify' }}>
                 No importa si son 3 o 10. Omnireports los rastrea todos simultáneamente, 24/7, sin que pierdas nada.
               </p>
               <Link
                 href="/register"
-                className="inline-flex items-center gap-2.5 rounded-full px-6 py-3 text-sm font-medium text-white transition-transform hover:scale-105 shadow-[0_0_30px_-10px_rgba(0,0,0,0.15)]"
-                style={{ background: PURPLE }}
+                className="inline-flex items-center gap-2.5 rounded-full px-6 py-3 text-sm text-white transition-transform hover:scale-105 shadow-[0_0_30px_-10px_rgba(0,0,0,0.15)]"
+                style={{ background: PURPLE, ...dmSansUpper }}
               >
                 crear cuenta <Image src="/landing-2/icon-arrow-blue.png" alt="" width={16} height={16} />
               </Link>
@@ -339,15 +396,17 @@ export default function Landing2Page() {
               <div className="absolute inset-[30%] rounded-full overflow-hidden">
                 <Image src="/landing-2/logo-hexagon-mark.png" alt="Omni Reports" fill sizes="30vw" className="object-contain" />
               </div>
+              {/* Regla G (pills): solo 1 de 8 es morada rellena; el resto son
+                  blancas con borde propio (navy o morado según el diseño) */}
               {[
-                { label: '10 competidores vigilados', filled: true },
-                { label: 'Alertas anticipadas', filled: false },
-                { label: 'Benchmark competitivo', filled: false },
-                { label: 'WhatsApp y email', filled: false },
-                { label: 'Comparte gratis', filled: false },
-                { label: 'Resumen ejecutivo', filled: false },
-                { label: 'Dashboard + PDF', filled: false },
-                { label: 'Recomendaciones accionables', filled: false },
+                { label: '10 competidores vigilados', filled: true, border: PURPLE },
+                { label: 'Alertas anticipadas', filled: false, border: PURPLE },
+                { label: 'Benchmark competitivo', filled: false, border: NAVY },
+                { label: 'WhatsApp y email', filled: false, border: NAVY },
+                { label: 'Comparte gratis', filled: false, border: PURPLE },
+                { label: 'Resumen ejecutivo', filled: false, border: PURPLE },
+                { label: 'Dashboard + PDF', filled: false, border: NAVY },
+                { label: 'Recomendaciones accionables', filled: false, border: PURPLE },
               ].map((item, i) => {
                 const angle = (i / 8) * 2 * Math.PI - Math.PI / 2
                 const radius = 47
@@ -356,13 +415,13 @@ export default function Landing2Page() {
                 return (
                   <span
                     key={item.label}
-                    className="absolute -translate-x-1/2 -translate-y-1/2 whitespace-nowrap rounded-full px-3 py-1.5 text-[11px] md:text-xs font-medium shadow-[0_0_20px_-8px_rgba(0,0,0,0.15)]"
+                    className="absolute -translate-x-1/2 -translate-y-1/2 whitespace-nowrap rounded-full px-3 py-1.5 text-[11px] md:text-xs shadow-[0_0_20px_-8px_rgba(0,0,0,0.15)]"
                     style={{
                       left: `${x}%`, top: `${y}%`,
-                      fontFamily: 'var(--font-dm-sans)',
-                      background: item.filled ? PURPLE : 'white',
+                      ...dmSansUpper,
+                      background: item.filled ? PURPLE : WHITE,
                       color: item.filled ? CREAM : NAVY,
-                      border: item.filled ? 'none' : `1px solid ${NAVY}`,
+                      border: item.filled ? 'none' : `1px solid ${item.border}`,
                     }}
                   >
                     {item.label}
@@ -380,39 +439,43 @@ export default function Landing2Page() {
           <h2 className="text-4xl lg:text-[50px] leading-[1.3] lg:leading-[65px] mb-5 text-balance" style={{ ...newake, color: NAVY }}>
             Inteligencia de nivel enterprise. <br className="hidden md:block" />Sin el costo de uno.
           </h2>
-          <p className="text-base md:text-lg" style={{ color: BLACK, fontFamily: 'var(--font-dm-sans)' }}>
+          <p className="text-base md:text-lg" style={{ color: BLACK, ...dmSans }}>
             Un analista de inteligencia competitiva senior cuesta entre $2,100 y $4,200 USD al mes. Solo puede monitorear lo que le da tiempo. Se va de vacaciones. Tiene otros proyectos.
           </p>
         </Reveal>
         <div className="max-w-[1520px] mx-auto relative grid md:grid-cols-2 gap-0">
-          <Reveal className="rounded-[30px] md:rounded-r-none p-8 md:p-10 relative" style={{ background: CREAM }}>
-            <div className="inline-block rounded-t-full rounded-bl-none rounded-br-none px-5 py-2 text-2xl lg:text-[35px] leading-[1.1] lg:leading-[33.88px] mb-6" style={{ ...newake, background: CREAM, color: NAVY }}>
+          {/* OMNIREPORTS: tarjeta real, crema sobre crema, esquina
+              inferior-derecha recta (radii=[30,30,0,30]) */}
+          <Reveal className="rounded-[30px] rounded-br-none p-8 md:p-10 relative" style={{ background: CREAM }}>
+            <div className="inline-block rounded-full px-5 py-2 text-2xl lg:text-[35px] leading-[1.1] lg:leading-[33.88px] mb-6" style={{ ...newake, background: CREAM, color: NAVY }}>
               98% más barato
             </div>
             <h3 className="text-3xl lg:text-[50px] leading-[1.1] lg:leading-[48.4px] mb-5" style={{ ...newake, color: NAVY }}>OMNIREPORTS</h3>
-            <ul className="space-y-2.5 text-sm md:text-base mb-8" style={{ color: NAVY, fontFamily: 'var(--font-dm-sans)' }}>
+            <ul className="space-y-2.5 text-sm md:text-base mb-8" style={{ color: NAVY, ...dmSans }}>
               {['Monitorea 24/7 sin interrupciones', 'Reporte listo en menos de 24 horas', 'No tiene vacaciones, nunca falla', 'Cubre web, redes, medios, patentes, regulaciones', 'Análisis consistente, estructurado y accionable', 'Sin contratos, sin sorpresas, cancela cuando quieras'].map(line => (
                 <li key={line} className="flex gap-2.5"><span style={{ color: PURPLE }}>✓</span>{line}</li>
               ))}
             </ul>
             <div className="flex items-baseline gap-3">
-              <span className="text-3xl lg:text-[50px] leading-[1.1] lg:leading-[65.1px] font-bold" style={{ color: PURPLE, fontFamily: 'var(--font-dm-sans)' }}>desde $49</span>
-              <span className="text-2xl lg:text-[30px]" style={{ color: NAVY, fontFamily: 'var(--font-dm-sans)' }}>USD/mes</span>
+              <span className="text-3xl lg:text-[50px] leading-[1.1] lg:leading-[65.1px]" style={{ color: PURPLE, ...dmSansUpper, fontWeight: 700 }}>desde $49</span>
+              <span className="text-2xl lg:text-[30px]" style={{ color: NAVY, ...dmSansUpper }}>USD/mes</span>
             </div>
           </Reveal>
-          <div className="hidden md:flex items-center justify-center absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-10 text-5xl lg:text-[70px] leading-[1.1] lg:leading-[91.14px] font-bold" style={{ color: PURPLE, fontFamily: 'var(--font-dm-sans)' }}>
+          <div className="hidden md:flex items-center justify-center absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-10 text-5xl lg:text-[70px] leading-[1.1] lg:leading-[91.14px]" style={{ color: PURPLE, ...dmSansUpper, fontWeight: 700 }}>
             vs
           </div>
-          <Reveal delay={150} className="rounded-[30px] md:rounded-l-none bg-white p-8 md:p-10 border-t md:border-t-0 border-black/5">
-            <h3 className="text-3xl lg:text-[50px] leading-[1.1] lg:leading-[48.4px] mb-5 mt-[3.75rem] md:mt-0" style={{ ...newake, color: NAVY }}>ANALISTA HUMANO</h3>
-            <ul className="space-y-2.5 text-sm md:text-base mb-8" style={{ color: BLACK, fontFamily: 'var(--font-dm-sans)' }}>
+          {/* ANALISTA HUMANO: sin tarjeta — el nodo de Figma no tiene fill,
+              radio ni sombra; es texto plano sobre el fondo de la sección */}
+          <Reveal delay={150} className="p-8 md:p-10">
+            <h3 className="text-3xl lg:text-[50px] leading-[1.1] lg:leading-[48.4px] mb-5" style={{ ...newake, color: NAVY }}>ANALISTA HUMANO</h3>
+            <ul className="space-y-2.5 text-sm md:text-base mb-8" style={{ color: BLACK, ...dmSans }}>
               {['Monitorea solo lo que le da tiempo', 'Entrega el reporte en 3–5 días hábiles', 'No trabaja fines de semana ni vacaciones', 'Cubre 2–3 fuentes de información', 'Análisis subjetivo y variable', 'Costo fijo + prestaciones + curva de aprendizaje'].map(line => (
                 <li key={line} className="flex gap-2.5"><span>✗</span>{line}</li>
               ))}
             </ul>
             <div className="flex items-baseline gap-3">
-              <span className="text-3xl lg:text-[50px] leading-[1.1] lg:leading-[65.1px] font-bold" style={{ color: PURPLE, fontFamily: 'var(--font-dm-sans)' }}>$2,100–$4,200</span>
-              <span className="text-2xl lg:text-[30px]" style={{ color: BLACK, fontFamily: 'var(--font-dm-sans)' }}>USD/mes</span>
+              <span className="text-3xl lg:text-[50px] leading-[1.1] lg:leading-[65.1px]" style={{ color: PURPLE, ...dmSansUpper, fontWeight: 700 }}>$2,100–$4,200</span>
+              <span className="text-2xl lg:text-[30px]" style={{ color: BLACK, ...dmSansUpper }}>USD/mes</span>
             </div>
           </Reveal>
         </div>
@@ -424,16 +487,16 @@ export default function Landing2Page() {
           <h2 className="text-4xl lg:text-[50px] leading-[1.1] lg:leading-[48.4px] mb-5 text-balance" style={{ ...newake, color: NAVY }}>
             Genera tu primer reporte<br />en los próximos 5 minutos
           </h2>
-          <p className="text-base md:text-lg mb-3" style={{ color: BLACK, fontFamily: 'var(--font-dm-sans)' }}>
+          <p className="text-base md:text-lg mb-3" style={{ color: BLACK, ...dmSans }}>
             Regístrate ahora, configura tu empresa y recibe tu primer reporte de inteligencia AI antes de que termines tu café.
           </p>
-          <p className="text-sm md:text-base mb-8" style={{ color: BLACK, fontFamily: 'var(--font-dm-sans)' }}>
-            Tu primer reporte gratis&nbsp;&nbsp;|&nbsp;&nbsp;Tu eliges la recurrencia&nbsp;&nbsp;|&nbsp;&nbsp;Cancela con un clic
+          <p className="text-sm md:text-base mb-8" style={{ color: BLACK, ...dmSans }}>
+            Tu primer reporte gratis | Tu eliges la recurrencia | Cancela con un clic
           </p>
           <Link
             href="/register"
-            className="inline-flex items-center gap-2.5 rounded-full px-7 py-3.5 text-sm font-medium text-white transition-transform hover:scale-105 shadow-[0_0_30px_-10px_rgba(0,0,0,0.15)]"
-            style={{ background: PURPLE }}
+            className="inline-flex items-center gap-2.5 rounded-full px-7 py-3.5 text-sm text-white transition-transform hover:scale-105 shadow-[0_0_30px_-10px_rgba(0,0,0,0.15)]"
+            style={{ background: PURPLE, ...dmSansUpper }}
           >
             quiero unirme <Image src="/landing-2/icon-arrow-blue.png" alt="" width={16} height={16} />
           </Link>
@@ -446,13 +509,13 @@ export default function Landing2Page() {
           <h2 className="text-4xl lg:text-[50px] leading-[1.1] lg:leading-[48.4px] mb-5 text-balance" style={{ ...newake, color: NAVY }}>
             Elige con qué frecuencia quieres saber qué hace tu competencia
           </h2>
-          <p className="text-base md:text-lg" style={{ color: BLACK, fontFamily: 'var(--font-dm-sans)' }}>
+          <p className="text-base md:text-lg" style={{ color: BLACK, ...dmSans }}>
             Cada plan incluye el mismo nivel de profundidad de análisis. La diferencia es la frecuencia — cuántas veces al mes quieres recibir tu reporte.
           </p>
         </Reveal>
 
         <Reveal delay={100} className="flex items-center justify-center gap-4 mb-10">
-          <span className="text-sm font-semibold" style={{ opacity: anual ? 0.5 : 1, fontFamily: 'var(--font-dm-sans)' }}>Pago mensual</span>
+          <span className="text-sm font-semibold" style={{ opacity: anual ? 0.5 : 1, ...dmSans }}>Pago mensual</span>
           <button
             onClick={() => setAnual(a => !a)}
             className="relative w-14 h-7 rounded-full transition-colors"
@@ -461,9 +524,9 @@ export default function Landing2Page() {
           >
             <div className={`absolute top-1 w-5 h-5 bg-white rounded-full shadow transition-all ${anual ? 'left-8' : 'left-1'}`} />
           </button>
-          <span className="text-sm font-semibold" style={{ opacity: anual ? 1 : 0.5, fontFamily: 'var(--font-dm-sans)' }}>Pago anual</span>
+          <span className="text-sm font-semibold" style={{ opacity: anual ? 1 : 0.5, ...dmSans }}>Pago anual</span>
           {anual && (
-            <div className="rounded-full px-3 py-1 text-xs font-bold animate-pulse" style={{ background: 'rgba(5,223,114,0.15)', color: '#05DF72', fontFamily: 'var(--font-dm-sans)' }}>
+            <div className="rounded-full px-3 py-1 text-xs font-bold animate-pulse" style={{ background: 'rgba(5,223,114,0.15)', color: '#05DF72', ...dmSans }}>
               🎉 Ahorras 20%
             </div>
           )}
@@ -475,22 +538,24 @@ export default function Landing2Page() {
             const precioAnual = +(precioFinal * 12).toFixed(2)
             return (
               <Reveal key={plan.freq} delay={i * 80}>
+                {/* Regla C: esquina superior-izquierda recta, igual que las
+                    tarjetas de "paso" (radii=[0,30,30,30]) */}
                 <div
-                  className="h-full rounded-[30px] p-7 text-left shadow-[0_0_30px_-10px_rgba(0,0,0,0.15)] transition-transform hover:-translate-y-1"
+                  className="h-full rounded-[30px] rounded-tl-none p-7 text-left shadow-[0_0_30px_-10px_rgba(0,0,0,0.15)] transition-transform hover:-translate-y-1"
                   style={plan.featured ? { background: PURPLE, color: CREAM } : { background: CREAM, color: NAVY }}
                 >
                   <div className="text-2xl lg:text-[50px] leading-[1.1] lg:leading-[48.4px] mb-2" style={newake}>{plan.freq}</div>
-                  {anual && <div className="text-sm line-through mb-1 opacity-70" style={{ fontFamily: 'var(--font-dm-sans)' }}>${plan.price}/mes</div>}
+                  {anual && <div className="text-sm line-through mb-1 opacity-70" style={dmSans}>${plan.price}/mes</div>}
                   <div className="text-2xl lg:text-[50px] leading-[1.1] lg:leading-[48.4px] mb-1" style={newake}>${precioFinal} USD</div>
                   {anual && (
-                    <div className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-bold mb-2" style={{ background: 'rgba(5,223,114,0.18)', color: '#05DF72', fontFamily: 'var(--font-dm-sans)' }}>
+                    <div className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-bold mb-2" style={{ background: 'rgba(5,223,114,0.18)', color: '#05DF72', ...dmSans }}>
                       20% OFF
                     </div>
                   )}
-                  <p className="text-sm mt-2 whitespace-pre-line" style={{ fontFamily: 'var(--font-dm-sans)' }}>
+                  <p className="text-sm mt-2 whitespace-pre-line" style={dmSans}>
                     {plan.desc}
                   </p>
-                  <div className="mt-4 pt-4 border-t text-xs" style={{ borderColor: plan.featured ? 'rgba(255,255,255,0.25)' : 'rgba(25,20,98,0.1)', fontFamily: 'var(--font-dm-sans)' }}>
+                  <div className="mt-4 pt-4 border-t text-xs" style={{ borderColor: plan.featured ? 'rgba(255,255,255,0.25)' : 'rgba(25,20,98,0.1)', ...dmSans }}>
                     {plan.badge}
                     {anual && <div className="mt-1">${precioAnual}/año total</div>}
                   </div>
@@ -499,8 +564,8 @@ export default function Landing2Page() {
             )
           })}
         </div>
-        <Reveal delay={200} className="text-center text-sm md:text-base" style={{ color: BLACK, fontFamily: 'var(--font-dm-sans)' }}>
-          Sin contratos anuales&nbsp;&nbsp;|&nbsp;&nbsp;Sin costos ocultos&nbsp;&nbsp;|&nbsp;&nbsp;Cancelas cuando quieras con un clic.
+        <Reveal delay={200} className="text-center text-sm md:text-base" style={{ color: BLACK, ...dmSans }}>
+          Sin contratos anuales | Sin costos ocultos | Cancelas cuando quieras con un clic.
         </Reveal>
       </section>
 
@@ -510,7 +575,7 @@ export default function Landing2Page() {
           <h2 className="text-4xl lg:text-[50px] leading-[1.1] lg:leading-[48.4px] mb-5 text-balance" style={{ ...newake, color: NAVY }}>
             Tu analista de inteligencia trabaja mientras duermes
           </h2>
-          <p className="text-base md:text-lg" style={{ color: BLACK, fontFamily: 'var(--font-dm-sans)' }}>
+          <p className="text-base md:text-lg" style={{ color: BLACK, ...dmSans }}>
             Elige el módulo que necesitas. Cada sistema está entrenado específicamente para ese tipo de análisis.
           </p>
         </Reveal>
@@ -519,25 +584,32 @@ export default function Landing2Page() {
         <div className="max-w-7xl mx-auto grid md:grid-cols-2 gap-8">
           {modules.map((m, i) => (
             <Reveal key={m.n} delay={i * 100}>
+              {/* Regla D: relleno al 20% del color base + sombra de color al
+                  80%; Regla C: esquina recta específica por módulo */}
               <div
-                className="h-full rounded-[30px] p-8 md:p-10 flex flex-col"
-                style={{ background: m.color, boxShadow: `0 0 40px -12px ${m.shadow}` }}
+                className={`h-full rounded-[30px] ${m.cornerClass} p-8 md:p-10 flex flex-col`}
+                style={{ background: withAlpha(m.color, 0.2), boxShadow: `0 25px 55px -20px ${withAlpha(m.color, 0.8)}` }}
               >
                 <div className="text-6xl lg:text-[80px] leading-[1.1] lg:leading-[77.44px] mb-4" style={{ ...newake, color: NAVY }}>{m.n}</div>
                 <h3 className="text-3xl lg:text-[50px] leading-[1.1] lg:leading-[48.4px] mb-4" style={{ ...newake, color: NAVY }}>{m.title}</h3>
-                <p className="text-sm md:text-base leading-relaxed whitespace-pre-line mb-6" style={{ color: m.textColor, fontFamily: 'var(--font-dm-sans)' }}>{m.body}</p>
-                <p className="text-xs md:text-sm font-medium mt-auto mb-4" style={{ color: m.textColor, fontFamily: 'var(--font-dm-sans)' }}>{m.idealLabel} {m.ideal}</p>
+                <p className="text-sm md:text-base leading-relaxed whitespace-pre-line mb-6" style={{ color: m.textColor, ...dmSans }}>{m.body}</p>
+                {'bullets' in m && m.bullets && (
+                  <ul className="text-sm md:text-base leading-relaxed mb-6 space-y-1" style={{ color: m.textColor, ...dmSans }}>
+                    {m.bullets.map(b => <li key={b}>{b}</li>)}
+                  </ul>
+                )}
+                <p className="text-xs md:text-sm mt-auto mb-4" style={{ color: m.textColor, ...dmSansUpper }}>{m.idealLabel} {m.ideal}</p>
                 {m.active ? (
                   <Link
                     href="/register"
-                    className="self-start inline-flex items-center gap-2 rounded-full px-6 py-3 text-base font-medium"
-                    style={{ background: NAVY, color: CREAM, fontFamily: 'var(--font-dm-sans)' }}
+                    className="self-start inline-flex items-center gap-2 rounded-full px-6 py-3 text-base"
+                    style={{ background: NAVY, color: CREAM, ...dmSansUpper }}
                   >
                     empezar ahora <Image src="/landing-2/icon-arrow-blue.png" alt="" width={16} height={16} />
                   </Link>
                 ) : (
-                  <div className="self-start inline-flex items-center gap-2 rounded-full px-6 py-3 text-base font-medium" style={{ background: NAVY, color: CREAM, fontFamily: 'var(--font-dm-sans)' }}>
-                    próximamente <Clock size={18} />
+                  <div className="self-start inline-flex items-center gap-2 rounded-full px-6 py-3 text-base" style={{ background: NAVY, color: CREAM, ...dmSansUpper }}>
+                    próximamente <Image src="/landing-2/icon-clock-white.png" alt="" width={18} height={18} />
                   </div>
                 )}
               </div>
@@ -560,11 +632,15 @@ export default function Landing2Page() {
                       className="w-full flex items-center justify-between gap-6 text-left px-6 md:px-8 py-5"
                     >
                       <span className="text-lg lg:text-[30px] leading-[1.1] lg:leading-[29.04px]" style={{ ...newake, color: NAVY }}>{item.q}</span>
-                      <span
-                        className="flex-shrink-0 w-9 h-9 rounded-full flex items-center justify-center transition-transform"
-                        style={{ background: 'white', color: NAVY, transform: open ? 'rotate(45deg)' : 'none' }}
-                      >
-                        <Plus size={18} />
+                      {/* Regla F: ícono real +/− (sin círculo de fondo, tal
+                          como en el diseño) */}
+                      <span className="flex-shrink-0 w-10 h-10 flex items-center justify-center">
+                        <Image
+                          src={open ? '/landing-2/icon-plus-open.png' : '/landing-2/icon-plus-closed.png'}
+                          alt=""
+                          width={28}
+                          height={28}
+                        />
                       </span>
                     </button>
                     <div
@@ -572,7 +648,7 @@ export default function Landing2Page() {
                       style={{ gridTemplateRows: open ? '1fr' : '0fr' }}
                     >
                       <div className="overflow-hidden">
-                        <p className="px-6 md:px-8 pb-6 text-sm md:text-base leading-relaxed" style={{ color: BLACK, fontFamily: 'var(--font-dm-sans)', textAlign: 'justify' }}>{item.a}</p>
+                        <p className="px-6 md:px-8 pb-6 text-sm md:text-base leading-relaxed" style={{ color: BLACK, ...dmSans, textAlign: 'justify' }}>{item.a}</p>
                       </div>
                     </div>
                   </div>
@@ -582,13 +658,13 @@ export default function Landing2Page() {
           </div>
           <Reveal className="lg:sticky lg:top-28 self-start order-1 lg:order-2">
             <h2 className="text-4xl lg:text-[50px] leading-[1.1] lg:leading-[48.4px] mb-5" style={{ ...newake, color: NAVY }}>Preguntas frecuentes</h2>
-            <p className="text-base md:text-lg mb-8" style={{ color: BLACK, fontFamily: 'var(--font-dm-sans)', textAlign: 'justify' }}>
+            <p className="text-base md:text-lg mb-8" style={{ color: BLACK, ...dmSans, textAlign: 'justify' }}>
               Resolvemos las dudas más comunes sobre cómo funciona Omnireports, sus módulos y precios. Empieza gratis hoy mismo.
             </p>
             <Link
               href="/register"
-              className="inline-flex items-center gap-2.5 rounded-full px-6 py-3 text-sm font-medium text-white transition-transform hover:scale-105"
-              style={{ background: PURPLE }}
+              className="inline-flex items-center gap-2.5 rounded-full px-6 py-3 text-sm text-white transition-transform hover:scale-105"
+              style={{ background: PURPLE, ...dmSansUpper }}
             >
               quiero unirme <Image src="/landing-2/icon-arrow-blue.png" alt="" width={16} height={16} />
             </Link>
@@ -596,34 +672,29 @@ export default function Landing2Page() {
         </div>
       </section>
 
-      {/* ── TESTIMONIOS + CONTACTO ─────────────────────────── */}
+      {/* ── TESTIMONIOS (carrusel) + CONTACTO ──────────────── */}
       <section id="casos" className="px-6 lg:px-[200px] py-20 md:py-28">
         <div className="max-w-[1420px] mx-auto grid lg:grid-cols-[620fr_700fr] gap-10 items-start">
-          <Reveal>
-            <div className="rounded-[30px] shadow-[0_0_30px_-10px_rgba(0,0,0,0.15)] overflow-hidden" style={{ background: CREAM }}>
-              <div className="px-8 py-8 text-center" style={{ background: PURPLE, color: CREAM }}>
+          <Reveal className="relative">
+            {/* Regla C: esquinas superiores rectas (radii=[0,0,30,30]) */}
+            <div className="rounded-[30px] rounded-t-none shadow-[0_0_30px_-10px_rgba(0,0,0,0.15)] overflow-hidden" style={{ background: CREAM }}>
+              <div className="px-8 py-8 text-center rounded-tr-none" style={{ background: PURPLE, color: CREAM }}>
                 <p className="text-xl lg:text-[30px] leading-[1.1] lg:leading-[29.04px]" style={newake}>
                   Lo que dicen quienes ya no esperan a enterarse tarde.
                 </p>
               </div>
               <div className="p-8">
                 <div className="text-3xl lg:text-[40px] leading-[1.1] lg:leading-[38.72px] mb-1" style={{ ...newake, color: NAVY }}>{t.name}</div>
-                <div className="text-base mb-4" style={{ color: NAVY, fontFamily: 'var(--font-dm-sans)' }}>{t.role} | {t.company}</div>
-                <p className="text-sm md:text-base leading-relaxed mb-6" style={{ color: NAVY, fontFamily: 'var(--font-dm-sans)' }}>{t.quote}</p>
-                <div className="flex items-center gap-3">
-                  <button onClick={prevTestimonial} className="w-9 h-9 rounded-full flex items-center justify-center transition-colors" style={{ background: 'white', color: NAVY }} aria-label="Anterior">
-                    <ArrowRight size={16} className="rotate-180" />
-                  </button>
-                  <button onClick={nextTestimonial} className="w-9 h-9 rounded-full flex items-center justify-center transition-colors" style={{ background: PURPLE, color: CREAM }} aria-label="Siguiente">
-                    <ArrowRight size={16} />
-                  </button>
-                  <div className="flex gap-1.5 ml-2">
-                    {testimonials.map((_, i) => (
-                      <span key={i} className="h-1.5 rounded-full transition-all" style={{ width: i === activeTestimonial ? 20 : 6, background: i === activeTestimonial ? PURPLE : 'rgba(25,20,98,0.2)' }} />
-                    ))}
-                  </div>
-                </div>
+                <div className="text-base mb-4" style={{ color: NAVY, ...dmSans }}>{t.role} | {t.company}</div>
+                <p className="text-sm md:text-base leading-relaxed" style={{ color: NAVY, ...dmSans }}>{t.quote}</p>
               </div>
+            </div>
+            {/* controles de carrusel a los costados de la pleca superior */}
+            <div className="absolute -left-4 md:-left-9 top-6">
+              <CarouselArrow dir="left" onClick={prevTestimonial} ariaLabel="Testimonio anterior" />
+            </div>
+            <div className="absolute -right-4 md:-right-9 top-6">
+              <CarouselArrow dir="right" onClick={nextTestimonial} ariaLabel="Testimonio siguiente" />
             </div>
           </Reveal>
 
@@ -632,7 +703,7 @@ export default function Landing2Page() {
               {contactSent ? (
                 <div className="text-center py-10">
                   <h3 className="text-2xl md:text-3xl mb-3" style={{ ...newake, color: NAVY }}>¡Listo!</h3>
-                  <p style={{ color: BLACK, fontFamily: 'var(--font-dm-sans)' }}>Recibimos tu mensaje, te respondemos a la brevedad.</p>
+                  <p style={{ color: BLACK, ...dmSans }}>Recibimos tu mensaje, te respondemos a la brevedad.</p>
                 </div>
               ) : (
                 <>
@@ -641,34 +712,34 @@ export default function Landing2Page() {
                     <div className="relative">
                       <UserIcon size={16} className="absolute left-4 top-1/2 -translate-y-1/2 opacity-50" />
                       <input value={contactName} onChange={e => setContactName(e.target.value)} placeholder="Nombre"
-                        className="w-full rounded-full pl-10 pr-4 py-3 text-sm outline-none" style={{ background: 'white', fontFamily: 'var(--font-dm-sans)' }} />
+                        className="w-full rounded-full pl-10 pr-4 py-3 text-sm outline-none" style={{ background: 'white', ...dmSans }} />
                     </div>
                     <div className="relative">
                       <Phone size={16} className="absolute left-4 top-1/2 -translate-y-1/2 opacity-50" />
                       <input value={contactPhone} onChange={e => setContactPhone(e.target.value)} placeholder="Teléfono"
-                        className="w-full rounded-full pl-10 pr-4 py-3 text-sm outline-none" style={{ background: 'white', fontFamily: 'var(--font-dm-sans)' }} />
+                        className="w-full rounded-full pl-10 pr-4 py-3 text-sm outline-none" style={{ background: 'white', ...dmSans }} />
                     </div>
                   </div>
                   <div className="grid grid-cols-2 gap-4 mb-4">
                     <div className="relative">
                       <Mail size={16} className="absolute left-4 top-1/2 -translate-y-1/2 opacity-50" />
                       <input type="email" value={contactEmail} onChange={e => setContactEmail(e.target.value)} placeholder="Correo"
-                        className="w-full rounded-full pl-10 pr-4 py-3 text-sm outline-none" style={{ background: 'white', fontFamily: 'var(--font-dm-sans)' }} />
+                        className="w-full rounded-full pl-10 pr-4 py-3 text-sm outline-none" style={{ background: 'white', ...dmSans }} />
                     </div>
                     <input value={contactSubject} onChange={e => setContactSubject(e.target.value)} placeholder="Asunto"
-                      className="w-full rounded-full px-4 py-3 text-sm outline-none" style={{ background: 'white', fontFamily: 'var(--font-dm-sans)' }} />
+                      className="w-full rounded-full px-4 py-3 text-sm outline-none" style={{ background: 'white', ...dmSans }} />
                   </div>
                   <div className="relative mb-5">
                     <MessageSquare size={16} className="absolute left-4 top-4 opacity-50" />
                     <textarea value={contactMessage} onChange={e => setContactMessage(e.target.value)} placeholder="Mensaje" rows={4}
-                      className="w-full rounded-[24px] pl-10 pr-4 py-3 text-sm outline-none resize-none" style={{ background: 'white', fontFamily: 'var(--font-dm-sans)' }} />
+                      className="w-full rounded-[24px] pl-10 pr-4 py-3 text-sm outline-none resize-none" style={{ background: 'white', ...dmSans }} />
                   </div>
                   {contactError && <p className="text-sm text-red-500 mb-4">{contactError}</p>}
                   <button
                     onClick={handleContactSubmit}
                     disabled={contactLoading || !contactName.trim() || !contactEmail.trim() || !contactMessage.trim()}
-                    className="inline-flex items-center gap-2.5 rounded-full px-6 py-3 text-sm font-medium text-white transition-transform hover:scale-105 disabled:opacity-50"
-                    style={{ background: PURPLE }}
+                    className="inline-flex items-center gap-2.5 rounded-full px-6 py-3 text-sm text-white transition-transform hover:scale-105 disabled:opacity-50"
+                    style={{ background: PURPLE, ...dmSansUpper }}
                   >
                     {contactLoading ? 'Enviando...' : 'enviar'} <Image src="/landing-2/icon-envelope.png" alt="" width={16} height={16} />
                   </button>
