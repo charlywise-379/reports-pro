@@ -1,5 +1,5 @@
 'use client'
-import { useState } from 'react'
+import { useState, type CSSProperties } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { Mail, Phone, User as UserIcon, MessageSquare } from 'lucide-react'
@@ -26,6 +26,32 @@ function withAlpha(hex: string, alpha: number) {
   const g = (n >> 8) & 255
   const b = n & 255
   return `rgba(${r},${g},${b},${alpha})`
+}
+
+// ── Tipografía fluida ────────────────────────────────────────────────
+// clamp(min, min + pendiente*vw, max) — interpola linealmente entre el
+// tamaño móvil (min) y el tamaño exacto de Figma (max) a lo largo del
+// ancho de viewport, sin saltos de breakpoint. Todas usan leading
+// unitless (ratio), que escala junto con el tamaño automáticamente.
+const T = {
+  h1: 'text-[clamp(3.5rem,2.65rem+3.4vw,5.625rem)] leading-[1.1]',
+  size50: 'text-[clamp(1.875rem,1.375rem+2vw,3.125rem)] leading-[1.1]',
+  size35: 'text-[clamp(1.375rem,1.05rem+1.3vw,2.188rem)] leading-[1.1]',
+  size40: 'text-[clamp(1.625rem,1.275rem+1.4vw,2.5rem)] leading-[1.1]',
+  size30: 'text-[clamp(1.25rem,1rem+1vw,1.875rem)] leading-[1.1]',
+  size80: 'text-[clamp(3rem,2.2rem+3.2vw,5rem)] leading-[1.1]',
+  size36: 'text-[clamp(1.5rem,1.2rem+1.2vw,2.25rem)] leading-[1.1]',
+  vs: 'text-[clamp(2.5rem,1.75rem+3vw,4.375rem)] leading-[1.1]',
+  usdMes: 'text-[clamp(1.125rem,0.825rem+1.2vw,1.875rem)]',
+  nav: 'text-[clamp(1.25rem,1.125rem+0.5vw,1.5625rem)]',
+  footerNav: 'text-[clamp(1rem,0.85rem+0.6vw,1.375rem)]',
+  copyright: 'text-[clamp(0.875rem,0.725rem+0.6vw,1.25rem)]',
+  // tamaños específicos para columnas angostas (tarjetas de precio en
+  // grillas de 2-4 columnas): piso mucho más bajo que el resto porque
+  // el clamp basado en vw no conoce el ancho del contenedor, solo el
+  // del viewport, y una tarjeta a 2 columnas es mucho más angosta que
+  // la mitad del viewport una vez restado el padding.
+  planLabel: 'text-[clamp(1.1rem,0.85rem+1.2vw,3.125rem)] leading-[1.15]',
 }
 
 const testimonials = [
@@ -120,22 +146,143 @@ const plans = [
 
 // Regla F (carrusel): botón circular morado con flecha, apuntando en la
 // dirección indicada por `dir` (izquierda o derecha), usando el asset real.
+// Tamaño también fluido: 44px en móvil hasta los 75x35 exactos de Figma.
 function CarouselArrow({ dir, onClick, ariaLabel }: { dir: 'left' | 'right'; onClick?: () => void; ariaLabel: string }) {
   return (
     <button
       onClick={onClick}
       aria-label={ariaLabel}
-      className="w-[75px] h-[35px] rounded-full flex items-center justify-center flex-shrink-0 transition-transform hover:scale-105"
+      className="w-11 h-11 md:w-[75px] md:h-[35px] rounded-full flex items-center justify-center flex-shrink-0 transition-transform hover:scale-105"
       style={{ background: PURPLE }}
     >
       <Image
         src="/landing-2/icon-carousel-arrow.png"
         alt=""
-        width={20}
-        height={20}
+        width={18}
+        height={18}
         style={{ transform: dir === 'right' ? 'rotate(-90deg)' : 'rotate(90deg)' }}
       />
     </button>
+  )
+}
+
+// Forma "pestaña con muesca cóncava": una etiqueta más angosta que la
+// tarjeta, colgando de una esquina, cuya unión con el cuerpo no es un
+// escalón recto sino una curva cóncava (radio R) — la silueta exacta que
+// aparece en el diseño en las tarjetas de plan, paso, módulo y el badge
+// "98% más barato". `corner` indica de qué esquina cuelga la pestaña;
+// el cuerpo ocupa el resto de la tarjeta con esa misma esquina recta.
+function NotchCard({
+  corner, color, radius = 30, tabClassName = '', tabStyle, tab, children, className = '', style, bodyClassName = '', bodyStyle,
+}: {
+  corner: 'tl' | 'tr' | 'bl' | 'br'
+  color: string
+  radius?: number
+  tabClassName?: string
+  tabStyle?: CSSProperties
+  tab: React.ReactNode
+  children: React.ReactNode
+  className?: string
+  style?: CSSProperties
+  bodyClassName?: string
+  bodyStyle?: CSSProperties
+}) {
+  const isTop = corner === 'tl' || corner === 'tr'
+  const isLeft = corner === 'tl' || corner === 'bl'
+
+  // Pestaña y cuerpo son dos bloques apilados en una columna flex (no
+  // superpuestos): la pestaña, angosta, ajustada a su contenido; el
+  // cuerpo, a todo el ancho, con flex-1 para llenar el alto disponible
+  // de la fila del grid (fundamental para que no quede un hueco vacío
+  // antes de una pestaña que cuelga de una esquina inferior).
+  const tabRadius = isTop
+    ? (isLeft ? `${radius}px ${radius}px 0 ${radius}px` : `${radius}px ${radius}px ${radius}px 0`)
+    : (isLeft ? `${radius}px 0 ${radius}px ${radius}px` : `0 ${radius}px ${radius}px ${radius}px`)
+
+  const bodyRadius = isTop
+    ? (isLeft ? `0 ${radius}px ${radius}px ${radius}px` : `${radius}px 0 ${radius}px ${radius}px`)
+    : (isLeft ? `${radius}px ${radius}px ${radius}px 0` : `${radius}px ${radius}px 0 ${radius}px`)
+
+  // Parche que dibuja la muesca cóncava: se ancla al borde de la
+  // pestaña que da hacia el cuerpo, con un cuarto de círculo
+  // transparente en la esquina más próxima a la pestaña — revela el
+  // fondo de la página ahí, leyéndose como una curva suave en vez de
+  // un escalón recto. Funciona porque, a diferencia del modelo de
+  // superposición, aquí SÍ existe un hueco real en ese punto (unión en
+  // L), no algo cubierto por la propia pestaña.
+  const notchPos: CSSProperties = isTop
+    ? { top: '100%', [isLeft ? 'left' : 'right']: '100%' }
+    : { bottom: '100%', [isLeft ? 'left' : 'right']: '100%' }
+  const gradientAngle = isTop
+    ? (isLeft ? 'top left' : 'top right')
+    : (isLeft ? 'bottom left' : 'bottom right')
+
+  return (
+    <div className={`relative flex flex-col ${className}`} style={style}>
+      <div
+        className={`inline-block relative flex-shrink-0 ${tabClassName}`}
+        style={{
+          ...tabStyle, background: color, borderRadius: tabRadius,
+          order: isTop ? -1 : 1,
+          alignSelf: isLeft ? 'flex-start' : 'flex-end',
+        }}
+      >
+        {tab}
+        <span
+          aria-hidden
+          className="absolute pointer-events-none"
+          style={{
+            width: radius, height: radius,
+            ...notchPos,
+            background: `radial-gradient(circle at ${gradientAngle}, transparent ${radius}px, ${color} ${radius}px)`,
+          }}
+        />
+      </div>
+      <div className={`flex-1 ${bodyClassName}`} style={{ ...bodyStyle, background: color, borderRadius: bodyRadius, order: 0 }}>
+        {children}
+      </div>
+    </div>
+  )
+}
+
+// Variante "solo pestaña" para casos donde la muesca no da paso a una
+// segunda tarjeta con su propio color (ej. el badge "98% más barato",
+// que flota sobre el mismo panel crema, sin cuerpo propio que dibujar).
+function NotchTab({
+  corner, color, radius = 30, className = '', style, children,
+}: {
+  corner: 'tl' | 'tr' | 'bl' | 'br'
+  color: string
+  radius?: number
+  className?: string
+  style?: CSSProperties
+  children: React.ReactNode
+}) {
+  const isTop = corner === 'tl' || corner === 'tr'
+  const isLeft = corner === 'tl' || corner === 'bl'
+  const tabRadius = isTop
+    ? (isLeft ? `${radius}px ${radius}px 0 ${radius}px` : `${radius}px ${radius}px ${radius}px 0`)
+    : (isLeft ? `${radius}px 0 ${radius}px ${radius}px` : `0 ${radius}px ${radius}px ${radius}px`)
+  const notchPos: CSSProperties = isTop
+    ? { top: '100%', [isLeft ? 'left' : 'right']: '100%' }
+    : { bottom: '100%', [isLeft ? 'left' : 'right']: '100%' }
+  const gradientAngle = isTop
+    ? (isLeft ? 'top left' : 'top right')
+    : (isLeft ? 'bottom left' : 'bottom right')
+
+  return (
+    <div className={`inline-block relative ${className}`} style={{ ...style, background: color, borderRadius: tabRadius }}>
+      {children}
+      <span
+        aria-hidden
+        className="absolute pointer-events-none"
+        style={{
+          width: radius, height: radius,
+          ...notchPos,
+          background: `radial-gradient(circle at ${gradientAngle}, transparent ${radius}px, ${color} ${radius}px)`,
+        }}
+      />
+    </div>
   )
 }
 
@@ -211,9 +358,9 @@ export default function Landing2Page() {
           <Link href="/landing-2" className="flex items-center">
             <Image src="/landing-2/logo-full-dark.png" alt="Omni Reports" width={165} height={35} className="h-8 md:h-9 w-auto" priority />
           </Link>
-          <nav className="hidden lg:flex items-center gap-8" style={newake}>
+          <nav className={`hidden lg:flex items-center gap-6 xl:gap-8 ${T.nav}`} style={newake}>
             {navLinks.map(l => (
-              <a key={l.href} href={l.href} className="text-[25px] leading-[24.2px] hover:opacity-60 transition-opacity" style={{ color: BLACK }}>
+              <a key={l.href} href={l.href} className="hover:opacity-60 transition-opacity whitespace-nowrap" style={{ color: BLACK }}>
                 {l.label}
               </a>
             ))}
@@ -264,10 +411,10 @@ export default function Landing2Page() {
         </div>
 
         <Reveal className="relative max-w-4xl mx-auto">
-          <p className="text-base mb-4" style={{ color: BLACK, ...dmSansUpper }}>
+          <p className="text-sm sm:text-base mb-4" style={{ color: BLACK, ...dmSansUpper }}>
             Inteligencia de Mercados&nbsp;&nbsp;|&nbsp;&nbsp;Automatización AI&nbsp;&nbsp;|&nbsp;&nbsp;Reportes en tiempo real
           </p>
-          <h1 className="text-[2.75rem] leading-[1.111] md:text-7xl lg:text-[5.625rem] lg:leading-[6.25rem] mb-7 text-balance" style={{ ...newake, color: NAVY }}>
+          <h1 className={`${T.h1} mb-7 text-balance`} style={{ ...newake, color: NAVY }}>
             Inteligencia competitiva que tu empresa necesita.
           </h1>
           <p className="text-base md:text-xl leading-relaxed max-w-2xl mx-auto mb-8" style={{ color: BLACK, ...dmSans }}>
@@ -278,27 +425,27 @@ export default function Landing2Page() {
           <div className="flex justify-center mb-6">
             <Link
               href="/register"
-              className="inline-flex items-center gap-2.5 rounded-full px-8 py-4 text-sm md:text-base tracking-wide transition-transform hover:scale-105 shadow-[0_0_30px_-10px_rgba(0,0,0,0.15)]"
+              className="inline-flex items-center gap-2.5 rounded-full px-6 sm:px-8 py-3.5 sm:py-4 text-xs sm:text-sm md:text-base tracking-wide transition-transform hover:scale-105 shadow-[0_0_30px_-10px_rgba(0,0,0,0.15)] text-center"
               style={{ background: PURPLE, color: CREAM, ...dmSansUpper }}
             >
               Generar mi primer reporte gratis
-              <Image src="/landing-2/icon-arrow-blue.png" alt="" width={20} height={20} />
+              <Image src="/landing-2/icon-arrow-blue.png" alt="" width={20} height={20} className="flex-shrink-0" />
             </Link>
           </div>
-          <p className="text-sm md:text-base" style={{ color: BLACK, ...dmSansUpper }}>Tu primer reporte llega en minutos · Cancela cuando quieras</p>
+          <p className="text-xs sm:text-sm md:text-base" style={{ color: BLACK, ...dmSansUpper }}>Tu primer reporte llega en minutos · Cancela cuando quieras</p>
         </Reveal>
 
         {/* Regla G: sin rotación, sangrado casi edge-to-edge del viewport
             (reporte-02 arranca fuera del canvas por la izquierda, reporte-03
             casi toca el borde derecho) */}
-        <Reveal delay={150} className="relative left-1/2 -translate-x-1/2 w-screen mt-16 md:mt-20 h-[280px] sm:h-[380px] md:h-[500px]">
-          <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[45.3%] aspect-[870/660] rounded-3xl overflow-hidden shadow-[0_0_30px_-10px_rgba(0,0,0,0.15)] z-20">
+        <Reveal delay={150} className="relative left-1/2 -translate-x-1/2 w-screen mt-16 md:mt-20 h-[220px] xs:h-[260px] sm:h-[380px] md:h-[500px]">
+          <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[45.3%] aspect-[870/660] rounded-2xl md:rounded-3xl overflow-hidden shadow-[0_0_30px_-10px_rgba(0,0,0,0.15)] z-20">
             <Image src="/landing-2/reporte-01.png" alt="Reporte de inteligencia competitiva Omni Reports" fill sizes="45vw" className="object-cover" />
           </div>
-          <div className="absolute left-[-6%] top-1/2 -translate-y-1/2 w-[37.5%] aspect-[720/546] rounded-3xl overflow-hidden shadow-[0_0_30px_-10px_rgba(0,0,0,0.15)] z-10 hidden sm:block">
+          <div className="absolute left-[-6%] top-1/2 -translate-y-1/2 w-[37.5%] aspect-[720/546] rounded-2xl md:rounded-3xl overflow-hidden shadow-[0_0_30px_-10px_rgba(0,0,0,0.15)] z-10 hidden sm:block">
             <Image src="/landing-2/reporte-02.png" alt="Dashboard Omni Reports" fill sizes="37vw" className="object-cover" />
           </div>
-          <div className="absolute right-[-1.8%] top-1/2 -translate-y-1/2 w-[37.5%] aspect-[720/546] rounded-3xl overflow-hidden shadow-[0_0_30px_-10px_rgba(0,0,0,0.15)] z-10 hidden sm:block">
+          <div className="absolute right-[-1.8%] top-1/2 -translate-y-1/2 w-[37.5%] aspect-[720/546] rounded-2xl md:rounded-3xl overflow-hidden shadow-[0_0_30px_-10px_rgba(0,0,0,0.15)] z-10 hidden sm:block">
             <Image src="/landing-2/reporte-03.png" alt="Reporte ejecutivo Omni Reports" fill sizes="37vw" className="object-cover" />
           </div>
         </Reveal>
@@ -308,35 +455,33 @@ export default function Landing2Page() {
       <section className="px-6 lg:px-[200px] py-16 md:py-20">
         <div className="max-w-6xl mx-auto grid md:grid-cols-[minmax(0,340px)_1fr] gap-10 md:gap-16 items-center">
           <Reveal>
-            <h2 className="text-4xl lg:text-[50px] leading-[1.1] lg:leading-[48.4px] text-balance" style={{ ...newake, color: NAVY }}>
+            <h2 className={`${T.size50} text-balance`} style={{ ...newake, color: NAVY }}>
               ¿Te ha pasado alguna de estas?
             </h2>
           </Reveal>
-          <Reveal delay={150} className="relative">
+          <Reveal delay={150}>
             <div
-              className="rounded-[30px] bg-white p-8 md:p-14 text-center shadow-[0_0_30px_-10px_rgba(0,0,0,0.15)]"
+              className="rounded-[30px] bg-white p-6 sm:p-8 md:p-14 text-center shadow-[0_0_30px_-10px_rgba(0,0,0,0.15)]"
               style={{ border: `2px solid ${PURPLE}` }}
             >
-              <h3 className="text-3xl lg:text-[40px] mb-4 leading-[1.05] lg:leading-[38.72px]" style={{ ...newake, color: NAVY }}>
+              <h3 className={`${T.size40} mb-4`} style={{ ...newake, color: NAVY }}>
                 &ldquo;Me enteré en la reunión con el cliente&rdquo;
               </h3>
               <p className="text-base md:text-lg max-w-xl mx-auto" style={{ color: NAVY, ...dmSans }}>
                 Tu competidor lanzó un descuento o un producto nuevo — y lo supiste cuando tu cliente te lo mencionó, no antes. Ya era tarde para reaccionar.
               </p>
               <div
-                className="mt-8 mx-auto max-w-lg rounded-tl-none rounded-[24px] px-8 py-6 text-sm md:text-base"
+                className="mt-8 mx-auto max-w-lg rounded-tl-none rounded-[24px] px-6 sm:px-8 py-5 sm:py-6 text-sm md:text-base"
                 style={{ background: PURPLE, color: CREAM, ...dmSansUpper }}
               >
                 Si te identificaste con alguna de estas, Omnireports fue diseñado exactamente para ti.
               </div>
-            </div>
-            {/* controles de carrusel — pareja de flechas circulares a los
-                costados de la pleca inferior, como en el diseño */}
-            <div className="absolute left-4 md:left-10 bottom-16 md:bottom-20">
-              <CarouselArrow dir="left" ariaLabel="Anterior" />
-            </div>
-            <div className="absolute right-4 md:right-10 bottom-16 md:bottom-20">
-              <CarouselArrow dir="right" ariaLabel="Siguiente" />
+              {/* controles de carrusel — fila propia debajo del contenido,
+                  fuera del flujo absoluto para nunca solaparse con el texto */}
+              <div className="flex items-center justify-center gap-4 mt-6">
+                <CarouselArrow dir="left" ariaLabel="Anterior" />
+                <CarouselArrow dir="right" ariaLabel="Siguiente" />
+              </div>
             </div>
           </Reveal>
         </div>
@@ -345,7 +490,7 @@ export default function Landing2Page() {
       {/* ── FUNCIONA SOLO. TÚ SOLO LEES. ───────────────────── */}
       <section className="px-6 text-center pb-10 md:pb-14">
         <Reveal>
-          <h2 className="text-4xl lg:text-[50px] leading-[1.1] lg:leading-[48.4px]" style={{ ...newake, color: NAVY }}>
+          <h2 className={T.size50} style={{ ...newake, color: NAVY }}>
             Funciona solo. <br />Tú solo lees.
           </h2>
         </Reveal>
@@ -361,9 +506,9 @@ export default function Landing2Page() {
           ].map((step, i) => (
             <Reveal key={step.n} delay={i * 120}>
               {/* Regla C: esquina superior-izquierda recta (radii=[0,30,30,30]) */}
-              <div className="h-full rounded-[30px] rounded-tl-none p-8 shadow-[0_0_30px_-10px_rgba(0,0,0,0.15)]" style={{ background: CREAM }}>
-                <div className="text-4xl lg:text-[50px] leading-[1.1] lg:leading-[48.4px] mb-4" style={{ ...newake, color: NAVY }}>{step.n}</div>
-                <h3 className="text-2xl lg:text-[35px] leading-[1.1] lg:leading-[33.88px] mb-3" style={{ ...newake, color: NAVY }}>{step.title}</h3>
+              <div className="h-full rounded-[30px] rounded-tl-none p-6 sm:p-8 shadow-[0_0_30px_-10px_rgba(0,0,0,0.15)]" style={{ background: CREAM }}>
+                <div className={`${T.size50} mb-4`} style={{ ...newake, color: NAVY }}>{step.n}</div>
+                <h3 className={`${T.size35} mb-3`} style={{ ...newake, color: NAVY }}>{step.title}</h3>
                 <p className="text-sm md:text-base leading-relaxed" style={{ color: NAVY, ...dmSans }}>{step.body}</p>
               </div>
             </Reveal>
@@ -375,8 +520,8 @@ export default function Landing2Page() {
       <section className="px-6 lg:px-[200px] py-20 md:py-28">
         <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-14 items-center">
           <Reveal>
-            <div className="rounded-[30px] bg-white p-8 md:p-10 max-w-xl">
-              <h3 className="text-4xl lg:text-[50px] leading-[1.1] lg:leading-[48.4px] mb-4" style={{ ...newake, color: NAVY }}>Hasta 10 competidores monitoreados</h3>
+            <div className="rounded-[30px] bg-white p-6 sm:p-8 md:p-10 max-w-xl">
+              <h3 className={`${T.size50} mb-4`} style={{ ...newake, color: NAVY }}>Hasta 10 competidores monitoreados</h3>
               <p className="text-base md:text-lg mb-8" style={{ color: BLACK, ...dmSans, textAlign: 'justify' }}>
                 No importa si son 3 o 10. Omnireports los rastrea todos simultáneamente, 24/7, sin que pierdas nada.
               </p>
@@ -390,7 +535,7 @@ export default function Landing2Page() {
             </div>
           </Reveal>
           <Reveal delay={150}>
-            <div className="relative aspect-square max-w-md mx-auto">
+            <div className="relative aspect-square max-w-[280px] sm:max-w-md mx-auto">
               <div className="absolute inset-0 rounded-full border" style={{ borderColor: PURPLE }} />
               <div className="absolute inset-[15%] rounded-full border" style={{ borderColor: NAVY }} />
               <div className="absolute inset-[30%] rounded-full overflow-hidden">
@@ -415,7 +560,7 @@ export default function Landing2Page() {
                 return (
                   <span
                     key={item.label}
-                    className="absolute -translate-x-1/2 -translate-y-1/2 whitespace-nowrap rounded-full px-3 py-1.5 text-[11px] md:text-xs shadow-[0_0_20px_-8px_rgba(0,0,0,0.15)]"
+                    className="absolute -translate-x-1/2 -translate-y-1/2 whitespace-nowrap rounded-full px-2 sm:px-3 py-1 sm:py-1.5 text-[8px] xs:text-[10px] sm:text-xs shadow-[0_0_20px_-8px_rgba(0,0,0,0.15)]"
                     style={{
                       left: `${x}%`, top: `${y}%`,
                       ...dmSansUpper,
@@ -436,7 +581,7 @@ export default function Landing2Page() {
       {/* ── VS ANALISTA HUMANO ─────────────────────────────── */}
       <section className="px-6 lg:px-[200px] py-20 md:py-28">
         <Reveal className="max-w-4xl mx-auto text-center mb-14">
-          <h2 className="text-4xl lg:text-[50px] leading-[1.3] lg:leading-[65px] mb-5 text-balance" style={{ ...newake, color: NAVY }}>
+          <h2 className={`${T.size50} leading-[1.3] mb-5 text-balance`} style={{ ...newake, color: NAVY }}>
             Inteligencia de nivel enterprise. <br className="hidden md:block" />Sin el costo de uno.
           </h2>
           <p className="text-base md:text-lg" style={{ color: BLACK, ...dmSans }}>
@@ -446,36 +591,36 @@ export default function Landing2Page() {
         <div className="max-w-[1520px] mx-auto relative grid md:grid-cols-2 gap-0">
           {/* OMNIREPORTS: tarjeta real, crema sobre crema, esquina
               inferior-derecha recta (radii=[30,30,0,30]) */}
-          <Reveal className="rounded-[30px] rounded-br-none p-8 md:p-10 relative" style={{ background: CREAM }}>
-            <div className="inline-block rounded-full px-5 py-2 text-2xl lg:text-[35px] leading-[1.1] lg:leading-[33.88px] mb-6" style={{ ...newake, background: CREAM, color: NAVY }}>
+          <Reveal className="rounded-[30px] rounded-br-none p-6 sm:p-8 md:p-10 relative" style={{ background: CREAM }}>
+            <NotchTab corner="tl" color={CREAM} radius={20} className={`px-4 sm:px-5 py-1.5 sm:py-2 mb-6 ${T.size35}`} style={{ ...newake, color: NAVY }}>
               98% más barato
-            </div>
-            <h3 className="text-3xl lg:text-[50px] leading-[1.1] lg:leading-[48.4px] mb-5" style={{ ...newake, color: NAVY }}>OMNIREPORTS</h3>
+            </NotchTab>
+            <h3 className={`${T.size50} mb-5`} style={{ ...newake, color: NAVY }}>OMNIREPORTS</h3>
             <ul className="space-y-2.5 text-sm md:text-base mb-8" style={{ color: NAVY, ...dmSans }}>
               {['Monitorea 24/7 sin interrupciones', 'Reporte listo en menos de 24 horas', 'No tiene vacaciones, nunca falla', 'Cubre web, redes, medios, patentes, regulaciones', 'Análisis consistente, estructurado y accionable', 'Sin contratos, sin sorpresas, cancela cuando quieras'].map(line => (
                 <li key={line} className="flex gap-2.5"><span style={{ color: PURPLE }}>✓</span>{line}</li>
               ))}
             </ul>
-            <div className="flex items-baseline gap-3">
-              <span className="text-3xl lg:text-[50px] leading-[1.1] lg:leading-[65.1px]" style={{ color: PURPLE, ...dmSansUpper, fontWeight: 700 }}>desde $49</span>
-              <span className="text-2xl lg:text-[30px]" style={{ color: NAVY, ...dmSansUpper }}>USD/mes</span>
+            <div className="flex flex-wrap items-baseline gap-3">
+              <span className={T.size50} style={{ color: PURPLE, ...dmSansUpper, fontWeight: 700 }}>desde $49</span>
+              <span className={T.usdMes} style={{ color: NAVY, ...dmSansUpper }}>USD/mes</span>
             </div>
           </Reveal>
-          <div className="hidden md:flex items-center justify-center absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-10 text-5xl lg:text-[70px] leading-[1.1] lg:leading-[91.14px]" style={{ color: PURPLE, ...dmSansUpper, fontWeight: 700 }}>
+          <div className={`hidden md:flex items-center justify-center absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-10 ${T.vs}`} style={{ color: PURPLE, ...dmSansUpper, fontWeight: 700 }}>
             vs
           </div>
           {/* ANALISTA HUMANO: sin tarjeta — el nodo de Figma no tiene fill,
               radio ni sombra; es texto plano sobre el fondo de la sección */}
-          <Reveal delay={150} className="p-8 md:p-10">
-            <h3 className="text-3xl lg:text-[50px] leading-[1.1] lg:leading-[48.4px] mb-5" style={{ ...newake, color: NAVY }}>ANALISTA HUMANO</h3>
+          <Reveal delay={150} className="p-6 sm:p-8 md:p-10">
+            <h3 className={`${T.size50} mb-5`} style={{ ...newake, color: NAVY }}>ANALISTA HUMANO</h3>
             <ul className="space-y-2.5 text-sm md:text-base mb-8" style={{ color: BLACK, ...dmSans }}>
               {['Monitorea solo lo que le da tiempo', 'Entrega el reporte en 3–5 días hábiles', 'No trabaja fines de semana ni vacaciones', 'Cubre 2–3 fuentes de información', 'Análisis subjetivo y variable', 'Costo fijo + prestaciones + curva de aprendizaje'].map(line => (
                 <li key={line} className="flex gap-2.5"><span>✗</span>{line}</li>
               ))}
             </ul>
-            <div className="flex items-baseline gap-3">
-              <span className="text-3xl lg:text-[50px] leading-[1.1] lg:leading-[65.1px]" style={{ color: PURPLE, ...dmSansUpper, fontWeight: 700 }}>$2,100–$4,200</span>
-              <span className="text-2xl lg:text-[30px]" style={{ color: BLACK, ...dmSansUpper }}>USD/mes</span>
+            <div className="flex flex-wrap items-baseline gap-3">
+              <span className={T.size50} style={{ color: PURPLE, ...dmSansUpper, fontWeight: 700 }}>$2,100–$4,200</span>
+              <span className={T.usdMes} style={{ color: BLACK, ...dmSansUpper }}>USD/mes</span>
             </div>
           </Reveal>
         </div>
@@ -483,8 +628,8 @@ export default function Landing2Page() {
 
       {/* ── CTA INTERMEDIO ──────────────────────────────────── */}
       <section className="px-6 py-20 md:py-28">
-        <Reveal className="max-w-[940px] mx-auto rounded-[30px] text-center p-10 md:p-16 shadow-[0_0_30px_-10px_rgba(0,0,0,0.15)]" style={{ background: CREAM }}>
-          <h2 className="text-4xl lg:text-[50px] leading-[1.1] lg:leading-[48.4px] mb-5 text-balance" style={{ ...newake, color: NAVY }}>
+        <Reveal className="max-w-[940px] mx-auto rounded-[30px] text-center p-8 sm:p-10 md:p-16 shadow-[0_0_30px_-10px_rgba(0,0,0,0.15)]" style={{ background: CREAM }}>
+          <h2 className={`${T.size50} mb-5 text-balance`} style={{ ...newake, color: NAVY }}>
             Genera tu primer reporte<br />en los próximos 5 minutos
           </h2>
           <p className="text-base md:text-lg mb-3" style={{ color: BLACK, ...dmSans }}>
@@ -506,7 +651,7 @@ export default function Landing2Page() {
       {/* ── PRECIOS ─────────────────────────────────────────── */}
       <section id="precios" className="px-6 lg:px-[200px] py-20 md:py-28">
         <Reveal className="max-w-3xl mx-auto text-center mb-12">
-          <h2 className="text-4xl lg:text-[50px] leading-[1.1] lg:leading-[48.4px] mb-5 text-balance" style={{ ...newake, color: NAVY }}>
+          <h2 className={`${T.size50} mb-5 text-balance`} style={{ ...newake, color: NAVY }}>
             Elige con qué frecuencia quieres saber qué hace tu competencia
           </h2>
           <p className="text-base md:text-lg" style={{ color: BLACK, ...dmSans }}>
@@ -518,7 +663,7 @@ export default function Landing2Page() {
           <span className="text-sm font-semibold" style={{ opacity: anual ? 0.5 : 1, ...dmSans }}>Pago mensual</span>
           <button
             onClick={() => setAnual(a => !a)}
-            className="relative w-14 h-7 rounded-full transition-colors"
+            className="relative w-14 h-7 rounded-full transition-colors flex-shrink-0"
             style={{ background: anual ? PURPLE : 'rgba(25,20,98,0.15)' }}
             aria-label="Alternar pago anual"
           >
@@ -526,40 +671,49 @@ export default function Landing2Page() {
           </button>
           <span className="text-sm font-semibold" style={{ opacity: anual ? 1 : 0.5, ...dmSans }}>Pago anual</span>
           {anual && (
-            <div className="rounded-full px-3 py-1 text-xs font-bold animate-pulse" style={{ background: 'rgba(5,223,114,0.15)', color: '#05DF72', ...dmSans }}>
+            <div className="rounded-full px-3 py-1 text-xs font-bold animate-pulse whitespace-nowrap" style={{ background: 'rgba(5,223,114,0.15)', color: '#05DF72', ...dmSans }}>
               🎉 Ahorras 20%
             </div>
           )}
         </Reveal>
 
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-5 max-w-6xl mx-auto mb-10">
+        {/* grillas de precio: 1 col en móvil muy angosto, 2 desde sm, 4
+            desde lg — el piso de fuente (T.planLabel) ya es lo bastante
+            chico para no desbordar ninguna de estas columnas */}
+        <div className="grid grid-cols-1 xs:grid-cols-2 lg:grid-cols-4 gap-5 max-w-6xl mx-auto mb-10">
           {plans.map((plan, i) => {
             const precioFinal = anual ? +(plan.price * 0.8).toFixed(2) : plan.price
             const precioAnual = +(precioFinal * 12).toFixed(2)
             return (
-              <Reveal key={plan.freq} delay={i * 80}>
-                {/* Regla C: esquina superior-izquierda recta, igual que las
-                    tarjetas de "paso" (radii=[0,30,30,30]) */}
-                <div
-                  className="h-full rounded-[30px] rounded-tl-none p-7 text-left shadow-[0_0_30px_-10px_rgba(0,0,0,0.15)] transition-transform hover:-translate-y-1"
-                  style={plan.featured ? { background: PURPLE, color: CREAM } : { background: CREAM, color: NAVY }}
+              <Reveal key={plan.freq} delay={i * 80} className="h-full">
+                {/* Regla de forma: pestaña con muesca cóncava — la etiqueta
+                    de frecuencia cuelga de la esquina superior-izquierda,
+                    fundida con el cuerpo mediante una curva, no un escalón. */}
+                <NotchCard
+                  corner="tl"
+                  color={plan.featured ? PURPLE : CREAM}
+                  className="h-full min-w-0 transition-transform hover:-translate-y-1"
+                  style={{ filter: 'drop-shadow(0 8px 18px rgba(0,0,0,0.12))' }}
+                  tabClassName="px-5 sm:px-7 pt-4 sm:pt-5 pb-2"
+                  tab={<div className={`${T.planLabel} break-words`} style={{ ...newake, color: plan.featured ? CREAM : NAVY }}>{plan.freq}</div>}
+                  bodyClassName="flex-1 flex flex-col px-5 sm:px-7 pt-3 pb-5 sm:pb-7 text-left"
+                  bodyStyle={{ color: plan.featured ? CREAM : NAVY }}
                 >
-                  <div className="text-2xl lg:text-[50px] leading-[1.1] lg:leading-[48.4px] mb-2" style={newake}>{plan.freq}</div>
                   {anual && <div className="text-sm line-through mb-1 opacity-70" style={dmSans}>${plan.price}/mes</div>}
-                  <div className="text-2xl lg:text-[50px] leading-[1.1] lg:leading-[48.4px] mb-1" style={newake}>${precioFinal} USD</div>
+                  <div className={`${T.planLabel} mb-1 break-words`} style={newake}>${precioFinal} USD</div>
                   {anual && (
-                    <div className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-bold mb-2" style={{ background: 'rgba(5,223,114,0.18)', color: '#05DF72', ...dmSans }}>
+                    <div className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-bold mb-2 whitespace-nowrap" style={{ background: 'rgba(5,223,114,0.18)', color: '#05DF72', ...dmSans }}>
                       20% OFF
                     </div>
                   )}
-                  <p className="text-sm mt-2 whitespace-pre-line" style={dmSans}>
+                  <p className="text-xs sm:text-sm mt-2 whitespace-pre-line" style={dmSans}>
                     {plan.desc}
                   </p>
                   <div className="mt-4 pt-4 border-t text-xs" style={{ borderColor: plan.featured ? 'rgba(255,255,255,0.25)' : 'rgba(25,20,98,0.1)', ...dmSans }}>
                     {plan.badge}
                     {anual && <div className="mt-1">${precioAnual}/año total</div>}
                   </div>
-                </div>
+                </NotchCard>
               </Reveal>
             )
           })}
@@ -572,7 +726,7 @@ export default function Landing2Page() {
       {/* ── MÓDULOS ─────────────────────────────────────────── */}
       <section id="modulos" className="px-6 lg:px-[200px] pt-20 md:pt-28 pb-6">
         <Reveal className="max-w-2xl mx-auto text-center mb-14">
-          <h2 className="text-4xl lg:text-[50px] leading-[1.1] lg:leading-[48.4px] mb-5 text-balance" style={{ ...newake, color: NAVY }}>
+          <h2 className={`${T.size50} mb-5 text-balance`} style={{ ...newake, color: NAVY }}>
             Tu analista de inteligencia trabaja mientras duermes
           </h2>
           <p className="text-base md:text-lg" style={{ color: BLACK, ...dmSans }}>
@@ -580,18 +734,29 @@ export default function Landing2Page() {
           </p>
         </Reveal>
       </section>
-      <section className="px-6 lg:px-[110px] pb-24 space-y-8">
-        <div className="max-w-7xl mx-auto grid md:grid-cols-2 gap-8">
+      {/* separación vertical generosa (gap-y) para que el blur de sombra de
+          una fila nunca se monte sobre la fila siguiente */}
+      <section className="px-6 lg:px-[110px] pb-24">
+        <div className="max-w-7xl mx-auto grid md:grid-cols-2 gap-x-8 gap-y-14 md:gap-y-16">
           {modules.map((m, i) => (
-            <Reveal key={m.n} delay={i * 100}>
+            <Reveal key={m.n} delay={i * 100} className="h-full">
               {/* Regla D: relleno al 20% del color base + sombra de color al
-                  80%; Regla C: esquina recta específica por módulo */}
-              <div
-                className={`h-full rounded-[30px] ${m.cornerClass} p-8 md:p-10 flex flex-col`}
-                style={{ background: withAlpha(m.color, 0.2), boxShadow: `0 25px 55px -20px ${withAlpha(m.color, 0.8)}` }}
+                  80%. Regla de forma: el número cuelga en una pestaña con
+                  muesca cóncava — arriba-derecha para 01/03, abajo-izquierda
+                  para 02/04 (tal como en el diseño). filter:drop-shadow (no
+                  box-shadow) porque sigue el contorno real de la silueta
+                  compuesta (pestaña + cuerpo en L), no el rectángulo que
+                  la delimita. */}
+              <NotchCard
+                corner={m.cornerClass === 'rounded-tr-none' ? 'tr' : 'bl'}
+                color={withAlpha(m.color, 0.2)}
+                className="h-full"
+                style={{ filter: `drop-shadow(0 10px 22px ${withAlpha(m.color, 0.55)})` }}
+                tabClassName="px-6 sm:px-8 pt-4 pb-1"
+                tab={<div className={T.size80} style={{ ...newake, color: NAVY }}>{m.n}</div>}
+                bodyClassName="flex-1 flex flex-col p-6 sm:p-8 md:p-10"
               >
-                <div className="text-6xl lg:text-[80px] leading-[1.1] lg:leading-[77.44px] mb-4" style={{ ...newake, color: NAVY }}>{m.n}</div>
-                <h3 className="text-3xl lg:text-[50px] leading-[1.1] lg:leading-[48.4px] mb-4" style={{ ...newake, color: NAVY }}>{m.title}</h3>
+                <h3 className={`${T.size50} mb-4`} style={{ ...newake, color: NAVY }}>{m.title}</h3>
                 <p className="text-sm md:text-base leading-relaxed whitespace-pre-line mb-6" style={{ color: m.textColor, ...dmSans }}>{m.body}</p>
                 {'bullets' in m && m.bullets && (
                   <ul className="text-sm md:text-base leading-relaxed mb-6 space-y-1" style={{ color: m.textColor, ...dmSans }}>
@@ -612,7 +777,7 @@ export default function Landing2Page() {
                     próximamente <Image src="/landing-2/icon-clock-white.png" alt="" width={18} height={18} />
                   </div>
                 )}
-              </div>
+              </NotchCard>
             </Reveal>
           ))}
         </div>
@@ -629,17 +794,17 @@ export default function Landing2Page() {
                   <div className="rounded-[30px] shadow-[0_0_30px_-10px_rgba(0,0,0,0.15)] overflow-hidden" style={{ background: CREAM }}>
                     <button
                       onClick={() => setOpenFaq(open ? -1 : i)}
-                      className="w-full flex items-center justify-between gap-6 text-left px-6 md:px-8 py-5"
+                      className="w-full flex items-center justify-between gap-4 sm:gap-6 text-left px-5 sm:px-6 md:px-8 py-4 sm:py-5"
                     >
-                      <span className="text-lg lg:text-[30px] leading-[1.1] lg:leading-[29.04px]" style={{ ...newake, color: NAVY }}>{item.q}</span>
+                      <span className={T.size30} style={{ ...newake, color: NAVY }}>{item.q}</span>
                       {/* Regla F: ícono real +/− (sin círculo de fondo, tal
                           como en el diseño) */}
-                      <span className="flex-shrink-0 w-10 h-10 flex items-center justify-center">
+                      <span className="flex-shrink-0 w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center">
                         <Image
                           src={open ? '/landing-2/icon-plus-open.png' : '/landing-2/icon-plus-closed.png'}
                           alt=""
-                          width={28}
-                          height={28}
+                          width={24}
+                          height={24}
                         />
                       </span>
                     </button>
@@ -648,7 +813,7 @@ export default function Landing2Page() {
                       style={{ gridTemplateRows: open ? '1fr' : '0fr' }}
                     >
                       <div className="overflow-hidden">
-                        <p className="px-6 md:px-8 pb-6 text-sm md:text-base leading-relaxed" style={{ color: BLACK, ...dmSans, textAlign: 'justify' }}>{item.a}</p>
+                        <p className="px-5 sm:px-6 md:px-8 pb-6 text-sm md:text-base leading-relaxed" style={{ color: BLACK, ...dmSans, textAlign: 'justify' }}>{item.a}</p>
                       </div>
                     </div>
                   </div>
@@ -657,7 +822,7 @@ export default function Landing2Page() {
             })}
           </div>
           <Reveal className="lg:sticky lg:top-28 self-start order-1 lg:order-2">
-            <h2 className="text-4xl lg:text-[50px] leading-[1.1] lg:leading-[48.4px] mb-5" style={{ ...newake, color: NAVY }}>Preguntas frecuentes</h2>
+            <h2 className={`${T.size50} mb-5`} style={{ ...newake, color: NAVY }}>Preguntas frecuentes</h2>
             <p className="text-base md:text-lg mb-8" style={{ color: BLACK, ...dmSans, textAlign: 'justify' }}>
               Resolvemos las dudas más comunes sobre cómo funciona Omnireports, sus módulos y precios. Empieza gratis hoy mismo.
             </p>
@@ -675,40 +840,38 @@ export default function Landing2Page() {
       {/* ── TESTIMONIOS (carrusel) + CONTACTO ──────────────── */}
       <section id="casos" className="px-6 lg:px-[200px] py-20 md:py-28">
         <div className="max-w-[1420px] mx-auto grid lg:grid-cols-[620fr_700fr] gap-10 items-start">
-          <Reveal className="relative">
+          <Reveal>
             {/* Regla C: esquinas superiores rectas (radii=[0,0,30,30]) */}
             <div className="rounded-[30px] rounded-t-none shadow-[0_0_30px_-10px_rgba(0,0,0,0.15)] overflow-hidden" style={{ background: CREAM }}>
-              <div className="px-8 py-8 text-center rounded-tr-none" style={{ background: PURPLE, color: CREAM }}>
-                <p className="text-xl lg:text-[30px] leading-[1.1] lg:leading-[29.04px]" style={newake}>
+              <div className="px-6 sm:px-8 py-6 sm:py-8 text-center rounded-tr-none" style={{ background: PURPLE, color: CREAM }}>
+                <p className={T.size30} style={newake}>
                   Lo que dicen quienes ya no esperan a enterarse tarde.
                 </p>
               </div>
-              <div className="p-8">
-                <div className="text-3xl lg:text-[40px] leading-[1.1] lg:leading-[38.72px] mb-1" style={{ ...newake, color: NAVY }}>{t.name}</div>
+              <div className="p-6 sm:p-8">
+                <div className={`${T.size40} mb-1`} style={{ ...newake, color: NAVY }}>{t.name}</div>
                 <div className="text-base mb-4" style={{ color: NAVY, ...dmSans }}>{t.role} | {t.company}</div>
-                <p className="text-sm md:text-base leading-relaxed" style={{ color: NAVY, ...dmSans }}>{t.quote}</p>
+                <p className="text-sm md:text-base leading-relaxed mb-6" style={{ color: NAVY, ...dmSans }}>{t.quote}</p>
+                {/* controles de carrusel — fila propia, sin solapar el texto */}
+                <div className="flex items-center gap-3">
+                  <CarouselArrow dir="left" onClick={prevTestimonial} ariaLabel="Testimonio anterior" />
+                  <CarouselArrow dir="right" onClick={nextTestimonial} ariaLabel="Testimonio siguiente" />
+                </div>
               </div>
-            </div>
-            {/* controles de carrusel a los costados de la pleca superior */}
-            <div className="absolute -left-4 md:-left-9 top-6">
-              <CarouselArrow dir="left" onClick={prevTestimonial} ariaLabel="Testimonio anterior" />
-            </div>
-            <div className="absolute -right-4 md:-right-9 top-6">
-              <CarouselArrow dir="right" onClick={nextTestimonial} ariaLabel="Testimonio siguiente" />
             </div>
           </Reveal>
 
           <Reveal delay={150}>
-            <div className="rounded-[30px] bg-white p-8 md:p-10 shadow-[0_0_30px_-10px_rgba(0,0,0,0.15)]">
+            <div className="rounded-[30px] bg-white p-6 sm:p-8 md:p-10 shadow-[0_0_30px_-10px_rgba(0,0,0,0.15)]">
               {contactSent ? (
                 <div className="text-center py-10">
-                  <h3 className="text-2xl md:text-3xl mb-3" style={{ ...newake, color: NAVY }}>¡Listo!</h3>
+                  <h3 className={`${T.size36} mb-3`} style={{ ...newake, color: NAVY }}>¡Listo!</h3>
                   <p style={{ color: BLACK, ...dmSans }}>Recibimos tu mensaje, te respondemos a la brevedad.</p>
                 </div>
               ) : (
                 <>
-                  <h3 className="text-2xl lg:text-[36px] leading-[1.1] lg:leading-[34.85px] mb-6 text-center" style={{ ...newake, color: NAVY }}>¿Alguna duda en tu primer reporte?</h3>
-                  <div className="grid grid-cols-2 gap-4 mb-4">
+                  <h3 className={`${T.size36} mb-6 text-center`} style={{ ...newake, color: NAVY }}>¿Alguna duda en tu primer reporte?</h3>
+                  <div className="grid grid-cols-1 xs:grid-cols-2 gap-4 mb-4">
                     <div className="relative">
                       <UserIcon size={16} className="absolute left-4 top-1/2 -translate-y-1/2 opacity-50" />
                       <input value={contactName} onChange={e => setContactName(e.target.value)} placeholder="Nombre"
@@ -720,7 +883,7 @@ export default function Landing2Page() {
                         className="w-full rounded-full pl-10 pr-4 py-3 text-sm outline-none" style={{ background: 'white', ...dmSans }} />
                     </div>
                   </div>
-                  <div className="grid grid-cols-2 gap-4 mb-4">
+                  <div className="grid grid-cols-1 xs:grid-cols-2 gap-4 mb-4">
                     <div className="relative">
                       <Mail size={16} className="absolute left-4 top-1/2 -translate-y-1/2 opacity-50" />
                       <input type="email" value={contactEmail} onChange={e => setContactEmail(e.target.value)} placeholder="Correo"
@@ -752,12 +915,12 @@ export default function Landing2Page() {
 
       {/* ── FOOTER ──────────────────────────────────────────── */}
       <footer className="px-6 lg:px-[200px] py-16 border-t" style={{ borderColor: NAVY, background: CREAM }}>
-        <div className="max-w-7xl mx-auto flex flex-wrap items-start justify-between gap-10">
+        <div className="max-w-7xl mx-auto flex flex-wrap items-start justify-between gap-x-10 gap-y-8">
           <Image src="/landing-2/logo-full-dark.png" alt="Omni Reports" width={200} height={44} className="h-9 w-auto" />
-          <nav className="flex flex-col gap-1 text-[22px] leading-[40px]" style={{ ...newake, color: BLACK }}>
+          <nav className={`flex flex-col gap-1 ${T.footerNav}`} style={{ ...newake, color: BLACK }}>
             {navLinks.map(l => <a key={l.href} href={l.href} className="hover:opacity-60 transition-opacity">{l.label}</a>)}
           </nav>
-          <nav className="flex flex-col gap-1 text-[22px] leading-[40px]" style={{ ...newake, color: BLACK }}>
+          <nav className={`flex flex-col gap-1 ${T.footerNav}`} style={{ ...newake, color: BLACK }}>
             <Link href="/legal/aviso-de-privacidad" className="hover:opacity-60 transition-opacity">Aviso de Privacidad</Link>
             <Link href="/legal/terminos-y-condiciones" className="hover:opacity-60 transition-opacity">Términos y condiciones</Link>
           </nav>
@@ -771,7 +934,7 @@ export default function Landing2Page() {
           </div>
         </div>
       </footer>
-      <div className="px-6 lg:px-[200px] py-4 flex flex-col sm:flex-row items-center justify-between gap-2 text-[20px] leading-[40px]" style={{ background: CREAM, color: BLACK }}>
+      <div className={`px-6 lg:px-[200px] py-4 flex flex-col sm:flex-row items-center justify-between gap-2 ${T.copyright}`} style={{ background: CREAM, color: BLACK }}>
         <span style={newake}>© 2026 Omni Reports . Todos los derechos reservados.</span>
         <span style={newake}>By Bvro</span>
       </div>
