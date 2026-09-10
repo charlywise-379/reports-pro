@@ -416,11 +416,15 @@ export default function Landing2Page() {
 
       {/* ── HERO ───────────────────────────────────────────── */}
       <section className="relative px-6 pt-16 pb-24 md:pb-32 text-center overflow-hidden">
-        <div className="pointer-events-none absolute -top-10 -right-20 w-[380px] h-[380px] md:w-[510px] md:h-[510px] opacity-60">
-          <Image src="/landing-2/bg-hexa.png" alt="" fill sizes="510px" className="object-contain animate-[spin_90s_linear_infinite]" />
+        {/* Fondo hexagonal estático — dos copias de la misma imagen, una
+            normal y otra rotada 180° (no animada, no gira), posicionadas
+            en esquinas opuestas: arriba-izquierda y abajo-derecha del
+            hero, tal como en Figma (no ambas arriba). */}
+        <div className="pointer-events-none absolute left-0 top-0 w-[30%] aspect-[979/740] opacity-50 rotate-180">
+          <Image src="/landing-2/bg-hexa.png" alt="" fill sizes="30vw" className="object-contain" />
         </div>
-        <div className="pointer-events-none absolute -top-10 -left-20 w-[380px] h-[380px] md:w-[510px] md:h-[510px] opacity-60 scale-x-[-1]">
-          <Image src="/landing-2/bg-hexa.png" alt="" fill sizes="510px" className="object-contain animate-[spin_90s_linear_infinite]" />
+        <div className="pointer-events-none absolute right-0 bottom-0 w-[30%] aspect-[979/740] opacity-50">
+          <Image src="/landing-2/bg-hexa.png" alt="" fill sizes="30vw" className="object-contain" />
         </div>
 
         <Reveal className="relative max-w-4xl mx-auto">
@@ -466,7 +470,7 @@ export default function Landing2Page() {
 
       {/* ── ¿TE HA PASADO? (carrusel) ───────────────────────── */}
       <section className="px-6 lg:px-[200px] py-16 md:py-20">
-        <div className="max-w-6xl mx-auto grid md:grid-cols-[minmax(0,340px)_1fr] gap-10 md:gap-16 items-center">
+        <div className="max-w-6xl mx-auto grid md:grid-cols-[minmax(0,420px)_1fr] gap-10 md:gap-16 items-center">
           <Reveal>
             <h2 className={`${T.size50} text-balance`} style={{ ...newake, color: NAVY }}>
               ¿Te ha pasado alguna de estas?
@@ -474,7 +478,7 @@ export default function Landing2Page() {
           </Reveal>
           <Reveal delay={150}>
             <div
-              className="rounded-[30px] bg-white p-6 sm:p-8 md:p-14 text-center shadow-[0_0_30px_-10px_rgba(0,0,0,0.15)]"
+              className="relative rounded-[30px] bg-white p-6 sm:p-8 md:p-14 text-center shadow-[0_0_30px_-10px_rgba(0,0,0,0.15)]"
               style={{ border: `2px solid ${PURPLE}` }}
             >
               <h3 className={`${T.size40} mb-4`} style={{ ...newake, color: NAVY }}>
@@ -483,16 +487,22 @@ export default function Landing2Page() {
               <p className="text-base md:text-lg max-w-xl mx-auto" style={{ color: NAVY, ...dmSans }}>
                 Tu competidor lanzó un descuento o un producto nuevo — y lo supiste cuando tu cliente te lo mencionó, no antes. Ya era tarde para reaccionar.
               </p>
+              {/* pleca de cita: esquinas alternadas (recta arriba-izq. y
+                  abajo-der., redondeada en las otras dos) + texto
+                  subrayado con "Omnireports" en negrita, tal como Figma. */}
               <div
-                className="mt-8 mx-auto max-w-lg rounded-tl-none rounded-[24px] px-6 sm:px-8 py-5 sm:py-6 text-sm md:text-base"
+                className="mt-8 mx-auto max-w-lg rounded-none rounded-tr-[24px] rounded-bl-[24px] px-6 sm:px-8 py-5 sm:py-6 text-sm md:text-base underline"
                 style={{ background: PURPLE, color: CREAM, ...dmSansUpper }}
               >
-                Si te identificaste con alguna de estas, Omnireports fue diseñado exactamente para ti.
+                Si te identificaste con alguna de estas, <span className="font-bold">Omnireports</span> fue diseñado exactamente para ti.
               </div>
-              {/* controles de carrusel — fila propia debajo del contenido,
-                  fuera del flujo absoluto para nunca solaparse con el texto */}
-              <div className="flex items-center justify-center gap-4 mt-6">
+              {/* controles de carrusel: A LOS LADOS de la tarjeta, no
+                  debajo — sobresalen del borde izq./der. a la altura de
+                  la pleca de cita. */}
+              <div className="absolute left-0 bottom-14 sm:bottom-20 -translate-x-1/2">
                 <CarouselArrow dir="left" ariaLabel="Anterior" />
+              </div>
+              <div className="absolute right-0 bottom-14 sm:bottom-20 translate-x-1/2">
                 <CarouselArrow dir="right" ariaLabel="Siguiente" />
               </div>
             </div>
@@ -513,14 +523,26 @@ export default function Landing2Page() {
       <section id="servicios" className="px-6 lg:px-[110px] pb-20 md:pb-28">
         <div className="max-w-7xl mx-auto grid md:grid-cols-3 gap-6">
           {[
-            { n: 'paso 01', title: 'Dinos quién eres', body: 'Crea tu cuenta en 2 minutos. Dinos el nombre de tu empresa, tu industria y quiénes son tus competidores principales. Sin setup complicado.' },
-            { n: 'paso 02', title: 'Omnireports hace el trabajo', body: 'Omnireports escanea automáticamente sitios, directorios, redes sociales, sitios de reclutamiento, bolsas de trabajo, medios, bases de patentes y fuentes regulatorias.' },
-            { n: 'paso 03', title: 'Recibes el análisis', body: 'El reporte ejecutivo llega a tu email o WhatsApp en el horario que elijas — diario, semanal, quincenal o mensual. En PDF. En español. Listo para leer.' },
+            {
+              n: 'paso 01', title: 'Dinos quién eres', arrow: true,
+              body: <><span className="font-bold">Crea tu cuenta en 2 minutos.</span> Dinos el nombre de tu empresa, tu industria y quiénes son tus competidores principales. Sin setup complicado.</>,
+            },
+            {
+              n: 'paso 02', title: 'Omnireports hace el trabajo', arrow: true,
+              body: <><span className="font-bold">Omnireports escanea automáticamente sitios,</span> directorios, redes sociales, sitios de reclutamiento, bolsas de trabajo, medios, bases de patentes y fuentes regulatorias.</>,
+            },
+            {
+              n: 'paso 03', title: 'Recibes el análisis', arrow: false,
+              body: <>El reporte ejecutivo <span className="font-bold">llega a tu email o WhatsApp</span> en el horario que elijas — diario, semanal, quincenal o mensual. En PDF. En español. Listo para leer.</>,
+            },
           ].map((step, i) => (
             <Reveal key={step.n} delay={i * 120}>
               {/* Regla C: esquina superior-izquierda recta (radii=[0,30,30,30]) */}
               <div className="h-full rounded-[30px] rounded-tl-none p-6 sm:p-8 shadow-[0_0_30px_-10px_rgba(0,0,0,0.15)]" style={{ background: CREAM }}>
-                <div className={`${T.size50} mb-4`} style={{ ...newake, color: NAVY }}>{step.n}</div>
+                <div className="flex items-center gap-3 mb-4">
+                  <div className={T.size50} style={{ ...newake, color: NAVY }}>{step.n}</div>
+                  {step.arrow && <Image src="/landing-2/icon-arrow-step.png" alt="" width={28} height={28} />}
+                </div>
                 <h3 className={`${T.size35} mb-3`} style={{ ...newake, color: NAVY }}>{step.title}</h3>
                 <p className="text-sm md:text-base leading-relaxed" style={{ color: NAVY, ...dmSans }}>{step.body}</p>
               </div>
@@ -533,10 +555,10 @@ export default function Landing2Page() {
       <section className="px-6 lg:px-[200px] py-20 md:py-28">
         <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-14 items-center">
           <Reveal>
-            <div className="rounded-[30px] bg-white p-6 sm:p-8 md:p-10 max-w-xl">
+            <div className="rounded-[30px] p-6 sm:p-8 md:p-10 max-w-xl" style={{ background: CREAM }}>
               <h3 className={`${T.size50} mb-4`} style={{ ...newake, color: NAVY }}>Hasta 10 competidores monitoreados</h3>
               <p className="text-base md:text-lg mb-8" style={{ color: BLACK, ...dmSans, textAlign: 'justify' }}>
-                No importa si son 3 o 10. Omnireports los rastrea todos simultáneamente, 24/7, sin que pierdas nada.
+                No importa si son 3 o 10. <span className="font-bold">Omnireports</span> los rastrea todos simultáneamente, 24/7, sin que pierdas nada.
               </p>
               <Link
                 href="/register"
@@ -548,44 +570,44 @@ export default function Landing2Page() {
             </div>
           </Reveal>
           <Reveal delay={150}>
+            {/* Anillos HEXAGONALES (no circulares) + posiciones exactas de
+                Figma para cada píldora (no repartidas uniformemente en un
+                círculo — siguen los vértices reales del hexágono grande). */}
             <div className="relative aspect-square max-w-[280px] sm:max-w-md mx-auto">
-              <div className="absolute inset-0 rounded-full border" style={{ borderColor: PURPLE }} />
-              <div className="absolute inset-[15%] rounded-full border" style={{ borderColor: NAVY }} />
-              <div className="absolute inset-[30%] rounded-full overflow-hidden">
+              <svg viewBox="0 0 100 100" className="absolute inset-0 w-full h-full overflow-visible">
+                <polygon points="50,0 100,25 100,75 50,100 0,75 0,25" fill="none" stroke={PURPLE} strokeWidth="0.4" />
+                <polygon points="50,16.7 88.4,33.3 88.4,66.7 50,83.3 11.6,66.7 11.6,33.3" fill="none" stroke={NAVY} strokeWidth="0.4" />
+              </svg>
+              <div className="absolute inset-[30%] overflow-hidden">
                 <Image src="/landing-2/logo-hexagon-mark.png" alt="Omni Reports" fill sizes="30vw" className="object-contain" />
               </div>
-              {/* Regla G (pills): solo 1 de 8 es morada rellena; el resto son
-                  blancas con borde propio (navy o morado según el diseño) */}
+              {/* Regla G (pills): solo 1 de 8 es morada rellena; posiciones
+                  exactas (centro en %) tomadas de las coordenadas reales de
+                  Figma dentro del bloque del diagrama. */}
               {[
-                { label: '10 competidores vigilados', filled: true, border: PURPLE },
-                { label: 'Alertas anticipadas', filled: false, border: PURPLE },
-                { label: 'Benchmark competitivo', filled: false, border: NAVY },
-                { label: 'WhatsApp y email', filled: false, border: NAVY },
-                { label: 'Comparte gratis', filled: false, border: PURPLE },
-                { label: 'Resumen ejecutivo', filled: false, border: PURPLE },
-                { label: 'Dashboard + PDF', filled: false, border: NAVY },
-                { label: 'Recomendaciones accionables', filled: false, border: PURPLE },
-              ].map((item, i) => {
-                const angle = (i / 8) * 2 * Math.PI - Math.PI / 2
-                const radius = 47
-                const x = 50 + radius * Math.cos(angle)
-                const y = 50 + radius * Math.sin(angle)
-                return (
-                  <span
-                    key={item.label}
-                    className="absolute -translate-x-1/2 -translate-y-1/2 whitespace-nowrap rounded-full px-2 sm:px-3 py-1 sm:py-1.5 text-[8px] xs:text-[10px] sm:text-xs shadow-[0_0_20px_-8px_rgba(0,0,0,0.15)]"
-                    style={{
-                      left: `${x}%`, top: `${y}%`,
-                      ...dmSansUpper,
-                      background: item.filled ? PURPLE : WHITE,
-                      color: item.filled ? CREAM : NAVY,
-                      border: item.filled ? 'none' : `1px solid ${item.border}`,
-                    }}
-                  >
-                    {item.label}
-                  </span>
-                )
-              })}
+                { label: '10 competidores vigilados', filled: true, border: PURPLE, x: 27.5, y: 16.5 },
+                { label: 'Alertas anticipadas', filled: false, border: PURPLE, x: 61.4, y: 7.4 },
+                { label: 'Benchmark competitivo', filled: false, border: NAVY, x: 74.0, y: 31.8 },
+                { label: 'Resumen ejecutivo', filled: false, border: PURPLE, x: 89.1, y: 49.9 },
+                { label: 'Comparte gratis', filled: false, border: PURPLE, x: 88.0, y: 71.0 },
+                { label: 'Dashboard + PDF', filled: false, border: NAVY, x: 60.6, y: 77.5 },
+                { label: 'Recomendaciones accionables', filled: false, border: PURPLE, x: 18.3, y: 80.1 },
+                { label: 'WhatsApp y email', filled: false, border: NAVY, x: 25.4, y: 42.3 },
+              ].map((item) => (
+                <span
+                  key={item.label}
+                  className="absolute -translate-x-1/2 -translate-y-1/2 whitespace-nowrap rounded-full px-2 sm:px-3 py-1 sm:py-1.5 text-[8px] xs:text-[10px] sm:text-xs shadow-[0_0_20px_-8px_rgba(0,0,0,0.15)]"
+                  style={{
+                    left: `${item.x}%`, top: `${item.y}%`,
+                    ...dmSansUpper,
+                    background: item.filled ? PURPLE : WHITE,
+                    color: item.filled ? CREAM : NAVY,
+                    border: item.filled ? 'none' : `1px solid ${item.border}`,
+                  }}
+                >
+                  {item.label}
+                </span>
+              ))}
             </div>
           </Reveal>
         </div>
@@ -853,7 +875,7 @@ export default function Landing2Page() {
       {/* ── TESTIMONIOS (carrusel) + CONTACTO ──────────────── */}
       <section id="casos" className="px-6 lg:px-[200px] py-20 md:py-28">
         <div className="max-w-[1420px] mx-auto grid lg:grid-cols-[620fr_700fr] gap-10 items-start">
-          <Reveal>
+          <Reveal className="relative">
             {/* Regla C: esquinas superiores rectas (radii=[0,0,30,30]) */}
             <div className="rounded-[30px] rounded-t-none shadow-[0_0_30px_-10px_rgba(0,0,0,0.15)] overflow-hidden" style={{ background: CREAM }}>
               <div className="px-6 sm:px-8 py-6 sm:py-8 text-center rounded-tr-none" style={{ background: PURPLE, color: CREAM }}>
@@ -864,13 +886,16 @@ export default function Landing2Page() {
               <div className="p-6 sm:p-8">
                 <div className={`${T.size40} mb-1`} style={{ ...newake, color: NAVY }}>{t.name}</div>
                 <div className="text-base mb-4" style={{ color: NAVY, ...dmSans }}>{t.role} | {t.company}</div>
-                <p className="text-sm md:text-base leading-relaxed mb-6" style={{ color: NAVY, ...dmSans }}>{t.quote}</p>
-                {/* controles de carrusel — fila propia, sin solapar el texto */}
-                <div className="flex items-center gap-3">
-                  <CarouselArrow dir="left" onClick={prevTestimonial} ariaLabel="Testimonio anterior" />
-                  <CarouselArrow dir="right" onClick={nextTestimonial} ariaLabel="Testimonio siguiente" />
-                </div>
+                <p className="text-sm md:text-base leading-relaxed" style={{ color: NAVY, ...dmSans }}>{t.quote}</p>
               </div>
+            </div>
+            {/* controles de carrusel: A LOS LADOS, a la altura de la
+                pleca morada (no debajo del contenido). */}
+            <div className="absolute left-0 top-[95px] sm:top-[110px] -translate-x-1/2">
+              <CarouselArrow dir="left" onClick={prevTestimonial} ariaLabel="Testimonio anterior" />
+            </div>
+            <div className="absolute right-0 top-[95px] sm:top-[110px] translate-x-1/2">
+              <CarouselArrow dir="right" onClick={nextTestimonial} ariaLabel="Testimonio siguiente" />
             </div>
           </Reveal>
 
