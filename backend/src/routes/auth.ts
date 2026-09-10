@@ -2,6 +2,7 @@ import { Router, Request, Response } from 'express'
 import { supabaseAdmin } from '../lib/supabaseAdmin'
 import { sendConfirmationEmail } from '../lib/email'
 import { prisma } from '../lib/prisma'
+import { evaluatePartnerRegistration } from '../lib/partners'
 
 const router = Router()
 
@@ -28,8 +29,14 @@ router.post('/register', async (req: Request, res: Response) => {
       return res.status(400).json({ error: 'Debes aceptar el Aviso de Privacidad y los Términos y Condiciones' })
     }
 
+    const normalizedEmailForPartner = email.trim().toLowerCase()
+    const partner = evaluatePartnerRegistration(promoCode, normalizedEmailForPartner)
+    if (partner.error) {
+      return res.status(400).json({ error: partner.error })
+    }
+
     let normalizedPromoCode: string | null = null
-    if (typeof promoCode === 'string' && promoCode.trim()) {
+    if (!partner.isPartner && typeof promoCode === 'string' && promoCode.trim()) {
       const candidate = promoCode.trim().toUpperCase()
       const promo = await (prisma as any).promoCode.findUnique({ where: { code: candidate } })
       const valido = promo && promo.active &&
@@ -90,11 +97,28 @@ router.post('/register', async (req: Request, res: Response) => {
           city: typeof city === 'string' && city.trim() ? city.trim() : null,
           state: typeof state === 'string' && state.trim() ? state.trim() : null,
           country: typeof country === 'string' && country.trim() ? country.trim() : null,
-          pendingPromoCode: normalizedPromoCode,
+          pendingPromoCode: partner.isPartner ? null : normalizedPromoCode,
+          accountType: partner.isPartner ? 'PARTNER' : 'STANDARD',
+          partnerAgency: partner.agency,
+          partnerCodeUsed: partner.code,
         },
       })
     } catch (userCreateError) {
       console.error('Error creando User en Prisma tras registro en Supabase:', userCreateError)
+    }
+
+    if (partner.isPartner) {
+      try {
+        await prisma.auditLog.create({
+          data: {
+            userId: data.user.id,
+            event: 'partner_access_granted',
+            metadata: { code: partner.code, agency: partner.agency, email: normalizedEmailForPartner },
+          },
+        })
+      } catch (e) {
+        console.error('Error registrando partner_access_granted:', e)
+      }
     }
 
     try {
