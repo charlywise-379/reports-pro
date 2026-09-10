@@ -39,21 +39,6 @@ function withAlpha(hex: string, alpha: number) {
 // para las otras 3 esquinas.
 const NOTCH_PATH = 'M0.0159429 50V45.1127C0.478188 11.1869 11.109 0.281998 47.1078 0.0054245H50C49.0182 -0.00177002 48.0542 -0.00184631 47.1078 0.0054245H0.0159429V45.1127C-0.00556884 46.6915 -0.0050582 48.3202 0.0159429 50Z'
 
-function NotchCurve({ corner, color, size = 30 }: { corner: 'tl' | 'tr' | 'bl' | 'br'; color: string; size?: number }) {
-  // canónico (0°) rellena la esquina inferior-izquierda (bl). Rotando en
-  // sentido horario 90° por paso: bl→tl→tr→br.
-  const rotation = corner === 'bl' ? 0 : corner === 'tl' ? 90 : corner === 'tr' ? 180 : 270
-  return (
-    <svg
-      width={size} height={size} viewBox="0 0 50 50"
-      style={{ transform: `rotate(${rotation}deg)` }}
-      aria-hidden
-    >
-      <path d={NOTCH_PATH} fill={color} />
-    </svg>
-  )
-}
-
 // ── Tipografía fluida ────────────────────────────────────────────────
 // clamp(min, min + pendiente*vw, max) — interpola linealmente entre el
 // tamaño móvil (min) y el tamaño exacto de Figma (max) a lo largo del
@@ -192,66 +177,141 @@ function CarouselArrow({ dir, onClick, ariaLabel }: { dir: 'left' | 'right'; onC
   )
 }
 
-// Forma "pestaña con muesca cóncava": una etiqueta más angosta que la
-// tarjeta, colgando de una esquina, cuya unión con el cuerpo no es un
-// escalón recto sino una curva cóncava (radio R) — la silueta exacta que
-// aparece en el diseño en las tarjetas de plan, paso, módulo y el badge
-// "98% más barato". `corner` indica de qué esquina cuelga la pestaña;
-// el cuerpo ocupa el resto de la tarjeta con esa misma esquina recta.
-function NotchCard({
-  corner, color, radius = 30, tabClassName = '', tabStyle, tab, children, className = '', style, bodyClassName = '', bodyStyle,
+// ─────────────────────────────────────────────────────────────────────
+// FORMAS "NOTCH" — regla propia por sección, no un componente reciclado.
+// Las tres tarjetas (planes, pasos, módulos) comparten SOLO el vector
+// cóncavo exacto de Figma (NOTCH_PATH); toda la demás geometría (radios,
+// esquina de la pestaña, tamaño del filete, padding, proporciones) se
+// define por separado en cada componente para calcar su render de Figma.
+//
+// Mecánica común: pestaña (ancho = su contenido) + cuerpo (ancho
+// completo) apilados en columna flex, sin gap, de modo que el borde
+// interior de la pestaña queda a ras del cuerpo. La transición
+// pestaña→cuerpo es una curva en S: la esquina interior de la pestaña se
+// redondea CONVEXA con su propio border-radius y el SVG cóncavo
+// (NOTCH_PATH) puentea desde ahí hasta el borde del cuerpo.
+//
+// Rotación del filete según hacia dónde "abre" el vértice reflejo:
+//   pestaña arriba-izquierda  → abre arriba-derecha → 0°   (canónico)
+//   pestaña arriba-derecha    → abre arriba-izq.    → 270°
+//   pestaña abajo-izquierda   → abre abajo-derecha  → 90°
+
+function ConcaveFillet({
+  size, rotate, color, style,
+}: { size: number; rotate: number; color: string; style: CSSProperties }) {
+  return (
+    <span aria-hidden className="absolute pointer-events-none" style={{ width: size, height: size, ...style }}>
+      <svg width={size} height={size} viewBox="0 0 50 50" style={{ display: 'block', transform: `rotate(${rotate}deg)` }}>
+        <path d={NOTCH_PATH} fill={color} />
+      </svg>
+    </span>
+  )
+}
+
+// ── PLANES (Sección 7 / render 09) ──────────────────────────────────
+// Pestaña arriba-izquierda con el rótulo de frecuencia a tamaño grande.
+// Radios medianos; filete algo mayor que el radio de la pestaña para el
+// barrido cóncavo ancho y poco profundo del diseño. Mono-color (morado
+// en la destacada, crema en el resto): tab y cuerpo comparten fondo.
+function PlanNotchCard({
+  color, textColor, freqLabel, freqColor, children, className = '', style,
 }: {
-  corner: 'tl' | 'tr' | 'bl' | 'br'
-  color: string
-  radius?: number
-  tabClassName?: string
-  tabStyle?: CSSProperties
-  tab: React.ReactNode
-  children: React.ReactNode
-  className?: string
-  style?: CSSProperties
-  bodyClassName?: string
-  bodyStyle?: CSSProperties
+  color: string; textColor: string; freqLabel: React.ReactNode; freqColor: string
+  children: React.ReactNode; className?: string; style?: CSSProperties
 }) {
-  const isTop = corner === 'tl' || corner === 'tr'
-  const isLeft = corner === 'tl' || corner === 'bl'
-
-  // Pestaña y cuerpo son dos bloques apilados en una columna flex (no
-  // superpuestos): la pestaña, angosta, ajustada a su contenido; el
-  // cuerpo, a todo el ancho, con flex-1 para llenar el alto disponible
-  // de la fila del grid (fundamental para que no quede un hueco vacío
-  // antes de una pestaña que cuelga de una esquina inferior).
-  const tabRadius = isTop
-    ? (isLeft ? `${radius}px ${radius}px 0 ${radius}px` : `${radius}px ${radius}px ${radius}px 0`)
-    : (isLeft ? `${radius}px 0 ${radius}px ${radius}px` : `0 ${radius}px ${radius}px ${radius}px`)
-
-  const bodyRadius = isTop
-    ? (isLeft ? `0 ${radius}px ${radius}px ${radius}px` : `${radius}px 0 ${radius}px ${radius}px`)
-    : (isLeft ? `${radius}px ${radius}px ${radius}px 0` : `${radius}px ${radius}px 0 ${radius}px`)
-
-  // Parche que dibuja la unión curva entre pestaña y cuerpo: se ancla
-  // al borde de la pestaña que da hacia el cuerpo, usando el path SVG
-  // exacto exportado de Figma (NotchCurve), no una aproximación.
-  const notchPos: CSSProperties = isTop
-    ? { top: '100%', [isLeft ? 'left' : 'right']: '100%' }
-    : { bottom: '100%', [isLeft ? 'left' : 'right']: '100%' }
-
+  const R_TAB = 24
+  const R_BODY = 28
+  const F = 44
   return (
     <div className={`relative flex flex-col ${className}`} style={style}>
       <div
-        className={`inline-block relative flex-shrink-0 ${tabClassName}`}
+        className="relative self-start inline-flex flex-shrink-0 px-5 sm:px-6 pt-3 sm:pt-4 pb-2"
+        style={{ background: color, borderRadius: `${R_TAB}px ${R_TAB}px ${R_TAB}px 0`, order: -1 }}
+      >
+        <div className={`${T.planLabel} break-words`} style={{ ...newake, color: freqColor }}>{freqLabel}</div>
+        <ConcaveFillet size={F} rotate={0} color={color} style={{ left: 'calc(100% - 1px)', bottom: '-1px' }} />
+      </div>
+      <div
+        className="flex-1 flex flex-col px-5 sm:px-6 pt-2 pb-4 sm:pb-5 text-left"
+        style={{ background: color, borderRadius: `0 ${R_BODY}px ${R_BODY}px ${R_BODY}px`, color: textColor }}
+      >
+        {children}
+      </div>
+    </div>
+  )
+}
+
+// ── PASOS (Sección 3 / render 05) ───────────────────────────────────
+// Pestaña arriba-izquierda que abraza "PASO 0N" + la flecha opcional.
+// Es la de radios más generosos y el filete más grande de las tres — el
+// diseño muestra aquí la curva en S más pronunciada. Mono-color crema.
+function PasoNotchCard({
+  n, arrow, title, body,
+}: { n: string; arrow: boolean; title: string; body: React.ReactNode }) {
+  const R_TAB = 30
+  const R_BODY = 32
+  const F = 52
+  return (
+    <div className="relative flex flex-col h-full" style={{ filter: 'drop-shadow(0 8px 20px rgba(0,0,0,0.12))' }}>
+      <div
+        className="relative self-start inline-flex items-center gap-3 flex-shrink-0 px-6 sm:px-7 pt-5 sm:pt-6 pb-3"
+        style={{ background: CREAM, borderRadius: `${R_TAB}px ${R_TAB}px ${R_TAB}px 0`, order: -1 }}
+      >
+        <span className={T.size50} style={{ ...newake, color: NAVY }}>{n}</span>
+        {arrow && <Image src="/landing-2/icon-arrow-step.png" alt="" width={28} height={28} className="flex-shrink-0" />}
+        <ConcaveFillet size={F} rotate={0} color={CREAM} style={{ left: 'calc(100% - 1px)', bottom: '-1px' }} />
+      </div>
+      <div
+        className="flex-1 px-6 sm:px-8 pt-3 pb-7 sm:pb-8"
+        style={{ background: CREAM, borderRadius: `0 ${R_BODY}px ${R_BODY}px ${R_BODY}px` }}
+      >
+        <h3 className={`${T.size35} mb-3`} style={{ ...newake, color: NAVY }}>{title}</h3>
+        <p className="text-sm md:text-base leading-relaxed" style={{ color: NAVY, ...dmSans }}>{body}</p>
+      </div>
+    </div>
+  )
+}
+
+// ── MÓDULOS (Secciones 9-10 / renders 11-12) ────────────────────────
+// Pestaña pequeña (sólo el número, muy grande) que cuelga arriba-derecha
+// en 01/03 y abajo-izquierda en 02/04. Cuerpo con el radio más grande de
+// las tres y filete compacto. El fondo es el color base al 20% de
+// opacidad (mismo tono en pestaña y cuerpo).
+function ModuleNotchCard({
+  corner, color, number, children, className = '', style,
+}: {
+  corner: 'tr' | 'bl'; color: string; number: string
+  children: React.ReactNode; className?: string; style?: CSSProperties
+}) {
+  const R_TAB = 20
+  const R_BODY = 40
+  const F = 34
+  const isTR = corner === 'tr'
+  const tabRadius = isTR
+    ? `${R_TAB}px ${R_TAB}px 0 ${R_TAB}px`
+    : `0 ${R_TAB}px ${R_TAB}px ${R_TAB}px`
+  const bodyRadius = isTR
+    ? `${R_BODY}px 0 ${R_BODY}px ${R_BODY}px`
+    : `${R_BODY}px ${R_BODY}px ${R_BODY}px 0`
+  const filletPos: CSSProperties = isTR
+    ? { right: 'calc(100% - 1px)', bottom: '-1px' }
+    : { left: 'calc(100% - 1px)', top: '-1px' }
+  return (
+    <div className={`relative flex flex-col ${className}`} style={style}>
+      <div
+        className="relative inline-flex flex-shrink-0 px-5 sm:px-6 pt-2 pb-1"
         style={{
-          ...tabStyle, background: color, borderRadius: tabRadius,
-          order: isTop ? -1 : 1,
-          alignSelf: isLeft ? 'flex-start' : 'flex-end',
+          background: color, borderRadius: tabRadius,
+          order: isTR ? -1 : 1, alignSelf: isTR ? 'flex-end' : 'flex-start',
         }}
       >
-        {tab}
-        <span aria-hidden className="absolute pointer-events-none" style={{ width: radius, height: radius, ...notchPos }}>
-          <NotchCurve corner={corner} color={color} size={radius} />
-        </span>
+        <div className={T.size80} style={{ ...newake, color: NAVY }}>{number}</div>
+        <ConcaveFillet size={F} rotate={isTR ? 270 : 90} color={color} style={filletPos} />
       </div>
-      <div className={`flex-1 ${bodyClassName}`} style={{ ...bodyStyle, background: color, borderRadius: bodyRadius, order: 0 }}>
+      <div
+        className="flex-1 flex flex-col p-6 sm:p-8"
+        style={{ background: color, borderRadius: bodyRadius }}
+      >
         {children}
       </div>
     </div>
@@ -537,16 +597,8 @@ export default function Landing2Page() {
               body: <>El reporte ejecutivo <span className="font-bold">llega a tu email o WhatsApp</span> en el horario que elijas — diario, semanal, quincenal o mensual. En PDF. En español. Listo para leer.</>,
             },
           ].map((step, i) => (
-            <Reveal key={step.n} delay={i * 120}>
-              {/* Regla C: esquina superior-izquierda recta (radii=[0,30,30,30]) */}
-              <div className="h-full rounded-[30px] rounded-tl-none p-6 sm:p-8 shadow-[0_0_30px_-10px_rgba(0,0,0,0.15)]" style={{ background: CREAM }}>
-                <div className="flex items-center gap-3 mb-4">
-                  <div className={T.size50} style={{ ...newake, color: NAVY }}>{step.n}</div>
-                  {step.arrow && <Image src="/landing-2/icon-arrow-step.png" alt="" width={28} height={28} />}
-                </div>
-                <h3 className={`${T.size35} mb-3`} style={{ ...newake, color: NAVY }}>{step.title}</h3>
-                <p className="text-sm md:text-base leading-relaxed" style={{ color: NAVY, ...dmSans }}>{step.body}</p>
-              </div>
+            <Reveal key={step.n} delay={i * 120} className="h-full">
+              <PasoNotchCard n={step.n} arrow={step.arrow} title={step.title} body={step.body} />
             </Reveal>
           ))}
         </div>
@@ -724,18 +776,13 @@ export default function Landing2Page() {
             const precioAnual = +(precioFinal * 12).toFixed(2)
             return (
               <Reveal key={plan.freq} delay={i * 80} className="h-full">
-                {/* Regla de forma: pestaña con muesca cóncava — la etiqueta
-                    de frecuencia cuelga de la esquina superior-izquierda,
-                    fundida con el cuerpo mediante una curva, no un escalón. */}
-                <NotchCard
-                  corner="tl"
+                <PlanNotchCard
                   color={plan.featured ? PURPLE : CREAM}
+                  textColor={plan.featured ? CREAM : NAVY}
+                  freqColor={plan.featured ? CREAM : NAVY}
+                  freqLabel={plan.freq}
                   className="h-full min-w-0 transition-transform hover:-translate-y-1"
                   style={{ filter: 'drop-shadow(0 8px 18px rgba(0,0,0,0.12))' }}
-                  tabClassName="px-5 sm:px-6 pt-3 sm:pt-4 pb-1"
-                  tab={<div className={`${T.planLabel} break-words`} style={{ ...newake, color: plan.featured ? CREAM : NAVY }}>{plan.freq}</div>}
-                  bodyClassName="flex-1 flex flex-col px-5 sm:px-6 pt-1 pb-4 sm:pb-5 text-left"
-                  bodyStyle={{ color: plan.featured ? CREAM : NAVY }}
                 >
                   {anual && <div className="text-sm line-through mb-1 opacity-70" style={dmSans}>${plan.price}/mes</div>}
                   <div className={`${T.planLabel} mb-1 break-words`} style={newake}>${precioFinal} USD</div>
@@ -751,7 +798,7 @@ export default function Landing2Page() {
                     {plan.badge}
                     {anual && <div className="mt-1">${precioAnual}/año total</div>}
                   </div>
-                </NotchCard>
+                </PlanNotchCard>
               </Reveal>
             )
           })}
@@ -778,21 +825,16 @@ export default function Landing2Page() {
         <div className="max-w-7xl mx-auto grid md:grid-cols-2 gap-x-8 gap-y-14 md:gap-y-16">
           {modules.map((m, i) => (
             <Reveal key={m.n} delay={i * 100} className="h-full">
-              {/* Regla D: relleno al 20% del color base + sombra de color al
-                  80%. Regla de forma: el número cuelga en una pestaña con
-                  muesca cóncava — arriba-derecha para 01/03, abajo-izquierda
-                  para 02/04 (tal como en el diseño). filter:drop-shadow (no
-                  box-shadow) porque sigue el contorno real de la silueta
-                  compuesta (pestaña + cuerpo en L), no el rectángulo que
-                  la delimita. */}
-              <NotchCard
+              {/* Regla D: relleno al 20% del color base + sombra de color.
+                  Forma: ver ModuleNotchCard — pestaña con el número colgando
+                  arriba-derecha (01/03) o abajo-izquierda (02/04), unida al
+                  cuerpo por la curva en S. */}
+              <ModuleNotchCard
                 corner={m.cornerClass === 'rounded-tr-none' ? 'tr' : 'bl'}
                 color={withAlpha(m.color, 0.2)}
+                number={m.n}
                 className="h-full"
                 style={{ filter: `drop-shadow(0 10px 22px ${withAlpha(m.color, 0.55)})` }}
-                tabClassName="px-4 sm:px-5 pt-2 pb-0"
-                tab={<div className={T.size80} style={{ ...newake, color: NAVY }}>{m.n}</div>}
-                bodyClassName="flex-1 flex flex-col p-6 sm:p-8"
               >
                 <h3 className={`${T.size50} mb-3`} style={{ ...newake, color: NAVY }}>{m.title}</h3>
                 <p className="text-sm md:text-base leading-snug whitespace-pre-line mb-4" style={{ color: m.textColor, ...dmSans }}>{m.body}</p>
@@ -815,7 +857,7 @@ export default function Landing2Page() {
                     próximamente <Image src="/landing-2/icon-clock-white.png" alt="" width={18} height={18} />
                   </div>
                 )}
-              </NotchCard>
+              </ModuleNotchCard>
             </Reveal>
           ))}
         </div>
