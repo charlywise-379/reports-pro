@@ -17,8 +17,10 @@ const newake = { fontFamily: 'Newake, sans-serif', textTransform: 'uppercase' as
 const dmSans = { fontFamily: 'var(--font-dm-sans)' }
 // Regla A también aplica a rótulos cortos en DM Sans (botones, badges,
 // nav, "Ideal para:", precios) — el copy largo de párrafo se excluye
-// explícitamente en cada bloque de texto abajo (sin esta clase).
-const dmSansUpper = { fontFamily: 'var(--font-dm-sans)', textTransform: 'uppercase' as const }
+// explícitamente en cada bloque de texto abajo (sin esta clase). Figma
+// especifica estos rótulos cortos consistentemente en peso 500 (medium),
+// no 400 (regular) como el copy de párrafo.
+const dmSansUpper = { fontFamily: 'var(--font-dm-sans)', textTransform: 'uppercase' as const, fontWeight: 500 }
 
 function withAlpha(hex: string, alpha: number) {
   const n = parseInt(hex.slice(1), 16)
@@ -26,6 +28,30 @@ function withAlpha(hex: string, alpha: number) {
   const g = (n >> 8) & 255
   const b = n & 255
   return `rgba(${r},${g},${b},${alpha})`
+}
+
+// Path SVG EXACTO exportado de Figma (nodo "Vector 1", el elemento que
+// dibuja la unión curva entre la pestaña y el cuerpo en las tarjetas de
+// precio y de módulo) — no es un cuarto de círculo, es una curva
+// asimétrica tipo "cometa". Orientación canónica: llena la esquina
+// inferior-izquierda de su caja 50x50, curva que une un borde vertical
+// (izquierda) con uno horizontal (abajo). Se reorienta con `rotate`
+// para las otras 3 esquinas.
+const NOTCH_PATH = 'M0.0159429 50V45.1127C0.478188 11.1869 11.109 0.281998 47.1078 0.0054245H50C49.0182 -0.00177002 48.0542 -0.00184631 47.1078 0.0054245H0.0159429V45.1127C-0.00556884 46.6915 -0.0050582 48.3202 0.0159429 50Z'
+
+function NotchCurve({ corner, color, size = 30 }: { corner: 'tl' | 'tr' | 'bl' | 'br'; color: string; size?: number }) {
+  // canónico (0°) rellena la esquina inferior-izquierda (bl). Rotando en
+  // sentido horario 90° por paso: bl→tl→tr→br.
+  const rotation = corner === 'bl' ? 0 : corner === 'tl' ? 90 : corner === 'tr' ? 180 : 270
+  return (
+    <svg
+      width={size} height={size} viewBox="0 0 50 50"
+      style={{ transform: `rotate(${rotation}deg)` }}
+      aria-hidden
+    >
+      <path d={NOTCH_PATH} fill={color} />
+    </svg>
+  )
 }
 
 // ── Tipografía fluida ────────────────────────────────────────────────
@@ -203,19 +229,12 @@ function NotchCard({
     ? (isLeft ? `0 ${radius}px ${radius}px ${radius}px` : `${radius}px 0 ${radius}px ${radius}px`)
     : (isLeft ? `${radius}px ${radius}px ${radius}px 0` : `${radius}px ${radius}px 0 ${radius}px`)
 
-  // Parche que dibuja la muesca cóncava: se ancla al borde de la
-  // pestaña que da hacia el cuerpo, con un cuarto de círculo
-  // transparente en la esquina más próxima a la pestaña — revela el
-  // fondo de la página ahí, leyéndose como una curva suave en vez de
-  // un escalón recto. Funciona porque, a diferencia del modelo de
-  // superposición, aquí SÍ existe un hueco real en ese punto (unión en
-  // L), no algo cubierto por la propia pestaña.
+  // Parche que dibuja la unión curva entre pestaña y cuerpo: se ancla
+  // al borde de la pestaña que da hacia el cuerpo, usando el path SVG
+  // exacto exportado de Figma (NotchCurve), no una aproximación.
   const notchPos: CSSProperties = isTop
     ? { top: '100%', [isLeft ? 'left' : 'right']: '100%' }
     : { bottom: '100%', [isLeft ? 'left' : 'right']: '100%' }
-  const gradientAngle = isTop
-    ? (isLeft ? 'top left' : 'top right')
-    : (isLeft ? 'bottom left' : 'bottom right')
 
   return (
     <div className={`relative flex flex-col ${className}`} style={style}>
@@ -228,15 +247,9 @@ function NotchCard({
         }}
       >
         {tab}
-        <span
-          aria-hidden
-          className="absolute pointer-events-none"
-          style={{
-            width: radius, height: radius,
-            ...notchPos,
-            background: `radial-gradient(circle at ${gradientAngle}, transparent ${radius}px, ${color} ${radius}px)`,
-          }}
-        />
+        <span aria-hidden className="absolute pointer-events-none" style={{ width: radius, height: radius, ...notchPos }}>
+          <NotchCurve corner={corner} color={color} size={radius} />
+        </span>
       </div>
       <div className={`flex-1 ${bodyClassName}`} style={{ ...bodyStyle, background: color, borderRadius: bodyRadius, order: 0 }}>
         {children}
@@ -694,9 +707,9 @@ export default function Landing2Page() {
                   color={plan.featured ? PURPLE : CREAM}
                   className="h-full min-w-0 transition-transform hover:-translate-y-1"
                   style={{ filter: 'drop-shadow(0 8px 18px rgba(0,0,0,0.12))' }}
-                  tabClassName="px-5 sm:px-7 pt-4 sm:pt-5 pb-2"
+                  tabClassName="px-5 sm:px-6 pt-3 sm:pt-4 pb-1"
                   tab={<div className={`${T.planLabel} break-words`} style={{ ...newake, color: plan.featured ? CREAM : NAVY }}>{plan.freq}</div>}
-                  bodyClassName="flex-1 flex flex-col px-5 sm:px-7 pt-3 pb-5 sm:pb-7 text-left"
+                  bodyClassName="flex-1 flex flex-col px-5 sm:px-6 pt-1 pb-4 sm:pb-5 text-left"
                   bodyStyle={{ color: plan.featured ? CREAM : NAVY }}
                 >
                   {anual && <div className="text-sm line-through mb-1 opacity-70" style={dmSans}>${plan.price}/mes</div>}
@@ -706,10 +719,10 @@ export default function Landing2Page() {
                       20% OFF
                     </div>
                   )}
-                  <p className="text-xs sm:text-sm mt-2 whitespace-pre-line" style={dmSans}>
+                  <p className="text-xs sm:text-sm mt-1 leading-snug whitespace-pre-line" style={dmSans}>
                     {plan.desc}
                   </p>
-                  <div className="mt-4 pt-4 border-t text-xs" style={{ borderColor: plan.featured ? 'rgba(255,255,255,0.25)' : 'rgba(25,20,98,0.1)', ...dmSans }}>
+                  <div className="mt-2 pt-2 border-t text-xs" style={{ borderColor: plan.featured ? 'rgba(255,255,255,0.25)' : 'rgba(25,20,98,0.1)', ...dmSans }}>
                     {plan.badge}
                     {anual && <div className="mt-1">${precioAnual}/año total</div>}
                   </div>
@@ -752,18 +765,18 @@ export default function Landing2Page() {
                 color={withAlpha(m.color, 0.2)}
                 className="h-full"
                 style={{ filter: `drop-shadow(0 10px 22px ${withAlpha(m.color, 0.55)})` }}
-                tabClassName="px-6 sm:px-8 pt-4 pb-1"
+                tabClassName="px-4 sm:px-5 pt-2 pb-0"
                 tab={<div className={T.size80} style={{ ...newake, color: NAVY }}>{m.n}</div>}
-                bodyClassName="flex-1 flex flex-col p-6 sm:p-8 md:p-10"
+                bodyClassName="flex-1 flex flex-col p-6 sm:p-8"
               >
-                <h3 className={`${T.size50} mb-4`} style={{ ...newake, color: NAVY }}>{m.title}</h3>
-                <p className="text-sm md:text-base leading-relaxed whitespace-pre-line mb-6" style={{ color: m.textColor, ...dmSans }}>{m.body}</p>
+                <h3 className={`${T.size50} mb-3`} style={{ ...newake, color: NAVY }}>{m.title}</h3>
+                <p className="text-sm md:text-base leading-snug whitespace-pre-line mb-4" style={{ color: m.textColor, ...dmSans }}>{m.body}</p>
                 {'bullets' in m && m.bullets && (
-                  <ul className="text-sm md:text-base leading-relaxed mb-6 space-y-1" style={{ color: m.textColor, ...dmSans }}>
+                  <ul className="text-sm md:text-base leading-snug mb-4 space-y-0.5" style={{ color: m.textColor, ...dmSans }}>
                     {m.bullets.map(b => <li key={b}>{b}</li>)}
                   </ul>
                 )}
-                <p className="text-xs md:text-sm mt-auto mb-4" style={{ color: m.textColor, ...dmSansUpper }}>{m.idealLabel} {m.ideal}</p>
+                <p className="text-xs md:text-sm mt-auto mb-3" style={{ color: m.textColor, ...dmSansUpper }}>{m.idealLabel} {m.ideal}</p>
                 {m.active ? (
                   <Link
                     href="/register"
