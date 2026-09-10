@@ -356,12 +356,13 @@ export default function Landing2Page() {
   return (
     <main style={{ background: CREAM, color: BLACK }} className="min-h-screen overflow-x-hidden">
       {/* ── HEADER 2 (barra social) ─────────────────────────── */}
+      {/* orden Figma: Facebook primero, Instagram después */}
       <div className="hidden md:flex items-center justify-end gap-5 px-6 lg:px-[200px] py-2.5" style={{ background: CREAM }}>
-        <a href="https://instagram.com" target="_blank" rel="noreferrer" className="opacity-90 hover:opacity-100 transition-opacity">
-          <Image src="/landing-2/icon-instagram.png" alt="Instagram" width={20} height={20} />
-        </a>
         <a href="https://facebook.com" target="_blank" rel="noreferrer" className="opacity-90 hover:opacity-100 transition-opacity">
           <Image src="/landing-2/icon-facebook.png" alt="Facebook" width={20} height={20} />
+        </a>
+        <a href="https://instagram.com" target="_blank" rel="noreferrer" className="opacity-90 hover:opacity-100 transition-opacity">
+          <Image src="/landing-2/icon-instagram.png" alt="Instagram" width={20} height={20} />
         </a>
       </div>
 
@@ -627,19 +628,21 @@ export default function Landing2Page() {
           {/* OMNIREPORTS: tarjeta real, crema sobre crema, esquina
               inferior-derecha recta (radii=[30,30,0,30]) */}
           <Reveal className="rounded-[30px] rounded-br-none p-6 sm:p-8 md:p-10 relative" style={{ background: CREAM }}>
-            <NotchTab corner="tl" color={CREAM} radius={20} className={`px-4 sm:px-5 py-1.5 sm:py-2 mb-6 ${T.size35}`} style={{ ...newake, color: NAVY }}>
-              98% más barato
-            </NotchTab>
+            {/* Orden real de Figma: título, checklist, precio, y el
+                badge "98% más barato" AL FINAL (no antes del título). */}
             <h3 className={`${T.size50} mb-5`} style={{ ...newake, color: NAVY }}>OMNIREPORTS</h3>
             <ul className="space-y-2.5 text-sm md:text-base mb-8" style={{ color: NAVY, ...dmSans }}>
               {['Monitorea 24/7 sin interrupciones', 'Reporte listo en menos de 24 horas', 'No tiene vacaciones, nunca falla', 'Cubre web, redes, medios, patentes, regulaciones', 'Análisis consistente, estructurado y accionable', 'Sin contratos, sin sorpresas, cancela cuando quieras'].map(line => (
                 <li key={line} className="flex gap-2.5"><span style={{ color: PURPLE }}>✓</span>{line}</li>
               ))}
             </ul>
-            <div className="flex flex-wrap items-baseline gap-3">
+            <div className="flex flex-wrap items-baseline gap-3 mb-6">
               <span className={T.size50} style={{ color: PURPLE, ...dmSansUpper, fontWeight: 700 }}>desde $49</span>
               <span className={T.usdMes} style={{ color: NAVY, ...dmSansUpper }}>USD/mes</span>
             </div>
+            <NotchTab corner="tl" color={CREAM} radius={20} className={`px-4 sm:px-5 py-1.5 sm:py-2 ${T.size35}`} style={{ ...newake, color: NAVY }}>
+              98% más barato
+            </NotchTab>
           </Reveal>
           <div className={`hidden md:flex items-center justify-center absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-10 ${T.vs}`} style={{ color: PURPLE, ...dmSansUpper, fontWeight: 700 }}>
             vs
@@ -963,11 +966,11 @@ export default function Landing2Page() {
             <Link href="/legal/terminos-y-condiciones" className="hover:opacity-60 transition-opacity">Términos y condiciones</Link>
           </nav>
           <div className="flex items-center gap-4">
-            <a href="https://instagram.com" target="_blank" rel="noreferrer" className="opacity-90 hover:opacity-100 transition-opacity">
-              <Image src="/landing-2/icon-instagram.png" alt="Instagram" width={26} height={26} />
-            </a>
             <a href="https://facebook.com" target="_blank" rel="noreferrer" className="opacity-90 hover:opacity-100 transition-opacity">
               <Image src="/landing-2/icon-facebook.png" alt="Facebook" width={26} height={26} />
+            </a>
+            <a href="https://instagram.com" target="_blank" rel="noreferrer" className="opacity-90 hover:opacity-100 transition-opacity">
+              <Image src="/landing-2/icon-instagram.png" alt="Instagram" width={26} height={26} />
             </a>
           </div>
         </div>
