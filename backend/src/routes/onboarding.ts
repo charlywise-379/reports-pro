@@ -15,6 +15,7 @@ router.post('/competitive', requireAuth, async (req: Request, res: Response) => 
       monitorAreas, areaDepth, frequency, deliveryChannel, deliveryEmail, deliveryPhone,
       deliveryDay, deliveryTime, tags,
       presenceRegional, presenceNational, presenceInternational,
+      projectId,
     } = req.body
 
     // userId siempre viene del token JWT — nunca del body
@@ -114,9 +115,21 @@ router.post('/competitive', requireAuth, async (req: Request, res: Response) => 
     }
 
     // ── Upsert proyecto ─────────────────────────────────
-    const existingProject = await (prisma.project as any).findFirst({
-      where: { userId: user.id, serviceType: ServiceType.COMPETITIVE_INTELLIGENCE }
-    })
+    // Con projectId explícito operamos sobre ese proyecto (validando propiedad);
+    // sin él, mantenemos el comportamiento actual de proyecto competitivo único.
+    let existingProject: any = null
+    if (typeof projectId === 'string' && projectId) {
+      existingProject = await (prisma.project as any).findFirst({
+        where: { id: projectId, userId: user.id },
+      })
+      if (!existingProject) {
+        return res.status(403).json({ error: 'Proyecto no encontrado o no te pertenece' })
+      }
+    } else {
+      existingProject = await (prisma.project as any).findFirst({
+        where: { userId: user.id, serviceType: ServiceType.COMPETITIVE_INTELLIGENCE },
+      })
+    }
 
     const projectData = {
       name: `${finalName} — Inteligencia Competitiva`,
@@ -200,22 +213,25 @@ router.post('/competitive', requireAuth, async (req: Request, res: Response) => 
     })
 
     // ── Upsert suscripción ──────────────────────────────
-    await (prisma.subscription as any).upsert({
-      where: { projectId: newProject.id },
-      create: {
-        projectId: newProject.id,
-        userId: user.id,
-        status: SubscriptionStatus.TRIALING,
-        frequency: cleanFrequency,
-        pricePerMonth: prices[cleanFrequency] || 25.00,
-        trialStartedAt,
-        trialEndsAt,
-      },
-      update: {
-        frequency: cleanFrequency,
-        pricePerMonth: prices[cleanFrequency] || 25.00,
-      }
-    })
+    // Las cuentas partner no tienen suscripción por proyecto (facturación aparte).
+    if ((user as any).accountType !== 'PARTNER') {
+      await (prisma.subscription as any).upsert({
+        where: { projectId: newProject.id },
+        create: {
+          projectId: newProject.id,
+          userId: user.id,
+          status: SubscriptionStatus.TRIALING,
+          frequency: cleanFrequency,
+          pricePerMonth: prices[cleanFrequency] || 25.00,
+          trialStartedAt,
+          trialEndsAt,
+        },
+        update: {
+          frequency: cleanFrequency,
+          pricePerMonth: prices[cleanFrequency] || 25.00,
+        }
+      })
+    }
 
     // ── Canjear promo code pendiente del registro (opcional) ─
     let promoCodeApplied = false
@@ -291,15 +307,16 @@ router.post('/save', requireAuth, async (req: Request, res: Response) => {
       targetMarket, mainProducts, socialMedia, pitch, differentiators,
       products, presenceScope, countries, directCompetitors, indirectCompetitors,
       monitorAreas, areaDepth, frequency, deliveryEmail, deliveryPhone,
-      deliveryChannel, deliveryDay, deliveryTime, tags,
+      deliveryChannel, deliveryDay, deliveryTime, tags, projectId,
     } = req.body
 
     // userId siempre viene del token JWT — nunca del body
     const userId = req.userId!
 
-    const existingProject = await (prisma.project as any).findFirst({
-      where: { userId, serviceType: ServiceType.COMPETITIVE_INTELLIGENCE }
-    })
+    // Con projectId explícito operamos sobre ese proyecto (validando propiedad).
+    const existingProject = (typeof projectId === 'string' && projectId)
+      ? await (prisma.project as any).findFirst({ where: { id: projectId, userId } })
+      : await (prisma.project as any).findFirst({ where: { userId, serviceType: ServiceType.COMPETITIVE_INTELLIGENCE } })
     if (!existingProject) return res.status(404).json({ error: 'Proyecto no encontrado' })
 
     const finalName = (typeof companyName === 'string' && companyName.trim())

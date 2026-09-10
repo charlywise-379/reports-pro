@@ -5,6 +5,7 @@ import cors from "cors"
 import cookieParser from "cookie-parser"
 import dotenv from "dotenv"
 import onboardingRouter from "./routes/onboarding"
+import projectsRouter from "./routes/projects"
 import reportsRouter from "./routes/reports"
 import dashboardRouter from "./routes/dashboard"
 import stripeRouter from "./routes/stripe"
@@ -118,6 +119,7 @@ app.use("/api/stripe/webhook", express.raw({ type: "application/json" }))
 app.use(express.json())
 
 app.use("/api/onboarding", onboardingRouter)
+app.use("/api/projects", projectsRouter)
 app.use("/api/reports", reportsRouter)
 app.use("/api/dashboard", dashboardRouter)
 app.use("/api/stripe", stripeRouter)
