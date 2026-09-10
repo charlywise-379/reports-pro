@@ -53,6 +53,16 @@ enum PromoCodeType {
   FULL_ACCESS_NO_TRIAL
 }
 
+enum AccountType {
+  STANDARD
+  PARTNER
+}
+
+enum PartnerAgency {
+  BVRO
+  FLOW11
+}
+
 model User {
   id               String         @id @default(uuid())
   email            String         @unique
@@ -70,6 +80,11 @@ model User {
   updatedAt        DateTime       @updatedAt
   freeReportUsedAt DateTime?
   pendingPromoCode String?
+  accountType            AccountType    @default(STANDARD)
+  partnerAgency          PartnerAgency?
+  partnerCodeUsed        String?
+  mailchimpSyncedAt      DateTime?
+  mailchimpTrialTaggedAt DateTime?
   projects         Project[]
   subscriptions    Subscription[]
 
@@ -237,6 +252,9 @@ model Subscription {
   trialEndsAt            DateTime?
   cancelledAt            DateTime?
   cancelReason           String?
+  renewalReminderSentAt    DateTime?
+  renewalReminderPeriodEnd DateTime?
+  cancelAtPeriodEnd        Boolean   @default(false)
   createdAt              DateTime           @default(now())
   updatedAt              DateTime           @updatedAt
 
