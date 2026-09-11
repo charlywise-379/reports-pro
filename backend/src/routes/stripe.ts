@@ -3,6 +3,7 @@ import { stripe, PLANS, MXN_RATE } from '../lib/stripe'
 import { prisma } from '../lib/prisma'
 import { getPriceAmountMXN } from '../lib/stripePriceMap'
 import { requireAuth } from '../middleware/auth'
+import { enqueueMailchimpSync } from '../lib/lifecycleQueue'
 
 const router = Router()
 
@@ -158,6 +159,14 @@ router.post('/webhook', async (req: Request, res: Response) => {
           where: { stripeSubscriptionId: sub.id },
           data: { status: 'CANCELLED' }
         })
+
+        const delSub = await (prisma.subscription as any).findFirst({
+          where: { stripeSubscriptionId: sub.id },
+          select: { userId: true, user: { select: { accountType: true } } },
+        })
+        if (delSub?.userId && delSub.user?.accountType !== 'PARTNER') {
+          await enqueueMailchimpSync(delSub.userId, 'cancelled')
+        }
         break
       }
 
@@ -176,6 +185,16 @@ router.post('/webhook', async (req: Request, res: Response) => {
           where: { stripeSubscriptionId: invoice.subscription },
           data: { status: 'ACTIVE' }
         })
+
+        if ((invoice.amount_paid ?? 0) > 0) {
+          const paidSub = await (prisma.subscription as any).findFirst({
+            where: { stripeSubscriptionId: invoice.subscription },
+            select: { userId: true, user: { select: { accountType: true } } },
+          })
+          if (paidSub?.userId && paidSub.user?.accountType !== 'PARTNER') {
+            await enqueueMailchimpSync(paidSub.userId, 'paid')
+          }
+        }
         break
       }
     }

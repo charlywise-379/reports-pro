@@ -1,6 +1,7 @@
 import { Router, Request, Response } from 'express'
 import { prisma } from '../lib/prisma'
 import { requireAuth } from '../middleware/auth'
+import { maybeEnqueueTrialSync } from '../lib/lifecycleQueue'
 
 const router = Router()
 
@@ -11,6 +12,12 @@ router.get('/:userId', requireAuth, async (req: Request, res: Response) => {
     if (userId !== req.userId) {
       return res.status(403).json({ error: 'No tienes permiso para ver este dashboard' })
     }
+
+    const dashUser = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { id: true, accountType: true, mailchimpSyncedAt: true, mailchimpTrialTaggedAt: true },
+    })
+    if (dashUser) maybeEnqueueTrialSync(dashUser as any)
 
     const project = await (prisma.project as any).findFirst({
       where: { userId },

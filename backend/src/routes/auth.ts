@@ -3,6 +3,7 @@ import { supabaseAdmin } from '../lib/supabaseAdmin'
 import { sendConfirmationEmail } from '../lib/email'
 import { prisma } from '../lib/prisma'
 import { evaluatePartnerRegistration } from '../lib/partners'
+import { enqueueMailchimpSync } from '../lib/lifecycleQueue'
 
 const router = Router()
 
@@ -119,6 +120,10 @@ router.post('/register', async (req: Request, res: Response) => {
       } catch (e) {
         console.error('Error registrando partner_access_granted:', e)
       }
+    }
+
+    if (!partner.isPartner) {
+      await enqueueMailchimpSync(data.user.id, 'registered')
     }
 
     try {
