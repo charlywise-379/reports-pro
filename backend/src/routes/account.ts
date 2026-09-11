@@ -31,11 +31,7 @@ router.get('/:userId', requireAuth, async (req: Request, res: Response) => {
     const user = await prisma.user.findUnique({ where: { id: userId } })
     if (!user) return res.status(404).json({ error: 'Usuario no encontrado' })
 
-    const mcUser = await prisma.user.findUnique({
-      where: { id: userId },
-      select: { id: true, accountType: true, mailchimpSyncedAt: true, mailchimpTrialTaggedAt: true },
-    })
-    if (mcUser) maybeEnqueueTrialSync(mcUser as any)
+    maybeEnqueueTrialSync(user as any)
 
     const projects = await (prisma.project as any).findMany({
       where: { userId },

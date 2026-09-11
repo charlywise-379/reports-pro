@@ -33,15 +33,39 @@ export default function UpgradePage() {
   const [billing, setBilling] = useState<'monthly'|'annual'>('monthly')
   const [selected, setSelected] = useState('weekly')
   const [loading, setLoading] = useState(false)
+  const [checkingAccess, setCheckingAccess] = useState(true)
   const isMobile = useIsMobile()
   const BACKEND = process.env.NEXT_PUBLIC_BACKEND_URL || 'https://reports-pro-production.up.railway.app'
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (!session) router.push('/login')
-      setUser(session?.user)
-    })
+    const load = async () => {
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session) { router.push('/login'); return }
+      setUser(session.user)
+      // Las cuentas PARTNER tienen acceso total sin costo — nunca deben ver el checkout de Stripe.
+      try {
+        const res = await fetch(`${BACKEND}/api/account/${session.user.id}`, {
+          headers: { Authorization: 'Bearer ' + session.access_token },
+        })
+        if (res.ok) {
+          const data = await res.json()
+          if (data?.user?.accountType === 'PARTNER') {
+            router.push('/dashboard')
+            return
+          }
+        }
+      } catch (e) {}
+      setCheckingAccess(false)
+    }
+    load()
   }, [])
+
+  if (checkingAccess) return (
+    <main style={{ minHeight:'100vh', background:'#0D0F1A', display:'flex', alignItems:'center', justifyContent:'center' }}>
+      <div style={{ width:32, height:32, borderRadius:'50%', border:'2px solid rgba(139,123,255,0.3)', borderTopColor:'#8B7BFF', animation:'spin 0.8s linear infinite' }} />
+      <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
+    </main>
+  )
 
   const handleUpgrade = async () => {
     if (!user) return

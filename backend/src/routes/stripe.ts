@@ -16,6 +16,12 @@ router.post('/create-checkout-session', async (req: Request, res: Response) => {
       return res.status(400).json({ error: 'userId y priceId requeridos' })
     }
 
+    // Las cuentas PARTNER nunca tocan Stripe — acceso total sin costo, sin checkout real.
+    const requestingUser = await (prisma.user as any).findUnique({ where: { id: userId } })
+    if (requestingUser?.accountType === 'PARTNER') {
+      return res.status(403).json({ error: 'Las cuentas asociadas no requieren suscripción — tienen acceso total sin costo.' })
+    }
+
     // Buscar proyecto del usuario
     const project = await (prisma.project as any).findFirst({ where: { userId } })
     if (!project) return res.status(404).json({ error: 'Proyecto no encontrado' })
