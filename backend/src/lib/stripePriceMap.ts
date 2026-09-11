@@ -17,3 +17,20 @@ export function getPriceAmountMXN(priceId: string | undefined | null): number {
   if (!priceId) return 49
   return PRICE_TO_AMOUNT_MXN[priceId] ?? 49
 }
+
+const ANNUAL_PRICE_IDS = new Set(
+  [
+    process.env.STRIPE_PRICE_DAILY_ANNUAL,
+    process.env.STRIPE_PRICE_WEEKLY_ANNUAL,
+    process.env.STRIPE_PRICE_BIWEEKLY_ANNUAL,
+    process.env.STRIPE_PRICE_MONTHLY_ANNUAL,
+  ].filter(Boolean) as string[],
+)
+
+// 'year' solo si el priceId coincide con una env *_ANNUAL configurada; si
+// esas envs no están, un plan anual se etiqueta como 'month' (solo afecta
+// el texto del email de renovación, no la lógica de envío).
+export function getBillingInterval(priceId: string | null | undefined): 'month' | 'year' {
+  if (priceId && ANNUAL_PRICE_IDS.has(priceId)) return 'year'
+  return 'month'
+}

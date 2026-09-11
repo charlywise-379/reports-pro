@@ -95,6 +95,11 @@ router.post('/webhook', async (req: Request, res: Response) => {
 
         const priceId = sub.items.data[0].price.id
         const trialEnd = sub.trial_end ? new Date(sub.trial_end * 1000) : null
+        // Cast: los tipos del SDK de Stripe corresponden a una apiVersion más
+        // reciente que la fijada ('2024-06-20'), donde current_period_end
+        // sigue viniendo en el nivel superior de la Subscription.
+        const currentPeriodEnd = (sub as any).current_period_end ? new Date((sub as any).current_period_end * 1000) : null
+        const cancelAtPeriodEnd = sub.cancel_at_period_end ?? false
         const localStatus = sub.status === 'active' ? 'ACTIVE' : 'TRIALING'
 
         await prisma.subscription.upsert({
@@ -109,6 +114,8 @@ router.post('/webhook', async (req: Request, res: Response) => {
             frequency: freq,
             pricePerMonth: getPriceAmountMXN(priceId),
             trialEndsAt: trialEnd,
+            stripeCurrentPeriodEnd: currentPeriodEnd,
+            cancelAtPeriodEnd,
           },
           update: {
             stripeCustomerId: session.customer,
@@ -117,6 +124,8 @@ router.post('/webhook', async (req: Request, res: Response) => {
             status: localStatus as any,
             pricePerMonth: getPriceAmountMXN(priceId),
             trialEndsAt: trialEnd,
+            stripeCurrentPeriodEnd: currentPeriodEnd,
+            cancelAtPeriodEnd,
           }
         })
 
@@ -138,6 +147,7 @@ router.post('/webhook', async (req: Request, res: Response) => {
         if (sub.current_period_end) {
           updateData.stripeCurrentPeriodEnd = new Date(sub.current_period_end * 1000)
         }
+        updateData.cancelAtPeriodEnd = sub.cancel_at_period_end ?? false
 
         await (prisma.subscription as any).updateMany({
           where: { stripeSubscriptionId: sub.id },
@@ -273,6 +283,8 @@ router.get('/verify-session/:sessionId', async (req: Request, res: Response) => 
         status: localStatus, frequency: freq,
         pricePerMonth: getPriceAmountMXN(sub.items?.data[0]?.price?.id),
         trialEndsAt: sub.trial_end ? new Date(sub.trial_end * 1000) : null,
+        stripeCurrentPeriodEnd: sub.current_period_end ? new Date(sub.current_period_end * 1000) : null,
+        cancelAtPeriodEnd: sub.cancel_at_period_end ?? false,
       },
       update: {
         stripeCustomerId: session.customer,
@@ -280,6 +292,8 @@ router.get('/verify-session/:sessionId', async (req: Request, res: Response) => 
         stripePriceId: sub.items?.data[0]?.price?.id || '',
         status: localStatus,
         trialEndsAt: sub.trial_end ? new Date(sub.trial_end * 1000) : undefined,
+        stripeCurrentPeriodEnd: sub.current_period_end ? new Date(sub.current_period_end * 1000) : null,
+        cancelAtPeriodEnd: sub.cancel_at_period_end ?? false,
       }
     })
     await (prisma.project as any).update({ where: { id: projectId }, data: { status: localStatus === 'ACTIVE' ? 'ACTIVE' : 'TRIAL' } })
