@@ -23,6 +23,7 @@ import contactRouter from "./routes/contact"
 import { startReportWorker } from "./workers/reportWorker"
 import { startLifecycleWorker } from "./workers/lifecycleWorker"
 import { scheduleReports } from "./jobs/scheduleReports"
+import { sendRenewalReminders } from "./jobs/sendRenewalReminders"
 
 dotenv.config()
 
@@ -144,6 +145,10 @@ startLifecycleWorker()
 scheduleReports()
 setInterval(scheduleReports, 60 * 60 * 1000)
 console.log("Scheduler activo cada hora")
+
+sendRenewalReminders()
+setInterval(sendRenewalReminders, 60 * 60 * 1000)
+console.log("Recordatorio de renovación activo cada hora")
 
 app.get("/health", (req, res) => {
   res.json({ status: "ok", message: "Reports PRO Backend", timestamp: new Date().toISOString() })

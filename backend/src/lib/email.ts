@@ -348,5 +348,78 @@ export async function sendReportErrorAdminAlert(
     console.log(`📧 Alerta de error de reporte enviada a admin@omnireports.pro`)
   } catch (e) {
     console.error('Error enviando sendReportErrorAdminAlert:', e)
+
   }
+}
+
+export async function sendRenewalReminderEmail(
+  to: string,
+  fullName: string | null,
+  planLabel: string,
+  renewalDate: string,
+  manageUrl: string
+): Promise<void> {
+
+  const subject = `Tu plan ${planLabel} se renueva el ${renewalDate} — Omni Reports`
+  const hola = fullName ? `Hola ${fullName},` : 'Hola,'
+
+  const html = `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8"/>
+  <style>
+    body { font-family: system-ui, sans-serif; background: #F4F2FF; margin: 0; padding: 20px; }
+    .wrap { max-width: 560px; margin: 0 auto; background: #fff; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 24px rgba(83,74,183,0.12); }
+    .header { background: #1A1730; padding: 28px 32px; }
+    .body { padding: 28px 32px; }
+    .footer { background: #F4F2FF; padding: 16px 32px; text-align: center; font-size: 11px; color: #8B7BFF; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="header">
+      <div style="margin-bottom:16px">
+        <img src="https://omnireports.pro/logo-full.png" height="32" alt="Omni Reports" style="display:block;height:32px;width:auto">
+      </div>
+      <div style="font-size:22px;font-weight:900;color:#F0F2FF;line-height:1.2">
+        Tu suscripción se renueva pronto 🔁
+      </div>
+    </div>
+
+    <div class="body">
+      <p style="font-size:14px;color:#444;line-height:1.6;margin-bottom:12px">${hola}</p>
+      <p style="font-size:14px;color:#444;line-height:1.6;margin-bottom:20px">
+        Tu plan <strong>${planLabel}</strong> se renovará automáticamente el <strong>${renewalDate}</strong>.
+        No necesitas hacer nada — seguimos generando tus reportes sin interrupción.
+      </p>
+
+      <div style="text-align:center">
+        <a href="${manageUrl}" style="display:inline-block;background:linear-gradient(135deg,#534AB7,#1D9E75);color:#ffffff;text-decoration:none;padding:14px 28px;border-radius:20px;font-weight:700;font-size:14px;margin:20px 0">
+          Gestionar suscripción →
+        </a>
+      </div>
+
+      <p style="font-size:12px;color:#888;text-align:center;margin-top:16px">
+        ¿Quieres cambiar de frecuencia o cancelar? Puedes hacerlo desde tu panel antes de la fecha de renovación.
+      </p>
+    </div>
+
+    <div class="footer">
+      Omni Reports · AI Automation ·
+      <a href="https://omnireports.pro" style="color:#8B7BFF">omnireports.pro</a>
+    </div>
+  </div>
+</body>
+</html>
+  `
+
+  await resend.emails.send({
+    from: 'Omni Reports <reportes@flow11.mx>',
+    to,
+    subject,
+    html,
+  })
+
+  console.log(`📧 Recordatorio de renovación enviado a: ${to}`)
 }
