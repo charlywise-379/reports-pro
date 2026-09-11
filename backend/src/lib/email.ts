@@ -348,7 +348,6 @@ export async function sendReportErrorAdminAlert(
     console.log(`📧 Alerta de error de reporte enviada a admin@omnireports.pro`)
   } catch (e) {
     console.error('Error enviando sendReportErrorAdminAlert:', e)
-
   }
 }
 
