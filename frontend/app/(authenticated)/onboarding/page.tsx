@@ -1382,6 +1382,9 @@ export default function OnboardingPage() {
   const [isEditing, setIsEditing] = useState(false)
   const [dataLoaded, setDataLoaded] = useState(false)
   const [projectIdParam, setProjectIdParam] = useState<string | null>(null)
+  // Por defecto NO partner: si el fetch de accountType falla o no confirma 'PARTNER',
+  // el flujo debe degradar al comportamiento original (checkout), nunca al de skip.
+  const [accountType, setAccountType] = useState<string>('STANDARD')
   const [autocompleteUsesLeft, setAutocompleteUsesLeft] = useState(8)
   const [showTutorial, setShowTutorial] = useState(false)
   const [userId, setUserId] = useState<string | null>(null)
@@ -1515,6 +1518,19 @@ export default function OnboardingPage() {
           },
         }))
       } catch(e) { console.error('Error cargando datos:', e) }
+
+      // accountType, en try/catch independiente: si falla, accountType se queda en
+      // su valor por defecto 'STANDARD' (no-partner), que es el comportamiento
+      // original (redirige a /checkout al activar).
+      try {
+        const accRes = await fetch(`${BACKEND}/api/account/${session.user.id}`, {
+          headers: { 'Authorization': 'Bearer ' + session.access_token }
+        })
+        if (accRes.ok) {
+          const accData = await accRes.json()
+          if (accData?.user?.accountType) setAccountType(accData.user.accountType)
+        }
+      } catch(e) { console.error('Error cargando accountType:', e) }
     }
     loadExisting()
   }, [])
@@ -1590,9 +1606,10 @@ export default function OnboardingPage() {
       })
       if (isEditing) {
         router.push('/dashboard')
-      } else if (projectIdParam) {
-        // Proyecto adicional creado vía "Nuevo proyecto" (solo disponible para cuentas
-        // partner — ver POST /api/projects). Sin costo, sin checkout de Stripe.
+      } else if (projectIdParam && accountType === 'PARTNER') {
+        // Proyecto adicional creado vía "Nuevo proyecto", confirmado por accountType
+        // (GET /api/account/:userId) — no basta con la presencia de projectId en la
+        // URL, que un usuario STANDARD podría añadir a mano. Sin costo, sin checkout.
         router.push('/dashboard')
       } else {
         router.push('/checkout')
