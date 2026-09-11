@@ -21,6 +21,7 @@ import operationsAdminsRouter from "./routes/operations/admins"
 import operationsPromoCodesRouter from "./routes/operations/promoCodes"
 import contactRouter from "./routes/contact"
 import { startReportWorker } from "./workers/reportWorker"
+import { startLifecycleWorker } from "./workers/lifecycleWorker"
 import { scheduleReports } from "./jobs/scheduleReports"
 
 dotenv.config()
@@ -137,6 +138,8 @@ app.use("/api/operations/promo-codes", operationsPromoCodesRouter)
 
 startReportWorker()
 console.log("Worker de reportes activo")
+
+startLifecycleWorker()
 
 scheduleReports()
 setInterval(scheduleReports, 60 * 60 * 1000)
