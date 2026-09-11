@@ -6,6 +6,7 @@ import path from 'path'
 import fs from 'fs'
 import { MIN_HOURS_BY_FREQUENCY } from '../lib/frequency'
 import { reportQueue } from '../lib/queue'
+import { partnerReportBlockedHours } from '../lib/reportFlags'
 
 const router = Router()
 
@@ -16,40 +17,55 @@ router.post('/generate/:projectId', requireAuth, async (req: Request, res: Respo
     console.log('Iniciando generacion reporte: ' + projectId)
     const project = await prisma.project.findUnique({
       where: { id: projectId },
-      include: { competitiveSetup: true },
+      include: { competitiveSetup: true, user: { select: { accountType: true } } },
     })
     if (!project) return res.status(404).json({ error: 'Proyecto no encontrado' })
     if ((project as any).userId !== userId) return res.status(403).json({ error: 'No tienes permiso para generar este reporte' })
 
-    // 🔒 RESTRICCION TRIAL: max 1 reporte gratis
-    // Solo aplica si NO tiene suscripcion Stripe activa
-    if ((project as any).status === 'TRIAL') {
-      const sub = await (prisma.subscription as any).findFirst({ where: { projectId } })
-      const tieneStripe = sub?.stripeSubscriptionId != null &&
-        ['active', 'trialing'].includes((sub?.status || '').toLowerCase())
-      if (!tieneStripe) {
-        const reportCount = await prisma.report.count({
-          where: { projectId, status: 'COMPLETED' as any }
+    if ((project as any).user?.accountType === 'PARTNER') {
+      // 🔒 RESTRICCION PARTNER: 1 reporte al mes por proyecto
+      const lastReport = await prisma.report.findFirst({
+        where: { projectId, status: 'COMPLETED' as any },
+        orderBy: { createdAt: 'desc' },
+      })
+      const blockedH = partnerReportBlockedHours(lastReport ? new Date(lastReport.createdAt) : null, new Date())
+      if (blockedH > 0) {
+        return res.status(429).json({
+          error: 'frequency_limit',
+          message: `Tu acceso partner permite 1 reporte al mes por proyecto. Faltan ${blockedH}h.`,
         })
-        if (reportCount >= 1) {
-          return res.status(403).json({ error: 'trial_limit', message: 'Has usado tu reporte gratuito. Activa tu plan para continuar.' })
+      }
+    } else {
+      // 🔒 RESTRICCION TRIAL: max 1 reporte gratis
+      // Solo aplica si NO tiene suscripcion Stripe activa
+      if ((project as any).status === 'TRIAL') {
+        const sub = await (prisma.subscription as any).findFirst({ where: { projectId } })
+        const tieneStripe = sub?.stripeSubscriptionId != null &&
+          ['active', 'trialing'].includes((sub?.status || '').toLowerCase())
+        if (!tieneStripe) {
+          const reportCount = await prisma.report.count({
+            where: { projectId, status: 'COMPLETED' as any }
+          })
+          if (reportCount >= 1) {
+            return res.status(403).json({ error: 'trial_limit', message: 'Has usado tu reporte gratuito. Activa tu plan para continuar.' })
+          }
         }
       }
-    }
 
-    // 🔒 RESTRICCION POR FRECUENCIA
-    const lastReport = await prisma.report.findFirst({
-      where: { projectId, status: 'COMPLETED' as any },
-      orderBy: { createdAt: 'desc' }
-    })
-    if (lastReport && (project as any).status !== 'TRIAL') {
-      const frecuencyHours = MIN_HOURS_BY_FREQUENCY
-      const freq = (project as any).frequency || 'WEEKLY'
-      const horasMinimas = frecuencyHours[freq] || 168
-      const horasTranscurridas = (Date.now() - new Date(lastReport.createdAt).getTime()) / (1000 * 60 * 60)
-      if (horasTranscurridas < horasMinimas) {
-        const horasRestantes = Math.ceil(horasMinimas - horasTranscurridas)
-        return res.status(429).json({ error: 'frequency_limit', message: 'Tu plan ' + freq + ' permite un reporte cada ' + horasMinimas + 'h. Faltan ' + horasRestantes + 'h para tu proximo reporte.' })
+      // 🔒 RESTRICCION POR FRECUENCIA
+      const lastReport = await prisma.report.findFirst({
+        where: { projectId, status: 'COMPLETED' as any },
+        orderBy: { createdAt: 'desc' }
+      })
+      if (lastReport && (project as any).status !== 'TRIAL') {
+        const frecuencyHours = MIN_HOURS_BY_FREQUENCY
+        const freq = (project as any).frequency || 'WEEKLY'
+        const horasMinimas = frecuencyHours[freq] || 168
+        const horasTranscurridas = (Date.now() - new Date(lastReport.createdAt).getTime()) / (1000 * 60 * 60)
+        if (horasTranscurridas < horasMinimas) {
+          const horasRestantes = Math.ceil(horasMinimas - horasTranscurridas)
+          return res.status(429).json({ error: 'frequency_limit', message: 'Tu plan ' + freq + ' permite un reporte cada ' + horasMinimas + 'h. Faltan ' + horasRestantes + 'h para tu proximo reporte.' })
+        }
       }
     }
     // 🔒 ANTI-DUPLICADO: verificar que no haya un reporte ya generándose
