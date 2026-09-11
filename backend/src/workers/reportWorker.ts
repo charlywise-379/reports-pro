@@ -6,6 +6,7 @@ import { uploadPDFToR2 } from '../lib/r2'
 import path from 'path'
 import fs from 'fs'
 import { MIN_HOURS_BY_FREQUENCY } from '../lib/frequency'
+import { computeReportEligibility, computeReportFlags } from '../lib/reportFlags'
 
 export function startReportWorker() {
   const worker = new Worker<ReportJobData>(
@@ -37,11 +38,12 @@ export function startReportWorker() {
 
       const userForGate = await prisma.user.findUnique({
         where: { id: project.userId },
-        select: { freeReportUsedAt: true },
+        select: { freeReportUsedAt: true, accountType: true },
       })
+      const accountType: 'STANDARD' | 'PARTNER' = (userForGate as any)?.accountType === 'PARTNER' ? 'PARTNER' : 'STANDARD'
       const eligibleViaFullAccessPromo = hasFullAccessPromo && !userForGate?.freeReportUsedAt
 
-      if (!trialVigente && !tieneStripe && !eligibleViaFullAccessPromo) {
+      if (!computeReportEligibility({ accountType, trialVigente, tieneStripe, eligibleViaFullAccessPromo })) {
         console.log(`[Worker] Proyecto ${projectId} sin suscripcion activa — saltando`)
         return { skipped: true, reason: 'no_active_subscription' }
       }
@@ -49,10 +51,14 @@ export function startReportWorker() {
       const user = userForGate
       const hasPromoAccess = promoRedemption != null
       const hasPaid = (sub?.status || '').toLowerCase() === 'active'
-      const isFreeReport = !hasPaid && !user?.freeReportUsedAt
-      const isTeaser = isFreeReport && !hasPromoAccess
+      const { isFreeReport, isTeaser } = computeReportFlags({
+        accountType,
+        hasPaid,
+        freeReportUsedAt: (user?.freeReportUsedAt as Date | null) ?? null,
+        hasPromoAccess,
+      })
 
-      if (!hasPaid && user?.freeReportUsedAt) {
+      if (accountType !== 'PARTNER' && !hasPaid && user?.freeReportUsedAt) {
         console.log(`[Worker] User ${project.userId} already used their free report — skipping`)
         return { skipped: true, reason: 'free_report_already_used' }
       }
