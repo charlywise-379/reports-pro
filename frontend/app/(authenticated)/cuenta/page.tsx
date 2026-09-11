@@ -192,6 +192,8 @@ export default function CuentaPage() {
 
   const fullName = accountData?.user?.fullName || ''
   const email = accountData?.user?.email || ''
+  const isPartner = accountData?.user?.accountType === 'PARTNER'
+  const partnerAgency = accountData?.user?.partnerAgency || ''
   const subscriptions = accountData?.subscriptions || []
   const reports = accountData?.reports || []
   const reportsByProject = reports.reduce((acc: Record<string, any[]>, r: any) => {
@@ -277,24 +279,33 @@ export default function CuentaPage() {
 
         <div style={cardStyle}>
           <h2 style={{ fontSize: 14, fontWeight: 800, marginBottom: 16 }}>Mis suscripciones</h2>
-          {subscriptions.length === 0 && <div style={{ fontSize: 12, color: T.textMuted }}>Aún no tienes suscripciones activas.</div>}
-          {subscriptions.map((s: any) => (
-            <div key={s.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 0', borderBottom: `1px solid ${T.border}`, flexWrap: 'wrap', gap: 8 }}>
-              <div>
-                <div style={{ fontSize: 13, fontWeight: 700 }}>{s.projectName}</div>
-                <div style={{ fontSize: 11, color: T.textMuted }}>{s.frequency} · ${s.pricePerMonth}/mes</div>
-              </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                <StatusPill label={s.status} status={s.status} />
-                <button onClick={handleManageSubscription} style={{
-                  background: 'transparent', border: `1px solid ${T.border2}`, color: T.text,
-                  borderRadius: 8, padding: '6px 12px', fontSize: 11, fontWeight: 700, cursor: 'pointer',
-                }}>
-                  Gestionar suscripción
-                </button>
-              </div>
+          {isPartner ? (
+            <div>
+              <div style={{ fontSize: 13, fontWeight: 700, color: T.accent }}>Acceso total — cuenta asociada ({partnerAgency})</div>
+              <div style={{ fontSize: 11, color: T.textMuted, marginTop: 4 }}>Sin costo · multiproyecto · 1 reporte al mes por proyecto</div>
             </div>
-          ))}
+          ) : (
+            <>
+              {subscriptions.length === 0 && <div style={{ fontSize: 12, color: T.textMuted }}>Aún no tienes suscripciones activas.</div>}
+              {subscriptions.map((s: any) => (
+                <div key={s.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 0', borderBottom: `1px solid ${T.border}`, flexWrap: 'wrap', gap: 8 }}>
+                  <div>
+                    <div style={{ fontSize: 13, fontWeight: 700 }}>{s.projectName}</div>
+                    <div style={{ fontSize: 11, color: T.textMuted }}>{s.frequency} · ${s.pricePerMonth}/mes</div>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                    <StatusPill label={s.status} status={s.status} />
+                    <button onClick={handleManageSubscription} style={{
+                      background: 'transparent', border: `1px solid ${T.border2}`, color: T.text,
+                      borderRadius: 8, padding: '6px 12px', fontSize: 11, fontWeight: 700, cursor: 'pointer',
+                    }}>
+                      Gestionar suscripción
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </>
+          )}
         </div>
 
         <div style={cardStyle}>

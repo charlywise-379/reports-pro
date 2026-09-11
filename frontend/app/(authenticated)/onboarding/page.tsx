@@ -1381,6 +1381,7 @@ export default function OnboardingPage() {
   const [errorMsg, setErrorMsg] = useState('')
   const [isEditing, setIsEditing] = useState(false)
   const [dataLoaded, setDataLoaded] = useState(false)
+  const [projectIdParam, setProjectIdParam] = useState<string | null>(null)
   const [autocompleteUsesLeft, setAutocompleteUsesLeft] = useState(8)
   const [showTutorial, setShowTutorial] = useState(false)
   const [userId, setUserId] = useState<string | null>(null)
@@ -1438,6 +1439,8 @@ export default function OnboardingPage() {
     const params = new URLSearchParams(window.location.search)
     const initialStep = params.get('step')
     if (initialStep) setStep(parseInt(initialStep))
+    const projectIdFromUrl = params.get('projectId')
+    setProjectIdParam(projectIdFromUrl)
 
     const loadExisting = async () => {
       const { data: { session } } = await supabase.auth.getSession()
@@ -1453,9 +1456,18 @@ export default function OnboardingPage() {
         })
         const dash = await res.json()
         if (!dash?.project) { setDataLoaded(true); return }
+        // GET /api/dashboard/:userId devuelve el proyecto MÁS RECIENTE del usuario
+        // (no filtra por projectId). Si venimos con un projectId explícito (p.ej. un
+        // partner que dio clic en "Nuevo proyecto") y ese no es el proyecto más
+        // reciente, no lo tratamos como el proyecto a editar: evita precargar datos
+        // de OTRO proyecto y evita inferir isEditing=true por error.
+        if (projectIdFromUrl && dash.project.id !== projectIdFromUrl) {
+          setDataLoaded(true)
+          return
+        }
         // Solo es edición si tiene setup completo con nombre real
-        const hasRealSetup = dash?.setup?.companyName && 
-          dash.setup.companyName !== 'Sin nombre' && 
+        const hasRealSetup = dash?.setup?.companyName &&
+          dash.setup.companyName !== 'Sin nombre' &&
           dash.setup.companyName.trim() !== ''
         if (hasRealSetup) setIsEditing(true)
         const s = dash.setup || {}
@@ -1519,6 +1531,7 @@ export default function OnboardingPage() {
           ...data,
           deliveryDay: DAYS[data.deliveryDay],
           deliveryTime: TIMES[data.deliveryTime],
+          projectId: projectIdParam,
         })
       })
     } catch(e) { console.error('Error guardando:', e) }
@@ -1561,6 +1574,7 @@ export default function OnboardingPage() {
           ...data,
           deliveryDay: DAYS[data.deliveryDay],
           deliveryTime: TIMES[data.deliveryTime],
+          projectId: projectIdParam,
         })
       })
       const res = await response.json()
@@ -1575,6 +1589,10 @@ export default function OnboardingPage() {
         is_editing: isEditing,
       })
       if (isEditing) {
+        router.push('/dashboard')
+      } else if (projectIdParam) {
+        // Proyecto adicional creado vía "Nuevo proyecto" (solo disponible para cuentas
+        // partner — ver POST /api/projects). Sin costo, sin checkout de Stripe.
         router.push('/dashboard')
       } else {
         router.push('/checkout')

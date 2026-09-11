@@ -64,6 +64,8 @@ export default function DashboardPage() {
   const [endingTrial, setEndingTrial] = useState(false)
   const [firstFullClicked, setFirstFullClicked] = useState(false)
   const [showTutorial, setShowTutorial] = useState(false)
+  const [accountType, setAccountType] = useState<string | null>(null)
+  const [creatingProject, setCreatingProject] = useState(false)
 
   const handleEndTrial = async () => {
     if (!user) return
@@ -117,6 +119,26 @@ export default function DashboardPage() {
     } catch (e: any) {
       stopPolling()
       alert('Error: ' + e.message)
+    }
+  }
+
+  // Nuevo proyecto (solo cuentas partner) — crea un proyecto borrador y abre el wizard
+  const handleNewProject = async () => {
+    if (!token || creatingProject) return
+    setCreatingProject(true)
+    try {
+      const res = await fetch(`${BACKEND}/api/projects`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ serviceType: 'COMPETITIVE_INTELLIGENCE' }),
+      })
+      const data = await res.json()
+      if (!res.ok || !data.projectId) throw new Error(data.error || 'No se pudo crear el proyecto')
+      router.push(`/onboarding?projectId=${data.projectId}`)
+    } catch (e: any) {
+      alert('Error al crear el proyecto: ' + e.message)
+    } finally {
+      setCreatingProject(false)
     }
   }
   // Bug #5: Modal de confirmación antes de generar
@@ -215,6 +237,17 @@ export default function DashboardPage() {
         const latest = (data.reports || []).find((r: any) => r.sectionsJson) || (data.reports || []).find((r: any) => r.status === 'COMPLETED')
         if (latest) setSelectedReport(latest)
       } catch(e) { console.error('Dashboard data error:', e) }
+
+      try {
+        const accRes = await fetch(`${BACKEND}/api/account/${user.id}`, {
+          headers: { 'Authorization': 'Bearer ' + session.access_token }
+        })
+        if (accRes.ok) {
+          const accData = await accRes.json()
+          setAccountType(accData?.user?.accountType || null)
+        }
+      } catch(e) { console.error('Account data error:', e) }
+
       setLoading(false)
 
       const tutorialKey = `omnireports_tutorial_dashboard_${user.id}`
@@ -689,6 +722,11 @@ export default function DashboardPage() {
                   Gestionar suscripción →
                 </button>
               )}
+              {accountType === 'PARTNER' && (
+                <button onClick={handleNewProject} disabled={creatingProject} style={{ fontSize:10, fontWeight:600, color:'#0D0F1A', background:'linear-gradient(135deg,#8B7BFF,#5DD4D4)', border:'none', borderRadius:20, padding:'6px 12px', cursor: creatingProject ? 'not-allowed' : 'pointer', whiteSpace:'nowrap', opacity: creatingProject ? 0.7 : 1 }}>
+                  {creatingProject ? 'Creando...' : '+ Nuevo proyecto'}
+                </button>
+              )}
             </div>}
             {!isMobile && <div style={{ display:'flex', gap:8, alignItems:'center', marginLeft:'auto' }}>
               <button onClick={()=>{setEditName(dashData?.setup?.companyName||'');setShowEditProfile(true)}} style={{ fontSize:12, fontWeight:600, color:'#8B7BFF', background:'rgba(139,123,255,0.1)', border:'1px solid rgba(139,123,255,0.2)', borderRadius:20, padding:'8px 18px', cursor:'pointer', whiteSpace:'nowrap' }}>Editar Perfil</button>
@@ -696,6 +734,11 @@ export default function DashboardPage() {
               {tieneStripe && (
                 <button onClick={() => router.push('/upgrade')} style={{ fontSize:12, fontWeight:600, color:'#6EE7A4', background:'rgba(110,231,164,0.08)', border:'1px solid rgba(110,231,164,0.2)', borderRadius:20, padding:'8px 18px', cursor:'pointer', whiteSpace:'nowrap' }}>
                   Gestionar suscripción →
+                </button>
+              )}
+              {accountType === 'PARTNER' && (
+                <button onClick={handleNewProject} disabled={creatingProject} style={{ fontSize:12, fontWeight:600, color:'#0D0F1A', background:'linear-gradient(135deg,#8B7BFF,#5DD4D4)', border:'none', borderRadius:20, padding:'8px 18px', cursor: creatingProject ? 'not-allowed' : 'pointer', whiteSpace:'nowrap', opacity: creatingProject ? 0.7 : 1 }}>
+                  {creatingProject ? 'Creando...' : '+ Nuevo proyecto'}
                 </button>
               )}
             </div>}
