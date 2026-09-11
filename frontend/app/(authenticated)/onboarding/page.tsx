@@ -1445,6 +1445,26 @@ export default function OnboardingPage() {
     const projectIdFromUrl = params.get('projectId')
     setProjectIdParam(projectIdFromUrl)
 
+    // accountType, en llamada independiente del flujo condicional de loadExisting():
+    // GET /api/dashboard/:userId (usado abajo) solo devuelve el proyecto MÁS RECIENTE
+    // del usuario, así que loadExisting() puede retornar temprano cuando projectIdParam
+    // no coincide con ese proyecto (p.ej. un partner abriendo un proyecto que no es el
+    // más reciente). accountType debe resolverse de todas formas, sin depender de esos
+    // returns. Si falla o no confirma 'PARTNER', se queda en su valor por defecto
+    // 'STANDARD' (no-partner), que es el comportamiento original (redirige a /checkout
+    // al activar).
+    const loadAccountType = async (session: any) => {
+      try {
+        const accRes = await fetch(`${BACKEND}/api/account/${session.user.id}`, {
+          headers: { 'Authorization': 'Bearer ' + session.access_token }
+        })
+        if (accRes.ok) {
+          const accData = await accRes.json()
+          if (accData?.user?.accountType) setAccountType(accData.user.accountType)
+        }
+      } catch(e) { console.error('Error cargando accountType:', e) }
+    }
+
     const loadExisting = async () => {
       const { data: { session } } = await supabase.auth.getSession()
       if (!session) return
@@ -1453,6 +1473,11 @@ export default function OnboardingPage() {
       setUserId(user.id)
       const tutorialKey = `omnireports_tutorial_onboarding_competitive_${user.id}`
       if (!initialStep && !hasSeenTutorial(tutorialKey)) setShowTutorial(true)
+
+      // Se dispara antes del bloque de abajo (que tiene los early-return de
+      // dash.project) para que accountType nunca dependa de esos returns.
+      loadAccountType(session)
+
       try {
         const res = await fetch(`${BACKEND}/api/dashboard/${session.user.id}`, {
           headers: { 'Authorization': 'Bearer ' + session.access_token }
@@ -1518,19 +1543,6 @@ export default function OnboardingPage() {
           },
         }))
       } catch(e) { console.error('Error cargando datos:', e) }
-
-      // accountType, en try/catch independiente: si falla, accountType se queda en
-      // su valor por defecto 'STANDARD' (no-partner), que es el comportamiento
-      // original (redirige a /checkout al activar).
-      try {
-        const accRes = await fetch(`${BACKEND}/api/account/${session.user.id}`, {
-          headers: { 'Authorization': 'Bearer ' + session.access_token }
-        })
-        if (accRes.ok) {
-          const accData = await accRes.json()
-          if (accData?.user?.accountType) setAccountType(accData.user.accountType)
-        }
-      } catch(e) { console.error('Error cargando accountType:', e) }
     }
     loadExisting()
   }, [])
