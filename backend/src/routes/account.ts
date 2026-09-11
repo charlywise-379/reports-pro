@@ -15,6 +15,8 @@ function serializeUser(user: any) {
     city: user.city,
     state: user.state,
     country: user.country,
+    accountType: user.accountType,
+    partnerAgency: user.partnerAgency,
   }
 }
 

@@ -11,7 +11,7 @@ const router = Router()
 
 router.get('/', requireAdmin, async (req: Request, res: Response) => {
   try {
-    const { module, status, search, page = '1', pageSize = '25' } = req.query as Record<string, string>
+    const { module, status, search, accountType, page = '1', pageSize = '25' } = req.query as Record<string, string>
     const skip = (parseInt(page) - 1) * parseInt(pageSize)
     const take = parseInt(pageSize)
 
@@ -25,6 +25,7 @@ router.get('/', requireAdmin, async (req: Request, res: Response) => {
       ]
     }
     if (module) where.projects = { some: { serviceType: module } }
+    if (accountType === 'PARTNER' || accountType === 'STANDARD') where.accountType = accountType
 
     const [users, total] = await Promise.all([
       prisma.user.findMany({
@@ -47,6 +48,8 @@ router.get('/', requireAdmin, async (req: Request, res: Response) => {
         createdAt: u.createdAt,
         projectCount: u.projects.length,
         modules: [...new Set(u.projects.map(p => p.serviceType))],
+        accountType: u.accountType,
+        partnerAgency: u.partnerAgency,
       })),
       total,
       page: parseInt(page),
