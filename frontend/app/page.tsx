@@ -429,7 +429,7 @@ export default function Landing2Page() {
       {/* ── HEADER ─────────────────────────────────────────── */}
       <header id="inicio" className="sticky top-0 z-50" style={{ background: CREAM }}>
         <div className="flex items-center justify-between px-6 md:px-10 lg:px-[200px] py-4 md:py-5">
-          <Link href="/landing-2" className="flex items-center">
+          <Link href="/" className="flex items-center">
             <Image src="/landing-2/logo-full-dark.png" alt="Omni Reports" width={165} height={35} className="h-8 md:h-9 w-auto" priority />
           </Link>
           <nav className={`hidden lg:flex items-center gap-6 xl:gap-8 ${T.nav}`} style={newake}>
@@ -442,7 +442,7 @@ export default function Landing2Page() {
           <div className="hidden md:flex items-center gap-3">
             {/* Regla E: botón de dos líneas explícitas */}
             <Link
-              href="/register"
+              href="/login"
               className="rounded-full px-5 py-2.5 text-sm text-center leading-tight shadow-[0_0_30px_-10px_rgba(0,0,0,0.15)] transition-transform hover:scale-105"
               style={{ background: PURPLE, color: NAVY, ...dmSansUpper }}
             >
@@ -469,7 +469,7 @@ export default function Landing2Page() {
             {navLinks.map(l => (
               <a key={l.href} href={l.href} onClick={() => setMobileOpen(false)} className="text-base">{l.label}</a>
             ))}
-            <Link href="/register" className="rounded-full px-5 py-3 text-sm text-center" style={{ background: PURPLE, color: NAVY, ...dmSansUpper }}>Iniciar sesión</Link>
+            <Link href="/login" className="rounded-full px-5 py-3 text-sm text-center" style={{ background: PURPLE, color: NAVY, ...dmSansUpper }}>Iniciar sesión</Link>
             <Link href="/register" className="rounded-full px-5 py-3 text-sm text-center border" style={{ borderColor: NAVY, ...dmSansUpper }}>Prueba Gratis 7 días</Link>
           </div>
         )}
@@ -798,6 +798,13 @@ export default function Landing2Page() {
                     {plan.badge}
                     {anual && <div className="mt-1">${precioAnual}/año total</div>}
                   </div>
+                  <Link
+                    href="/register"
+                    className="mt-4 md:mt-auto self-start inline-flex items-center gap-2 rounded-full px-5 py-2.5 text-sm transition-transform hover:scale-105"
+                    style={{ background: NAVY, color: CREAM, ...dmSansUpper }}
+                  >
+                    Contratar <Image src="/landing-2/icon-arrow-blue.png" alt="" width={14} height={14} />
+                  </Link>
                 </PlanNotchCard>
               </Reveal>
             )
