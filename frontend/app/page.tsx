@@ -1,9 +1,9 @@
 'use client'
-import { useState, type CSSProperties } from 'react'
+import { useEffect, useState, type CSSProperties } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
-import { Mail, Phone, User as UserIcon, MessageSquare } from 'lucide-react'
 import Reveal from './Reveal'
+import FloatingHexes from './FloatingHexes'
 
 const NAVY = '#191462'
 const CREAM = '#F7F5F2'
@@ -13,6 +13,10 @@ const BLACK = '#000000'
 
 // Regla A (Figma textCase=UPPER en el 100% de los nodos Newake): el
 // transform va horneado en el estilo base, nunca se omite.
+const PX = 'px-6 lg:px-[max(4vw,calc((100vw_-_1400px)/2))]'
+// Tamaños de Figma en `em` (1em = 1px de diseño) con piso legible en móvil.
+const fpx = (px: number, floor: number) => `max(${floor}px, calc(${px} * var(--u)))`
+const U = (n: number) => ({ '--u': `calc(100cqw / ${n})` }) as CSSProperties
 const newake = { fontFamily: 'Newake, sans-serif', textTransform: 'uppercase' as const }
 const dmSans = { fontFamily: 'var(--font-dm-sans)' }
 // Regla A también aplica a rótulos cortos en DM Sans (botones, badges,
@@ -89,6 +93,15 @@ const T = {
   // la mitad del viewport una vez restado el padding.
   planLabel: 'text-[clamp(1.1rem,0.85rem+1.2vw,3.125rem)] leading-[1.15]',
 }
+
+const pains = [
+  { title: 'Me enteré en la reunión con el cliente', text: 'Tu competidor lanzó un descuento o un producto nuevo — y lo supiste cuando tu cliente te lo mencionó, no antes. Ya era tarde para reaccionar.' },
+  { title: 'Perdimos la licitación y no supimos por qué', text: 'Un competidor presentó una propuesta con precios y alcances que nunca viste venir. Sin datos del mercado, solo te quedó adivinar qué falló.' },
+  { title: 'Mi mejor talento se fue con la competencia', text: 'Ofertas más atractivas, contratación masiva y señales de rotación pasaron desapercibidas hasta que la vacante ya estaba abierta.' },
+  { title: 'La regulación cambió y nadie nos avisó', text: 'Un cambio normativo en tu sector te tomó por sorpresa. Tu equipo se enteró cuando ya había que corregir todo con prisa.' },
+  { title: 'Entré a la negociación sin conocer a la contraparte', text: 'Llegaste a la mesa sin saber su historial, sus prioridades ni su estilo de negociar. Ellos sí habían investigado sobre ti.' },
+  { title: 'Me enteré del lanzamiento por LinkedIn', text: 'Tu competidor anunció un producto o una alianza y lo viste como todos: en redes, cuando ya era noticia y tu cliente ya lo comentaba.' },
+]
 
 const testimonials = [
   {
@@ -198,9 +211,9 @@ function CarouselArrow({ dir, onClick, ariaLabel }: { dir: 'left' | 'right'; onC
       <Image
         src="/landing-2/icon-carousel-arrow.png"
         alt=""
-        width={18}
-        height={18}
-        style={{ transform: dir === 'right' ? 'rotate(-90deg)' : 'rotate(90deg)' }}
+        width={32}
+        height={32}
+        style={{ width: 32, height: 'auto', filter: 'brightness(0) invert(1)', transform: dir === 'right' ? 'rotate(-90deg)' : 'rotate(90deg)' }}
       />
     </button>
   )
@@ -403,6 +416,16 @@ export default function Landing2Page() {
   const [openFaq, setOpenFaq] = useState<number>(0)
   const [activeTestimonial, setActiveTestimonial] = useState(0)
   const [anual, setAnual] = useState(false)
+  const [pain, setPain] = useState(0)
+  const prevPain = () => setPain(i => (i - 1 + pains.length) % pains.length)
+  const nextPain = () => setPain(i => (i + 1) % pains.length)
+  // avance automático cada 8s (se reinicia con cada clic); sin animar si el
+  // usuario pidió reducir movimiento
+  useEffect(() => {
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
+    const id = window.setTimeout(() => setPain(i => (i + 1) % pains.length), 8000)
+    return () => window.clearTimeout(id)
+  }, [pain])
 
   const [contactName, setContactName] = useState('')
   const [contactEmail, setContactEmail] = useState('')
@@ -453,7 +476,8 @@ export default function Landing2Page() {
   ]
 
   return (
-    <main style={{ background: WHITE, color: BLACK }} className="min-h-screen overflow-x-hidden">
+    <main style={{ background: WHITE, color: BLACK }} className="relative isolate min-h-screen overflow-x-hidden">
+      <FloatingHexes />
       {/* ── HEADER 2 (barra social) ─────────────────────────── */}
       {/* orden Figma: Facebook primero, Instagram después */}
       <div className="hidden md:flex items-center justify-end gap-5 px-6 lg:px-[max(4vw,calc((100vw_-_1400px)/2))] py-2.5" style={{ background: CREAM }}>
@@ -555,7 +579,7 @@ export default function Landing2Page() {
         {/* Regla G: sin rotación, sangrado casi edge-to-edge del viewport
             (reporte-02 arranca fuera del canvas por la izquierda, reporte-03
             casi toca el borde derecho) */}
-        <Reveal delay={150} className="relative left-1/2 -translate-x-1/2 w-screen mt-16 md:mt-20 h-[220px] xs:h-[260px] sm:h-[380px] md:h-[500px]">
+        <Reveal delay={150} className="relative left-1/2 -translate-x-1/2 w-screen mt-16 md:mt-20 h-[220px] sm:h-[260px] sm:h-[380px] md:h-[500px]">
           <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[45.3%] aspect-[870/660] rounded-2xl md:rounded-3xl overflow-hidden shadow-[0_0_30px_-10px_rgba(0,0,0,0.15)] z-20">
             <Image src="/landing-2/reporte-01.png" alt="Reporte de inteligencia competitiva Omni Reports" fill sizes="45vw" className="object-cover" />
           </div>
@@ -569,41 +593,50 @@ export default function Landing2Page() {
       </section>
 
       {/* ── ¿TE HA PASADO? (carrusel) ───────────────────────── */}
-      <section className="px-6 lg:px-[max(4vw,calc((100vw_-_1400px)/2))] py-16 md:py-20">
-        <div className="max-w-6xl mx-auto grid md:grid-cols-[minmax(0,420px)_1fr] gap-10 md:gap-16 items-center">
-          <Reveal>
-            <h2 className={`${T.size50} text-balance`} style={{ ...newake, color: NAVY }}>
+      <section className={`${PX} py-16 md:py-20`}>
+        <style>{`@keyframes painIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}`}</style>
+        <div className="max-w-[1400px] mx-auto grid lg:grid-cols-[515fr_889fr] gap-10 lg:gap-0 items-center">
+          <Reveal className="text-center lg:pr-[4%]">
+            <h2 className="text-[clamp(1.875rem,1.375rem+2vw,3.125rem)] leading-[0.96] text-balance" style={{ ...newake, color: NAVY }}>
               ¿Te ha pasado alguna de estas?
             </h2>
           </Reveal>
           <Reveal delay={150}>
-            <div
-              className="relative rounded-[30px] bg-white p-6 sm:p-8 md:p-14 text-center shadow-[0_0_30px_-10px_rgba(0,0,0,0.15)]"
-              style={{ border: `2px solid ${PURPLE}` }}
-            >
-              <h3 className={`${T.size40} mb-4`} style={{ ...newake, color: NAVY }}>
-                &ldquo;Me enteré en la reunión con el cliente&rdquo;
-              </h3>
-              <p className="text-base md:text-lg max-w-xl mx-auto" style={{ color: NAVY, ...dmSans }}>
-                Tu competidor lanzó un descuento o un producto nuevo — y lo supiste cuando tu cliente te lo mencionó, no antes. Ya era tarde para reaccionar.
-              </p>
-              {/* pleca de cita: esquinas alternadas (recta arriba-izq. y
-                  abajo-der., redondeada en las otras dos) + texto
-                  subrayado con "Omnireports" en negrita, tal como Figma. */}
-              <div
-                className="mt-8 mx-auto max-w-lg rounded-none rounded-tr-[24px] rounded-bl-[24px] px-6 sm:px-8 py-5 sm:py-6 text-sm md:text-base underline"
-                style={{ background: PURPLE, color: CREAM, ...dmSansUpper }}
-              >
-                Si te identificaste con alguna de estas, <span className="font-bold">Omnireports</span> fue diseñado exactamente para ti.
-              </div>
-              {/* controles de carrusel: A LOS LADOS de la tarjeta, no
-                  debajo — sobresalen del borde izq./der. a la altura de
-                  la pleca de cita. */}
-              <div className="absolute left-0 bottom-14 sm:bottom-20 -translate-x-1/2">
-                <CarouselArrow dir="left" ariaLabel="Anterior" />
-              </div>
-              <div className="absolute right-0 bottom-14 sm:bottom-20 translate-x-1/2">
-                <CarouselArrow dir="right" ariaLabel="Siguiente" />
+            <div className="relative" style={{ containerType: 'inline-size' }}>
+              <div style={U(889)}>
+                <div className="md:mx-[10.7%]">
+                  <div
+                    key={pain}
+                    className="relative overflow-hidden bg-white text-center"
+                    style={{
+                      border: `2px solid ${PURPLE}`, borderRadius: fpx(30, 18),
+                      boxShadow: '0 0 30px rgba(0,0,0,0.08)', animation: 'painIn .45s ease both',
+                      padding: `${fpx(58, 28)} ${fpx(63, 22)} calc(${fpx(130, 96)} + ${fpx(24, 18)})`,
+                    }}
+                  >
+                    <h3 className="mx-auto" style={{ ...newake, color: NAVY, fontSize: fpx(40, 24), lineHeight: 0.98 }}>
+                      &ldquo;{pains[pain].title}&rdquo;
+                    </h3>
+                    <p style={{ ...dmSans, color: NAVY, fontSize: fpx(22, 15), lineHeight: 1.318, marginTop: fpx(34, 16) }}>
+                      {pains[pain].text}
+                    </p>
+                    {/* bloque morado inferior-izq. + dos filetes cóncavos (arriba-izq. y abajo-der.), como en Figma */}
+                    <div
+                      className="absolute left-0 bottom-0 flex items-center justify-center"
+                      style={{ width: '70.9%', height: fpx(130, 96), background: PURPLE, color: CREAM, borderRadius: `0 ${fpx(30, 18)} 0 0`, padding: `0 ${fpx(60, 14)}` }}
+                    >
+                      <p className="underline" style={{ ...dmSans, textTransform: 'uppercase', fontSize: fpx(20, 13), lineHeight: 1.3 }}>
+                        Si te identificaste con alguna de estas, <span className="font-bold">Omnireports</span> fue diseñado exactamente para ti.
+                      </p>
+                    </div>
+                    <ConcaveFillet size={fpx(34, 20)} rotate={-90} color={PURPLE} style={{ left: 0, bottom: `calc(${fpx(130, 96)} - 0.5px)` }} />
+                    <ConcaveFillet size={fpx(34, 20)} rotate={-90} color={PURPLE} style={{ left: 'calc(70.9% - 0.5px)', bottom: 0 }} />
+                  </div>
+                </div>
+                <div className="flex justify-center gap-4 mt-6 md:contents">
+                  <div className="md:absolute md:left-0 md:top-1/2 md:-translate-y-1/2"><CarouselArrow dir="left" onClick={prevPain} ariaLabel="Situación anterior" /></div>
+                  <div className="md:absolute md:right-0 md:top-1/2 md:-translate-y-1/2"><CarouselArrow dir="right" onClick={nextPain} ariaLabel="Siguiente situación" /></div>
+                </div>
               </div>
             </div>
           </Reveal>
@@ -688,7 +721,7 @@ export default function Landing2Page() {
               ].map((item) => (
                 <span
                   key={item.label}
-                  className="absolute -translate-x-1/2 -translate-y-1/2 whitespace-nowrap rounded-full px-2 sm:px-3 py-1 sm:py-1.5 text-[8px] xs:text-[10px] sm:text-xs shadow-[0_0_20px_-8px_rgba(0,0,0,0.15)]"
+                  className="absolute -translate-x-1/2 -translate-y-1/2 whitespace-nowrap rounded-full px-2 sm:px-3 py-1 sm:py-1.5 text-[8px] sm:text-[10px] sm:text-xs shadow-[0_0_20px_-8px_rgba(0,0,0,0.15)]"
                   style={{
                     left: `${item.x}%`, top: `${item.y}%`,
                     ...dmSansUpper,
@@ -706,52 +739,56 @@ export default function Landing2Page() {
       </section>
 
       {/* ── VS ANALISTA HUMANO ─────────────────────────────── */}
-      <section className="px-6 lg:px-[max(4vw,calc((100vw_-_1400px)/2))] py-20 md:py-28">
-        <Reveal className="max-w-4xl mx-auto text-center mb-14">
-          <h2 className={`${T.size50} leading-[1.3] mb-5 text-balance`} style={{ ...newake, color: NAVY }}>
-            Inteligencia de nivel enterprise. <br className="hidden md:block" />Sin el costo de uno.
+      <section className={`${PX} py-20 md:py-28`}>
+        <Reveal className="max-w-[820px] mx-auto text-center mb-14">
+          <h2 className="mb-5 leading-[1.1]" style={{ ...newake, color: NAVY }}>
+            <span className="block text-[clamp(1.875rem,1.375rem+2vw,3.125rem)]">Inteligencia de nivel enterprise.</span>
+            <span className="block text-[clamp(1.5rem,1.1rem+1.6vw,2.5rem)]">Sin el costo de uno.</span>
           </h2>
-          <p className="text-base md:text-lg" style={{ color: BLACK, ...dmSans }}>
+          <p className={B22} style={{ color: BLACK, ...dmSans }}>
             Un analista de inteligencia competitiva senior cuesta entre $2,100 y $4,200 USD al mes. Solo puede monitorear lo que le da tiempo. Se va de vacaciones. Tiene otros proyectos.
           </p>
         </Reveal>
-        <div className="max-w-[1520px] mx-auto relative grid md:grid-cols-2 gap-0">
-          {/* OMNIREPORTS: tarjeta real, crema sobre crema, esquina
-              inferior-derecha recta (radii=[30,30,0,30]) */}
-          <Reveal className="rounded-[30px] rounded-br-none p-6 sm:p-8 md:p-10 md:pr-16 relative" style={{ background: CREAM }}>
-            {/* Orden real de Figma: título, checklist, precio, y el
-                badge "98% más barato" AL FINAL (no antes del título). */}
-            <h3 className={`${T.size50} mb-5`} style={{ ...newake, color: NAVY }}>OMNIREPORTS</h3>
-            <ul className="space-y-2.5 text-sm md:text-base mb-8" style={{ color: NAVY, ...dmSans }}>
-              {['Monitorea 24/7 sin interrupciones', 'Reporte listo en menos de 24 horas', 'No tiene vacaciones, nunca falla', 'Cubre web, redes, medios, patentes, regulaciones', 'Análisis consistente, estructurado y accionable', 'Sin contratos, sin sorpresas, cancela cuando quieras'].map(line => (
-                <li key={line} className="flex gap-2.5"><span style={{ color: PURPLE }}>✓</span>{line}</li>
-              ))}
-            </ul>
-            <div className="flex flex-wrap items-baseline gap-3 mb-6">
-              <span className={T.size50} style={{ color: PURPLE, ...dmSansUpper, fontWeight: 700 }}>desde ${PRECIO_MIN_ANUAL}</span>
-              <span className={T.usdMes} style={{ color: NAVY, ...dmSansUpper }}>USD/mes</span>
-            </div>
-            <NotchTab corner="tl" color={CREAM} radius={20} className={`px-4 sm:px-5 py-1.5 sm:py-2 ${T.size35}`} style={{ ...newake, color: NAVY }}>
-              98% más barato
-            </NotchTab>
-          </Reveal>
-          <div className={`hidden md:flex items-center justify-center absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-10 ${T.vs}`} style={{ color: PURPLE, ...dmSansUpper, fontWeight: 700 }}>
-            vs
+        <div className="max-w-[1400px] mx-auto" style={{ containerType: 'inline-size' }}>
+          <div className="grid md:grid-cols-[621fr_306fr_593fr] gap-y-12 md:gap-y-0" style={U(1520)}>
+            {/* OMNIREPORTS: cuerpo crema + pestaña inferior-derecha con el
+                badge, unidos por el filete cóncavo de Figma */}
+            <Reveal className="relative" style={{ marginBottom: fpx(88, 56) }}>
+              <div className="relative" style={{ background: CREAM, borderRadius: `${fpx(30, 20)} ${fpx(30, 20)} 0 ${fpx(30, 20)}`, padding: `${fpx(28, 22)} ${fpx(30, 22)} ${fpx(40, 26)}` }}>
+                <h3 style={{ ...newake, color: NAVY, fontSize: fpx(50, 30), lineHeight: 1, marginBottom: fpx(34, 20) }}>OMNIREPORTS</h3>
+                <ul className="flex flex-col" style={{ color: NAVY, ...dmSans, fontSize: fpx(22, 16), lineHeight: 1.318, gap: fpx(11, 8) }}>
+                  {['Monitorea 24/7 sin interrupciones', 'Reporte listo en menos de 24 horas', 'No tiene vacaciones, nunca falla', 'Cubre web, redes, medios, patentes, regulaciones', 'Análisis consistente, estructurado y accionable', 'Sin contratos, sin sorpresas, cancela cuando quieras'].map(line => (
+                    <li key={line} className="flex gap-[0.4em]"><span className="font-bold" aria-hidden>✓</span>{line}</li>
+                  ))}
+                </ul>
+                <div className="flex flex-wrap items-baseline" style={{ marginTop: fpx(40, 24), columnGap: fpx(22, 12) }}>
+                  <span style={{ color: PURPLE, ...dmSansUpper, fontWeight: 700, fontSize: fpx(50, 30), lineHeight: 1.1 }}>desde ${PRECIO_MIN_ANUAL}</span>
+                  <span style={{ color: NAVY, ...dmSansUpper, fontWeight: 400, fontSize: fpx(30, 18) }}>USD/mes</span>
+                </div>
+              </div>
+              <div
+                className="absolute right-0 flex items-center justify-center text-center"
+                style={{ top: 'calc(100% - 1px)', width: '55.07%', height: fpx(88, 56), background: CREAM, borderRadius: `0 0 ${fpx(30, 20)} ${fpx(30, 20)}`, ...newake, color: NAVY, fontSize: fpx(35, 22), lineHeight: 1 }}
+              >
+                <span style={{ position: 'relative', top: '0.05em' }}>98% más barato</span>
+              </div>
+              <ConcaveFillet size={fpx(40, 24)} rotate={90} color={CREAM} style={{ right: 'calc(55.07% - 0.5px)', top: 'calc(100% - 0.5px)' }} />
+            </Reveal>
+            <div className="flex items-center justify-center" style={{ color: PURPLE, ...dmSansUpper, fontWeight: 700, fontSize: fpx(70, 44) }}>vs</div>
+            {/* ANALISTA HUMANO: sin tarjeta (texto plano sobre el fondo) */}
+            <Reveal delay={150} style={{ padding: `${fpx(28, 0)} 0 0` }}>
+              <h3 style={{ ...newake, color: NAVY, fontSize: fpx(50, 30), lineHeight: 1, marginBottom: fpx(34, 20) }}>ANALISTA HUMANO</h3>
+              <ul className="flex flex-col" style={{ color: BLACK, ...dmSans, fontSize: fpx(22, 16), lineHeight: 1.318, gap: fpx(11, 8) }}>
+                {['Monitorea solo lo que le da tiempo', 'Entrega el reporte en 3–5 días hábiles', 'No trabaja fines de semana ni vacaciones', 'Cubre 2–3 fuentes de información', 'Análisis subjetivo y variable', 'Costo fijo + prestaciones + curva de aprendizaje'].map(line => (
+                  <li key={line} className="flex gap-[0.4em]"><span className="font-bold" aria-hidden>✗</span>{line}</li>
+                ))}
+              </ul>
+              <div className="flex flex-wrap items-baseline" style={{ marginTop: fpx(40, 24), columnGap: fpx(22, 12) }}>
+                <span style={{ color: PURPLE, ...dmSansUpper, fontWeight: 700, fontSize: fpx(50, 30), lineHeight: 1.1 }}>$2,100–$4,200</span>
+                <span style={{ color: BLACK, ...dmSansUpper, fontWeight: 400, fontSize: fpx(30, 18) }}>USD/mes</span>
+              </div>
+            </Reveal>
           </div>
-          {/* ANALISTA HUMANO: sin tarjeta — el nodo de Figma no tiene fill,
-              radio ni sombra; es texto plano sobre el fondo de la sección */}
-          <Reveal delay={150} className="p-6 sm:p-8 md:p-10 md:pl-16">
-            <h3 className={`${T.size50} mb-5`} style={{ ...newake, color: NAVY }}>ANALISTA HUMANO</h3>
-            <ul className="space-y-2.5 text-sm md:text-base mb-8" style={{ color: BLACK, ...dmSans }}>
-              {['Monitorea solo lo que le da tiempo', 'Entrega el reporte en 3–5 días hábiles', 'No trabaja fines de semana ni vacaciones', 'Cubre 2–3 fuentes de información', 'Análisis subjetivo y variable', 'Costo fijo + prestaciones + curva de aprendizaje'].map(line => (
-                <li key={line} className="flex gap-2.5"><span>✗</span>{line}</li>
-              ))}
-            </ul>
-            <div className="flex flex-wrap items-baseline gap-3">
-              <span className={T.size50} style={{ color: PURPLE, ...dmSansUpper, fontWeight: 700 }}>$2,100–$4,200</span>
-              <span className={T.usdMes} style={{ color: BLACK, ...dmSansUpper }}>USD/mes</span>
-            </div>
-          </Reveal>
         </div>
       </section>
 
@@ -809,7 +846,7 @@ export default function Landing2Page() {
         {/* grillas de precio: 1 col en móvil muy angosto, 2 desde sm, 4
             desde lg — el piso de fuente (T.planLabel) ya es lo bastante
             chico para no desbordar ninguna de estas columnas */}
-        <div className="grid grid-cols-1 xs:grid-cols-2 xl:grid-cols-4 gap-x-[clamp(16px,3.125vw,60px)] gap-y-8 max-w-[1400px] mx-auto mb-10">
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-x-[clamp(16px,3.125vw,60px)] gap-y-8 max-w-[1400px] mx-auto mb-10">
           {plans.map((plan, i) => {
             const precioFinal = anual ? +(plan.price * 0.8).toFixed(2) : plan.price
             const precioAnual = +(precioFinal * 12).toFixed(2)
@@ -973,79 +1010,76 @@ export default function Landing2Page() {
       </section>
 
       {/* ── TESTIMONIOS (carrusel) + CONTACTO ──────────────── */}
-      <section id="casos" className="px-6 lg:px-[max(4vw,calc((100vw_-_1400px)/2))] py-20 md:py-28">
-        <div className="max-w-[1420px] mx-auto grid lg:grid-cols-[620fr_700fr] gap-10 items-start">
-          <Reveal className="relative">
-            {/* Regla C: esquinas superiores rectas (radii=[0,0,30,30]) */}
-            <div className="rounded-[30px] rounded-t-none shadow-[0_0_30px_-10px_rgba(0,0,0,0.15)] overflow-hidden" style={{ background: CREAM }}>
-              <div className="px-6 sm:px-8 py-6 sm:py-8 text-center rounded-tr-none" style={{ background: PURPLE, color: CREAM }}>
-                <p className={T.size30} style={newake}>
-                  Lo que dicen quienes ya no esperan a enterarse tarde.
-                </p>
+      <section id="casos" className={`${PX} py-20 md:py-28`}>
+        <div className="max-w-[1400px] mx-auto grid lg:grid-cols-[738fr_185fr_700fr] gap-y-14 items-start">
+          {/* carrusel de testimonios: tarjeta crema con cabecera morada y
+              flechas A LOS COSTADOS, centradas en la tarjeta */}
+          <Reveal className="lg:col-start-1 lg:mt-[7.86%]">
+            <div className="relative" style={{ containerType: 'inline-size' }}>
+              <div style={U(738)}>
+                <div className="md:mx-[14.2%]">
+                  <div key={activeTestimonial} className="overflow-hidden" style={{ background: CREAM, borderRadius: fpx(30, 18), boxShadow: '0 0 30px rgba(0,0,0,0.10)', animation: 'painIn .45s ease both' }}>
+                    <div className="flex items-center justify-center text-center" style={{ background: PURPLE, color: CREAM, minHeight: fpx(95, 70), padding: `${fpx(10, 8)} ${fpx(60, 20)}` }}>
+                      <p style={{ ...newake, fontSize: fpx(28, 20), lineHeight: 1.05 }}>Lo que dicen quienes ya no esperan a enterarse tarde.</p>
+                    </div>
+                    <div style={{ padding: `${fpx(28, 20)} ${fpx(40, 22)} ${fpx(34, 22)}` }}>
+                      <div style={{ ...newake, color: NAVY, fontSize: fpx(40, 26), lineHeight: 1 }}>{t.name}</div>
+                      <div style={{ ...dmSans, color: NAVY, fontSize: fpx(22, 15), marginTop: fpx(30, 14) }}>
+                        {t.role} <span style={{ margin: '0 0.9em' }}>|</span> <span className="font-bold">{t.company}</span>
+                      </div>
+                      <p style={{ ...dmSans, color: NAVY, fontSize: fpx(20, 15), lineHeight: 1.15, marginTop: fpx(30, 16) }}>{t.quote}</p>
+                    </div>
+                  </div>
+                </div>
+                <div className="flex justify-center gap-4 mt-6 md:contents">
+                  <div className="md:absolute md:left-0 md:top-[calc(207*var(--u))] md:-translate-y-1/2"><CarouselArrow dir="left" onClick={prevTestimonial} ariaLabel="Testimonio anterior" /></div>
+                  <div className="md:absolute md:right-0 md:top-[calc(207*var(--u))] md:-translate-y-1/2"><CarouselArrow dir="right" onClick={nextTestimonial} ariaLabel="Testimonio siguiente" /></div>
+                </div>
               </div>
-              <div className="p-6 sm:p-8">
-                <div className={`${T.size40} mb-1`} style={{ ...newake, color: NAVY }}>{t.name}</div>
-                <div className="text-base mb-4" style={{ color: NAVY, ...dmSans }}>{t.role} | {t.company}</div>
-                <p className="text-sm md:text-base leading-relaxed" style={{ color: NAVY, ...dmSans }}>{t.quote}</p>
-              </div>
-            </div>
-            {/* controles de carrusel: A LOS LADOS, a la altura de la
-                pleca morada (no debajo del contenido). */}
-            <div className="absolute left-0 top-[95px] sm:top-[110px] -translate-x-1/2">
-              <CarouselArrow dir="left" onClick={prevTestimonial} ariaLabel="Testimonio anterior" />
-            </div>
-            <div className="absolute right-0 top-[95px] sm:top-[110px] translate-x-1/2">
-              <CarouselArrow dir="right" onClick={nextTestimonial} ariaLabel="Testimonio siguiente" />
             </div>
           </Reveal>
 
-          <Reveal delay={150}>
-            <div className="rounded-[30px] bg-white p-6 sm:p-8 md:p-10 shadow-[0_0_30px_-10px_rgba(0,0,0,0.15)]">
-              {contactSent ? (
-                <div className="text-center py-10">
-                  <h3 className={`${T.size36} mb-3`} style={{ ...newake, color: NAVY }}>¡Listo!</h3>
-                  <p style={{ color: BLACK, ...dmSans }}>Recibimos tu mensaje, te respondemos a la brevedad.</p>
-                </div>
-              ) : (
-                <>
-                  <h3 className={`${T.size36} mb-6 text-center`} style={{ ...newake, color: NAVY }}>¿Alguna duda en tu primer reporte?</h3>
-                  <div className="grid grid-cols-1 xs:grid-cols-2 gap-4 mb-4">
-                    <div className="relative">
-                      <UserIcon size={16} className="absolute left-4 top-1/2 -translate-y-1/2 opacity-50" />
-                      <input value={contactName} onChange={e => setContactName(e.target.value)} placeholder="Nombre"
-                        className="w-full rounded-full pl-10 pr-4 py-3 text-sm outline-none" style={{ background: 'white', ...dmSans }} />
-                    </div>
-                    <div className="relative">
-                      <Phone size={16} className="absolute left-4 top-1/2 -translate-y-1/2 opacity-50" />
-                      <input value={contactPhone} onChange={e => setContactPhone(e.target.value)} placeholder="Teléfono"
-                        className="w-full rounded-full pl-10 pr-4 py-3 text-sm outline-none" style={{ background: 'white', ...dmSans }} />
-                    </div>
+          <Reveal delay={150} className="lg:col-start-3">
+            <div style={{ containerType: 'inline-size' }}>
+              <div style={{ ...U(700), background: CREAM, borderRadius: fpx(30, 18), boxShadow: '0 0 30px rgba(0,0,0,0.10)', padding: `${fpx(44, 24)} ${fpx(40, 20)} ${fpx(50, 28)}` }}>
+                {contactSent ? (
+                  <div className="text-center py-10">
+                    <h3 style={{ ...newake, color: NAVY, fontSize: fpx(35, 26), marginBottom: 12 }}>¡Listo!</h3>
+                    <p style={{ color: BLACK, ...dmSans }}>Recibimos tu mensaje, te respondemos a la brevedad.</p>
                   </div>
-                  <div className="grid grid-cols-1 xs:grid-cols-2 gap-4 mb-4">
-                    <div className="relative">
-                      <Mail size={16} className="absolute left-4 top-1/2 -translate-y-1/2 opacity-50" />
-                      <input type="email" value={contactEmail} onChange={e => setContactEmail(e.target.value)} placeholder="Correo"
-                        className="w-full rounded-full pl-10 pr-4 py-3 text-sm outline-none" style={{ background: 'white', ...dmSans }} />
+                ) : (
+                  <>
+                    <h3 style={{ ...newake, color: NAVY, fontSize: fpx(35, 24), lineHeight: 1.1, marginBottom: fpx(40, 20) }}>¿Alguna duda en tu primer reporte?</h3>
+                    {(() => {
+                      const field: CSSProperties = { ...dmSans, background: WHITE, color: NAVY, fontSize: fpx(22, 16), height: fpx(48, 46), padding: `0 ${fpx(15, 16)}`, borderRadius: 9999, width: '100%', outline: 'none', border: 'none' }
+                      return (
+                        <div className="grid grid-cols-1 sm:grid-cols-2" style={{ gap: fpx(30, 14) }}>
+                          <input value={contactName} onChange={e => setContactName(e.target.value)} placeholder="Nombre" style={field} />
+                          <input value={contactPhone} onChange={e => setContactPhone(e.target.value)} placeholder="Teléfono" style={field} />
+                          <input type="email" value={contactEmail} onChange={e => setContactEmail(e.target.value)} placeholder="Correo" style={field} />
+                          <input value={contactSubject} onChange={e => setContactSubject(e.target.value)} placeholder="Asunto" style={field} />
+                          <textarea
+                            value={contactMessage} onChange={e => setContactMessage(e.target.value)} placeholder="Mensaje"
+                            className="sm:col-span-2 resize-none"
+                            style={{ ...field, height: fpx(164, 130), borderRadius: fpx(30, 22), padding: `${fpx(12, 12)} ${fpx(15, 16)}` }}
+                          />
+                        </div>
+                      )
+                    })()}
+                    {contactError && <p className="text-sm text-red-500 mt-4">{contactError}</p>}
+                    <div className="flex justify-center" style={{ marginTop: fpx(30, 20) }}>
+                      <button
+                        onClick={handleContactSubmit}
+                        disabled={contactLoading || !contactName.trim() || !contactEmail.trim() || !contactMessage.trim()}
+                        className="inline-flex items-center justify-center rounded-full text-white transition-transform hover:scale-105 disabled:opacity-60"
+                        style={{ background: PURPLE, ...dmSansUpper, fontWeight: 400, fontSize: fpx(16, 14), height: fpx(46, 44), padding: `0 ${fpx(20, 22)}`, gap: fpx(14, 10) }}
+                      >
+                        {contactLoading ? 'Enviando...' : 'enviar'} <Image src="/landing-2/icon-envelope.png" alt="" width={20} height={20} style={{ width: '1.25em', height: '1.25em' }} />
+                      </button>
                     </div>
-                    <input value={contactSubject} onChange={e => setContactSubject(e.target.value)} placeholder="Asunto"
-                      className="w-full rounded-full px-4 py-3 text-sm outline-none" style={{ background: 'white', ...dmSans }} />
-                  </div>
-                  <div className="relative mb-5">
-                    <MessageSquare size={16} className="absolute left-4 top-4 opacity-50" />
-                    <textarea value={contactMessage} onChange={e => setContactMessage(e.target.value)} placeholder="Mensaje" rows={4}
-                      className="w-full rounded-[24px] pl-10 pr-4 py-3 text-sm outline-none resize-none" style={{ background: 'white', ...dmSans }} />
-                  </div>
-                  {contactError && <p className="text-sm text-red-500 mb-4">{contactError}</p>}
-                  <button
-                    onClick={handleContactSubmit}
-                    disabled={contactLoading || !contactName.trim() || !contactEmail.trim() || !contactMessage.trim()}
-                    className="inline-flex items-center gap-2.5 rounded-full px-6 py-3 text-sm text-white transition-transform hover:scale-105 disabled:opacity-50"
-                    style={{ background: PURPLE, ...dmSansUpper }}
-                  >
-                    {contactLoading ? 'Enviando...' : 'enviar'} <Image src="/landing-2/icon-envelope.png" alt="" width={16} height={16} />
-                  </button>
-                </>
-              )}
+                  </>
+                )}
+              </div>
             </div>
           </Reveal>
         </div>
