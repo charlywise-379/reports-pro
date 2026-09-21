@@ -130,7 +130,7 @@ const faqs = [
   },
   { q: '2 - ¿Necesito tarjeta de crédito para empezar?', a: 'No. Tu primer reporte es completamente gratis y sin tarjeta. Solo la necesitas si decides continuar después de ver el resultado.' },
   { q: '3 - ¿Qué módulos de inteligencia ofrecen?', a: 'Inteligencia Competitiva Sectorial está disponible hoy. Radar de Ciberseguridad, Salud Corporativa para RRHH y Perfil Clave Ejecutivo llegan próximamente.' },
-  { q: '4 - ¿Cuánto cuesta el servicio?', a: 'Desde $49 USD/mes según la frecuencia que elijas: mensual, quincenal, semanal o diario. Todos los planes incluyen el mismo nivel de profundidad de análisis.' },
+  { q: '4 - ¿Cuánto cuesta el servicio?', a: 'Desde $49 USD/mes en pago mensual (o desde $39.20 USD/mes con el plan anual, que incluye 20% de descuento), según la frecuencia que elijas: mensual, quincenal, semanal o diario. Todos los planes incluyen el mismo nivel de profundidad de análisis.' },
   { q: '5 - ¿Cuánto tarda en llegar mi primer reporte?', a: 'Minutos. En cuanto configuras tu empresa y tus competidores, el motor empieza a escanear y tu primer reporte llega a tu correo antes de que termines tu café.' },
   { q: '6 -  ¿En qué formato recibo los reportes?', a: 'En PDF ejecutivo, listo para leer o compartir, entregado por email y opcionalmente por WhatsApp.' },
   { q: '7 - ¿Puedo compartir los reportes?', a: 'Sí, sin costo adicional — compártelos con tu equipo o tu junta directiva las veces que quieras.' },
@@ -218,9 +218,12 @@ function CarouselArrow({ dir, onClick, ariaLabel }: { dir: 'left' | 'right'; onC
 // Tamaños base a 1920 (Figma): título 50 / copy 22 / copy pasos 20, en
 // versiones fluidas. `leading` en px enteros de Figma (Figma redondea el
 // interlineado: 48/50, 29/22, 26/20).
-const F50 = 'clamp(1.875rem, 1.375rem + 2vw, 3.125rem)'
-const B22 = 'text-[clamp(0.9375rem,0.826rem+0.4575vw,1.375rem)] leading-[1.318]'
-const B20 = 'text-[clamp(0.875rem,0.779rem+0.392vw,1.25rem)] leading-[1.3]'
+// Precio más bajo real: plan mensual con 20% de descuento del pago anual.
+const PRECIO_MIN_ANUAL = (49 * 0.8).toFixed(2)
+const F50 = 'clamp(1.5rem, 8.9cqw, 3.125rem)'
+const B22 = 'text-[clamp(1rem,0.85rem+0.5vw,1.25rem)] leading-[1.318]'
+const CB22 = 'text-[max(16px,0.44em)] leading-[1.318]'
+const CB20 = 'text-[max(16px,0.4em)] leading-[1.3]'
 // Newake queda ~0.05em más arriba en CSS que en Figma (medido por píxel).
 const newakeLift: CSSProperties = { position: 'relative', top: '0.05em' }
 
@@ -235,8 +238,9 @@ function PlanCard({
   color: string; freq: string; freqColor: string; children: React.ReactNode; className?: string
 }) {
   return (
+    <div className={`h-full ${className}`} style={{ containerType: 'inline-size' }}>
     <div
-      className={`relative flex flex-col ${className}`}
+      className="relative flex flex-col h-full"
       style={{ fontSize: F50, paddingTop: '1.946em', filter: 'drop-shadow(0 0 0.3em rgba(0,0,0,0.15))' }}
     >
       <div
@@ -254,6 +258,7 @@ function PlanCard({
         {children}
       </div>
     </div>
+    </div>
   )
 }
 
@@ -267,6 +272,7 @@ function PasoCard({
 }: { n: string; arrow: boolean; title: string; body: React.ReactNode }) {
   const tabW = arrow ? '64.17%' : '49.91%'
   return (
+    <div className="h-full" style={{ containerType: 'inline-size' }}>
     <div
       className="relative flex flex-col h-full"
       style={{ fontSize: F50, paddingTop: '2.226em', filter: 'drop-shadow(0 0 0.3em rgba(0,0,0,0.15))' }}
@@ -285,11 +291,12 @@ function PasoCard({
         style={{ background: CREAM, borderRadius: '0 0.6em 0.6em 0.6em', padding: '0.6em 0.6em 0.64em' }}
       >
         <h3
-          className="text-[clamp(1.375rem,1.05rem+1.3vw,2.188rem)] leading-[0.97]"
+          className="text-[max(20px,0.7em)] leading-[0.97]"
           style={{ ...newake, ...newakeLift, color: NAVY }}
         >{title}</h3>
-        <p className={B20} style={{ marginTop: '1.55em', color: NAVY, ...dmSans }}>{body}</p>
+        <p className={CB20} style={{ marginTop: '1.55em', color: NAVY, ...dmSans }}>{body}</p>
       </div>
+    </div>
     </div>
   )
 }
@@ -306,7 +313,7 @@ function PasoCard({
 //   · relleno: color base al 20% sobre blanco, en sólido (pestaña, filete y
 //     cuerpo idénticos); sombra 0 0 30px (0.375em) al 80% del color base
 //   · el contenido va centrado en vertical dentro de un margen de 80/40
-const MOD_F = 'clamp(2.5rem, 1.8625rem + 2.614vw, 5rem)'
+const MOD_F = 'clamp(2.5rem, 4.5cqw, 5rem)'
 
 function ModuleCard({
   corner, color, glow, number, minHeight, action, children,
@@ -449,7 +456,7 @@ export default function Landing2Page() {
     <main style={{ background: WHITE, color: BLACK }} className="min-h-screen overflow-x-hidden">
       {/* ── HEADER 2 (barra social) ─────────────────────────── */}
       {/* orden Figma: Facebook primero, Instagram después */}
-      <div className="hidden md:flex items-center justify-end gap-5 px-6 lg:px-[200px] py-2.5" style={{ background: CREAM }}>
+      <div className="hidden md:flex items-center justify-end gap-5 px-6 lg:px-[max(4vw,calc((100vw_-_1400px)/2))] py-2.5" style={{ background: CREAM }}>
         <a href="https://facebook.com" target="_blank" rel="noreferrer" className="opacity-90 hover:opacity-100 transition-opacity">
           <Image src="/landing-2/icon-facebook.png" alt="Facebook" width={20} height={20} />
         </a>
@@ -562,7 +569,7 @@ export default function Landing2Page() {
       </section>
 
       {/* ── ¿TE HA PASADO? (carrusel) ───────────────────────── */}
-      <section className="px-6 lg:px-[200px] py-16 md:py-20">
+      <section className="px-6 lg:px-[max(4vw,calc((100vw_-_1400px)/2))] py-16 md:py-20">
         <div className="max-w-6xl mx-auto grid md:grid-cols-[minmax(0,420px)_1fr] gap-10 md:gap-16 items-center">
           <Reveal>
             <h2 className={`${T.size50} text-balance`} style={{ ...newake, color: NAVY }}>
@@ -613,8 +620,8 @@ export default function Landing2Page() {
       </section>
 
       {/* ── CÓMO FUNCIONA (3 PASOS) ────────────────────────── */}
-      <section id="servicios" className="px-6 lg:px-[2.83vw] pb-20 md:pb-28">
-        <div className="max-w-[1791.6px] mx-auto grid md:grid-cols-3 gap-y-8 md:gap-x-[clamp(16px,2.83vw,54.3px)]">
+      <section id="servicios" className="px-6 lg:px-[max(4vw,calc((100vw_-_1400px)/2))] pb-20 md:pb-28">
+        <div className="max-w-[1400px] mx-auto grid grid-cols-1 lg:grid-cols-3 gap-y-8 lg:gap-x-[clamp(16px,2.83vw,40px)] max-lg:max-w-[560px]">
           {[
             {
               n: 'paso 01', title: 'Dinos quién eres', arrow: true,
@@ -637,7 +644,7 @@ export default function Landing2Page() {
       </section>
 
       {/* ── CONSTELACIÓN DE FEATURES ───────────────────────── */}
-      <section className="px-6 lg:px-[200px] py-20 md:py-28">
+      <section className="px-6 lg:px-[max(4vw,calc((100vw_-_1400px)/2))] py-20 md:py-28">
         <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-14 items-center">
           <Reveal>
             <div className="rounded-[30px] p-6 sm:p-8 md:p-10 max-w-xl" style={{ background: CREAM }}>
@@ -699,7 +706,7 @@ export default function Landing2Page() {
       </section>
 
       {/* ── VS ANALISTA HUMANO ─────────────────────────────── */}
-      <section className="px-6 lg:px-[200px] py-20 md:py-28">
+      <section className="px-6 lg:px-[max(4vw,calc((100vw_-_1400px)/2))] py-20 md:py-28">
         <Reveal className="max-w-4xl mx-auto text-center mb-14">
           <h2 className={`${T.size50} leading-[1.3] mb-5 text-balance`} style={{ ...newake, color: NAVY }}>
             Inteligencia de nivel enterprise. <br className="hidden md:block" />Sin el costo de uno.
@@ -711,7 +718,7 @@ export default function Landing2Page() {
         <div className="max-w-[1520px] mx-auto relative grid md:grid-cols-2 gap-0">
           {/* OMNIREPORTS: tarjeta real, crema sobre crema, esquina
               inferior-derecha recta (radii=[30,30,0,30]) */}
-          <Reveal className="rounded-[30px] rounded-br-none p-6 sm:p-8 md:p-10 relative" style={{ background: CREAM }}>
+          <Reveal className="rounded-[30px] rounded-br-none p-6 sm:p-8 md:p-10 md:pr-16 relative" style={{ background: CREAM }}>
             {/* Orden real de Figma: título, checklist, precio, y el
                 badge "98% más barato" AL FINAL (no antes del título). */}
             <h3 className={`${T.size50} mb-5`} style={{ ...newake, color: NAVY }}>OMNIREPORTS</h3>
@@ -721,7 +728,7 @@ export default function Landing2Page() {
               ))}
             </ul>
             <div className="flex flex-wrap items-baseline gap-3 mb-6">
-              <span className={T.size50} style={{ color: PURPLE, ...dmSansUpper, fontWeight: 700 }}>desde $49</span>
+              <span className={T.size50} style={{ color: PURPLE, ...dmSansUpper, fontWeight: 700 }}>desde ${PRECIO_MIN_ANUAL}</span>
               <span className={T.usdMes} style={{ color: NAVY, ...dmSansUpper }}>USD/mes</span>
             </div>
             <NotchTab corner="tl" color={CREAM} radius={20} className={`px-4 sm:px-5 py-1.5 sm:py-2 ${T.size35}`} style={{ ...newake, color: NAVY }}>
@@ -733,7 +740,7 @@ export default function Landing2Page() {
           </div>
           {/* ANALISTA HUMANO: sin tarjeta — el nodo de Figma no tiene fill,
               radio ni sombra; es texto plano sobre el fondo de la sección */}
-          <Reveal delay={150} className="p-6 sm:p-8 md:p-10">
+          <Reveal delay={150} className="p-6 sm:p-8 md:p-10 md:pl-16">
             <h3 className={`${T.size50} mb-5`} style={{ ...newake, color: NAVY }}>ANALISTA HUMANO</h3>
             <ul className="space-y-2.5 text-sm md:text-base mb-8" style={{ color: BLACK, ...dmSans }}>
               {['Monitorea solo lo que le da tiempo', 'Entrega el reporte en 3–5 días hábiles', 'No trabaja fines de semana ni vacaciones', 'Cubre 2–3 fuentes de información', 'Análisis subjetivo y variable', 'Costo fijo + prestaciones + curva de aprendizaje'].map(line => (
@@ -771,7 +778,7 @@ export default function Landing2Page() {
       </section>
 
       {/* ── PRECIOS ─────────────────────────────────────────── */}
-      <section id="precios" className="px-6 lg:px-[4vw] py-20 md:py-28">
+      <section id="precios" className="px-6 lg:px-[max(4vw,calc((100vw_-_1400px)/2))] py-20 md:py-28">
         <Reveal className="max-w-[820px] mx-auto text-center mb-12">
           <h2 className={`${T.size50} mb-5 text-balance`} style={{ ...newake, color: NAVY }}>
             Elige con qué frecuencia quieres saber qué hace tu competencia
@@ -802,7 +809,7 @@ export default function Landing2Page() {
         {/* grillas de precio: 1 col en móvil muy angosto, 2 desde sm, 4
             desde lg — el piso de fuente (T.planLabel) ya es lo bastante
             chico para no desbordar ninguna de estas columnas */}
-        <div className="grid grid-cols-1 xs:grid-cols-2 lg:grid-cols-4 gap-x-[clamp(16px,3.125vw,60px)] gap-y-8 max-w-[1764px] mx-auto mb-10">
+        <div className="grid grid-cols-1 xs:grid-cols-2 xl:grid-cols-4 gap-x-[clamp(16px,3.125vw,60px)] gap-y-8 max-w-[1400px] mx-auto mb-10">
           {plans.map((plan, i) => {
             const precioFinal = anual ? +(plan.price * 0.8).toFixed(2) : plan.price
             const precioAnual = +(precioFinal * 12).toFixed(2)
@@ -824,7 +831,7 @@ export default function Landing2Page() {
                       20% OFF
                     </div>
                   )}
-                  <p className={`${B22} whitespace-pre-line`} style={{ color: plan.featured ? WHITE : BLACK, ...dmSans }}>
+                  <p className={`${CB22} whitespace-pre-line`} style={{ color: plan.featured ? WHITE : BLACK, ...dmSans }}>
                     <span className="font-bold">{FIRST}</span>{plan.desc.slice(FIRST.length)}
                   </p>
                   {anual && <div className="mt-2 text-xs" style={{ color: plan.featured ? WHITE : NAVY, ...dmSans }}>${precioAnual}/año total</div>}
@@ -842,13 +849,15 @@ export default function Landing2Page() {
             )
           })}
         </div>
-        <Reveal delay={200} className={`text-center whitespace-pre-wrap ${B22}`} style={{ color: BLACK, ...dmSans }}>
-          {'Sin contratos anuales     |     Sin costos ocultos     |     Cancelas cuando quieras con un clic.'}
+        <Reveal delay={200} className={`flex flex-wrap justify-center gap-x-10 gap-y-1 text-center ${B22}`} style={{ color: BLACK, ...dmSans }}>
+          <span>Sin contratos anuales</span><span aria-hidden className="hidden sm:inline">|</span>
+          <span>Sin costos ocultos</span><span aria-hidden className="hidden sm:inline">|</span>
+          <span>Cancelas cuando quieras con un clic.</span>
         </Reveal>
       </section>
 
       {/* ── MÓDULOS ─────────────────────────────────────────── */}
-      <section id="modulos" className="px-6 lg:px-[200px] pt-20 md:pt-28 pb-6">
+      <section id="modulos" className="px-6 lg:px-[max(4vw,calc((100vw_-_1400px)/2))] pt-20 md:pt-28 pb-6">
         <Reveal className="max-w-2xl mx-auto text-center mb-14">
           <h2 className={`${T.size50} mb-5 text-balance`} style={{ ...newake, color: NAVY }}>
             Tu analista de inteligencia trabaja mientras duermes
@@ -866,10 +875,10 @@ export default function Landing2Page() {
           pestañas (112 c/u, se cruzan 34 en x pero a distinta altura). */}
       <section className="px-6 pb-24">
         {[
-          { mods: [modules[0], modules[1]], max: 'max-w-[1779px]', cols: 'lg:grid-cols-[minmax(0,808fr)_minmax(0,190fr)_minmax(0,781fr)]', minH: undefined as string | undefined, gap: '' },
-          { mods: [modules[2], modules[3]], max: 'max-w-[1650px]', cols: 'lg:grid-cols-[minmax(0,730fr)_minmax(0,190fr)_minmax(0,730fr)]', minH: '7em', gap: 'mt-14 lg:mt-20' },
+          { mods: [modules[0], modules[1]], max: 'max-w-[1400px]', cols: 'lg:grid-cols-[minmax(0,808fr)_minmax(0,190fr)_minmax(0,781fr)]', minH: undefined as string | undefined, gap: '' },
+          { mods: [modules[2], modules[3]], max: 'max-w-[1298px]', cols: 'lg:grid-cols-[minmax(0,730fr)_minmax(0,190fr)_minmax(0,730fr)]', minH: '7em', gap: 'mt-14 lg:mt-20' },
         ].map((row, ri) => (
-          <div key={ri} className={`mx-auto grid grid-cols-1 gap-y-14 ${row.max} ${row.cols} ${row.gap}`}>
+          <div key={ri} className={`mx-auto grid grid-cols-1 gap-y-14 ${row.max} ${row.cols} ${row.gap}`} style={{ containerType: 'inline-size' }}>
             {row.mods.map((m, i) => (
               <Reveal key={m.n} delay={(ri * 2 + i) * 100} className={`h-full ${i === 0 ? 'lg:col-start-1' : 'lg:col-start-3'}`}>
                 <ModuleCard
@@ -889,17 +898,17 @@ export default function Landing2Page() {
                   )}
                 >
                   <div style={{ maxWidth: '8.7625em' }}>
-                    <h3 className="relative top-[0.05em] whitespace-pre-line text-[clamp(1.875rem,1.375rem+2vw,3.125rem)] leading-[0.96]" style={{ ...newake, color: NAVY }}>{m.title}</h3>
+                    <h3 className="relative top-[0.05em] whitespace-pre-line text-[max(26px,0.625em)] leading-[0.96]" style={{ ...newake, color: NAVY }}>{m.title}</h3>
                   </div>
                   <div style={{ maxWidth: '8.7625em' }}>
-                    <p className="text-[clamp(0.9375rem,0.826rem+0.4575vw,1.375rem)] leading-[1.318] whitespace-pre-line" style={{ color: m.descColor, ...dmSans }}>{m.body}</p>
+                    <p className="text-[max(16px,0.275em)] leading-[1.318] whitespace-pre-line" style={{ color: m.descColor, ...dmSans }}>{m.body}</p>
                   </div>
                   {'bullets' in m && m.bullets && (
-                    <ul className="text-[clamp(0.9375rem,0.826rem+0.4575vw,1.375rem)] leading-[1.318] list-disc pl-[1.5em]" style={{ color: m.descColor, ...dmSans }}>
+                    <ul className="text-[max(16px,0.275em)] leading-[1.318] list-disc pl-[1.5em]" style={{ color: m.descColor, ...dmSans }}>
                       {m.bullets.map(b => <li key={b}>{b}</li>)}
                     </ul>
                   )}
-                  <p className="text-[clamp(0.75rem,0.65rem+0.3vw,1rem)] leading-[1.3125]" style={{ color: m.idealColor, ...dmSansUpper, whiteSpace: 'pre-wrap' }}>
+                  <p className="text-[max(12px,0.2em)] leading-[1.3125]" style={{ color: m.idealColor, ...dmSansUpper, whiteSpace: 'pre-wrap' }}>
                     <span className="font-bold">Ideal para:</span>{' ' + m.ideal.join('     |     ')}
                   </p>
                 </ModuleCard>
@@ -910,7 +919,7 @@ export default function Landing2Page() {
       </section>
 
       {/* ── FAQ ─────────────────────────────────────────────── */}
-      <section className="px-6 lg:px-[200px] py-20 md:py-28">
+      <section className="px-6 lg:px-[max(4vw,calc((100vw_-_1400px)/2))] py-20 md:py-28">
         <div className="max-w-[1520px] mx-auto grid lg:grid-cols-[771fr_621fr] gap-12">
           <div className="space-y-3 order-2 lg:order-1">
             {faqs.map((item, i) => {
@@ -964,7 +973,7 @@ export default function Landing2Page() {
       </section>
 
       {/* ── TESTIMONIOS (carrusel) + CONTACTO ──────────────── */}
-      <section id="casos" className="px-6 lg:px-[200px] py-20 md:py-28">
+      <section id="casos" className="px-6 lg:px-[max(4vw,calc((100vw_-_1400px)/2))] py-20 md:py-28">
         <div className="max-w-[1420px] mx-auto grid lg:grid-cols-[620fr_700fr] gap-10 items-start">
           <Reveal className="relative">
             {/* Regla C: esquinas superiores rectas (radii=[0,0,30,30]) */}
@@ -1043,7 +1052,7 @@ export default function Landing2Page() {
       </section>
 
       {/* ── FOOTER ──────────────────────────────────────────── */}
-      <footer className="px-6 lg:px-[200px] py-16 border-t" style={{ borderColor: NAVY, background: CREAM }}>
+      <footer className="px-6 lg:px-[max(4vw,calc((100vw_-_1400px)/2))] py-16 border-t" style={{ borderColor: NAVY, background: CREAM }}>
         <div className="max-w-7xl mx-auto flex flex-wrap items-start justify-between gap-x-10 gap-y-8">
           <Image src="/landing-2/logo-full-dark.png" alt="Omni Reports" width={200} height={44} className="h-9 w-auto" />
           <nav className={`flex flex-col gap-1 ${T.footerNav}`} style={{ ...newake, color: BLACK }}>
@@ -1063,7 +1072,7 @@ export default function Landing2Page() {
           </div>
         </div>
       </footer>
-      <div className={`px-6 lg:px-[200px] py-4 flex flex-col sm:flex-row items-center justify-between gap-2 ${T.copyright}`} style={{ background: CREAM, color: BLACK }}>
+      <div className={`px-6 lg:px-[max(4vw,calc((100vw_-_1400px)/2))] py-4 flex flex-col sm:flex-row items-center justify-between gap-2 ${T.copyright}`} style={{ background: CREAM, color: BLACK }}>
         <span style={newake}>© 2026 Omni Reports . Todos los derechos reservados.</span>
         <span style={newake}>By Bvro</span>
       </div>
