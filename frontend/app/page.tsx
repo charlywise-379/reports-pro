@@ -30,6 +30,23 @@ function withAlpha(hex: string, alpha: number) {
   return `rgba(${r},${g},${b},${alpha})`
 }
 
+// Igual que withAlpha, pero pre-mezclado en sólido contra CREAM (el fondo
+// real detrás de las tarjetas de módulo) en vez de dejarlo translúcido.
+// Necesario porque ModuleNotchCard pinta la pestaña ENCIMA del cuerpo — si
+// ambos bloques fueran rgba() translúcidos, la zona de solape compondría
+// las dos capas y se vería una franja más oscura justo en la costura. Con
+// un color sólido pre-mezclado, pestaña y cuerpo se ven idénticos se
+// superpongan o no.
+function blendOverCream(hex: string, alpha: number) {
+  const n = parseInt(hex.slice(1), 16)
+  const r = (n >> 16) & 255
+  const g = (n >> 8) & 255
+  const b = n & 255
+  const cream = { r: 0xF7, g: 0xF5, b: 0xF2 }
+  const mix = (c: number, base: number) => Math.round(alpha * c + (1 - alpha) * base)
+  return `rgb(${mix(r, cream.r)},${mix(g, cream.g)},${mix(b, cream.b)})`
+}
+
 // ── Tipografía fluida ────────────────────────────────────────────────
 // clamp(min, min + pendiente*vw, max) — interpola linealmente entre el
 // tamaño móvil (min) y el tamaño exacto de Figma (max) a lo largo del
@@ -170,15 +187,21 @@ function CarouselArrow({ dir, onClick, ariaLabel }: { dir: 'left' | 'right'; onC
 
 // ─────────────────────────────────────────────────────────────────────
 // FORMAS "NOTCH" — cada tarjeta (planes, pasos, módulos) son DOS bloques
-// independientes, cada uno un rectángulo simple con sus propias 4
-// esquinas redondeadas (nada de paths SVG ni recortes booleanos): una
-// pestaña chica y un cuerpo grande, del mismo color, apilados en columna
-// flex. La pestaña se pinta ENCIMA del cuerpo (z-index) y se empuja
-// hacia adentro con un margen negativo — el solape, del mismo orden que
-// el propio radio de la pestaña, hace que su esquina redondeada se funda
-// de forma tangente con el borde del cuerpo sin dejar un quiebre visible.
-// La "muesca" es enteramente una ilusión de superponer dos rectángulos
-// comunes — no existe una curva cóncava independiente en ningún punto.
+// independientes, cada uno un rectángulo simple, del mismo color,
+// apilados en columna flex — nada de paths SVG ni recortes booleanos.
+// La pestaña se pinta ENCIMA del cuerpo (z-index) y se empuja hacia
+// adentro con un margen negativo (solape = su propio radio).
+//
+// El redondeo de cada bloque NO es uniforme en las 4 esquinas: el lado
+// por el que la pestaña queda a ras del cuerpo (mismo borde, sin quiebre
+// — ej. ambas alineadas a la izquierda) se deja PLANO en ambos bloques,
+// para que ese borde lea como una sola línea recta continua. Solo la
+// esquina opuesta (el vértice reflejo, donde la pestaña — más angosta —
+// termina y el cuerpo — más ancho — vuelve a quedar expuesto) lleva
+// radio: ahí, con el solape ajustado al radio de la pestaña, su curva
+// queda tangente al borde del cuerpo y funde ambos bloques sin quiebre.
+// Las otras 2 esquinas de la pestaña (las libres, no compartidas con el
+// cuerpo) son convexas normales.
 
 // ── PLANES (Sección 7 / render 09) ──────────────────────────────────
 // Pestaña arriba-izquierda con el rótulo de frecuencia a tamaño grande.
@@ -191,18 +214,18 @@ function PlanNotchCard({
 }) {
   const R_TAB = 24
   const R_BODY = 28
-  const OVERLAP = 18
+  const OVERLAP = R_TAB
   return (
     <div className={`relative flex flex-col ${className}`} style={style}>
       <div
         className="relative z-[2] self-start inline-flex flex-shrink-0 px-5 sm:px-6 pt-3 sm:pt-4 pb-2"
-        style={{ background: color, borderRadius: R_TAB, order: -1, marginBottom: -OVERLAP }}
+        style={{ background: color, borderRadius: `${R_TAB}px ${R_TAB}px ${R_TAB}px 0`, order: -1, marginBottom: -OVERLAP }}
       >
         <div className={`${T.planLabel} break-words`} style={{ ...newake, color: freqColor }}>{freqLabel}</div>
       </div>
       <div
         className="relative z-[1] flex-1 flex flex-col px-5 sm:px-6 pb-4 sm:pb-5 text-left"
-        style={{ background: color, borderRadius: R_BODY, color: textColor, paddingTop: OVERLAP + 10 }}
+        style={{ background: color, borderRadius: `0 ${R_BODY}px ${R_BODY}px ${R_BODY}px`, color: textColor, paddingTop: OVERLAP + 10 }}
       >
         {children}
       </div>
@@ -218,19 +241,19 @@ function PasoNotchCard({
 }: { n: string; arrow: boolean; title: string; body: React.ReactNode }) {
   const R_TAB = 30
   const R_BODY = 32
-  const OVERLAP = 22
+  const OVERLAP = R_TAB
   return (
     <div className="relative flex flex-col h-full" style={{ filter: 'drop-shadow(0 8px 20px rgba(0,0,0,0.12))' }}>
       <div
         className="relative z-[2] self-start inline-flex items-center gap-3 flex-shrink-0 px-6 sm:px-7 pt-5 sm:pt-6 pb-3"
-        style={{ background: CREAM, borderRadius: R_TAB, order: -1, marginBottom: -OVERLAP }}
+        style={{ background: CREAM, borderRadius: `${R_TAB}px ${R_TAB}px ${R_TAB}px 0`, order: -1, marginBottom: -OVERLAP }}
       >
         <span className={T.size50} style={{ ...newake, color: NAVY }}>{n}</span>
         {arrow && <Image src="/landing-2/icon-arrow-step.png" alt="" width={28} height={28} className="flex-shrink-0" />}
       </div>
       <div
         className="relative z-[1] flex-1 px-6 sm:px-8 pb-7 sm:pb-8"
-        style={{ background: CREAM, borderRadius: R_BODY, paddingTop: OVERLAP + 12 }}
+        style={{ background: CREAM, borderRadius: `0 ${R_BODY}px ${R_BODY}px ${R_BODY}px`, paddingTop: OVERLAP + 12 }}
       >
         <h3 className={`${T.size35} mb-3`} style={{ ...newake, color: NAVY }}>{title}</h3>
         <p className="text-sm md:text-base leading-relaxed" style={{ color: NAVY, ...dmSans }}>{body}</p>
@@ -242,8 +265,9 @@ function PasoNotchCard({
 // ── MÓDULOS (Secciones 9-10 / renders 11-12) ────────────────────────
 // Pestaña pequeña (sólo el número, muy grande) que cuelga arriba-derecha
 // en 01/03 y abajo-izquierda en 02/04. Cuerpo con el radio más grande de
-// las tres. El fondo es el color base al 20% de opacidad (mismo tono en
-// pestaña y cuerpo).
+// las tres. El fondo es el color base al 20% de opacidad, pre-mezclado
+// en sólido contra CREAM (blendOverCream) para que pestaña y cuerpo no
+// se oscurezcan al superponerse.
 function ModuleNotchCard({
   corner, color, number, children, className = '', style,
 }: {
@@ -252,14 +276,20 @@ function ModuleNotchCard({
 }) {
   const R_TAB = 20
   const R_BODY = 40
-  const OVERLAP = 16
+  const OVERLAP = R_TAB
   const isTR = corner === 'tr'
+  const tabRadius = isTR
+    ? `${R_TAB}px ${R_TAB}px 0 ${R_TAB}px`
+    : `0 ${R_TAB}px ${R_TAB}px ${R_TAB}px`
+  const bodyRadius = isTR
+    ? `${R_BODY}px 0 ${R_BODY}px ${R_BODY}px`
+    : `${R_BODY}px ${R_BODY}px ${R_BODY}px 0`
   return (
     <div className={`relative flex flex-col ${className}`} style={style}>
       <div
         className="relative z-[2] inline-flex flex-shrink-0 px-5 sm:px-6 pt-2 pb-1"
         style={{
-          background: color, borderRadius: R_TAB,
+          background: color, borderRadius: tabRadius,
           order: isTR ? -1 : 1, alignSelf: isTR ? 'flex-end' : 'flex-start',
           [isTR ? 'marginBottom' : 'marginTop']: -OVERLAP,
         }}
@@ -269,7 +299,7 @@ function ModuleNotchCard({
       <div
         className="relative z-[1] flex-1 flex flex-col p-6 sm:p-8"
         style={{
-          background: color, borderRadius: R_BODY,
+          background: color, borderRadius: bodyRadius,
           ...(isTR ? { paddingTop: OVERLAP + 24 } : { paddingBottom: OVERLAP + 24 }),
         }}
       >
@@ -799,7 +829,7 @@ export default function Landing2Page() {
                   cuerpo por la curva en S. */}
               <ModuleNotchCard
                 corner={m.cornerClass === 'rounded-tr-none' ? 'tr' : 'bl'}
-                color={withAlpha(m.color, 0.2)}
+                color={blendOverCream(m.color, 0.2)}
                 number={m.n}
                 className="h-full"
                 style={{ filter: `drop-shadow(0 10px 22px ${withAlpha(m.color, 0.55)})` }}
