@@ -30,15 +30,6 @@ function withAlpha(hex: string, alpha: number) {
   return `rgba(${r},${g},${b},${alpha})`
 }
 
-// Path SVG EXACTO exportado de Figma (nodo "Vector 1", el elemento que
-// dibuja la unión curva entre la pestaña y el cuerpo en las tarjetas de
-// precio y de módulo) — no es un cuarto de círculo, es una curva
-// asimétrica tipo "cometa". Orientación canónica: llena la esquina
-// inferior-izquierda de su caja 50x50, curva que une un borde vertical
-// (izquierda) con uno horizontal (abajo). Se reorienta con `rotate`
-// para las otras 3 esquinas.
-const NOTCH_PATH = 'M0.0159429 50V45.1127C0.478188 11.1869 11.109 0.281998 47.1078 0.0054245H50C49.0182 -0.00177002 48.0542 -0.00184631 47.1078 0.0054245H0.0159429V45.1127C-0.00556884 46.6915 -0.0050582 48.3202 0.0159429 50Z'
-
 // ── Tipografía fluida ────────────────────────────────────────────────
 // clamp(min, min + pendiente*vw, max) — interpola linealmente entre el
 // tamaño móvil (min) y el tamaño exacto de Figma (max) a lo largo del
@@ -178,41 +169,20 @@ function CarouselArrow({ dir, onClick, ariaLabel }: { dir: 'left' | 'right'; onC
 }
 
 // ─────────────────────────────────────────────────────────────────────
-// FORMAS "NOTCH" — regla propia por sección, no un componente reciclado.
-// Las tres tarjetas (planes, pasos, módulos) comparten SOLO el vector
-// cóncavo exacto de Figma (NOTCH_PATH); toda la demás geometría (radios,
-// esquina de la pestaña, tamaño del filete, padding, proporciones) se
-// define por separado en cada componente para calcar su render de Figma.
-//
-// Mecánica común: pestaña (ancho = su contenido) + cuerpo (ancho
-// completo) apilados en columna flex, sin gap, de modo que el borde
-// interior de la pestaña queda a ras del cuerpo. La transición
-// pestaña→cuerpo es una curva en S: la esquina interior de la pestaña se
-// redondea CONVEXA con su propio border-radius y el SVG cóncavo
-// (NOTCH_PATH) puentea desde ahí hasta el borde del cuerpo.
-//
-// Rotación del filete según hacia dónde "abre" el vértice reflejo:
-//   pestaña arriba-izquierda  → abre arriba-derecha → 0°   (canónico)
-//   pestaña arriba-derecha    → abre arriba-izq.    → 270°
-//   pestaña abajo-izquierda   → abre abajo-derecha  → 90°
-
-function ConcaveFillet({
-  size, rotate, color, style,
-}: { size: number; rotate: number; color: string; style: CSSProperties }) {
-  return (
-    <span aria-hidden className="absolute pointer-events-none" style={{ width: size, height: size, ...style }}>
-      <svg width={size} height={size} viewBox="0 0 50 50" style={{ display: 'block', transform: `rotate(${rotate}deg)` }}>
-        <path d={NOTCH_PATH} fill={color} />
-      </svg>
-    </span>
-  )
-}
+// FORMAS "NOTCH" — cada tarjeta (planes, pasos, módulos) son DOS bloques
+// independientes, cada uno un rectángulo simple con sus propias 4
+// esquinas redondeadas (nada de paths SVG ni recortes booleanos): una
+// pestaña chica y un cuerpo grande, del mismo color, apilados en columna
+// flex. La pestaña se pinta ENCIMA del cuerpo (z-index) y se empuja
+// hacia adentro con un margen negativo — el solape, del mismo orden que
+// el propio radio de la pestaña, hace que su esquina redondeada se funda
+// de forma tangente con el borde del cuerpo sin dejar un quiebre visible.
+// La "muesca" es enteramente una ilusión de superponer dos rectángulos
+// comunes — no existe una curva cóncava independiente en ningún punto.
 
 // ── PLANES (Sección 7 / render 09) ──────────────────────────────────
 // Pestaña arriba-izquierda con el rótulo de frecuencia a tamaño grande.
-// Radios medianos; filete algo mayor que el radio de la pestaña para el
-// barrido cóncavo ancho y poco profundo del diseño. Mono-color (morado
-// en la destacada, crema en el resto): tab y cuerpo comparten fondo.
+// Mono-color (morado en la destacada, crema en el resto).
 function PlanNotchCard({
   color, textColor, freqLabel, freqColor, children, className = '', style,
 }: {
@@ -221,19 +191,18 @@ function PlanNotchCard({
 }) {
   const R_TAB = 24
   const R_BODY = 28
-  const F = 44
+  const OVERLAP = 18
   return (
     <div className={`relative flex flex-col ${className}`} style={style}>
       <div
-        className="relative self-start inline-flex flex-shrink-0 px-5 sm:px-6 pt-3 sm:pt-4 pb-2"
-        style={{ background: color, borderRadius: `${R_TAB}px ${R_TAB}px ${R_TAB}px 0`, order: -1 }}
+        className="relative z-[2] self-start inline-flex flex-shrink-0 px-5 sm:px-6 pt-3 sm:pt-4 pb-2"
+        style={{ background: color, borderRadius: R_TAB, order: -1, marginBottom: -OVERLAP }}
       >
         <div className={`${T.planLabel} break-words`} style={{ ...newake, color: freqColor }}>{freqLabel}</div>
-        <ConcaveFillet size={F} rotate={0} color={color} style={{ left: 'calc(100% - 1px)', bottom: '-1px' }} />
       </div>
       <div
-        className="flex-1 flex flex-col px-5 sm:px-6 pt-2 pb-4 sm:pb-5 text-left"
-        style={{ background: color, borderRadius: `0 ${R_BODY}px ${R_BODY}px ${R_BODY}px`, color: textColor }}
+        className="relative z-[1] flex-1 flex flex-col px-5 sm:px-6 pb-4 sm:pb-5 text-left"
+        style={{ background: color, borderRadius: R_BODY, color: textColor, paddingTop: OVERLAP + 10 }}
       >
         {children}
       </div>
@@ -243,27 +212,25 @@ function PlanNotchCard({
 
 // ── PASOS (Sección 3 / render 05) ───────────────────────────────────
 // Pestaña arriba-izquierda que abraza "PASO 0N" + la flecha opcional.
-// Es la de radios más generosos y el filete más grande de las tres — el
-// diseño muestra aquí la curva en S más pronunciada. Mono-color crema.
+// Es la de radios y solape más generosos de las tres. Mono-color crema.
 function PasoNotchCard({
   n, arrow, title, body,
 }: { n: string; arrow: boolean; title: string; body: React.ReactNode }) {
   const R_TAB = 30
   const R_BODY = 32
-  const F = 52
+  const OVERLAP = 22
   return (
     <div className="relative flex flex-col h-full" style={{ filter: 'drop-shadow(0 8px 20px rgba(0,0,0,0.12))' }}>
       <div
-        className="relative self-start inline-flex items-center gap-3 flex-shrink-0 px-6 sm:px-7 pt-5 sm:pt-6 pb-3"
-        style={{ background: CREAM, borderRadius: `${R_TAB}px ${R_TAB}px ${R_TAB}px 0`, order: -1 }}
+        className="relative z-[2] self-start inline-flex items-center gap-3 flex-shrink-0 px-6 sm:px-7 pt-5 sm:pt-6 pb-3"
+        style={{ background: CREAM, borderRadius: R_TAB, order: -1, marginBottom: -OVERLAP }}
       >
         <span className={T.size50} style={{ ...newake, color: NAVY }}>{n}</span>
         {arrow && <Image src="/landing-2/icon-arrow-step.png" alt="" width={28} height={28} className="flex-shrink-0" />}
-        <ConcaveFillet size={F} rotate={0} color={CREAM} style={{ left: 'calc(100% - 1px)', bottom: '-1px' }} />
       </div>
       <div
-        className="flex-1 px-6 sm:px-8 pt-3 pb-7 sm:pb-8"
-        style={{ background: CREAM, borderRadius: `0 ${R_BODY}px ${R_BODY}px ${R_BODY}px` }}
+        className="relative z-[1] flex-1 px-6 sm:px-8 pb-7 sm:pb-8"
+        style={{ background: CREAM, borderRadius: R_BODY, paddingTop: OVERLAP + 12 }}
       >
         <h3 className={`${T.size35} mb-3`} style={{ ...newake, color: NAVY }}>{title}</h3>
         <p className="text-sm md:text-base leading-relaxed" style={{ color: NAVY, ...dmSans }}>{body}</p>
@@ -275,8 +242,8 @@ function PasoNotchCard({
 // ── MÓDULOS (Secciones 9-10 / renders 11-12) ────────────────────────
 // Pestaña pequeña (sólo el número, muy grande) que cuelga arriba-derecha
 // en 01/03 y abajo-izquierda en 02/04. Cuerpo con el radio más grande de
-// las tres y filete compacto. El fondo es el color base al 20% de
-// opacidad (mismo tono en pestaña y cuerpo).
+// las tres. El fondo es el color base al 20% de opacidad (mismo tono en
+// pestaña y cuerpo).
 function ModuleNotchCard({
   corner, color, number, children, className = '', style,
 }: {
@@ -285,32 +252,26 @@ function ModuleNotchCard({
 }) {
   const R_TAB = 20
   const R_BODY = 40
-  const F = 34
+  const OVERLAP = 16
   const isTR = corner === 'tr'
-  const tabRadius = isTR
-    ? `${R_TAB}px ${R_TAB}px 0 ${R_TAB}px`
-    : `0 ${R_TAB}px ${R_TAB}px ${R_TAB}px`
-  const bodyRadius = isTR
-    ? `${R_BODY}px 0 ${R_BODY}px ${R_BODY}px`
-    : `${R_BODY}px ${R_BODY}px ${R_BODY}px 0`
-  const filletPos: CSSProperties = isTR
-    ? { right: 'calc(100% - 1px)', bottom: '-1px' }
-    : { left: 'calc(100% - 1px)', top: '-1px' }
   return (
     <div className={`relative flex flex-col ${className}`} style={style}>
       <div
-        className="relative inline-flex flex-shrink-0 px-5 sm:px-6 pt-2 pb-1"
+        className="relative z-[2] inline-flex flex-shrink-0 px-5 sm:px-6 pt-2 pb-1"
         style={{
-          background: color, borderRadius: tabRadius,
+          background: color, borderRadius: R_TAB,
           order: isTR ? -1 : 1, alignSelf: isTR ? 'flex-end' : 'flex-start',
+          [isTR ? 'marginBottom' : 'marginTop']: -OVERLAP,
         }}
       >
         <div className={T.size80} style={{ ...newake, color: NAVY }}>{number}</div>
-        <ConcaveFillet size={F} rotate={isTR ? 270 : 90} color={color} style={filletPos} />
       </div>
       <div
-        className="flex-1 flex flex-col p-6 sm:p-8"
-        style={{ background: color, borderRadius: bodyRadius }}
+        className="relative z-[1] flex-1 flex flex-col p-6 sm:p-8"
+        style={{
+          background: color, borderRadius: R_BODY,
+          ...(isTR ? { paddingTop: OVERLAP + 24 } : { paddingBottom: OVERLAP + 24 }),
+        }}
       >
         {children}
       </div>
