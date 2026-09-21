@@ -30,21 +30,38 @@ function withAlpha(hex: string, alpha: number) {
   return `rgba(${r},${g},${b},${alpha})`
 }
 
-// Igual que withAlpha, pero pre-mezclado en sólido contra CREAM (el fondo
-// real detrás de las tarjetas de módulo) en vez de dejarlo translúcido.
-// Necesario porque ModuleNotchCard pinta la pestaña ENCIMA del cuerpo — si
-// ambos bloques fueran rgba() translúcidos, la zona de solape compondría
-// las dos capas y se vería una franja más oscura justo en la costura. Con
-// un color sólido pre-mezclado, pestaña y cuerpo se ven idénticos se
-// superpongan o no.
-function blendOverCream(hex: string, alpha: number) {
+// Igual que withAlpha, pero pre-mezclado en sólido contra BLANCO (el fondo
+// real del diseño detrás de las tarjetas de módulo: el frame raíz de Figma
+// es blanco y sólo header/hero/footer son crema) en vez de translúcido.
+// Necesario porque la pestaña y el cuerpo son dos bloques que se tocan/
+// solapan: con rgba() translúcido las capas se sumarían y se vería una
+// franja más oscura en la costura. Con un sólido pre-mezclado, pestaña,
+// filete y cuerpo son idénticos se toquen o no.
+function blendOverWhite(hex: string, alpha: number) {
   const n = parseInt(hex.slice(1), 16)
   const r = (n >> 16) & 255
   const g = (n >> 8) & 255
   const b = n & 255
-  const cream = { r: 0xF7, g: 0xF5, b: 0xF2 }
-  const mix = (c: number, base: number) => Math.round(alpha * c + (1 - alpha) * base)
-  return `rgb(${mix(r, cream.r)},${mix(g, cream.g)},${mix(b, cream.b)})`
+  const mix = (c: number) => Math.round(alpha * c + (1 - alpha) * 255)
+  return `rgb(${mix(r)},${mix(g)},${mix(b)})`
+}
+
+// Path SVG EXACTO exportado de Figma ("Vector 1": el filete cóncavo que une
+// la pestaña con el cuerpo en planes, pasos y módulos). Caja 50x50; en su
+// orientación canónica rellena la esquina SUPERIOR-IZQUIERDA (los dos bordes
+// rectos que se juntan en (0,0) y la curva que los une).
+const NOTCH_PATH = 'M0.0159429 50V45.1127C0.478188 11.1869 11.109 0.281998 47.1078 0.0054245H50C49.0182 -0.00177002 48.0542 -0.00184631 47.1078 0.0054245H0.0159429V45.1127C-0.00556884 46.6915 -0.0050582 48.3202 0.0159429 50Z'
+
+function ConcaveFillet({
+  size, rotate = 0, color, style,
+}: { size: string | number; rotate?: number; color: string; style?: CSSProperties }) {
+  return (
+    <span aria-hidden className="absolute pointer-events-none" style={{ width: size, height: size, ...style }}>
+      <svg width="100%" height="100%" viewBox="0 0 50 50" style={{ display: 'block', transform: `rotate(${rotate}deg)` }}>
+        <path d={NOTCH_PATH} fill={color} />
+      </svg>
+    </span>
+  )
 }
 
 // ── Tipografía fluida ────────────────────────────────────────────────
@@ -122,10 +139,14 @@ const faqs = [
 
 // Regla D (opacidad de relleno 0.2 sobre color base + sombra de color a 0.8):
 // colores exactos del nodo de Figma, no tonos planos.
+// corner = de qué lado se adosa la pestaña con el número: 'tr' (arriba, a la
+// derecha del cuerpo) en 01/03, 'bl' (abajo, a la izquierda) en 02/04.
+// descColor/idealColor: Figma pinta el copy de cada tarjeta con un color
+// distinto (azul marino o negro) — se respeta campo por campo.
 const modules = [
   {
-    n: '01', title: 'Inteligencia Competitiva Sectorial', color: '#51A2FF',
-    body: 'Sabe exactamente qué está haciendo tu competencia — antes de que llegue a tus clientes.\n\nOmnireports escanea automáticamente sitios, directorios, redes sociales, sitios de reclutamiento, bolsas de trabajo, medios, bases de patentes y fuentes regulatorias.\n\nLlega en minutos.',
+    n: '01', title: 'Inteligencia Competitiva Sectorial', color: '#51A2FF', corner: 'tr' as const,
+    body: <>Sabe exactamente qué está haciendo tu competencia — antes de que llegue a tus clientes.{'\n\n'}<span className="font-bold">Omnireports</span> escanea automáticamente sitios, directorios, redes sociales, sitios de reclutamiento, bolsas de trabajo, medios, bases de patentes y fuentes regulatorias.{'\n'}Llega en minutos.</>,
     bullets: [
       'Movimientos y estrategias de tus competidores principales',
       'Cambios de precios y nuevas campañas activas',
@@ -133,26 +154,26 @@ const modules = [
       'Regulaciones y cambios normativos que afectan tu sector',
       'Cobertura en medios y menciones en redes sociales',
     ],
-    idealLabel: 'Ideal para:', ideal: 'Directores comerciales | marketing | estrategia | Fundadores',
-    textColor: NAVY, cornerClass: 'rounded-tr-none', active: true,
+    ideal: ['Directores comerciales', 'marketing', 'estrategia', 'Fundadores'],
+    descColor: NAVY, idealColor: NAVY, active: true,
   },
   {
-    n: '02', title: 'Radar de Ciberseguridad Empresarial', color: '#05DF72',
-    body: 'Tu empresa tiene vulnerabilidades que no sabes que existen. Este módulo las detecta antes de que alguien las explote.\n\nMonitoreo continuo de CVEs, brechas en tu sector y postura de seguridad de tu dominio. Tu equipo de seguridad disponible 24/7, sin el costo de uno.',
-    idealLabel: 'Ideal para:', ideal: 'CISOs | CTOs | Equipos de tecnología',
-    textColor: BLACK, cornerClass: 'rounded-bl-none', active: false,
+    n: '02', title: 'Radar de Ciberseguridad Empresarial', color: '#05DF72', corner: 'bl' as const,
+    body: <>Tu empresa tiene vulnerabilidades que no sabes que existen. Este módulo las detecta antes de que alguien las explote.{'\n\n'}Monitoreo continuo de CVEs, brechas en tu sector y postura de seguridad de tu dominio. Tu equipo de seguridad disponible 24/7, sin el costo de uno.</>,
+    ideal: ['CISOs', 'CTOs', 'Equipos de tecnología'],
+    descColor: BLACK, idealColor: BLACK, active: false,
   },
   {
-    n: '03', title: 'Salud Corporativa para RRHH', color: '#A684FF',
-    body: 'Retén talento antes de perderlo. Detecta señales de burnout, rotación y clima laboral antes de que se conviertan en un problema.\n\nIA especializada en psicología organizacional y bienestar laboral. Analiza tendencias globales y las adapta a tu empresa, industria y cultura de trabajo específica.',
-    idealLabel: 'Ideal para:', ideal: 'Directores de RRHH | Gerentes de Personas | CEO',
-    textColor: NAVY, cornerClass: 'rounded-tr-none', active: false,
+    n: '03', title: 'Salud Corporativa \npara RRHH', color: '#A684FF', corner: 'tr' as const,
+    body: <>Retén talento antes de perderlo. Detecta señales de burnout, rotación y clima laboral antes de que se conviertan en un problema.{'\n\n'}IA especializada en psicología organizacional y bienestar laboral. Analiza tendencias globales y las adapta a tu empresa, industria y cultura de trabajo específica.</>,
+    ideal: ['Directores de RRHH', 'Gerentes de Personas', 'CEO'],
+    descColor: BLACK, idealColor: NAVY, active: false,
   },
   {
-    n: '04', title: 'Perfil Clave Ejecutivo', color: '#FFB900',
-    body: 'Entra a cada negociación sabiendo más que tu contraparte.\n\nConstruimos un perfil 360° de cualquier ejecutivo: estilo de liderazgo, red de contactos, historial de decisiones y palancas de influencia para negociación estratégica.',
-    idealLabel: 'Ideal para:', ideal: 'CEOs | Directores Comerciales | M&A | Equipos de ventas enterprise',
-    textColor: BLACK, cornerClass: 'rounded-bl-none', active: false,
+    n: '04', title: 'Perfil Clave \nEjecutivo', color: '#FFB900', corner: 'bl' as const,
+    body: <>Entra a cada negociación sabiendo más que tu contraparte.{'\n\n'}Construimos un perfil 360° de cualquier ejecutivo: estilo de liderazgo, red de contactos, historial de decisiones y palancas de influencia para negociación estratégica.</>,
+    ideal: ['CEOs', 'Directores Comerciales', 'M&A', 'Equipos de ventas enterprise'],
+    descColor: BLACK, idealColor: BLACK, active: false,
   },
 ]
 
@@ -186,46 +207,49 @@ function CarouselArrow({ dir, onClick, ariaLabel }: { dir: 'left' | 'right'; onC
 }
 
 // ─────────────────────────────────────────────────────────────────────
-// FORMAS "NOTCH" — cada tarjeta (planes, pasos, módulos) son DOS bloques
-// independientes, cada uno un rectángulo simple, del mismo color,
-// apilados en columna flex — nada de paths SVG ni recortes booleanos.
-// La pestaña se pinta ENCIMA del cuerpo (z-index) y se empuja hacia
-// adentro con un margen negativo (solape = su propio radio).
-//
-// El redondeo de cada bloque NO es uniforme en las 4 esquinas: el lado
-// por el que la pestaña queda a ras del cuerpo (mismo borde, sin quiebre
-// — ej. ambas alineadas a la izquierda) se deja PLANO en ambos bloques,
-// para que ese borde lea como una sola línea recta continua. Solo la
-// esquina opuesta (el vértice reflejo, donde la pestaña — más angosta —
-// termina y el cuerpo — más ancho — vuelve a quedar expuesto) lleva
-// radio: ahí, con el solape ajustado al radio de la pestaña, su curva
-// queda tangente al borde del cuerpo y funde ambos bloques sin quiebre.
-// Las otras 2 esquinas de la pestaña (las libres, no compartidas con el
-// cuerpo) son convexas normales.
+// FORMAS "NOTCH" — planes, pasos y módulos. Cada tarjeta son DOS bloques
+// independientes (pestaña + cuerpo, mismo color, sin path booleano) más el
+// filete cóncavo exacto de Figma ("Vector 1") que los une, con la
+// geometría medida del diseño y expresada en `em` del tamaño de fuente de
+// la tarjeta, para que escale fluido sin saltos. Las sombras usan
+// `filter: drop-shadow()`, cuyo 3er valor es la DESVIACIÓN ESTÁNDAR (no el
+// radio, como en box-shadow): el radio 30 de Figma equivale a σ=15px.
 
-// ── PLANES (Sección 7 / render 09) ──────────────────────────────────
-// Pestaña arriba-izquierda con el rótulo de frecuencia a tamaño grande.
-// Mono-color (morado en la destacada, crema en el resto).
-function PlanNotchCard({
-  color, textColor, freqLabel, freqColor, children, className = '', style,
+// Tamaños base a 1920 (Figma): título 50 / copy 22 / copy pasos 20, en
+// versiones fluidas. `leading` en px enteros de Figma (Figma redondea el
+// interlineado: 48/50, 29/22, 26/20).
+const F50 = 'clamp(1.875rem, 1.375rem + 2vw, 3.125rem)'
+const B22 = 'text-[clamp(0.9375rem,0.826rem+0.4575vw,1.375rem)] leading-[1.318]'
+const B20 = 'text-[clamp(0.875rem,0.779rem+0.392vw,1.25rem)] leading-[1.3]'
+// Newake queda ~0.05em más arriba en CSS que en Figma (medido por píxel).
+const newakeLift: CSSProperties = { position: 'relative', top: '0.05em' }
+
+// ── PLANES (Sección 7) ──────────────────────────────────────────────
+// Cuerpo 396×235 (radio 30, esquina sup-izq plana). Pestaña 303×105 (76.5%
+// del ancho) encima, radio 30 sólo arriba, que se solapa 7.7px con el
+// cuerpo. Filete 50×50 pegado al lado derecho de la pestaña, sobre el borde
+// superior del cuerpo. Sombra 0 0 σ15 negro al 15%.
+function PlanCard({
+  color, freq, freqColor, children, className = '',
 }: {
-  color: string; textColor: string; freqLabel: React.ReactNode; freqColor: string
-  children: React.ReactNode; className?: string; style?: CSSProperties
+  color: string; freq: string; freqColor: string; children: React.ReactNode; className?: string
 }) {
-  const R_TAB = 24
-  const R_BODY = 28
-  const OVERLAP = R_TAB
   return (
-    <div className={`relative flex flex-col ${className}`} style={style}>
+    <div
+      className={`relative flex flex-col ${className}`}
+      style={{ fontSize: F50, paddingTop: '1.946em', filter: 'drop-shadow(0 0 0.3em rgba(0,0,0,0.15))' }}
+    >
       <div
-        className="relative z-[2] self-start inline-flex flex-shrink-0 px-5 sm:px-6 pt-3 sm:pt-4 pb-2"
-        style={{ background: color, borderRadius: `${R_TAB}px ${R_TAB}px ${R_TAB}px 0`, order: -1, marginBottom: -OVERLAP }}
+        className="absolute flex items-start"
+        style={{ top: 0, left: 0, width: '76.5%', height: '2.1em', background: color, borderRadius: '0.6em 0.6em 0 0', padding: '0.58em 0.32em 0' }}
       >
-        <div className={`${T.planLabel} break-words`} style={{ ...newake, color: freqColor }}>{freqLabel}</div>
+        <span style={{ ...newake, ...newakeLift, color: freqColor, lineHeight: 0.96, whiteSpace: 'nowrap' }}>{freq}</span>
       </div>
+      <ConcaveFillet size="1em" rotate={-90} color={color} style={{ left: 'calc(76.5% - 0.5px)', top: '0.96em' }} />
       <div
-        className="relative z-[1] flex-1 flex flex-col px-5 sm:px-6 pb-4 sm:pb-5 text-left"
-        style={{ background: color, borderRadius: `0 ${R_BODY}px ${R_BODY}px ${R_BODY}px`, color: textColor, paddingTop: OVERLAP + 10 }}
+        data-plan-body={freq}
+        className="relative flex-1 flex flex-col text-left"
+        style={{ background: color, borderRadius: '0 0.6em 0.6em 0.6em', padding: '0.8em', minHeight: '4.7em' }}
       >
         {children}
       </div>
@@ -233,78 +257,95 @@ function PlanNotchCard({
   )
 }
 
-// ── PASOS (Sección 3 / render 05) ───────────────────────────────────
-// Pestaña arriba-izquierda que abraza "PASO 0N" + la flecha opcional.
-// Es la de radios y solape más generosos de las tres. Mono-color crema.
-function PasoNotchCard({
+// ── PASOS (Sección 3) ───────────────────────────────────────────────
+// Cuerpo 561×230 (radio 30, esquina sup-izq plana). Pestaña 360×112 (64.2%)
+// o 280×112 (49.9%, sin flecha) encima, radio 30 sólo arriba; filete 49×49
+// pegado a su lado derecho. La flecha mide 70×70 y va a la derecha de la
+// pestaña. Sombra 0 0 σ15 negro al 15%.
+function PasoCard({
   n, arrow, title, body,
 }: { n: string; arrow: boolean; title: string; body: React.ReactNode }) {
-  const R_TAB = 30
-  const R_BODY = 32
-  const OVERLAP = R_TAB
+  const tabW = arrow ? '64.17%' : '49.91%'
   return (
-    <div className="relative flex flex-col h-full" style={{ filter: 'drop-shadow(0 8px 20px rgba(0,0,0,0.12))' }}>
+    <div
+      className="relative flex flex-col h-full"
+      style={{ fontSize: F50, paddingTop: '2.226em', filter: 'drop-shadow(0 0 0.3em rgba(0,0,0,0.15))' }}
+    >
       <div
-        className="relative z-[2] self-start inline-flex items-center gap-3 flex-shrink-0 px-6 sm:px-7 pt-5 sm:pt-6 pb-3"
-        style={{ background: CREAM, borderRadius: `${R_TAB}px ${R_TAB}px ${R_TAB}px 0`, order: -1, marginBottom: -OVERLAP }}
+        className="absolute flex items-center justify-between"
+        style={{ top: 0, left: 0, width: tabW, height: '2.24em', background: CREAM, borderRadius: '0.6em 0.6em 0 0', padding: '0 0.64em 0 0.62em' }}
       >
-        <span className={T.size50} style={{ ...newake, color: NAVY }}>{n}</span>
-        {arrow && <Image src="/landing-2/icon-arrow-step.png" alt="" width={28} height={28} className="flex-shrink-0" />}
+        <span style={{ ...newake, ...newakeLift, color: NAVY, lineHeight: 0.96, whiteSpace: 'nowrap' }}>{n}</span>
+        {arrow && <Image src="/landing-2/icon-arrow-step.png" alt="" width={70} height={70} style={{ width: '1.4em', height: '1.4em' }} />}
       </div>
+      <ConcaveFillet size="0.98em" rotate={-90} color={CREAM} style={{ left: `calc(${tabW} - 0.5px)`, top: '1.264em' }} />
       <div
-        className="relative z-[1] flex-1 px-6 sm:px-8 pb-7 sm:pb-8"
-        style={{ background: CREAM, borderRadius: `0 ${R_BODY}px ${R_BODY}px ${R_BODY}px`, paddingTop: OVERLAP + 12 }}
+        data-paso-body={n}
+        className="relative flex-1"
+        style={{ background: CREAM, borderRadius: '0 0.6em 0.6em 0.6em', padding: '0.6em 0.6em 0.64em' }}
       >
-        <h3 className={`${T.size35} mb-3`} style={{ ...newake, color: NAVY }}>{title}</h3>
-        <p className="text-sm md:text-base leading-relaxed" style={{ color: NAVY, ...dmSans }}>{body}</p>
+        <h3
+          className="text-[clamp(1.375rem,1.05rem+1.3vw,2.188rem)] leading-[0.97]"
+          style={{ ...newake, ...newakeLift, color: NAVY }}
+        >{title}</h3>
+        <p className={B20} style={{ marginTop: '1.55em', color: NAVY, ...dmSans }}>{body}</p>
       </div>
     </div>
   )
 }
 
 // ── MÓDULOS (Secciones 9-10 / renders 11-12) ────────────────────────
-// Pestaña pequeña (sólo el número, muy grande) que cuelga arriba-derecha
-// en 01/03 y abajo-izquierda en 02/04. Cuerpo con el radio más grande de
-// las tres. El fondo es el color base al 20% de opacidad, pre-mezclado
-// en sólido contra CREAM (blendOverCream) para que pestaña y cuerpo no
-// se oscurezcan al superponerse.
-function ModuleNotchCard({
-  corner, color, number, children, className = '', style,
+// Geometría EXACTA de Figma (Frame 127/128 + Group 127), expresada en `em`
+// de F — el tamaño del número (80px a 1920) — para que todo escale junto:
+//   · cuerpo: radios 30 (0.375em), salvo la esquina pegada a la pestaña (0)
+//   · pestaña: 112×197 (1.4em × 2.4625em), ADOSADA AL COSTADO del cuerpo
+//     (a la derecha y arriba en 01/03; a la izquierda y abajo en 02/04),
+//     con radio 30 sólo en sus dos esquinas EXTERIORES; número centrado
+//   · filete cóncavo (Vector 1): 50×50 (0.625em) pegado al borde del cuerpo,
+//     justo debajo (01/03) o encima (02/04) de la pestaña
+//   · relleno: color base al 20% sobre blanco, en sólido (pestaña, filete y
+//     cuerpo idénticos); sombra 0 0 30px (0.375em) al 80% del color base
+//   · el contenido va centrado en vertical dentro de un margen de 80/40
+const MOD_F = 'clamp(2.5rem, 1.8625rem + 2.614vw, 5rem)'
+
+function ModuleCard({
+  corner, color, glow, number, minHeight, action, children,
 }: {
-  corner: 'tr' | 'bl'; color: string; number: string
-  children: React.ReactNode; className?: string; style?: CSSProperties
+  corner: 'tr' | 'bl'; color: string; glow: string; number: string
+  minHeight?: string; action: React.ReactNode; children: React.ReactNode
 }) {
-  const R_TAB = 20
-  const R_BODY = 40
-  const OVERLAP = R_TAB
   const isTR = corner === 'tr'
-  const tabRadius = isTR
-    ? `${R_TAB}px ${R_TAB}px 0 ${R_TAB}px`
-    : `0 ${R_TAB}px ${R_TAB}px ${R_TAB}px`
-  const bodyRadius = isTR
-    ? `${R_BODY}px 0 ${R_BODY}px ${R_BODY}px`
-    : `${R_BODY}px ${R_BODY}px ${R_BODY}px 0`
+  const R = '0.375em'
+  const tabPos: CSSProperties = isTR
+    ? { left: 'calc(100% - 1px)', top: 0, borderRadius: `0 ${R} ${R} 0`, paddingLeft: 1 }
+    : { right: 'calc(100% - 1px)', bottom: 0, borderRadius: `${R} 0 0 ${R}`, paddingRight: 1 }
+  const filletPos: CSSProperties = isTR
+    ? { left: 'calc(100% - 0.5px)', top: 'calc(2.4625em - 0.5px)' }
+    : { right: 'calc(100% - 0.5px)', bottom: 'calc(2.4625em - 0.5px)' }
   return (
-    <div className={`relative flex flex-col ${className}`} style={style}>
+    <div
+      data-module={number}
+      className={`relative h-full ${isTR ? 'mr-[1.4em]' : 'ml-[1.4em]'} lg:mx-0`}
+      style={{ fontSize: MOD_F, filter: `drop-shadow(0 0 0.1875em ${glow})` }}
+    >
       <div
-        className="relative z-[2] inline-flex flex-shrink-0 px-5 sm:px-6 pt-2 pb-1"
+        data-module-body={number}
+        className="relative h-full flex flex-col justify-center"
         style={{
-          background: color, borderRadius: tabRadius,
-          order: isTR ? -1 : 1, alignSelf: isTR ? 'flex-end' : 'flex-start',
-          [isTR ? 'marginBottom' : 'marginTop']: -OVERLAP,
-        }}
-      >
-        <div className={T.size80} style={{ ...newake, color: NAVY }}>{number}</div>
-      </div>
-      <div
-        className="relative z-[1] flex-1 flex flex-col p-6 sm:p-8"
-        style={{
-          background: color, borderRadius: bodyRadius,
-          ...(isTR ? { paddingTop: OVERLAP + 24 } : { paddingBottom: OVERLAP + 24 }),
+          background: color, padding: '1em 0.5em', gap: '0.375em', minHeight,
+          borderRadius: isTR ? `${R} 0 ${R} ${R}` : `${R} ${R} ${R} 0`,
         }}
       >
         {children}
+        {action}
       </div>
+      <div
+        className="absolute flex items-center justify-center"
+        style={{ width: 'calc(1.4em + 1px)', height: '2.4625em', background: color, ...tabPos }}
+      >
+        <span style={{ ...newake, color: NAVY, fontSize: '1em', lineHeight: 0.9625, position: 'relative', top: '0.05em' }}>{number}</span>
+      </div>
+      <ConcaveFillet size="0.625em" rotate={isTR ? 0 : 180} color={color} style={filletPos} />
     </div>
   )
 }
@@ -405,7 +446,7 @@ export default function Landing2Page() {
   ]
 
   return (
-    <main style={{ background: CREAM, color: BLACK }} className="min-h-screen overflow-x-hidden">
+    <main style={{ background: WHITE, color: BLACK }} className="min-h-screen overflow-x-hidden">
       {/* ── HEADER 2 (barra social) ─────────────────────────── */}
       {/* orden Figma: Facebook primero, Instagram después */}
       <div className="hidden md:flex items-center justify-end gap-5 px-6 lg:px-[200px] py-2.5" style={{ background: CREAM }}>
@@ -467,7 +508,7 @@ export default function Landing2Page() {
       </header>
 
       {/* ── HERO ───────────────────────────────────────────── */}
-      <section className="relative px-6 pt-16 pb-24 md:pb-32 text-center overflow-hidden">
+      <section className="relative px-6 pt-16 pb-24 md:pb-32 text-center overflow-hidden" style={{ background: CREAM }}>
         {/* Fondo hexagonal estático — dos copias de la misma imagen, una
             normal y otra rotada 180° (no animada, no gira), posicionadas
             en esquinas opuestas: arriba-izquierda y abajo-derecha del
@@ -572,8 +613,8 @@ export default function Landing2Page() {
       </section>
 
       {/* ── CÓMO FUNCIONA (3 PASOS) ────────────────────────── */}
-      <section id="servicios" className="px-6 lg:px-[110px] pb-20 md:pb-28">
-        <div className="max-w-7xl mx-auto grid md:grid-cols-3 gap-6">
+      <section id="servicios" className="px-6 lg:px-[2.83vw] pb-20 md:pb-28">
+        <div className="max-w-[1791.6px] mx-auto grid md:grid-cols-3 gap-y-8 md:gap-x-[clamp(16px,2.83vw,54.3px)]">
           {[
             {
               n: 'paso 01', title: 'Dinos quién eres', arrow: true,
@@ -589,7 +630,7 @@ export default function Landing2Page() {
             },
           ].map((step, i) => (
             <Reveal key={step.n} delay={i * 120} className="h-full">
-              <PasoNotchCard n={step.n} arrow={step.arrow} title={step.title} body={step.body} />
+              <PasoCard n={step.n} arrow={step.arrow} title={step.title} body={step.body} />
             </Reveal>
           ))}
         </div>
@@ -730,12 +771,12 @@ export default function Landing2Page() {
       </section>
 
       {/* ── PRECIOS ─────────────────────────────────────────── */}
-      <section id="precios" className="px-6 lg:px-[200px] py-20 md:py-28">
-        <Reveal className="max-w-3xl mx-auto text-center mb-12">
+      <section id="precios" className="px-6 lg:px-[4vw] py-20 md:py-28">
+        <Reveal className="max-w-[820px] mx-auto text-center mb-12">
           <h2 className={`${T.size50} mb-5 text-balance`} style={{ ...newake, color: NAVY }}>
             Elige con qué frecuencia quieres saber qué hace tu competencia
           </h2>
-          <p className="text-base md:text-lg" style={{ color: BLACK, ...dmSans }}>
+          <p className={B22} style={{ color: BLACK, ...dmSans }}>
             Cada plan incluye el mismo nivel de profundidad de análisis. La diferencia es la frecuencia — cuántas veces al mes quieres recibir tu reporte.
           </p>
         </Reveal>
@@ -761,48 +802,48 @@ export default function Landing2Page() {
         {/* grillas de precio: 1 col en móvil muy angosto, 2 desde sm, 4
             desde lg — el piso de fuente (T.planLabel) ya es lo bastante
             chico para no desbordar ninguna de estas columnas */}
-        <div className="grid grid-cols-1 xs:grid-cols-2 lg:grid-cols-4 gap-5 max-w-6xl mx-auto mb-10">
+        <div className="grid grid-cols-1 xs:grid-cols-2 lg:grid-cols-4 gap-x-[clamp(16px,3.125vw,60px)] gap-y-8 max-w-[1764px] mx-auto mb-10">
           {plans.map((plan, i) => {
             const precioFinal = anual ? +(plan.price * 0.8).toFixed(2) : plan.price
             const precioAnual = +(precioFinal * 12).toFixed(2)
+            const FIRST = 'Tu primer reporte es gratis.'
             return (
               <Reveal key={plan.freq} delay={i * 80} className="h-full">
-                <PlanNotchCard
+                <PlanCard
                   color={plan.featured ? PURPLE : CREAM}
-                  textColor={plan.featured ? CREAM : NAVY}
-                  freqColor={plan.featured ? CREAM : NAVY}
-                  freqLabel={plan.freq}
+                  freq={plan.freq}
+                  freqColor={plan.featured ? WHITE : NAVY}
                   className="h-full min-w-0 transition-transform hover:-translate-y-1"
-                  style={{ filter: 'drop-shadow(0 8px 18px rgba(0,0,0,0.12))' }}
                 >
-                  {anual && <div className="text-sm line-through mb-1 opacity-70" style={dmSans}>${plan.price}/mes</div>}
-                  <div className={`${T.planLabel} mb-1 break-words`} style={newake}>${precioFinal} USD</div>
+                  {anual && <div className="text-sm line-through mb-1 opacity-70" style={{ color: plan.featured ? WHITE : NAVY, ...dmSans }}>${plan.price}/mes</div>}
+                  <div style={{ ...newake, ...newakeLift, lineHeight: 0.96, color: plan.featured ? WHITE : NAVY, marginBottom: '0.4em', whiteSpace: 'nowrap' }}>
+                    ${precioFinal} <span style={{ fontSize: '0.6em' }}>USD</span>
+                  </div>
                   {anual && (
-                    <div className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-bold mb-2 whitespace-nowrap" style={{ background: 'rgba(5,223,114,0.18)', color: '#05DF72', ...dmSans }}>
+                    <div className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-bold mb-2 whitespace-nowrap self-start" style={{ background: 'rgba(5,223,114,0.18)', color: '#05DF72', ...dmSans }}>
                       20% OFF
                     </div>
                   )}
-                  <p className="text-xs sm:text-sm mt-1 leading-snug whitespace-pre-line" style={dmSans}>
-                    {plan.desc}
+                  <p className={`${B22} whitespace-pre-line`} style={{ color: plan.featured ? WHITE : BLACK, ...dmSans }}>
+                    <span className="font-bold">{FIRST}</span>{plan.desc.slice(FIRST.length)}
                   </p>
-                  <div className="mt-2 pt-2 border-t text-xs" style={{ borderColor: plan.featured ? 'rgba(255,255,255,0.25)' : 'rgba(25,20,98,0.1)', ...dmSans }}>
-                    {plan.badge}
-                    {anual && <div className="mt-1">${precioAnual}/año total</div>}
+                  {anual && <div className="mt-2 text-xs" style={{ color: plan.featured ? WHITE : NAVY, ...dmSans }}>${precioAnual}/año total</div>}
+                  <div className="mt-auto pt-[0.5em]">
+                    <Link
+                      href="/register"
+                      className="inline-flex items-center gap-2 rounded-full px-5 py-2.5 text-sm transition-transform hover:scale-105"
+                      style={{ background: NAVY, color: CREAM, ...dmSansUpper }}
+                    >
+                      Contratar <Image src="/landing-2/icon-arrow-blue.png" alt="" width={14} height={14} />
+                    </Link>
                   </div>
-                  <Link
-                    href="/register"
-                    className="mt-4 md:mt-auto self-start inline-flex items-center gap-2 rounded-full px-5 py-2.5 text-sm transition-transform hover:scale-105"
-                    style={{ background: NAVY, color: CREAM, ...dmSansUpper }}
-                  >
-                    Contratar <Image src="/landing-2/icon-arrow-blue.png" alt="" width={14} height={14} />
-                  </Link>
-                </PlanNotchCard>
+                </PlanCard>
               </Reveal>
             )
           })}
         </div>
-        <Reveal delay={200} className="text-center text-sm md:text-base" style={{ color: BLACK, ...dmSans }}>
-          Sin contratos anuales | Sin costos ocultos | Cancelas cuando quieras con un clic.
+        <Reveal delay={200} className={`text-center whitespace-pre-wrap ${B22}`} style={{ color: BLACK, ...dmSans }}>
+          {'Sin contratos anuales     |     Sin costos ocultos     |     Cancelas cuando quieras con un clic.'}
         </Reveal>
       </section>
 
@@ -819,46 +860,53 @@ export default function Landing2Page() {
       </section>
       {/* separación vertical generosa (gap-y) para que el blur de sombra de
           una fila nunca se monte sobre la fila siguiente */}
-      <section className="px-6 lg:px-[110px] pb-24">
-        <div className="max-w-7xl mx-auto grid md:grid-cols-2 gap-x-8 gap-y-14 md:gap-y-16">
-          {modules.map((m, i) => (
-            <Reveal key={m.n} delay={i * 100} className="h-full">
-              {/* Regla D: relleno al 20% del color base + sombra de color.
-                  Forma: ver ModuleNotchCard — pestaña con el número colgando
-                  arriba-derecha (01/03) o abajo-izquierda (02/04), unida al
-                  cuerpo por la curva en S. */}
-              <ModuleNotchCard
-                corner={m.cornerClass === 'rounded-tr-none' ? 'tr' : 'bl'}
-                color={blendOverCream(m.color, 0.2)}
-                number={m.n}
-                className="h-full"
-                style={{ filter: `drop-shadow(0 10px 22px ${withAlpha(m.color, 0.55)})` }}
-              >
-                <h3 className={`${T.size50} mb-3`} style={{ ...newake, color: NAVY }}>{m.title}</h3>
-                <p className="text-sm md:text-base leading-snug whitespace-pre-line mb-4" style={{ color: m.textColor, ...dmSans }}>{m.body}</p>
-                {'bullets' in m && m.bullets && (
-                  <ul className="text-sm md:text-base leading-snug mb-4 space-y-0.5" style={{ color: m.textColor, ...dmSans }}>
-                    {m.bullets.map(b => <li key={b}>{b}</li>)}
-                  </ul>
-                )}
-                <p className="text-xs md:text-sm mt-auto mb-3" style={{ color: m.textColor, ...dmSansUpper }}>{m.idealLabel} {m.ideal}</p>
-                {m.active ? (
-                  <Link
-                    href="/register"
-                    className="self-start inline-flex items-center gap-2 rounded-full px-6 py-3 text-base"
-                    style={{ background: NAVY, color: CREAM, ...dmSansUpper }}
-                  >
-                    empezar ahora <Image src="/landing-2/icon-arrow-blue.png" alt="" width={16} height={16} />
-                  </Link>
-                ) : (
-                  <div className="self-start inline-flex items-center gap-2 rounded-full px-6 py-3 text-base" style={{ background: NAVY, color: CREAM, ...dmSansUpper }}>
-                    próximamente <Image src="/landing-2/icon-clock-white.png" alt="" width={18} height={18} />
+      {/* Dos filas, cada una con las columnas exactas de Figma: 808 | 190 |
+          781 (fila 1, ancho 1779) y 730 | 190 | 730 (fila 2, ancho 1650).
+          La columna central de 190 es el hueco por el que asoman las
+          pestañas (112 c/u, se cruzan 34 en x pero a distinta altura). */}
+      <section className="px-6 pb-24">
+        {[
+          { mods: [modules[0], modules[1]], max: 'max-w-[1779px]', cols: 'lg:grid-cols-[minmax(0,808fr)_minmax(0,190fr)_minmax(0,781fr)]', minH: undefined as string | undefined, gap: '' },
+          { mods: [modules[2], modules[3]], max: 'max-w-[1650px]', cols: 'lg:grid-cols-[minmax(0,730fr)_minmax(0,190fr)_minmax(0,730fr)]', minH: '7em', gap: 'mt-14 lg:mt-20' },
+        ].map((row, ri) => (
+          <div key={ri} className={`mx-auto grid grid-cols-1 gap-y-14 ${row.max} ${row.cols} ${row.gap}`}>
+            {row.mods.map((m, i) => (
+              <Reveal key={m.n} delay={(ri * 2 + i) * 100} className={`h-full ${i === 0 ? 'lg:col-start-1' : 'lg:col-start-3'}`}>
+                <ModuleCard
+                  corner={m.corner}
+                  color={blendOverWhite(m.color, 0.2)}
+                  glow={withAlpha(m.color, 0.8)}
+                  number={m.n}
+                  minHeight={row.minH}
+                  action={m.active ? null : (
+                    <div
+                      className="absolute right-0 bottom-0 flex items-center justify-between"
+                      style={{ width: '3.6875em', height: '0.6875em', padding: '0 0.5em', background: NAVY, color: CREAM, borderRadius: '0.375em 0 0.375em 0', boxShadow: '0 0 0.375em rgba(0,0,0,0.15)' }}
+                    >
+                      <span style={{ ...dmSansUpper, fontSize: '0.3em', lineHeight: 1.3 }}>próximamente</span>
+                      <Image src="/landing-2/icon-clock-white.png" alt="" width={20} height={20} style={{ width: '0.25em', height: '0.25em' }} />
+                    </div>
+                  )}
+                >
+                  <div style={{ maxWidth: '8.7625em' }}>
+                    <h3 className="relative top-[0.05em] whitespace-pre-line text-[clamp(1.875rem,1.375rem+2vw,3.125rem)] leading-[0.96]" style={{ ...newake, color: NAVY }}>{m.title}</h3>
                   </div>
-                )}
-              </ModuleNotchCard>
-            </Reveal>
-          ))}
-        </div>
+                  <div style={{ maxWidth: '8.7625em' }}>
+                    <p className="text-[clamp(0.9375rem,0.826rem+0.4575vw,1.375rem)] leading-[1.318] whitespace-pre-line" style={{ color: m.descColor, ...dmSans }}>{m.body}</p>
+                  </div>
+                  {'bullets' in m && m.bullets && (
+                    <ul className="text-[clamp(0.9375rem,0.826rem+0.4575vw,1.375rem)] leading-[1.318] list-disc pl-[1.5em]" style={{ color: m.descColor, ...dmSans }}>
+                      {m.bullets.map(b => <li key={b}>{b}</li>)}
+                    </ul>
+                  )}
+                  <p className="text-[clamp(0.75rem,0.65rem+0.3vw,1rem)] leading-[1.3125]" style={{ color: m.idealColor, ...dmSansUpper, whiteSpace: 'pre-wrap' }}>
+                    <span className="font-bold">Ideal para:</span>{' ' + m.ideal.join('     |     ')}
+                  </p>
+                </ModuleCard>
+              </Reveal>
+            ))}
+          </div>
+        ))}
       </section>
 
       {/* ── FAQ ─────────────────────────────────────────────── */}
