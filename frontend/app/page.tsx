@@ -108,31 +108,26 @@ const testimonials = [
     quote: 'Antes tardábamos 3 días en armar un análisis competitivo. Ahora llega solo cada lunes a las 7am. Es como tener un analista senior trabajando 24/7 solo para nosotros.',
     name: 'Carlos Mendoza',
     role: 'Director Comercial',
-    company: 'Grupo Alfa',
   },
   {
     quote: 'El reporte de ciberseguridad nos alertó de una vulnerabilidad crítica en nuestro CMS antes de que fuera explotada. Literalmente nos salvó de un ataque que habría costado millones.',
     name: 'Fernanda Ruiz',
     role: 'CISO',
-    company: 'Banregio',
   },
   {
     quote: 'Nuestro índice de rotación bajó 23% en 6 meses. Las mecánicas motivacionales del reporte de RH transformaron cómo gestionamos el bienestar de nuestros 1,200 colaboradores.',
     name: 'Alejandro Torres',
     role: 'VP de Recursos Humanos',
-    company: 'COPPEL',
   },
   {
     quote: 'Information is power. Con Omni Reports siempre llegamos a la mesa de negociación con datos que nuestros competidores simplemente no tienen. Es ventaja competitiva real.',
     name: 'Marcela Vega',
     role: 'CEO',
-    company: 'Vitro Flex',
   },
   {
     quote: 'El ROI fue inmediato. El primer reporte identificó que un competidor estaba bajando precios en nuestro segmento. Actuamos en 48 horas y retuvimos 3 cuentas clave.',
     name: 'Roberto Leal',
     role: 'Director de Estrategia',
-    company: 'ARCA Continental',
   },
 ]
 
@@ -1025,7 +1020,7 @@ export default function Landing2Page() {
                     <div style={{ padding: `${fpx(28, 20)} ${fpx(40, 22)} ${fpx(34, 22)}` }}>
                       <div style={{ ...newake, color: NAVY, fontSize: fpx(40, 26), lineHeight: 1 }}>{t.name}</div>
                       <div style={{ ...dmSans, color: NAVY, fontSize: fpx(22, 15), marginTop: fpx(30, 14) }}>
-                        {t.role} <span style={{ margin: '0 0.9em' }}>|</span> <span className="font-bold">{t.company}</span>
+                        {t.role}
                       </div>
                       <p style={{ ...dmSans, color: NAVY, fontSize: fpx(20, 15), lineHeight: 1.15, marginTop: fpx(30, 16) }}>{t.quote}</p>
                     </div>

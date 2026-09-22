@@ -1,7 +1,7 @@
 import { Router, Request, Response } from 'express'
-import { stripe, PLANS, MXN_RATE } from '../lib/stripe'
+import { stripe } from '../lib/stripe'
 import { prisma } from '../lib/prisma'
-import { getPriceAmountMXN } from '../lib/stripePriceMap'
+import { getPriceAmountUSD } from '../lib/stripePriceMap'
 import { requireAuth } from '../middleware/auth'
 import { enqueueMailchimpSync } from '../lib/lifecycleQueue'
 
@@ -118,7 +118,7 @@ router.post('/webhook', async (req: Request, res: Response) => {
             stripePriceId: priceId,
             status: localStatus as any,
             frequency: freq,
-            pricePerMonth: getPriceAmountMXN(priceId),
+            pricePerMonth: getPriceAmountUSD(priceId),
             trialEndsAt: trialEnd,
             stripeCurrentPeriodEnd: currentPeriodEnd,
             cancelAtPeriodEnd,
@@ -128,7 +128,7 @@ router.post('/webhook', async (req: Request, res: Response) => {
             stripeSubscriptionId: session.subscription,
             stripePriceId: priceId,
             status: localStatus as any,
-            pricePerMonth: getPriceAmountMXN(priceId),
+            pricePerMonth: getPriceAmountUSD(priceId),
             trialEndsAt: trialEnd,
             stripeCurrentPeriodEnd: currentPeriodEnd,
             cancelAtPeriodEnd,
@@ -287,7 +287,7 @@ router.get('/verify-session/:sessionId', async (req: Request, res: Response) => 
         stripeSubscriptionId: sub.id,
         stripePriceId: sub.items?.data[0]?.price?.id || '',
         status: localStatus, frequency: freq,
-        pricePerMonth: getPriceAmountMXN(sub.items?.data[0]?.price?.id),
+        pricePerMonth: getPriceAmountUSD(sub.items?.data[0]?.price?.id),
         trialEndsAt: sub.trial_end ? new Date(sub.trial_end * 1000) : null,
         stripeCurrentPeriodEnd: sub.current_period_end ? new Date(sub.current_period_end * 1000) : null,
         cancelAtPeriodEnd: sub.cancel_at_period_end ?? false,

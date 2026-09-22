@@ -1,21 +1,26 @@
-const PRICE_TO_AMOUNT_MXN: Record<string, number> = {}
+// Precios reales del landing (USD): mensual $49, quincenal $79, semanal $99,
+// diario $149. Los planes anuales cobran 12x el precio mensual con 20% de
+// descuento ya aplicado — aquí se registra ese EQUIVALENTE MENSUAL (no el
+// cargo anual total), porque este mapa alimenta `pricePerMonth`, usado para
+// calcular MRR en el dashboard de operaciones.
+const PRICE_TO_AMOUNT_USD: Record<string, number> = {}
 
 function register(envVar: string | undefined, amount: number) {
-  if (envVar) PRICE_TO_AMOUNT_MXN[envVar] = amount
+  if (envVar) PRICE_TO_AMOUNT_USD[envVar] = amount
 }
 
-register(process.env.STRIPE_PRICE_DAILY, 29.99)
-register(process.env.STRIPE_PRICE_WEEKLY, 25.00)
-register(process.env.STRIPE_PRICE_BIWEEKLY, 22.00)
-register(process.env.STRIPE_PRICE_MONTHLY, 20.00)
-register(process.env.STRIPE_PRICE_DAILY_ANNUAL, 29.99)
-register(process.env.STRIPE_PRICE_WEEKLY_ANNUAL, 25.00)
-register(process.env.STRIPE_PRICE_BIWEEKLY_ANNUAL, 22.00)
-register(process.env.STRIPE_PRICE_MONTHLY_ANNUAL, 20.00)
+register(process.env.STRIPE_PRICE_MONTHLY, 49.00)
+register(process.env.STRIPE_PRICE_BIWEEKLY, 79.00)
+register(process.env.STRIPE_PRICE_WEEKLY, 99.00)
+register(process.env.STRIPE_PRICE_DAILY, 149.00)
+register(process.env.STRIPE_PRICE_MONTHLY_ANNUAL, 39.20)
+register(process.env.STRIPE_PRICE_BIWEEKLY_ANNUAL, 63.20)
+register(process.env.STRIPE_PRICE_WEEKLY_ANNUAL, 79.20)
+register(process.env.STRIPE_PRICE_DAILY_ANNUAL, 119.20)
 
-export function getPriceAmountMXN(priceId: string | undefined | null): number {
+export function getPriceAmountUSD(priceId: string | undefined | null): number {
   if (!priceId) return 49
-  return PRICE_TO_AMOUNT_MXN[priceId] ?? 49
+  return PRICE_TO_AMOUNT_USD[priceId] ?? 49
 }
 
 const ANNUAL_PRICE_IDS = new Set(
