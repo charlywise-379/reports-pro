@@ -476,10 +476,10 @@ export default function Landing2Page() {
       {/* ── HEADER 2 (barra social) ─────────────────────────── */}
       {/* orden Figma: Facebook primero, Instagram después */}
       <div className="hidden md:flex items-center justify-end gap-5 px-6 lg:px-[max(4vw,calc((100vw_-_1400px)/2))] py-2.5" style={{ background: CREAM }}>
-        <a href="https://facebook.com" target="_blank" rel="noreferrer" className="opacity-90 hover:opacity-100 transition-opacity">
+        <a href="https://www.facebook.com/people/Omni-Reports/61592060914011" target="_blank" rel="noreferrer" className="opacity-90 hover:opacity-100 transition-opacity">
           <Image src="/landing-2/icon-facebook.png" alt="Facebook" width={20} height={20} />
         </a>
-        <a href="https://instagram.com" target="_blank" rel="noreferrer" className="opacity-90 hover:opacity-100 transition-opacity">
+        <a href="https://www.instagram.com/omnireports" target="_blank" rel="noreferrer" className="opacity-90 hover:opacity-100 transition-opacity">
           <Image src="/landing-2/icon-instagram.png" alt="Instagram" width={20} height={20} />
         </a>
       </div>
@@ -1092,10 +1092,10 @@ export default function Landing2Page() {
             <Link href="/legal/terminos-y-condiciones" className="hover:opacity-60 transition-opacity">Términos y condiciones</Link>
           </nav>
           <div className="flex items-center gap-4">
-            <a href="https://facebook.com" target="_blank" rel="noreferrer" className="opacity-90 hover:opacity-100 transition-opacity">
+            <a href="https://www.facebook.com/people/Omni-Reports/61592060914011" target="_blank" rel="noreferrer" className="opacity-90 hover:opacity-100 transition-opacity">
               <Image src="/landing-2/icon-facebook.png" alt="Facebook" width={26} height={26} />
             </a>
-            <a href="https://instagram.com" target="_blank" rel="noreferrer" className="opacity-90 hover:opacity-100 transition-opacity">
+            <a href="https://www.instagram.com/omnireports" target="_blank" rel="noreferrer" className="opacity-90 hover:opacity-100 transition-opacity">
               <Image src="/landing-2/icon-instagram.png" alt="Instagram" width={26} height={26} />
             </a>
           </div>
