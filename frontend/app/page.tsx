@@ -97,9 +97,9 @@ const T = {
 const pains = [
   { title: 'Me enteré en la reunión con el cliente', text: 'Tu competidor lanzó un descuento o un producto nuevo — y lo supiste cuando tu cliente te lo mencionó, no antes. Ya era tarde para reaccionar.' },
   { title: 'Perdimos la licitación y no supimos por qué', text: 'Un competidor presentó una propuesta con precios y alcances que nunca viste venir. Sin datos del mercado, solo te quedó adivinar qué falló.' },
-  { title: 'Mi mejor talento se fue con la competencia', text: 'Ofertas más atractivas, contratación masiva y señales de rotación pasaron desapercibidas hasta que la vacante ya estaba abierta.' },
+  { title: 'Tu competidor abrió una sucursal en tu misma zona', text: 'Expandió operaciones a dos cuadras de la tuya semanas antes de que lo notaras. Te enteraste cuando ya tenía la fachada lista, no cuando empezó la obra.' },
   { title: 'La regulación cambió y nadie nos avisó', text: 'Un cambio normativo en tu sector te tomó por sorpresa. Tu equipo se enteró cuando ya había que corregir todo con prisa.' },
-  { title: 'Entré a la negociación sin conocer a la contraparte', text: 'Llegaste a la mesa sin saber su historial, sus prioridades ni su estilo de negociar. Ellos sí habían investigado sobre ti.' },
+  { title: 'Ganó un premio del sector y ni te enteraste', text: 'Tu competidor apareció en un ranking o certificación de la industria. Lo supiste cuando un cliente lo mencionó en una llamada, no antes.' },
   { title: 'Me enteré del lanzamiento por LinkedIn', text: 'Tu competidor anunció un producto o una alianza y lo viste como todos: en redes, cuando ya era noticia y tu cliente ya lo comentaba.' },
 ]
 
