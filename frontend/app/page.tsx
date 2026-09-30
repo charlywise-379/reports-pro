@@ -110,14 +110,14 @@ const testimonials = [
     role: 'Director Comercial',
   },
   {
-    quote: 'El reporte de ciberseguridad nos alertó de una vulnerabilidad crítica en nuestro CMS antes de que fuera explotada. Literalmente nos salvó de un ataque que habría costado millones.',
-    name: 'Fernanda Ruiz',
-    role: 'CISO',
+    quote: 'El reporte nos avisó que un competidor lanzó una campaña agresiva de descuentos antes de que nuestro propio equipo comercial se diera cuenta. Ajustamos la oferta el mismo día.',
+    name: 'Valeria Chávez',
+    role: 'Directora de Marketing',
   },
   {
-    quote: 'Nuestro índice de rotación bajó 23% en 6 meses. Las mecánicas motivacionales del reporte de RH transformaron cómo gestionamos el bienestar de nuestros 1,200 colaboradores.',
-    name: 'Alejandro Torres',
-    role: 'VP de Recursos Humanos',
+    quote: 'Un cambio regulatorio que afectaba directamente a nuestro sector apareció en el reporte semanas antes de que saliera en las noticias. Nos dio tiempo real de prepararnos.',
+    name: 'Diego Ramírez',
+    role: 'Fundador',
   },
   {
     quote: 'Information is power. Con Omni Reports siempre llegamos a la mesa de negociación con datos que nuestros competidores simplemente no tienen. Es ventaja competitiva real.',
