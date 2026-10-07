@@ -2,7 +2,7 @@
 import { ReactNode, useEffect, useState } from 'react'
 import Link from 'next/link'
 import { useRouter, usePathname } from 'next/navigation'
-import { LayoutDashboard, Users, FileText, CreditCard, Ticket, ShieldCheck, Menu, X, Sun, Moon, LogOut } from 'lucide-react'
+import { LayoutDashboard, Users, FileText, CreditCard, Ticket, ShieldCheck, Menu, X, Sun, Moon, LogOut, KeyRound } from 'lucide-react'
 import { useAdmin } from './AdminContext'
 import { adminFetch } from './api'
 import { useTheme } from './ThemeContext'
@@ -15,6 +15,7 @@ const NAV_ITEMS = [
   { href: '/operations/subscriptions', label: 'Suscripciones', icon: CreditCard },
   { href: '/operations/promo-codes', label: 'Códigos Promocionales', icon: Ticket },
   { href: '/operations/admins', label: 'Administradores', icon: ShieldCheck, superAdminOnly: true },
+  { href: '/operations/secrets', label: 'Llaves', icon: KeyRound, superAdminOnly: true },
 ]
 
 function useIsMobile() {

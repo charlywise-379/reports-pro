@@ -1,13 +1,9 @@
-import Anthropic from '@anthropic-ai/sdk'
+import { getAnthropic } from './anthropic'
 import fetch from 'node-fetch'
 import fs from 'fs'
 import path from 'path'
 import { prisma } from './prisma'
-
-// ─── Cliente Anthropic ────────────────────────────────
-const anthropic = new Anthropic({
-  apiKey: process.env.ANTHROPIC_API_KEY!,
-})
+import { getSecret } from './config'
 
 // ─── Tipos ───────────────────────────────────────────
 interface ReportData {
@@ -660,7 +656,7 @@ REGLA DE ORO: Cada dato debe poder ser verificado por el cliente. Si no puedes v
       jsonText = ''
       console.log(`🔄 Intento ${attempt}/${MAX_RETRIES} — iniciando stream...`)
 
-      const stream = await anthropic.messages.stream({
+      const stream = await getAnthropic().messages.stream({
         model: 'claude-sonnet-4-5',
         system: systemPrompt,
         max_tokens: 32000,
@@ -1388,7 +1384,7 @@ export async function generateReport(project: any, outputPath: string, options?:
   const html = renderTemplate(template, { ...data, logoBase64 })
 
   // 4. Generar PDF via Browserless
-  const BLESS = process.env.BLESS_KEY
+  const BLESS = getSecret('BLESS_KEY')
   if (!BLESS) {
     throw new Error('BLESS_KEY no está configurada — no se puede generar el PDF')
   }

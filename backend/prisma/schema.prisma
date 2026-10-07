@@ -358,3 +358,33 @@ model PromoCodeRedemption {
 
   @@map("promo_code_redemptions")
 }
+
+// Overrides de llaves editados desde /operations/secrets. El valor va
+// cifrado (AES-256-GCM, SECRETS_MASTER_KEY); sin fila → se usa process.env.
+model PlatformSecret {
+  key         String   @id
+  ciphertext  String
+  updatedById String
+  updatedAt   DateTime @updatedAt
+
+  @@map("platform_secrets")
+}
+
+enum SecretAuditAction {
+  SET
+  REVERT
+  TEST
+}
+
+// Bitácora de acciones sobre llaves. NUNCA guarda valores.
+model SecretAuditLog {
+  id        String            @id @default(cuid())
+  key       String
+  action    SecretAuditAction
+  adminId   String
+  success   Boolean           @default(true)
+  createdAt DateTime          @default(now())
+
+  @@index([createdAt])
+  @@map("secret_audit_logs")
+}

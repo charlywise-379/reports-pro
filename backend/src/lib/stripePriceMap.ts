@@ -1,41 +1,62 @@
+import { getSecret } from './config'
+
 // Precios reales del landing (USD): mensual $49, quincenal $79, semanal $99,
 // diario $149. Los planes anuales cobran 12x el precio mensual con 20% de
 // descuento ya aplicado — aquí se registra ese EQUIVALENTE MENSUAL (no el
 // cargo anual total), porque este mapa alimenta `pricePerMonth`, usado para
 // calcular MRR en el dashboard de operaciones.
-const PRICE_TO_AMOUNT_USD: Record<string, number> = {}
+//
+// Los IDs se leen en cada llamada vía getSecret(): un cambio hecho desde
+// /operations/secrets aplica sin reiniciar.
 
-function register(envVar: string | undefined, amount: number) {
-  if (envVar) PRICE_TO_AMOUNT_USD[envVar] = amount
+export type PlanKey = 'monthly' | 'biweekly' | 'weekly' | 'daily'
+export type BillingCycle = 'monthly' | 'annual'
+
+const PLANS: Record<PlanKey, { monthlyKey: string; annualKey: string; usd: number; annualMonthlyUsd: number }> = {
+  monthly: { monthlyKey: 'STRIPE_PRICE_MONTHLY', annualKey: 'STRIPE_PRICE_MONTHLY_ANNUAL', usd: 49.0, annualMonthlyUsd: 39.2 },
+  biweekly: { monthlyKey: 'STRIPE_PRICE_BIWEEKLY', annualKey: 'STRIPE_PRICE_BIWEEKLY_ANNUAL', usd: 79.0, annualMonthlyUsd: 63.2 },
+  weekly: { monthlyKey: 'STRIPE_PRICE_WEEKLY', annualKey: 'STRIPE_PRICE_WEEKLY_ANNUAL', usd: 99.0, annualMonthlyUsd: 79.2 },
+  daily: { monthlyKey: 'STRIPE_PRICE_DAILY', annualKey: 'STRIPE_PRICE_DAILY_ANNUAL', usd: 149.0, annualMonthlyUsd: 119.2 },
 }
 
-register(process.env.STRIPE_PRICE_MONTHLY, 49.00)
-register(process.env.STRIPE_PRICE_BIWEEKLY, 79.00)
-register(process.env.STRIPE_PRICE_WEEKLY, 99.00)
-register(process.env.STRIPE_PRICE_DAILY, 149.00)
-register(process.env.STRIPE_PRICE_MONTHLY_ANNUAL, 39.20)
-register(process.env.STRIPE_PRICE_BIWEEKLY_ANNUAL, 63.20)
-register(process.env.STRIPE_PRICE_WEEKLY_ANNUAL, 79.20)
-register(process.env.STRIPE_PRICE_DAILY_ANNUAL, 119.20)
+function isPlanKey(v: string): v is PlanKey {
+  return Object.prototype.hasOwnProperty.call(PLANS, v)
+}
+
+/** priceId de Stripe para un plan y ciclo; undefined si es inválido o no está configurado. */
+export function resolvePriceId(plan: string, billing: string): string | undefined {
+  if (!isPlanKey(plan)) return undefined
+  if (billing !== 'monthly' && billing !== 'annual') return undefined
+  const p = PLANS[plan]
+  return getSecret(billing === 'annual' ? p.annualKey : p.monthlyKey)
+}
+
+/** Los priceIds configurados hoy (los 8, omitiendo los vacíos). */
+export function configuredPriceIds(): string[] {
+  const ids: string[] = []
+  for (const p of Object.values(PLANS)) {
+    const m = getSecret(p.monthlyKey); if (m) ids.push(m)
+    const a = getSecret(p.annualKey); if (a) ids.push(a)
+  }
+  return ids
+}
 
 export function getPriceAmountUSD(priceId: string | undefined | null): number {
   if (!priceId) return 49
-  return PRICE_TO_AMOUNT_USD[priceId] ?? 49
+  for (const p of Object.values(PLANS)) {
+    if (getSecret(p.monthlyKey) === priceId) return p.usd
+    if (getSecret(p.annualKey) === priceId) return p.annualMonthlyUsd
+  }
+  return 49
 }
 
-const ANNUAL_PRICE_IDS = new Set(
-  [
-    process.env.STRIPE_PRICE_DAILY_ANNUAL,
-    process.env.STRIPE_PRICE_WEEKLY_ANNUAL,
-    process.env.STRIPE_PRICE_BIWEEKLY_ANNUAL,
-    process.env.STRIPE_PRICE_MONTHLY_ANNUAL,
-  ].filter(Boolean) as string[],
-)
-
-// 'year' solo si el priceId coincide con una env *_ANNUAL configurada; si
-// esas envs no están, un plan anual se etiqueta como 'month' (solo afecta
-// el texto del email de renovación, no la lógica de envío).
+// 'year' solo si el priceId coincide con un STRIPE_PRICE_*_ANNUAL configurado;
+// si no, se etiqueta como 'month' (solo afecta el texto del email de
+// renovación, no la lógica de envío).
 export function getBillingInterval(priceId: string | null | undefined): 'month' | 'year' {
-  if (priceId && ANNUAL_PRICE_IDS.has(priceId)) return 'year'
+  if (!priceId) return 'month'
+  for (const p of Object.values(PLANS)) {
+    if (getSecret(p.annualKey) === priceId) return 'year'
+  }
   return 'month'
 }

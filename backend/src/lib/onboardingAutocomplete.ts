@@ -1,8 +1,6 @@
 import Anthropic from '@anthropic-ai/sdk'
+import { getAnthropic } from './anthropic'
 
-const anthropic = new Anthropic({
-  apiKey: process.env.ANTHROPIC_API_KEY!,
-})
 
 export type AutocompleteResult = {
   instagram?: string
@@ -189,7 +187,7 @@ export async function autocompleteCompanyInfo(
 
   let jsonText = ''
   try {
-    const stream = await anthropic.messages.stream({
+    const stream = await getAnthropic().messages.stream({
       model: 'claude-sonnet-4-5',
       max_tokens: 2048,
       tools: [

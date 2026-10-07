@@ -2,6 +2,7 @@ import { Router, Request, Response } from 'express'
 import { prisma } from '../lib/prisma'
 import { requireAuth } from '../middleware/auth'
 import { DeliveryChannel, ReportFrequency, ServiceType, ProjectStatus, SubscriptionStatus } from '@prisma/client'
+import { getResend } from '../lib/email'
 import { autocompleteCompanyInfo, isPrivateOrLoopbackHost } from '../lib/onboardingAutocomplete'
 
 const router = Router()
@@ -460,8 +461,7 @@ router.post('/invite', requireAuth, async (req: Request, res: Response) => {
     })
 
     // Enviar email de bienvenida a cada colega
-    const { Resend } = await import('resend')
-    const resend = new Resend(process.env.RESEND_API_KEY)
+    const resend = getResend()
     const companyName = setup?.companyName || 'tu empresa'
 
     for (const email of emails) {

@@ -1,19 +1,32 @@
 import { Router, Request, Response } from 'express'
 import { stripe } from '../lib/stripe'
 import { prisma } from '../lib/prisma'
-import { getPriceAmountUSD } from '../lib/stripePriceMap'
+import { getPriceAmountUSD, resolvePriceId, configuredPriceIds } from '../lib/stripePriceMap'
 import { requireAuth } from '../middleware/auth'
 import { enqueueMailchimpSync } from '../lib/lifecycleQueue'
+import { getSecret } from '../lib/config'
 
 const router = Router()
 
 // POST /api/stripe/create-checkout-session
 router.post('/create-checkout-session', async (req: Request, res: Response) => {
   try {
-    const { userId, priceId, billingCycle, skipTrial } = req.body
+    const { userId, planKey, billingCycle, skipTrial } = req.body
 
-    if (!userId || !priceId) {
-      return res.status(400).json({ error: 'userId y priceId requeridos' })
+    // TODO(compat): quitar tras un release — frontends viejos mandan priceId
+    const legacyPriceId = !planKey && typeof req.body.priceId === 'string' && configuredPriceIds().includes(req.body.priceId)
+      ? req.body.priceId as string
+      : undefined
+
+    if (!userId || (!planKey && !legacyPriceId)) {
+      return res.status(400).json({ error: 'userId y planKey requeridos' })
+    }
+
+    // El navegador elige plan y ciclo; el priceId lo decide el backend con
+    // las llaves vigentes. Solo se tolera un priceId legado si es uno configurado.
+    const priceId = legacyPriceId ?? resolvePriceId(String(planKey), String(billingCycle || 'monthly'))
+    if (!priceId) {
+      return res.status(400).json({ error: 'Plan no válido' })
     }
 
     // Las cuentas PARTNER nunca tocan Stripe — acceso total sin costo, sin checkout real.
@@ -82,7 +95,7 @@ router.post('/webhook', async (req: Request, res: Response) => {
     event = stripe.webhooks.constructEvent(
       req.body,
       sig,
-      process.env.STRIPE_WEBHOOK_SECRET || ''
+      getSecret('STRIPE_WEBHOOK_SECRET') || ''
     )
   } catch (e: any) {
     return res.status(400).json({ error: `Webhook error: ${e.message}` })
