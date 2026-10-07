@@ -4,6 +4,7 @@ import { prisma } from '../lib/prisma'
 import { getPriceAmountUSD } from '../lib/stripePriceMap'
 import { requireAuth } from '../middleware/auth'
 import { enqueueMailchimpSync } from '../lib/lifecycleQueue'
+import { getSecret } from '../lib/config'
 
 const router = Router()
 
@@ -82,7 +83,7 @@ router.post('/webhook', async (req: Request, res: Response) => {
     event = stripe.webhooks.constructEvent(
       req.body,
       sig,
-      process.env.STRIPE_WEBHOOK_SECRET || ''
+      getSecret('STRIPE_WEBHOOK_SECRET') || ''
     )
   } catch (e: any) {
     return res.status(400).json({ error: `Webhook error: ${e.message}` })
