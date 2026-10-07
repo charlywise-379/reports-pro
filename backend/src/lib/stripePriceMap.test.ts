@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, afterEach } from 'vitest'
 import { randomBytes } from 'crypto'
 import { encryptSecret } from './secretsCrypto'
 import { loadSecrets, __resetSecretsForTests } from './config'
-import { getBillingInterval, getPriceAmountUSD, resolvePriceId, configuredPriceIds } from './stripePriceMap'
+import { getBillingInterval, getPriceAmountUSD, resolvePriceId, configuredPriceIds, getPlanMonthlyUSD } from './stripePriceMap'
 
 const OLD_ENV = { ...process.env }
 const master = randomBytes(32)
@@ -53,5 +53,23 @@ describe('resolvePriceId', () => {
     expect(resolvePriceId('monthly', 'monthly')).toBe('price_nuevo')
     expect(getPriceAmountUSD('price_nuevo')).toBe(49)
     expect(configuredPriceIds()).toContain('price_nuevo')
+  })
+})
+
+describe('getPlanMonthlyUSD', () => {
+  it('precio de lista por plan, igual que el landing', () => {
+    expect(getPlanMonthlyUSD('monthly')).toBe(49)
+    expect(getPlanMonthlyUSD('biweekly')).toBe(79)
+    expect(getPlanMonthlyUSD('weekly')).toBe(99)
+    expect(getPlanMonthlyUSD('daily')).toBe(149)
+  })
+  it('undefined para un plan desconocido', () => {
+    expect(getPlanMonthlyUSD('hourly')).toBeUndefined()
+  })
+  it('con pago anual aplica el 20% de descuento', () => {
+    expect(getPlanMonthlyUSD('monthly', 'annual')).toBe(39.2)
+    expect(getPlanMonthlyUSD('biweekly', 'annual')).toBe(63.2)
+    expect(getPlanMonthlyUSD('weekly', 'annual')).toBe(79.2)
+    expect(getPlanMonthlyUSD('daily', 'annual')).toBe(119.2)
   })
 })

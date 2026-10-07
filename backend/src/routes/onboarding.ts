@@ -3,6 +3,7 @@ import { prisma } from '../lib/prisma'
 import { requireAuth } from '../middleware/auth'
 import { DeliveryChannel, ReportFrequency, ServiceType, ProjectStatus, SubscriptionStatus } from '@prisma/client'
 import { getResend } from '../lib/email'
+import { getPlanMonthlyUSD } from '../lib/stripePriceMap'
 import { autocompleteCompanyInfo, isPrivateOrLoopbackHost } from '../lib/onboardingAutocomplete'
 
 const router = Router()
@@ -16,7 +17,7 @@ router.post('/competitive', requireAuth, async (req: Request, res: Response) => 
       monitorAreas, areaDepth, frequency, deliveryChannel, deliveryEmail, deliveryPhone,
       deliveryDay, deliveryTime, tags,
       presenceRegional, presenceNational, presenceInternational,
-      projectId,
+      projectId, annualBilling,
     } = req.body
 
     // userId siempre viene del token JWT — nunca del body
@@ -88,9 +89,9 @@ router.post('/competitive', requireAuth, async (req: Request, res: Response) => 
       ? frequency as ReportFrequency
       : ReportFrequency.WEEKLY
 
-    const prices: Record<string, number> = {
-      DAILY: 29.99, WEEKLY: 25.00, BIWEEKLY: 22.00, MONTHLY: 20.00
-    }
+    // Precio de lista del plan (mismo que el landing y Stripe). El webhook de
+    // Stripe lo sobrescribe con el monto real al completar el checkout.
+    const pricePerMonth = getPlanMonthlyUSD(cleanFrequency.toLowerCase(), annualBilling === true ? 'annual' : 'monthly') ?? 99
 
     const frequencyDays: Record<string, number> = {
       DAILY: 1, WEEKLY: 7, BIWEEKLY: 14, MONTHLY: 30
@@ -223,13 +224,13 @@ router.post('/competitive', requireAuth, async (req: Request, res: Response) => 
           userId: user.id,
           status: SubscriptionStatus.TRIALING,
           frequency: cleanFrequency,
-          pricePerMonth: prices[cleanFrequency] || 25.00,
+          pricePerMonth,
           trialStartedAt,
           trialEndsAt,
         },
         update: {
           frequency: cleanFrequency,
-          pricePerMonth: prices[cleanFrequency] || 25.00,
+          pricePerMonth,
         }
       })
     }

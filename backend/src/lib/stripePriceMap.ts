@@ -23,6 +23,13 @@ function isPlanKey(v: string): v is PlanKey {
   return Object.prototype.hasOwnProperty.call(PLANS, v)
 }
 
+/** Precio mensual de lista (USD) de un plan — con pago anual, el equivalente
+ * mensual con el 20% de descuento. undefined si el plan no existe. */
+export function getPlanMonthlyUSD(plan: string, billing: BillingCycle = 'monthly'): number | undefined {
+  if (!isPlanKey(plan)) return undefined
+  return billing === 'annual' ? PLANS[plan].annualMonthlyUsd : PLANS[plan].usd
+}
+
 /** priceId de Stripe para un plan y ciclo; undefined si es inválido o no está configurado. */
 export function resolvePriceId(plan: string, billing: string): string | undefined {
   if (!isPlanKey(plan)) return undefined

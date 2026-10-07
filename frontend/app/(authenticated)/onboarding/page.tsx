@@ -83,10 +83,10 @@ const AREAS = [
   { id:'data',       code:'A.09', label:'Datos relevantes de industria', desc:'Indicadores, encuestas, reportes públicos y benchmarks.', meta:'Aggregated', on:false },
 ]
 const PLANS = [
-  { id:'DAILY',    label:'Diario',    tag:'PRO · DAILY',    price:29.99, priceAnnual:23.99, features:['22 reportes / mes'] },
-  { id:'WEEKLY',   label:'Semanal',   tag:'PRO · WEEKLY',   price:25.00, priceAnnual:20.00, features:['4 reportes / mes'], popular:true },
-  { id:'BIWEEKLY', label:'Quincenal', tag:'PRO · BIWEEKLY', price:22.00, priceAnnual:17.60, features:['2 reportes / mes'] },
-  { id:'MONTHLY',  label:'Mensual',   tag:'PRO · MONTHLY',  price:20.00, priceAnnual:16.00, features:['1 reporte / mes'] },
+  { id:'DAILY',    label:'Diario',    tag:'PRO · DAILY',    price:149.00, priceAnnual:119.20, features:['22 reportes / mes'] },
+  { id:'WEEKLY',   label:'Semanal',   tag:'PRO · WEEKLY',   price:99.00,  priceAnnual:79.20, features:['4 reportes / mes'], popular:true },
+  { id:'BIWEEKLY', label:'Quincenal', tag:'PRO · BIWEEKLY', price:79.00,  priceAnnual:63.20, features:['2 reportes / mes'] },
+  { id:'MONTHLY',  label:'Mensual',   tag:'PRO · MONTHLY',  price:49.00,  priceAnnual:39.20, features:['1 reporte / mes'] },
 ]
 const DAYS  = ['Lun','Mar','Mié','Jue','Vie','Sáb','Dom']
 const TIMES = ['06:00','07:00','08:00','09:00','12:00','15:00','18:00','21:00']
@@ -1066,7 +1066,7 @@ function Step7({ data, loading, onActivate, onSave, errorMsg, isEditing, isMobil
             { label:'COMPETIDORES DIRECTOS', title: `${directCount} marcas · amenaza media ${directCount ? ((data.directCompetitors||[]).filter((c:any)=>c.name).reduce((a:number,c:any)=>a+c.threat,0)/Math.max(directCount,1)).toFixed(1) : '0'}`, items: (data.directCompetitors||[]).filter((c:any)=>c.name).slice(0,3).map((c:any)=>`${c.name} · ${c.threat}/10`) },
             { label:'COMPETIDORES INDIRECTOS', title: `${indirectCount} sustitutos · sensibilidad alta`, items: (data.indirectCompetitors||[]).filter((c:any)=>c.name).slice(0,3).map((c:any)=>c.name) },
             { label:'ÁREAS DE MONITOREO', title: `${activeAreas} áreas · ${activeAreas*4} pipelines`, items: (data.monitorAreas||[]).slice(0,3).map((id:string)=>AREAS.find(a=>a.id===id)?.label||id) },
-            { label:'ENTREGA', title: `${DAYS[data.deliveryDay||0]} ${TIMES[data.deliveryTime||0]} · ${plan.label.toLowerCase()}`, items:[`${data.deliveryChannel==='BOTH'?'Email + WhatsApp':data.deliveryChannel==='EMAIL'?'Email':'WhatsApp'}`, `Plan ${plan.tag}`, `USD ${price} / mes`] },
+            { label:'ENTREGA', title: `${DAYS[data.deliveryDay||0]} ${TIMES[data.deliveryTime||0]} · ${plan.label.toLowerCase()}`, items:[`${data.deliveryChannel==='BOTH'?'Email + WhatsApp':data.deliveryChannel==='EMAIL'?'Email':'WhatsApp'}`, `Plan ${plan.tag}`, `USD ${price.toFixed(2)} / mes`] },
           ].map((card,i)=>(
             <div key={i} style={{ background:'rgba(255,255,255,0.02)', border:'1px solid rgba(255,255,255,0.06)', borderRadius:14, padding:'18px' }}>
               <div style={{ fontSize:9, fontWeight:700, letterSpacing:'0.12em', color:'#5A627A', marginBottom:10 }}>{card.label}</div>
@@ -1624,7 +1624,10 @@ export default function OnboardingPage() {
         // URL, que un usuario STANDARD podría añadir a mano. Sin costo, sin checkout.
         router.push('/dashboard')
       } else {
-        router.push('/checkout')
+        // El plan y el ciclo elegidos aquí llegan preseleccionados al checkout.
+        const plan = String(data.frequency || 'WEEKLY').toLowerCase()
+        const billing = data.annualBilling ? 'annual' : 'monthly'
+        router.push(`/checkout?plan=${plan}&billing=${billing}`)
       }
     } catch (err: any) {
       setErrorMsg(err.message)

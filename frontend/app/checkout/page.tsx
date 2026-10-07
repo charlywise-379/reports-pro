@@ -36,7 +36,13 @@ export default function CheckoutPage() {
   const [isExpired, setIsExpired] = useState(false)
   const [checkingAccess, setCheckingAccess] = useState(true)
   useEffect(() => {
-    setIsExpired(new URLSearchParams(window.location.search).get('expired') === '1')
+    const params = new URLSearchParams(window.location.search)
+    setIsExpired(params.get('expired') === '1')
+    // Preselección desde el onboarding (?plan=weekly&billing=annual)
+    const plan = params.get('plan')
+    if (plan && PLANS.some(p => p.key === plan)) setSelected(plan)
+    const billingParam = params.get('billing')
+    if (billingParam === 'annual' || billingParam === 'monthly') setBilling(billingParam)
   }, [])
   const isMobile = useIsMobile()
   const BACKEND = process.env.NEXT_PUBLIC_BACKEND_URL || 'https://reports-pro-production.up.railway.app'
