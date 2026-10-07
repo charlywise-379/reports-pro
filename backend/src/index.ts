@@ -24,6 +24,7 @@ import { startReportWorker } from "./workers/reportWorker"
 import { startLifecycleWorker } from "./workers/lifecycleWorker"
 import { scheduleReports } from "./jobs/scheduleReports"
 import { sendRenewalReminders } from "./jobs/sendRenewalReminders"
+import { loadSecrets, startSecretsRefresh } from "./lib/config"
 
 dotenv.config()
 
@@ -137,19 +138,6 @@ app.use("/api/operations/subscriptions", operationsSubscriptionsRouter)
 app.use("/api/operations/admins", operationsAdminsRouter)
 app.use("/api/operations/promo-codes", operationsPromoCodesRouter)
 
-startReportWorker()
-console.log("Worker de reportes activo")
-
-startLifecycleWorker()
-
-scheduleReports()
-setInterval(scheduleReports, 60 * 60 * 1000)
-console.log("Scheduler activo cada hora")
-
-sendRenewalReminders()
-setInterval(sendRenewalReminders, 60 * 60 * 1000)
-console.log("Recordatorio de renovación activo cada hora")
-
 app.get("/health", (req, res) => {
   res.json({ status: "ok", message: "Reports PRO Backend", timestamp: new Date().toISOString() })
 })
@@ -158,8 +146,31 @@ app.get("/health", (req, res) => {
 import * as Sentry from "@sentry/node"
 Sentry.setupExpressErrorHandler(app)
 
-app.listen(Number(PORT), "0.0.0.0", () => {
-  console.log("Servidor corriendo en puerto " + PORT)
-})
+// Las llaves editadas desde /operations/secrets deben estar cargadas ANTES
+// de que workers y requests usen Stripe & co. Si la carga falla, loadSecrets
+// no lanza: se arranca con process.env.
+async function start() {
+  await loadSecrets()
+  startSecretsRefresh()
+
+  startReportWorker()
+  console.log("Worker de reportes activo")
+
+  startLifecycleWorker()
+
+  scheduleReports()
+  setInterval(scheduleReports, 60 * 60 * 1000)
+  console.log("Scheduler activo cada hora")
+
+  sendRenewalReminders()
+  setInterval(sendRenewalReminders, 60 * 60 * 1000)
+  console.log("Recordatorio de renovación activo cada hora")
+
+  app.listen(Number(PORT), "0.0.0.0", () => {
+    console.log("Servidor corriendo en puerto " + PORT)
+  })
+}
+
+start()
 
 export default app
