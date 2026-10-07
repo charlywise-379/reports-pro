@@ -36,7 +36,8 @@ const TESTERS: Record<string, (value: string) => Promise<void>> = {
   STRIPE_PRICE_DAILY_ANNUAL: testStripePrice,
   RESEND_API_KEY: async (v) => {
     const { error } = await new Resend(v).domains.list()
-    if (error) throw new Error(error.message)
+    // Una llave restringida a envío no puede listar dominios pero es válida.
+    if (error && error.name !== 'restricted_api_key') throw new Error(error.message)
   },
   ANTHROPIC_API_KEY: async (v) => { await new Anthropic({ apiKey: v }).models.list({ limit: 1 }) },
   MAILCHIMP_API_KEY: async (v) => {

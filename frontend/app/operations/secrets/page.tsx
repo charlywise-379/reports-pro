@@ -43,13 +43,17 @@ export default function OperationsSecretsPage() {
 
   const load = async () => {
     setLoadError('')
-    const res = await adminFetch('/api/operations/secrets')
-    if (!res.ok) { setLoadError('No se pudo cargar el estado de las llaves'); return }
-    const data = await res.json()
-    setGroups(data.groups || [])
-    setWritable(!!data.writable)
-    const a = await adminFetch('/api/operations/secrets/audit')
-    if (a.ok) setAudit((await a.json()).entries || [])
+    try {
+      const res = await adminFetch('/api/operations/secrets')
+      if (!res.ok) { setLoadError('No se pudo cargar el estado de las llaves'); return }
+      const data = await res.json()
+      setGroups(data.groups || [])
+      setWritable(!!data.writable)
+      const a = await adminFetch('/api/operations/secrets/audit')
+      if (a.ok) setAudit((await a.json()).entries || [])
+    } catch {
+      setLoadError('No se pudo conectar con el servidor')
+    }
   }
 
   useEffect(() => { if (admin?.role === 'SUPER_ADMIN') load() }, [admin])
@@ -65,28 +69,38 @@ export default function OperationsSecretsPage() {
   const submit = async () => {
     if (!modal) return
     setSaving(true); setFormError('')
-    const path = `/api/operations/secrets/${modal.item.key}`
-    const res = modal.mode === 'edit'
-      ? await adminFetch(path, { method: 'PUT', body: JSON.stringify({ value, password }) })
-      : await adminFetch(path, { method: 'DELETE', body: JSON.stringify({ password }) })
-    const data = await res.json().catch(() => ({}))
-    setSaving(false)
-    if (!res.ok) { setFormError(data.error || 'No se pudo guardar'); return }
-    setModal(null)
-    const warnings: string[] = data.warnings || []
-    setNotice(warnings.length
-      ? { kind: 'warn', text: warnings.join(' ') }
-      : { kind: 'ok', text: modal.mode === 'edit' ? `${modal.item.label} actualizada. Ya está en uso.` : `${modal.item.label} volvió al valor de Railway.` })
-    load()
+    try {
+      const path = `/api/operations/secrets/${modal.item.key}`
+      const res = modal.mode === 'edit'
+        ? await adminFetch(path, { method: 'PUT', body: JSON.stringify({ value, password }) })
+        : await adminFetch(path, { method: 'DELETE', body: JSON.stringify({ password }) })
+      const data = await res.json().catch(() => ({}))
+      if (!res.ok) { setFormError(data.error || 'No se pudo guardar'); return }
+      setModal(null)
+      const warnings: string[] = data.warnings || []
+      setNotice(warnings.length
+        ? { kind: 'warn', text: warnings.join(' ') }
+        : { kind: 'ok', text: modal.mode === 'edit' ? `${modal.item.label} actualizada. Ya está en uso.` : `${modal.item.label} volvió al valor de Railway.` })
+      load()
+    } catch {
+      setFormError('No se pudo conectar con el servidor')
+    } finally {
+      setSaving(false)
+    }
   }
 
   const runTest = async (item: SecretItem) => {
     setTesting(item.key)
-    const res = await adminFetch(`/api/operations/secrets/${item.key}/test`, { method: 'POST' })
-    const data = await res.json().catch(() => ({}))
-    setTesting(null)
-    setTestResult(r => ({ ...r, [item.key]: res.ok ? data : { ok: false, error: data.error || 'La prueba falló' } }))
-    load()
+    try {
+      const res = await adminFetch(`/api/operations/secrets/${item.key}/test`, { method: 'POST' })
+      const data = await res.json().catch(() => ({}))
+      setTestResult(r => ({ ...r, [item.key]: res.ok ? data : { ok: false, error: data.error || 'La prueba falló' } }))
+      load()
+    } catch {
+      setTestResult(r => ({ ...r, [item.key]: { ok: false, error: 'No se pudo conectar con el servidor' } }))
+    } finally {
+      setTesting(null)
+    }
   }
 
   const btn = (danger?: boolean): React.CSSProperties => ({
@@ -158,7 +172,7 @@ export default function OperationsSecretsPage() {
                   </button>
                 )}
                 {writable && <button style={btn()} onClick={() => openModal('edit', item)}><Pencil size={12} /> Editar</button>}
-                {writable && item.source === 'override' && (
+                {writable && (item.source === 'override' || item.corrupt) && (
                   <button style={btn(true)} onClick={() => openModal('revert', item)}><RotateCcw size={12} /> Volver a Railway</button>
                 )}
               </div>

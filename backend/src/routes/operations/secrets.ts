@@ -31,6 +31,7 @@ const writeLimiter = rateLimit({
   legacyHeaders: false,
 })
 
+// 403 (no 401): adminFetch redirige todo 401 al login y ocultaría el mensaje.
 async function passwordOk(adminId: string | undefined, password: unknown): Promise<boolean> {
   if (!adminId || typeof password !== 'string' || !password) return false
   const admin = await prisma.adminUser.findUnique({ where: { id: adminId }, select: { passwordHash: true } })
@@ -117,7 +118,7 @@ router.put('/:key', writeLimiter, async (req: Request, res: Response) => {
     const parsed = putSchema.safeParse(req.body)
     if (!parsed.success) return res.status(400).json({ error: 'Datos inválidos' })
     if (!(await passwordOk(req.adminId, parsed.data.password))) {
-      return res.status(401).json({ error: 'Contraseña incorrecta' })
+      return res.status(403).json({ error: 'Contraseña incorrecta' })
     }
 
     const v = validateSecretValue(key, parsed.data.value)
@@ -151,7 +152,7 @@ router.delete('/:key', writeLimiter, async (req: Request, res: Response) => {
     const parsed = deleteSchema.safeParse(req.body)
     if (!parsed.success) return res.status(400).json({ error: 'Datos inválidos' })
     if (!(await passwordOk(req.adminId, parsed.data.password))) {
-      return res.status(401).json({ error: 'Contraseña incorrecta' })
+      return res.status(403).json({ error: 'Contraseña incorrecta' })
     }
 
     await prisma.platformSecret.deleteMany({ where: { key } })

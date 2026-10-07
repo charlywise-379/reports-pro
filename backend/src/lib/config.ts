@@ -13,6 +13,8 @@ let overrides = new Map<string, string>()
 let corrupt = new Set<string>()
 let version = 0
 let fingerprint = ''
+let loadSeq = 0
+let lastAppliedSeq = 0
 
 export function getSecret(key: string): string | undefined {
   return overrides.get(key) ?? (process.env[key] || undefined)
@@ -39,6 +41,7 @@ async function fetchRowsFromDb(): Promise<Row[]> {
 }
 
 export async function loadSecrets(fetchRows: () => Promise<Row[]> = fetchRowsFromDb): Promise<void> {
+  const mySeq = ++loadSeq
   const master = getMasterKey()
   let rows: Row[] = []
   if (master) {
@@ -49,6 +52,10 @@ export async function loadSecrets(fetchRows: () => Promise<Row[]> = fetchRowsFro
       return
     }
   }
+
+  // Una carga más nueva ya se aplicó: descartar esta (evita restaurar un mapa viejo).
+  if (mySeq < lastAppliedSeq) return
+  lastAppliedSeq = mySeq
 
   const next = new Map<string, string>()
   const nextCorrupt = new Set<string>()
@@ -86,4 +93,6 @@ export function __resetSecretsForTests(): void {
   corrupt = new Set()
   fingerprint = ''
   version = 0
+  loadSeq = 0
+  lastAppliedSeq = 0
 }

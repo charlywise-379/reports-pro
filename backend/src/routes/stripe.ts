@@ -1,7 +1,7 @@
 import { Router, Request, Response } from 'express'
 import { stripe } from '../lib/stripe'
 import { prisma } from '../lib/prisma'
-import { getPriceAmountUSD, resolvePriceId } from '../lib/stripePriceMap'
+import { getPriceAmountUSD, resolvePriceId, configuredPriceIds } from '../lib/stripePriceMap'
 import { requireAuth } from '../middleware/auth'
 import { enqueueMailchimpSync } from '../lib/lifecycleQueue'
 import { getSecret } from '../lib/config'
@@ -13,13 +13,18 @@ router.post('/create-checkout-session', async (req: Request, res: Response) => {
   try {
     const { userId, planKey, billingCycle, skipTrial } = req.body
 
-    if (!userId || !planKey) {
+    // TODO(compat): quitar tras un release — frontends viejos mandan priceId
+    const legacyPriceId = !planKey && typeof req.body.priceId === 'string' && configuredPriceIds().includes(req.body.priceId)
+      ? req.body.priceId as string
+      : undefined
+
+    if (!userId || (!planKey && !legacyPriceId)) {
       return res.status(400).json({ error: 'userId y planKey requeridos' })
     }
 
     // El navegador elige plan y ciclo; el priceId lo decide el backend con
-    // las llaves vigentes. Nunca se acepta un priceId del cliente.
-    const priceId = resolvePriceId(String(planKey), String(billingCycle || 'monthly'))
+    // las llaves vigentes. Solo se tolera un priceId legado si es uno configurado.
+    const priceId = legacyPriceId ?? resolvePriceId(String(planKey), String(billingCycle || 'monthly'))
     if (!priceId) {
       return res.status(400).json({ error: 'Plan no válido' })
     }

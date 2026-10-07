@@ -72,4 +72,15 @@ describe('versión y resiliencia', () => {
     await loadSecrets(async () => { throw new Error('BD caída') })
     expect(getSecret('STRIPE_SECRET_KEY')).toBe('sk_live_ok')
   })
+
+  it('una carga lenta y vieja no pisa una más nueva ya aplicada', async () => {
+    let releaseA!: () => void
+    const gate = new Promise<void>(r => { releaseA = r })
+    const a = loadSecrets(async () => { await gate; return [row('STRIPE_SECRET_KEY', 'sk_live_old')] })
+    const b = loadSecrets(async () => [row('STRIPE_SECRET_KEY', 'sk_live_new')])
+    await b
+    releaseA()
+    await a
+    expect(getSecret('STRIPE_SECRET_KEY')).toBe('sk_live_new')
+  })
 })
