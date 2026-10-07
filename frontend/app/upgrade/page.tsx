@@ -20,10 +20,10 @@ function useIsMobile() {
 
 
 const PLANS = [
-  { key:'monthly', label:'Mensual', freq:'Primer día del mes', priceUSD:49.00, priceAnnualUSD:39.20, annualTotal:470.40, monthlyId:'price_1TbAByRmWEBJMGXdUCjaNSAN', annualId:'price_1TbAC1RmWEBJMGXdTUOqMqN0', popular:false },
-  { key:'biweekly', label:'Quincenal', freq:'Cada 15 días', priceUSD:79.00, priceAnnualUSD:63.20, annualTotal:758.40, monthlyId:'price_1TbABzRmWEBJMGXdVRxXDOra', annualId:'price_1TbAC2RmWEBJMGXdpyYqw4xR', popular:false },
-  { key:'weekly', label:'Semanal', freq:'Cada lunes', priceUSD:99.00, priceAnnualUSD:79.20, annualTotal:950.40, monthlyId:'price_1TbAC0RmWEBJMGXdVhvlncr9', annualId:'price_1TbAC2RmWEBJMGXdA7AvWUtG', popular:true },
-  { key:'daily', label:'Diario', freq:'Cada día hábil', priceUSD:149.00, priceAnnualUSD:119.20, annualTotal:1430.40, monthlyId:'price_1TbAC0RmWEBJMGXd1khQ2wEJ', annualId:'price_1TbAC3RmWEBJMGXd4F7SbDYw', popular:false },
+  { key:'monthly', label:'Mensual', freq:'Primer día del mes', priceUSD:49.00, priceAnnualUSD:39.20, annualTotal:470.40, popular:false },
+  { key:'biweekly', label:'Quincenal', freq:'Cada 15 días', priceUSD:79.00, priceAnnualUSD:63.20, annualTotal:758.40, popular:false },
+  { key:'weekly', label:'Semanal', freq:'Cada lunes', priceUSD:99.00, priceAnnualUSD:79.20, annualTotal:950.40, popular:true },
+  { key:'daily', label:'Diario', freq:'Cada día hábil', priceUSD:149.00, priceAnnualUSD:119.20, annualTotal:1430.40, popular:false },
 ]
 
 export default function UpgradePage() {
@@ -71,7 +71,6 @@ export default function UpgradePage() {
     if (!user) return
     setLoading(true)
     const plan = PLANS.find(p => p.key === selected)!
-    const priceId = billing === 'annual' ? plan.annualId : plan.monthlyId
     const price = billing === 'annual' ? plan.priceAnnualUSD : plan.priceUSD
     posthog.capture('upgrade_initiated', {
       plan: plan.key,
@@ -83,7 +82,7 @@ export default function UpgradePage() {
       const res = await fetch(`${BACKEND}/api/stripe/create-checkout-session`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId: user.id, priceId, billingCycle: billing })
+        body: JSON.stringify({ userId: user.id, planKey: plan.key, billingCycle: billing })
       })
       const data = await res.json()
       if (data.url) window.location.href = data.url

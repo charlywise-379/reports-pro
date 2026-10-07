@@ -1,7 +1,7 @@
 import { Router, Request, Response } from 'express'
 import { stripe } from '../lib/stripe'
 import { prisma } from '../lib/prisma'
-import { getPriceAmountUSD } from '../lib/stripePriceMap'
+import { getPriceAmountUSD, resolvePriceId } from '../lib/stripePriceMap'
 import { requireAuth } from '../middleware/auth'
 import { enqueueMailchimpSync } from '../lib/lifecycleQueue'
 import { getSecret } from '../lib/config'
@@ -11,10 +11,17 @@ const router = Router()
 // POST /api/stripe/create-checkout-session
 router.post('/create-checkout-session', async (req: Request, res: Response) => {
   try {
-    const { userId, priceId, billingCycle, skipTrial } = req.body
+    const { userId, planKey, billingCycle, skipTrial } = req.body
 
-    if (!userId || !priceId) {
-      return res.status(400).json({ error: 'userId y priceId requeridos' })
+    if (!userId || !planKey) {
+      return res.status(400).json({ error: 'userId y planKey requeridos' })
+    }
+
+    // El navegador elige plan y ciclo; el priceId lo decide el backend con
+    // las llaves vigentes. Nunca se acepta un priceId del cliente.
+    const priceId = resolvePriceId(String(planKey), String(billingCycle || 'monthly'))
+    if (!priceId) {
+      return res.status(400).json({ error: 'Plan no válido' })
     }
 
     // Las cuentas PARTNER nunca tocan Stripe — acceso total sin costo, sin checkout real.
