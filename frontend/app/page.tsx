@@ -74,7 +74,7 @@ function ConcaveFillet({
 // ancho de viewport, sin saltos de breakpoint. Todas usan leading
 // unitless (ratio), que escala junto con el tamaño automáticamente.
 const T = {
-  h1: 'text-[clamp(3.5rem,2.65rem+3.4vw,5.625rem)] leading-[1.1]',
+  h1: 'text-[clamp(3.5rem,1.5rem+3.6vw,5.625rem)] leading-[1.1]',
   size50: 'text-[clamp(1.875rem,1.375rem+2vw,3.125rem)] leading-[1.1]',
   size35: 'text-[clamp(1.375rem,1.05rem+1.3vw,2.188rem)] leading-[1.1]',
   size40: 'text-[clamp(1.625rem,1.275rem+1.4vw,2.5rem)] leading-[1.1]',
@@ -83,7 +83,7 @@ const T = {
   size36: 'text-[clamp(1.5rem,1.2rem+1.2vw,2.25rem)] leading-[1.1]',
   vs: 'text-[clamp(2.5rem,1.75rem+3vw,4.375rem)] leading-[1.1]',
   usdMes: 'text-[clamp(1.125rem,0.825rem+1.2vw,1.875rem)]',
-  nav: 'text-[clamp(1.25rem,1.125rem+0.5vw,1.5625rem)]',
+  nav: 'text-[clamp(1.125rem,0.35rem+1vw,1.5625rem)]',
   footerNav: 'text-[clamp(1rem,0.85rem+0.6vw,1.375rem)]',
   copyright: 'text-[clamp(0.875rem,0.725rem+0.6vw,1.25rem)]',
   // tamaños específicos para columnas angostas (tarjetas de precio en
@@ -486,29 +486,29 @@ export default function Landing2Page() {
 
       {/* ── HEADER ─────────────────────────────────────────── */}
       <header id="inicio" className="sticky top-0 z-50" style={{ background: CREAM }}>
-        <div className="flex items-center justify-between px-6 md:px-10 lg:px-[200px] py-4 md:py-5">
-          <Link href="/" className="flex items-center">
+        <div className="flex items-center justify-between gap-6 px-6 md:px-10 lg:px-[max(4vw,calc((100vw_-_1520px)/2))] py-4 md:py-5">
+          <Link href="/" className="flex items-center shrink-0">
             <Image src="/landing-2/logo-full-dark.png" alt="Omni Reports" width={165} height={35} className="h-8 md:h-9 w-auto" priority />
           </Link>
-          <nav className={`hidden lg:flex items-center gap-6 xl:gap-8 ${T.nav}`} style={newake}>
+          <nav className={`hidden lg:flex items-center gap-[clamp(1.25rem,2vw,2.5rem)] ${T.nav}`} style={newake}>
             {navLinks.map(l => (
               <a key={l.href} href={l.href} className="hover:opacity-60 transition-opacity whitespace-nowrap" style={{ color: BLACK }}>
                 {l.label}
               </a>
             ))}
           </nav>
-          <div className="hidden md:flex items-center gap-3">
+          <div className="hidden md:flex items-center gap-3 shrink-0">
             {/* Regla E: botón de dos líneas explícitas */}
             <Link
               href="/login"
-              className="rounded-full px-5 py-2.5 text-sm text-center leading-tight shadow-[0_0_30px_-10px_rgba(0,0,0,0.15)] transition-transform hover:scale-105"
+              className="rounded-full px-5 py-2.5 text-sm text-center leading-tight whitespace-nowrap shadow-[0_0_30px_-10px_rgba(0,0,0,0.15)] transition-transform hover:scale-105"
               style={{ background: PURPLE, color: NAVY, ...dmSansUpper }}
             >
               Iniciar sesión
             </Link>
             <Link
               href="/register"
-              className="rounded-full px-5 py-2.5 text-sm text-center leading-tight shadow-[0_0_30px_-10px_rgba(0,0,0,0.15)] transition-transform hover:scale-105"
+              className="rounded-full px-5 py-2.5 text-sm text-center leading-tight whitespace-nowrap shadow-[0_0_30px_-10px_rgba(0,0,0,0.15)] transition-transform hover:scale-105"
               style={{ background: CREAM, color: NAVY, ...dmSansUpper }}
             >
               Prueba Gratis<br />7 días
@@ -534,7 +534,7 @@ export default function Landing2Page() {
       </header>
 
       {/* ── HERO ───────────────────────────────────────────── */}
-      <section className="relative px-6 pt-16 pb-24 md:pb-32 text-center overflow-hidden" style={{ background: CREAM }}>
+      <section className="relative px-6 pt-12 lg:pt-14 pb-24 md:pb-32 text-center overflow-hidden" style={{ background: CREAM }}>
         {/* Fondo hexagonal estático — dos copias de la misma imagen, una
             normal y otra rotada 180° (no animada, no gira), posicionadas
             en esquinas opuestas: arriba-izquierda y abajo-derecha del
@@ -553,8 +553,8 @@ export default function Landing2Page() {
           <h1 className={`${T.h1} mb-7 text-balance`} style={{ ...newake, color: NAVY }}>
             Inteligencia competitiva que tu empresa necesita.
           </h1>
-          <p className="text-base md:text-xl leading-relaxed max-w-2xl mx-auto mb-8" style={{ color: BLACK, ...dmSans }}>
-            Analiza automáticamente a tus competidores — precios, contrataciones, campañas, patentes y más.
+          <p className="text-base md:text-xl leading-relaxed max-w-2xl lg:max-w-3xl mx-auto mb-8" style={{ color: BLACK, ...dmSans }}>
+            Analiza automáticamente a tus competidores — precios, contrataciones, campañas, patentes y más.{' '}
             <br className="hidden md:block" />
             En español. Sin analistas. Sin dashboards. En tu inbox diario, semanal o mensual.
           </p>
@@ -905,7 +905,7 @@ export default function Landing2Page() {
           781 (fila 1, ancho 1779) y 730 | 190 | 730 (fila 2, ancho 1650).
           La columna central de 190 es el hueco por el que asoman las
           pestañas (112 c/u, se cruzan 34 en x pero a distinta altura). */}
-      <section className="px-6 pb-24">
+      <section className="px-6 lg:px-[max(4vw,calc((100vw_-_1400px)/2))] pb-24">
         {[
           { mods: [modules[0], modules[1]], max: 'max-w-[1400px]', cols: 'lg:grid-cols-[minmax(0,808fr)_minmax(0,190fr)_minmax(0,781fr)]', minH: undefined as string | undefined, gap: '' },
           { mods: [modules[2], modules[3]], max: 'max-w-[1298px]', cols: 'lg:grid-cols-[minmax(0,730fr)_minmax(0,190fr)_minmax(0,730fr)]', minH: '7em', gap: 'mt-14 lg:mt-20' },
