@@ -1,13 +1,14 @@
 import { createHash } from 'crypto'
+import { getSecret } from './config'
 
 // Cliente mínimo de Mailchimp Marketing API v3 sobre fetch (sin SDK).
 // Si falta MAILCHIMP_API_KEY, todo es no-op silencioso.
 
 function apiKey(): string {
-  return process.env.MAILCHIMP_API_KEY || ''
+  return getSecret('MAILCHIMP_API_KEY') || ''
 }
 function audienceId(): string {
-  return process.env.MAILCHIMP_AUDIENCE_ID || ''
+  return getSecret('MAILCHIMP_AUDIENCE_ID') || ''
 }
 function datacenter(): string | null {
   const key = apiKey()

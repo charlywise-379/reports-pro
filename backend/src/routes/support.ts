@@ -1,13 +1,12 @@
 import { Router, Request, Response } from 'express'
 import rateLimit from 'express-rate-limit'
-import Anthropic from '@anthropic-ai/sdk'
+import { getAnthropic } from '../lib/anthropic'
 import { prisma } from '../lib/prisma'
 import { requireAuth } from '../middleware/auth'
 import { sendSupportEmail } from '../lib/email'
 import { SUPPORT_SYSTEM_PROMPT } from '../lib/supportPrompt'
 
 const router = Router()
-const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY! })
 
 type ChatTurn = { role: 'user' | 'assistant'; content: string }
 
@@ -56,7 +55,7 @@ router.post('/chat', chatLimiter, async (req: Request, res: Response) => {
       return res.status(400).json({ error: 'messages inválido' })
     }
 
-    const response = await anthropic.messages.create({
+    const response = await getAnthropic().messages.create({
       model: 'claude-haiku-4-5-20251001',
       max_tokens: 1024,
       system: SUPPORT_SYSTEM_PROMPT,

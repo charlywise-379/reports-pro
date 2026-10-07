@@ -61,3 +61,19 @@ describe('detectMode', () => {
     expect(detectMode('STRIPE_PRICE_DAILY', 'price_x')).toBeUndefined()
   })
 })
+
+describe('fase 2a', () => {
+  it('incluye Resend, Anthropic, Mailchimp y BLESS_KEY', () => {
+    for (const k of ['RESEND_API_KEY', 'ANTHROPIC_API_KEY', 'MAILCHIMP_API_KEY', 'MAILCHIMP_AUDIENCE_ID', 'BLESS_KEY']) {
+      expect(isEditableKey(k)).toBe(true)
+    }
+  })
+  it('valida formatos', () => {
+    expect(validateSecretValue('RESEND_API_KEY', 're_abc').ok).toBe(true)
+    expect(validateSecretValue('RESEND_API_KEY', 'abc').ok).toBe(false)
+    expect(validateSecretValue('ANTHROPIC_API_KEY', 'sk-ant-abc').ok).toBe(true)
+    expect(validateSecretValue('ANTHROPIC_API_KEY', 'sk-abc').ok).toBe(false)
+    expect(validateSecretValue('MAILCHIMP_API_KEY', 'abcdef-us21').ok).toBe(true)
+    expect(validateSecretValue('MAILCHIMP_API_KEY', 'abcdef').ok).toBe(false)
+  })
+})

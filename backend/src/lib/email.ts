@@ -1,6 +1,14 @@
 import { Resend } from 'resend'
 
-const resend = new Resend(process.env.RESEND_API_KEY)
+import { getSecret, secretsVersion } from './config'
+
+let cachedResend: { v: number; key: string; client: Resend } | null = null
+export function getResend(): Resend {
+  const key = getSecret('RESEND_API_KEY') || ''
+  const v = secretsVersion()
+  if (!cachedResend || cachedResend.v !== v || cachedResend.key !== key) cachedResend = { v, key, client: new Resend(key) }
+  return cachedResend.client
+}
 
 export async function sendReportEmail(
   to: string,
@@ -103,7 +111,7 @@ export async function sendReportEmail(
 </html>
   `
 
-  await resend.emails.send({
+  await getResend().emails.send({
     from: 'Omni Reports <reportes@flow11.mx>',
     to,
     ...(ccEmails.length > 0 && { cc: ccEmails }),
@@ -171,7 +179,7 @@ export async function sendConfirmationEmail(
 </html>
   `
 
-  await resend.emails.send({
+  await getResend().emails.send({
     from: 'Omni Reports <reportes@flow11.mx>',
     to,
     subject,
@@ -234,7 +242,7 @@ export async function sendReportErrorEmail(
   `
 
   try {
-    await resend.emails.send({
+    await getResend().emails.send({
       from: 'Omni Reports <reportes@flow11.mx>',
       to,
       subject,
@@ -266,7 +274,7 @@ export async function sendContactFormEmail(
 </div>
   `
 
-  await resend.emails.send({
+  await getResend().emails.send({
     from: 'Omni Reports <reportes@flow11.mx>',
     to: 'info@omnireports.pro',
     replyTo: email,
@@ -310,7 +318,7 @@ export async function sendSupportEmail(
 </div>
   `
 
-  await resend.emails.send({
+  await getResend().emails.send({
     from: 'Omni Reports <reportes@flow11.mx>',
     to: 'soporte@omnireports.pro',
     replyTo: userEmail,
@@ -339,7 +347,7 @@ export async function sendReportErrorAdminAlert(
   `
 
   try {
-    await resend.emails.send({
+    await getResend().emails.send({
       from: 'Omni Reports <reportes@flow11.mx>',
       to: 'admin@omnireports.pro',
       subject,
@@ -413,7 +421,7 @@ export async function sendRenewalReminderEmail(
 </html>
   `
 
-  await resend.emails.send({
+  await getResend().emails.send({
     from: 'Omni Reports <reportes@flow11.mx>',
     to,
     subject,

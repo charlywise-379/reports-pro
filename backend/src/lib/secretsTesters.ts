@@ -1,3 +1,5 @@
+import { Resend } from 'resend'
+import Anthropic from '@anthropic-ai/sdk'
 import { createStripeClient, getStripe } from './stripe'
 
 // Pruebas de conexión de SOLO LECTURA por llave. Lanzan un Error con un
@@ -29,6 +31,16 @@ const TESTERS: Record<string, (value: string) => Promise<void>> = {
   STRIPE_PRICE_BIWEEKLY_ANNUAL: testStripePrice,
   STRIPE_PRICE_WEEKLY_ANNUAL: testStripePrice,
   STRIPE_PRICE_DAILY_ANNUAL: testStripePrice,
+  RESEND_API_KEY: async (v) => {
+    const { error } = await new Resend(v).domains.list()
+    if (error) throw new Error(error.message)
+  },
+  ANTHROPIC_API_KEY: async (v) => { await new Anthropic({ apiKey: v }).models.list({ limit: 1 }) },
+  MAILCHIMP_API_KEY: async (v) => {
+    const dc = v.split('-').pop()
+    const r = await fetch(`https://${dc}.api.mailchimp.com/3.0/ping`, { headers: { Authorization: `apikey ${v}` } })
+    if (!r.ok) throw new Error(`Mailchimp respondió ${r.status}`)
+  },
 }
 
 export function hasTester(key: string): boolean {

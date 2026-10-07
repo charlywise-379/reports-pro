@@ -50,6 +50,14 @@ export const SECRET_DEFS: SecretDef[] = [
   priceDef('STRIPE_PRICE_BIWEEKLY_ANNUAL', 'Precio Quincenal (pago anual)'),
   priceDef('STRIPE_PRICE_WEEKLY_ANNUAL', 'Precio Semanal (pago anual)'),
   priceDef('STRIPE_PRICE_DAILY_ANNUAL', 'Precio Diario (pago anual)'),
+  { key: 'RESEND_API_KEY', group: 'resend', label: 'API key', sensitive: true,
+    validate: prefix(['re_'], 'La llave de Resend debe empezar con re_') },
+  { key: 'ANTHROPIC_API_KEY', group: 'anthropic', label: 'API key', sensitive: true,
+    validate: prefix(['sk-ant-'], 'La llave de Anthropic debe empezar con sk-ant-') },
+  { key: 'MAILCHIMP_API_KEY', group: 'mailchimp', label: 'API key', sensitive: true,
+    validate: (v) => (/-us\d+$/.test(v) ? null : 'La llave de Mailchimp debe terminar en -usNN (data center)') },
+  { key: 'MAILCHIMP_AUDIENCE_ID', group: 'mailchimp', label: 'Audience ID', sensitive: false },
+  { key: 'BLESS_KEY', group: 'pdf', label: 'Llave de generación de PDF', sensitive: true },
 ]
 
 const BY_KEY = new Map(SECRET_DEFS.map(d => [d.key, d]))
