@@ -1,5 +1,8 @@
 import { Resend } from 'resend'
 import Anthropic from '@anthropic-ai/sdk'
+import twilio from 'twilio'
+import { S3Client, HeadBucketCommand } from '@aws-sdk/client-s3'
+import { getSecret } from './config'
 import { createStripeClient, getStripe } from './stripe'
 
 // Pruebas de conexión de SOLO LECTURA por llave. Lanzan un Error con un
@@ -40,6 +43,23 @@ const TESTERS: Record<string, (value: string) => Promise<void>> = {
     const dc = v.split('-').pop()
     const r = await fetch(`https://${dc}.api.mailchimp.com/3.0/ping`, { headers: { Authorization: `apikey ${v}` } })
     if (!r.ok) throw new Error(`Mailchimp respondió ${r.status}`)
+  },
+  TWILIO_AUTH_TOKEN: async (v) => {
+    const sid = getSecret('TWILIO_ACCOUNT_SID')
+    if (!sid) throw new Error('Falta TWILIO_ACCOUNT_SID')
+    await twilio(sid, v).api.v2010.accounts(sid).fetch()
+  },
+  R2_SECRET_ACCESS_KEY: async (v) => {
+    const accountId = getSecret('CLOUDFLARE_ACCOUNT_ID')
+    const keyId = getSecret('R2_ACCESS_KEY_ID')
+    const bucket = getSecret('R2_BUCKET_NAME') || 'reports-pro-pdfs'
+    if (!accountId || !keyId) throw new Error('Faltan CLOUDFLARE_ACCOUNT_ID o R2_ACCESS_KEY_ID')
+    const s3 = new S3Client({
+      region: 'auto',
+      endpoint: `https://${accountId}.r2.cloudflarestorage.com`,
+      credentials: { accessKeyId: keyId, secretAccessKey: v },
+    })
+    await s3.send(new HeadBucketCommand({ Bucket: bucket }))
   },
 }
 

@@ -1,18 +1,25 @@
 import twilio from 'twilio'
+import { getSecret, secretsVersion } from './config'
 
-const client = twilio(
-  process.env.TWILIO_ACCOUNT_SID!,
-  process.env.TWILIO_AUTH_TOKEN!
-)
+let cachedTwilio: { v: number; sid: string; token: string; client: ReturnType<typeof twilio> } | null = null
+function getTwilio() {
+  const sid = getSecret('TWILIO_ACCOUNT_SID') || ''
+  const token = getSecret('TWILIO_AUTH_TOKEN') || ''
+  const v = secretsVersion()
+  if (!cachedTwilio || cachedTwilio.v !== v || cachedTwilio.sid !== sid || cachedTwilio.token !== token) {
+    cachedTwilio = { v, sid, token, client: twilio(sid, token) }
+  }
+  return cachedTwilio.client
+}
 
-const FROM = process.env.TWILIO_WHATSAPP_FROM || 'whatsapp:+14155238886'
+const from = () => getSecret('TWILIO_WHATSAPP_FROM') || 'whatsapp:+14155238886'
 const TEMPLATE_SID = 'HX577fa9c7c055dcc7b4cc2bc8973bab97'
 const SHORT_DOMAIN = 'https://r.flow11.mx'
 
 async function createShortLink(url: string): Promise<string> {
-  const apiToken = process.env.CF_API_TOKEN || ''
-  const accountId = process.env.CLOUDFLARE_ACCOUNT_ID || ''
-  const namespaceId = process.env.CF_KV_NAMESPACE_ID || ''
+  const apiToken = getSecret('CF_API_TOKEN') || ''
+  const accountId = getSecret('CLOUDFLARE_ACCOUNT_ID') || ''
+  const namespaceId = getSecret('CF_KV_NAMESPACE_ID') || ''
 
   try {
     const code = Math.random().toString(36).substring(2, 8)
@@ -49,8 +56,8 @@ export async function sendReportWhatsApp(
 
   const shortUrl = await createShortLink(reportUrl)
 
-  await client.messages.create({
-    from: FROM,
+  await getTwilio().messages.create({
+    from: from(),
     to,
     contentSid: TEMPLATE_SID,
     contentVariables: JSON.stringify({
@@ -67,7 +74,7 @@ export async function sendReportErrorWhatsApp(
   phone: string,
   companyName: string
 ): Promise<void> {
-  const errorTemplateSid = process.env.TWILIO_WHATSAPP_ERROR_TEMPLATE_SID
+  const errorTemplateSid = getSecret('TWILIO_WHATSAPP_ERROR_TEMPLATE_SID')
 
   if (!errorTemplateSid) {
     console.log('[WhatsApp] TWILIO_WHATSAPP_ERROR_TEMPLATE_SID no configurado — se omite notificación de error por WhatsApp')
@@ -79,8 +86,8 @@ export async function sendReportErrorWhatsApp(
   const to = 'whatsapp:' + toPhone
 
   try {
-    await client.messages.create({
-      from: FROM,
+    await getTwilio().messages.create({
+      from: from(),
       to,
       contentSid: errorTemplateSid,
       contentVariables: JSON.stringify({

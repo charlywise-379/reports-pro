@@ -77,3 +77,19 @@ describe('fase 2a', () => {
     expect(validateSecretValue('MAILCHIMP_API_KEY', 'abcdef').ok).toBe(false)
   })
 })
+
+describe('fase 2b', () => {
+  it('incluye Twilio, Cloudflare y R2', () => {
+    for (const k of ['TWILIO_ACCOUNT_SID', 'TWILIO_AUTH_TOKEN', 'TWILIO_WHATSAPP_FROM', 'TWILIO_WHATSAPP_ERROR_TEMPLATE_SID',
+      'CF_API_TOKEN', 'CLOUDFLARE_ACCOUNT_ID', 'CF_KV_NAMESPACE_ID', 'R2_ACCESS_KEY_ID', 'R2_SECRET_ACCESS_KEY', 'R2_BUCKET_NAME']) {
+      expect(isEditableKey(k)).toBe(true)
+    }
+  })
+  it('valida formatos de Twilio', () => {
+    expect(validateSecretValue('TWILIO_ACCOUNT_SID', 'AC123').ok).toBe(true)
+    expect(validateSecretValue('TWILIO_ACCOUNT_SID', 'XX123').ok).toBe(false)
+    expect(validateSecretValue('TWILIO_WHATSAPP_FROM', 'whatsapp:+5215512345678').ok).toBe(true)
+    expect(validateSecretValue('TWILIO_WHATSAPP_FROM', '+5215512345678').ok).toBe(false)
+    expect(validateSecretValue('TWILIO_WHATSAPP_ERROR_TEMPLATE_SID', 'HX123').ok).toBe(true)
+  })
+})

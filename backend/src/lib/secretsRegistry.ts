@@ -58,6 +58,19 @@ export const SECRET_DEFS: SecretDef[] = [
     validate: (v) => (/-us\d+$/.test(v) ? null : 'La llave de Mailchimp debe terminar en -usNN (data center)') },
   { key: 'MAILCHIMP_AUDIENCE_ID', group: 'mailchimp', label: 'Audience ID', sensitive: false },
   { key: 'BLESS_KEY', group: 'pdf', label: 'Llave de generación de PDF', sensitive: true },
+  { key: 'TWILIO_ACCOUNT_SID', group: 'twilio', label: 'Account SID', sensitive: false,
+    validate: prefix(['AC'], 'El Account SID de Twilio empieza con AC') },
+  { key: 'TWILIO_AUTH_TOKEN', group: 'twilio', label: 'Auth token', sensitive: true },
+  { key: 'TWILIO_WHATSAPP_FROM', group: 'twilio', label: 'Número de WhatsApp', sensitive: false,
+    validate: (v) => (/^whatsapp:\+\d{8,15}$/.test(v) ? null : 'Formato: whatsapp:+<código país><número>') },
+  { key: 'TWILIO_WHATSAPP_ERROR_TEMPLATE_SID', group: 'twilio', label: 'Plantilla de error (SID)', sensitive: false,
+    validate: prefix(['HX'], 'El SID de plantilla de Twilio empieza con HX') },
+  { key: 'CF_API_TOKEN', group: 'cloudflare', label: 'API token', sensitive: true },
+  { key: 'CLOUDFLARE_ACCOUNT_ID', group: 'cloudflare', label: 'Account ID', sensitive: false },
+  { key: 'CF_KV_NAMESPACE_ID', group: 'cloudflare', label: 'KV namespace ID', sensitive: false },
+  { key: 'R2_ACCESS_KEY_ID', group: 'cloudflare', label: 'R2 access key ID', sensitive: true },
+  { key: 'R2_SECRET_ACCESS_KEY', group: 'cloudflare', label: 'R2 secret access key', sensitive: true },
+  { key: 'R2_BUCKET_NAME', group: 'cloudflare', label: 'R2 bucket', sensitive: false },
 ]
 
 const BY_KEY = new Map(SECRET_DEFS.map(d => [d.key, d]))
