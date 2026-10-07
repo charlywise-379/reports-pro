@@ -19,6 +19,7 @@ import operationsReportsRouter from "./routes/operations/reports"
 import operationsSubscriptionsRouter from "./routes/operations/subscriptions"
 import operationsAdminsRouter from "./routes/operations/admins"
 import operationsPromoCodesRouter from "./routes/operations/promoCodes"
+import operationsSecretsRouter from "./routes/operations/secrets"
 import contactRouter from "./routes/contact"
 import { startReportWorker } from "./workers/reportWorker"
 import { startLifecycleWorker } from "./workers/lifecycleWorker"
@@ -137,6 +138,7 @@ app.use("/api/operations/reports", operationsReportsRouter)
 app.use("/api/operations/subscriptions", operationsSubscriptionsRouter)
 app.use("/api/operations/admins", operationsAdminsRouter)
 app.use("/api/operations/promo-codes", operationsPromoCodesRouter)
+app.use("/api/operations/secrets", operationsSecretsRouter)
 
 app.get("/health", (req, res) => {
   res.json({ status: "ok", message: "Reports PRO Backend", timestamp: new Date().toISOString() })
