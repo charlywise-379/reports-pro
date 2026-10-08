@@ -6,6 +6,7 @@ import { supabaseAdmin } from '../../lib/supabaseAdmin'
 import { reportQueue } from '../../lib/queue'
 import { stripe } from '../../lib/stripe'
 import { deleteFromR2 } from '../../lib/r2'
+import { setUserPassword } from '../../lib/adminSetPassword'
 
 const router = Router()
 
@@ -198,6 +199,29 @@ router.post('/:id/reset-password', requireAdmin, async (req: Request, res: Respo
     })
 
     res.json({ ok: true })
+  } catch (e: any) {
+    console.error('[operations] error:', e)
+    res.status(500).json({ error: 'Error interno' })
+  }
+})
+
+router.post('/:id/set-password', requireAdmin, async (req: Request, res: Response) => {
+  try {
+    const id = req.params.id as string
+    const result = await setUserPassword(
+      {
+        findUser: uid => prisma.user.findUnique({ where: { id: uid }, select: { id: true, email: true } }),
+        updateAuthPassword: async (uid, password) => {
+          const { error } = await supabaseAdmin.auth.admin.updateUserById(uid, { password })
+          if (error) console.error('[operations] error actualizando contraseña en Supabase:', error)
+          return { error }
+        },
+        audit: (event, metadata) => prisma.auditLog.create({ data: { userId: req.adminId!, event, metadata: metadata as any } }),
+      },
+      id,
+      req.body,
+    )
+    res.status(result.status).json(result.body)
   } catch (e: any) {
     console.error('[operations] error:', e)
     res.status(500).json({ error: 'Error interno' })

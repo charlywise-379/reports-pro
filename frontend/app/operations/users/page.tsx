@@ -1,6 +1,6 @@
 'use client'
 import { useEffect, useState } from 'react'
-import { Download, Ban, RotateCcw, KeyRound, Trash2, CheckCircle, Search } from 'lucide-react'
+import { Download, Ban, RotateCcw, KeyRound, Trash2, CheckCircle, Search, Lock, Eye, EyeOff, Copy, Wand2 } from 'lucide-react'
 import { adminFetch } from '@/lib/operations/api'
 import { palette } from '@/lib/operations/theme'
 import { useTheme } from '@/lib/operations/ThemeContext'
@@ -26,6 +26,12 @@ export default function OperationsUsersPage() {
   const [status, setStatus] = useState('')
   const [selected, setSelected] = useState<UserRow | null>(null)
   const [suspendReason, setSuspendReason] = useState('')
+  const [pwUser, setPwUser] = useState<UserRow | null>(null)
+  const [pwValue, setPwValue] = useState('')
+  const [pwShow, setPwShow] = useState(false)
+  const [pwSaving, setPwSaving] = useState(false)
+  const [pwCopied, setPwCopied] = useState(false)
+  const [pwMsg, setPwMsg] = useState<{ ok: boolean; text: string } | null>(null)
   const { theme } = useTheme()
   const T = palette[theme]
 
@@ -63,7 +69,37 @@ export default function OperationsUsersPage() {
 
   const handleResetPassword = async (id: string) => {
     const res = await adminFetch(`/api/operations/users/${id}/reset-password`, { method: 'POST' })
-    alert(res.ok ? 'Link de recuperación enviado.' : 'Error al generar el link.')
+    alert(res.ok ? 'Link de recuperación generado.' : 'Error al generar el link.')
+  }
+
+  const openPwModal = (u: UserRow) => { setPwUser(u); setPwValue(''); setPwShow(false); setPwMsg(null); setPwCopied(false) }
+
+  const generatePassword = () => {
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789!@#$%&*'
+    const buf = new Uint32Array(16)
+    crypto.getRandomValues(buf)
+    setPwValue(Array.from(buf, n => chars[n % chars.length]).join(''))
+    setPwShow(true)
+    setPwCopied(false)
+  }
+
+  const copyPassword = async () => {
+    try { await navigator.clipboard.writeText(pwValue); setPwCopied(true) } catch { setPwCopied(false) }
+  }
+
+  const handleSetPassword = async () => {
+    if (!pwUser) return
+    setPwSaving(true)
+    setPwMsg(null)
+    try {
+      const res = await adminFetch(`/api/operations/users/${pwUser.id}/set-password`, { method: 'POST', body: JSON.stringify({ password: pwValue }) })
+      const data = await res.json().catch(() => null)
+      setPwMsg(res.ok
+        ? { ok: true, text: 'Contraseña actualizada. Cópiala ahora si necesitas compartirla.' }
+        : { ok: false, text: data?.error || 'Error al actualizar la contraseña' })
+    } finally {
+      setPwSaving(false)
+    }
   }
 
   const handleExport = () => {
@@ -131,6 +167,7 @@ export default function OperationsUsersPage() {
                       ? <button onClick={() => handleReactivate(u.id)} style={actionBtn(T)}><RotateCcw size={11} /> Reactivar</button>
                       : <button disabled title="Aún no implementado: suspender no bloquea el login del cliente todavía" onClick={() => setSelected(u)} style={{ ...actionBtn(T), cursor: 'not-allowed', opacity: 0.5 }}><Ban size={11} /> Suspender</button>}
                     <button onClick={() => handleResetPassword(u.id)} style={actionBtn(T)}><KeyRound size={11} /> Reset password</button>
+                    <button onClick={() => openPwModal(u)} style={actionBtn(T)}><Lock size={11} /> Cambiar contraseña</button>
                     <button onClick={() => handleDelete(u.id)} style={actionBtn(T, true)}><Trash2 size={11} /> Eliminar</button>
                   </div>
                 </td>
@@ -148,6 +185,35 @@ export default function OperationsUsersPage() {
           <button onClick={() => setPage(p => p + 1)} disabled={page * 25 >= total} style={{ background: 'none', border: `1px solid ${T.border}`, borderRadius: 6, padding: '4px 10px', color: T.text, cursor: 'pointer' }}>Siguiente</button>
         </div>
       </div>
+
+      {pwUser && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100, padding: 16 }}>
+          <div style={{ background: T.surface, border: `1px solid ${T.border}`, borderRadius: 12, padding: 24, width: 420, maxWidth: '100%' }}>
+            <div style={{ fontSize: 15, fontWeight: 700, marginBottom: 4 }}>Cambiar contraseña</div>
+            <div style={{ fontSize: 12, color: T.textMuted, marginBottom: 14 }}>{pwUser.email}</div>
+            <div style={{ display: 'flex', gap: 6, marginBottom: 10 }}>
+              <input type={pwShow ? 'text' : 'password'} value={pwValue} onChange={e => { setPwValue(e.target.value); setPwMsg(null) }}
+                placeholder="Nueva contraseña (mín. 8 caracteres)" autoComplete="new-password"
+                style={{ flex: 1, minWidth: 0, padding: '8px 10px', background: T.bg, border: `1px solid ${T.border}`, borderRadius: 8, color: T.text }} />
+              <button type="button" onClick={() => setPwShow(s => !s)} title={pwShow ? 'Ocultar' : 'Mostrar'} style={actionBtn(T)}>
+                {pwShow ? <EyeOff size={13} /> : <Eye size={13} />}
+              </button>
+              <button type="button" onClick={copyPassword} disabled={!pwValue} title="Copiar" style={{ ...actionBtn(T), opacity: pwValue ? 1 : 0.5 }}>
+                <Copy size={13} />{pwCopied ? ' Copiada' : ''}
+              </button>
+            </div>
+            <button type="button" onClick={generatePassword} style={{ ...actionBtn(T), marginBottom: 14 }}><Wand2 size={11} /> Generar segura</button>
+            {pwMsg && <div style={{ fontSize: 12, marginBottom: 14, color: pwMsg.ok ? T.success : T.danger }}>{pwMsg.text}</div>}
+            <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+              <button onClick={() => setPwUser(null)} style={{ background: 'none', border: `1px solid ${T.border}`, borderRadius: 8, padding: '8px 14px', color: T.text, cursor: 'pointer' }}>Cerrar</button>
+              <button onClick={handleSetPassword} disabled={pwSaving || pwValue.length < 8}
+                style={{ background: T.accent, border: 'none', borderRadius: 8, padding: '8px 14px', color: '#fff', cursor: 'pointer', opacity: pwSaving || pwValue.length < 8 ? 0.5 : 1 }}>
+                {pwSaving ? 'Guardando…' : 'Guardar'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {selected && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100, padding: 16 }}>
