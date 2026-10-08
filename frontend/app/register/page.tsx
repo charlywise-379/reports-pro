@@ -218,8 +218,7 @@ export default function RegisterPage() {
                   He leído y acepto el{' '}
                   <Link href="/legal/aviso-de-privacidad" target="_blank" className="text-blue-400 hover:text-blue-300 underline">Aviso de Privacidad</Link>
                   {' '}y los{' '}
-                  <Link href="/legal/terminos-y-condiciones" target="_blank" className="text-blue-400 hover:text-blue-300 underline">Términos y Condiciones</Link>
-                  , incluyendo la política de no reembolso.
+                  <Link href="/legal/terminos-y-condiciones" target="_blank" className="text-blue-400 hover:text-blue-300 underline">Términos y Condiciones</Link>.
                 </span>
               </label>
               {error && (
