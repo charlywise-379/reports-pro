@@ -4,6 +4,7 @@ import { sendConfirmationEmail } from '../lib/email'
 import { prisma } from '../lib/prisma'
 import { evaluatePartnerRegistration } from '../lib/partners'
 import { enqueueMailchimpSync } from '../lib/lifecycleQueue'
+import { createResendConfirmation } from '../lib/resendConfirmation'
 
 const router = Router()
 
@@ -64,7 +65,7 @@ router.post('/register', async (req: Request, res: Response) => {
     const existingUser = existingData?.users?.find(u => u.email?.toLowerCase() === normalizedEmail)
 
     if (existingUser && !existingUser.email_confirmed_at) {
-      return res.status(409).json({ error: 'Ya iniciaste el registro con este correo. Revisa tu bandeja de entrada para confirmarlo.' })
+      return res.status(409).json({ code: 'registration_pending', error: 'Ya iniciaste el registro con este correo. Revisa tu bandeja de entrada para confirmarlo.' })
     }
 
     const redirectTo = `${process.env.FRONTEND_URL}/login?confirmed=1`
@@ -144,6 +145,49 @@ router.post('/register', async (req: Request, res: Response) => {
     return res.json({ ok: true })
   } catch (e: any) {
     console.error('Error en /api/auth/register:', e)
+    return res.status(500).json({ error: 'Ocurrió un error. Intenta de nuevo.' })
+  }
+})
+
+const resendConfirmation = createResendConfirmation({
+  findAuthUser: async (email) => {
+    const r = await fetch(
+      `${process.env.SUPABASE_URL}/auth/v1/admin/users?filter=${encodeURIComponent(email)}`,
+      {
+        headers: {
+          apikey: process.env.SUPABASE_SERVICE_ROLE_KEY!,
+          Authorization: `Bearer ${process.env.SUPABASE_SERVICE_ROLE_KEY}`,
+        },
+      }
+    )
+    const body = await r.json() as { users?: { email?: string; email_confirmed_at?: string | null; user_metadata?: { full_name?: string } }[] }
+    const u = body?.users?.find(x => x.email?.toLowerCase() === email)
+    return u ? { confirmed: !!u.email_confirmed_at, fullName: u.user_metadata?.full_name ?? null } : null
+  },
+  // magiclink: para una cuenta existente sin confirmar, abrir el link también confirma el correo
+  // (type 'signup' falla con email_exists cuando la cuenta ya fue creada).
+  generateLink: async (email) => {
+    const { data, error } = await supabaseAdmin.auth.admin.generateLink({
+      type: 'magiclink',
+      email,
+      options: { redirectTo: `${process.env.FRONTEND_URL}/login?confirmed=1` },
+    })
+    if (error) {
+      console.error('Error generando link de reenvío de confirmación:', error)
+      return null
+    }
+    return data.properties.action_link
+  },
+  sendEmail: sendConfirmationEmail,
+})
+
+router.post('/resend-confirmation', async (req: Request, res: Response) => {
+  try {
+    const result = await resendConfirmation(req.body?.email)
+    if (result.status === 400) return res.status(400).json({ error: 'Email requerido' })
+    return res.json({ ok: true })
+  } catch (e: any) {
+    console.error('Error en /api/auth/resend-confirmation:', e)
     return res.status(500).json({ error: 'Ocurrió un error. Intenta de nuevo.' })
   }
 })

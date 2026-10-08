@@ -3,6 +3,7 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { Mail, Lock, User, Phone, Building2, MapPin, Ticket, ArrowRight, ArrowLeft, CheckCircle, Sparkles } from 'lucide-react'
 import posthog from 'posthog-js'
+import { resendConfirmationEmail } from '@/lib/authLinkError'
 
 export default function RegisterPage() {
   const [step, setStep] = useState<1 | 2>(1)
@@ -20,6 +21,13 @@ export default function RegisterPage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState(false)
+  const [pendingConfirmation, setPendingConfirmation] = useState(false)
+  const [resendState, setResendState] = useState<'idle' | 'sending' | 'sent' | 'failed'>('idle')
+
+  const handleResend = async () => {
+    setResendState('sending')
+    setResendState(await resendConfirmationEmail(email.trim()) ? 'sent' : 'failed')
+  }
 
   const canAdvanceToStep2 = email.trim() && password.length >= 6
 
@@ -56,6 +64,7 @@ export default function RegisterPage() {
       })
       const result = await res.json()
       if (!res.ok) {
+        setPendingConfirmation(result.code === 'registration_pending')
         setError(result.error || 'Ocurrió un error. Intenta de nuevo.')
         posthog.captureException(new Error(result.error || 'register_failed'), { email })
         setLoading(false)
@@ -214,7 +223,19 @@ export default function RegisterPage() {
                 </span>
               </label>
               {error && (
-                <div className="bg-red-500/10 border border-red-500/20 text-red-400 text-sm px-4 py-3 rounded-xl">{error}</div>
+                <div className="bg-red-500/10 border border-red-500/20 text-red-400 text-sm px-4 py-3 rounded-xl">
+                  {error}
+                  {pendingConfirmation && (
+                    <div className="mt-2">
+                      {resendState === 'sent'
+                        ? <span className="text-green-400">Te enviamos un nuevo enlace. Revisa tu bandeja.</span>
+                        : <button type="button" onClick={handleResend} disabled={resendState === 'sending'} className="underline font-semibold disabled:opacity-50">
+                            {resendState === 'sending' ? 'Enviando…' : 'Reenviar enlace de confirmación'}
+                          </button>}
+                      {resendState === 'failed' && <span className="ml-2">No se pudo enviar. Intenta de nuevo.</span>}
+                    </div>
+                  )}
+                </div>
               )}
               <div className="flex gap-3">
                 <button onClick={() => { setError(''); setStep(1) }} type="button"

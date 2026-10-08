@@ -1,10 +1,11 @@
 'use client'
-import { useState, Suspense } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { Mail, Lock, ArrowRight, Sparkles, CheckCircle } from 'lucide-react'
 import posthog from 'posthog-js'
+import { parseAuthLinkError, isEmailNotConfirmed, resendConfirmationEmail, type AuthLinkError } from '@/lib/authLinkError'
 
 function LoginContent() {
   const [email, setEmail] = useState('')
@@ -13,14 +14,34 @@ function LoginContent() {
   const [error, setError] = useState('')
   const router = useRouter()
   const searchParams = useSearchParams()
-  const justConfirmed = searchParams.get('confirmed') === '1'
+  const [linkError, setLinkError] = useState<AuthLinkError>(null)
+  const [needsConfirmation, setNeedsConfirmation] = useState(false)
+  const [resendState, setResendState] = useState<'idle' | 'sending' | 'sent' | 'failed'>('idle')
   const supabase = createClient()
+
+  useEffect(() => { setLinkError(parseAuthLinkError(window.location.hash)) }, [])
+
+  const justConfirmed = searchParams.get('confirmed') === '1' && !linkError
+
+  const handleResend = async () => {
+    setResendState('sending')
+    setResendState(await resendConfirmationEmail(email.trim()) ? 'sent' : 'failed')
+  }
 
   const handleLogin = async () => {
     setLoading(true)
     setError('')
+    setNeedsConfirmation(false)
+    setResendState('idle')
     const { error, data } = await supabase.auth.signInWithPassword({ email, password })
     if (error) {
+      if (isEmailNotConfirmed(error)) {
+        setNeedsConfirmation(true)
+        setError('Tu correo aún no está confirmado. Revisa tu bandeja o solicita un nuevo enlace.')
+        posthog.capture('login_email_not_confirmed', { email })
+        setLoading(false)
+        return
+      }
       setError('Email o contraseña incorrectos')
       posthog.capture('login_failed', { email })
       setLoading(false)
@@ -51,6 +72,18 @@ function LoginContent() {
       }
     }
   }
+
+  const ResendButton = () => resendState === 'sent'
+    ? <span className="text-green-400">Si la cuenta existe, te enviamos un nuevo enlace. Revisa tu bandeja.</span>
+    : (
+      <>
+        <button type="button" onClick={handleResend} disabled={!email.trim() || resendState === 'sending'}
+          className="underline font-semibold disabled:opacity-50 disabled:no-underline">
+          {resendState === 'sending' ? 'Enviando…' : 'Reenviar enlace de confirmación'}
+        </button>
+        {resendState === 'failed' && <span className="ml-2 text-red-400">No se pudo enviar. Intenta de nuevo.</span>}
+      </>
+    )
 
   return (
     <main className="min-h-screen bg-[#060609] text-white flex items-center justify-center px-6">
@@ -114,10 +147,20 @@ function LoginContent() {
               </div>
             )}
 
+            {linkError && !error && (
+              <div className="bg-amber-500/10 border border-amber-500/20 text-amber-300 text-sm px-4 py-3 rounded-xl">
+                {linkError === 'expired'
+                  ? 'El enlace de confirmación expiró. Escribe tu email y solicita uno nuevo.'
+                  : 'El enlace de confirmación no es válido. Escribe tu email y solicita uno nuevo.'}
+                <div className="mt-2"><ResendButton /></div>
+              </div>
+            )}
+
             {/* Error */}
             {error && (
               <div className="bg-red-500/10 border border-red-500/20 text-red-400 text-sm px-4 py-3 rounded-xl">
                 {error}
+                {needsConfirmation && <div className="mt-2"><ResendButton /></div>}
               </div>
             )}
 
