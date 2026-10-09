@@ -6,6 +6,7 @@ import { createClient } from '@/lib/supabase/client'
 import posthog from 'posthog-js'
 import TutorialModal, { hasSeenTutorial } from '../../../components/TutorialModal'
 import { dashboardTutorialSteps } from '../../../lib/tutorials'
+import { dashboardUrl, getSelectedProjectId, setSelectedProjectId } from '@/lib/selectedProject'
 
 const S: Record<string, React.CSSProperties> = {
   card: { background:'rgba(255,255,255,0.03)', border:'1px solid rgba(255,255,255,0.07)', borderRadius:14, padding:16, marginBottom:14 },
@@ -80,7 +81,7 @@ export default function DashboardPage() {
       const data = await res.json()
       if (data.status === 'active') {
         for (let attempt = 0; attempt < 5; attempt++) {
-          const dashRes = await fetch(BACKEND + '/api/dashboard/' + user.id, {
+          const dashRes = await fetch(dashboardUrl(BACKEND, user.id), {
             headers: { 'Authorization': 'Bearer ' + s2.access_token }
           })
           const freshData = await dashRes.json()
@@ -134,6 +135,7 @@ export default function DashboardPage() {
       })
       const data = await res.json()
       if (!res.ok || !data.projectId) throw new Error(data.error || 'No se pudo crear el proyecto')
+      if (user) setSelectedProjectId(user.id, data.projectId)
       router.push(`/onboarding?projectId=${data.projectId}`)
     } catch (e: any) {
       alert('Error al crear el proyecto: ' + e.message)
@@ -228,10 +230,18 @@ export default function DashboardPage() {
       }
 
       try {
-        const res = await fetch(`${BACKEND}/api/dashboard/${user.id}`, {
+        let res = await fetch(dashboardUrl(BACKEND, user.id), {
           headers: { 'Authorization': 'Bearer ' + session.access_token }
         })
+        if (res.status === 404 && getSelectedProjectId(user.id)) {
+          // El proyecto guardado/pedido ya no existe: volver al más reciente
+          setSelectedProjectId(user.id, null)
+          res = await fetch(dashboardUrl(BACKEND, user.id, null), {
+            headers: { 'Authorization': 'Bearer ' + session.access_token }
+          })
+        }
         const data = await res.json()
+        if (data?.projects && data?.project?.id) setSelectedProjectId(user.id, data.project.id)
         setDashData(data)
         // Seleccionar el reporte más reciente con JSON por defecto
         const latest = (data.reports || []).find((r: any) => r.sectionsJson) || (data.reports || []).find((r: any) => r.status === 'COMPLETED')
@@ -292,7 +302,7 @@ export default function DashboardPage() {
         // Refrescar dashData para mostrar el reporte GENERATING inmediatamente
         const { data: { session: s2 } } = await supabase.auth.getSession()
         if (s2) {
-          const res2 = await fetch(`${BACKEND}/api/dashboard/${s2.user.id}`, {
+          const res2 = await fetch(dashboardUrl(BACKEND, s2.user.id), {
             headers: { 'Authorization': 'Bearer ' + s2.access_token }
           })
           const data2 = await res2.json()
@@ -391,7 +401,7 @@ export default function DashboardPage() {
       try {
         const { data: { session: s2 } } = await supabase.auth.getSession()
         if (!s2) { stopPolling(); return }
-        const res = await fetch(`${BACKEND}/api/dashboard/${s2.user.id}`, {
+        const res = await fetch(dashboardUrl(BACKEND, s2.user.id), {
           headers: { 'Authorization': 'Bearer ' + s2.access_token }
         })
         const data = await res.json()
@@ -477,6 +487,7 @@ export default function DashboardPage() {
   const trialDaysLeft = dashData?.project?.trialEndsAt
     ? Math.max(0, Math.ceil((new Date(dashData.project.trialEndsAt).getTime() - Date.now()) / (1000 * 60 * 60 * 24)))
     : 5
+  const isPartner = accountType === 'PARTNER'
 
   // Competidores del setup
   const setupCompetitors = [1,2,3,4,5]
@@ -502,7 +513,7 @@ export default function DashboardPage() {
       try {
         const { data: { session: s2 } } = await supabase.auth.getSession()
         if (!s2 || stopped) return
-        const res = await fetch(BACKEND + '/api/dashboard/' + s2.user.id, {
+        const res = await fetch(dashboardUrl(BACKEND, s2.user.id), {
           headers: { 'Authorization': 'Bearer ' + s2.access_token }
         })
         const data = await res.json()
@@ -536,7 +547,7 @@ export default function DashboardPage() {
   const tieneStripe = dashData?.subscription?.stripeSubscriptionId != null || stripeConfirmado
   const tieneReporteCompleto = (dashData?.reports || []).some((r: any) => r.status === 'COMPLETED' && r.isTeaser === false)
   const puedeGenerarPrimerCompleto = tieneStripe && !tieneReporteCompleto && !firstFullClicked
-  const trialVencido = !tieneStripe &&
+  const trialVencido = !tieneStripe && accountType !== 'PARTNER' &&
     dashData?.project?.trialEndsAt &&
     new Date(dashData.project.trialEndsAt) < new Date()
 
@@ -597,11 +608,22 @@ export default function DashboardPage() {
               <div style={{ fontSize: isMobile ? 22 : 26, fontWeight:900, color: isDark ? T.text : '#26215C', lineHeight:1.1 }}>
                 <span style={{ color: isDark ? '#8B7BFF' : '#26215C' }}>{companyName}</span>
               </div>
+              {isPartner && (dashData?.projects?.length ?? 0) > 1 && (
+                <select value={dashData?.project?.id || ''} aria-label="Cambiar de empresa"
+                  onChange={e => { if (user) setSelectedProjectId(user.id, e.target.value); window.location.href = `/dashboard?projectId=${encodeURIComponent(e.target.value)}` }}
+                  style={{ marginTop:8, maxWidth:'100%', fontSize:12, fontWeight:600, color:T.text, background:T.inputBg, border:'1px solid rgba(139,123,255,0.3)', borderRadius:10, padding:'6px 10px', cursor:'pointer' }}>
+                  {dashData.projects.map((p: any) => (
+                    <option key={p.id} value={p.id}>{p.companyName || p.name || 'Proyecto sin nombre'}</option>
+                  ))}
+                </select>
+              )}
               <div style={{ fontSize:12, color:T.textMuted, marginTop:4 }}>
                 {industry}{city ? ` · ${city}, ${country}` : ` · ${country}`} · {new Date().toLocaleDateString('es-MX',{weekday:'long',day:'numeric',month:'long'})}
               </div>
               <div style={{ display:'flex', alignItems:'center', gap:8, marginTop:6, flexWrap:'wrap' }}>
-                {tieneStripe ? (
+                {isPartner ? (
+                  <span style={{ fontSize:11, color:'#6EE7A4', fontWeight:700, background:'rgba(110,231,164,0.1)', border:'1px solid rgba(110,231,164,0.2)', borderRadius:20, padding:'3px 10px' }}>✓ Acceso Partner · sin vencimiento</span>
+                ) : tieneStripe ? (
                   <span style={{ fontSize:11, color:'#6EE7A4', fontWeight:700, background:'rgba(110,231,164,0.1)', border:'1px solid rgba(110,231,164,0.2)', borderRadius:20, padding:'3px 10px' }}>✓ Plan {frequency} activo</span>
                 ) : (
                   <span style={{ fontSize:11, color:'#F2C063', fontWeight:700, background:'rgba(242,192,99,0.1)', border:'1px solid rgba(242,192,99,0.2)', borderRadius:20, padding:'3px 10px' }}>Trial · {trialDaysLeft} días restantes</span>
@@ -706,10 +728,10 @@ export default function DashboardPage() {
               <div style={{ flex:1, minWidth:0 }}>
                 <div style={{ fontSize:14, fontWeight:800, color:T.text, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{user?.email || 'usuario@email.com'}</div>
                 <div style={{ display:'flex', alignItems:'center', gap:6, marginTop:3, flexWrap:'wrap' }}>
-                  <span style={{...S.badge, background: tieneStripe ? 'rgba(110,231,164,0.12)' : 'rgba(242,192,99,0.12)', color: tieneStripe ? '#6EE7A4' : '#F2C063'}}>
-                    {tieneStripe ? 'Activo' : `Trial · ${trialDaysLeft} días`}
+                  <span style={{...S.badge, background: tieneStripe || isPartner ? 'rgba(110,231,164,0.12)' : 'rgba(242,192,99,0.12)', color: tieneStripe || isPartner ? '#6EE7A4' : '#F2C063'}}>
+                    {isPartner ? 'Acceso Partner' : tieneStripe ? 'Activo' : `Trial · ${trialDaysLeft} días`}
                   </span>
-                  <span style={{ fontSize:10, color:T.textMuted }}>· Plan {frequency}</span>
+                  {!isPartner && <span style={{ fontSize:10, color:T.textMuted }}>· Plan {frequency}</span>}
                   {city && <span style={{ fontSize:10, color:T.textMuted }}>· {city}, {country}</span>}
                 </div>
               </div>
@@ -745,7 +767,7 @@ export default function DashboardPage() {
           </div>
           <div style={{ display:'grid', gridTemplateColumns: isMobile ? '1fr 1fr' : '1fr 1fr 1fr 1fr', gap:10 }}>
             {[
-              { label:'Editar Configuración para Reportes', color:'#8B7BFF', bg:'rgba(139,123,255,0.12)', border:'rgba(139,123,255,0.3)', href:'/onboarding',
+              { label:'Editar Configuración para Reportes', color:'#8B7BFF', bg:'rgba(139,123,255,0.12)', border:'rgba(139,123,255,0.3)', href: isPartner && dashData?.project?.id ? `/onboarding?projectId=${dashData.project.id}` : '/onboarding',
                 icon:<path d="M12 20h9M16.5 3.5a2.12 2.12 0 113 3L7 19l-4 1 1-4z"/> },
               { label: generating ? 'Generando...' : canGenerate ? 'Generar Reporte' : proximaFechaReporte ? 'Próximo: ' + proximaFechaReporte.toLocaleDateString('es-MX', {day:'2-digit', month:'short'}) + ' ' + proximaFechaReporte.toLocaleTimeString('es-MX', {hour:'2-digit', minute:'2-digit'}) : 'Generar Reporte', color: canGenerate || generating ? '#6EE7A4' : '#5A627A', bg: canGenerate || generating ? 'rgba(110,231,164,0.08)' : 'rgba(255,255,255,0.02)', border: canGenerate || generating ? 'rgba(110,231,164,0.2)' : 'rgba(255,255,255,0.06)', href:'#', onClick: canGenerate && !generating ? handleGenerateClick : undefined,
                 icon:<><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></> },

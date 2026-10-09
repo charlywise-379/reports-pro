@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import posthog from 'posthog-js'
+import { dashboardUrl } from '@/lib/selectedProject'
 import { FaInstagram, FaFacebook, FaXTwitter, FaLinkedin, FaTiktok, FaYoutube } from 'react-icons/fa6'
 import type { IconType } from 'react-icons'
 import { Search, HelpCircle, Bot } from 'lucide-react'
@@ -1317,12 +1318,15 @@ function BriefingPanel({ step, isMobile }: { step: number; isMobile: boolean }) 
 // ──────────────────────────────────────────
 // TOP NAV
 // ──────────────────────────────────────────
+const MOBILE_NAV_HEIGHT = 52
+
 function TopNav() {
   const [isMobile, setIsMobile] = useState(false)
+  const [menuOpen, setMenuOpen] = useState(false)
   const router = useRouter()
   const supabase = createClient()
   useEffect(() => {
-    const check = () => setIsMobile(window.innerWidth < 768)
+    const check = () => { setIsMobile(window.innerWidth < 768); if (window.innerWidth >= 768) setMenuOpen(false) }
     check()
     window.addEventListener('resize', check)
     return () => window.removeEventListener('resize', check)
@@ -1331,25 +1335,54 @@ function TopNav() {
     await supabase.auth.signOut()
     router.push('/login')
   }
+  const statusPill = (
+    <div style={{ display:'flex', alignItems:'center', gap:6, background:'rgba(110,231,164,0.1)', border:'1px solid rgba(110,231,164,0.2)', borderRadius:20, padding:'4px 10px' }}>
+      <div style={{ width:6, height:6, borderRadius:'50%', background:'#6EE7A4', flexShrink:0 }} />
+      <span style={{ fontSize:10, fontWeight:700, letterSpacing:'0.08em', color:'#6EE7A4' }}>SETUP · LIVE</span>
+    </div>
+  )
+
+  if (isMobile) {
+    const item: React.CSSProperties = { display:'flex', alignItems:'center', minHeight:44, padding:'0 16px', fontSize:14, fontWeight:600, color:'#C4C9E2', textDecoration:'none', background:'none', border:'none', width:'100%', textAlign:'left', cursor:'pointer' }
+    return (
+      <div style={{ position:'sticky', top:0, zIndex:50, flexShrink:0 }}>
+        <div style={{ borderBottom:'1px solid rgba(255,255,255,0.06)', background:'#0D0F1A', height:MOBILE_NAV_HEIGHT, padding:'0 16px', display:'flex', alignItems:'center', justifyContent:'space-between', gap:8 }}>
+          <img src="/logo-full.png" alt="Omni Reports" style={{ height:28, width:'auto' }} />
+          <div style={{ display:'flex', alignItems:'center', gap:10 }}>
+            {statusPill}
+            <button onClick={() => setMenuOpen(o => !o)} aria-label={menuOpen ? 'Cerrar menú' : 'Abrir menú'} aria-expanded={menuOpen}
+              style={{ width:44, height:44, display:'flex', alignItems:'center', justifyContent:'center', background:'none', border:'none', color:'#C4C9E2', fontSize:22, cursor:'pointer', margin:'0 -10px 0 0' }}>
+              {menuOpen ? '✕' : '☰'}
+            </button>
+          </div>
+        </div>
+        {menuOpen && (
+          <div style={{ position:'absolute', top:MOBILE_NAV_HEIGHT, left:0, right:0, background:'#0D0F1A', borderBottom:'1px solid rgba(255,255,255,0.1)', boxShadow:'0 12px 24px rgba(0,0,0,0.4)', padding:'6px 0' }}>
+            <Link href="/dashboard" onClick={() => setMenuOpen(false)} style={item}>Dashboard</Link>
+            <Link href="/cuenta" onClick={() => setMenuOpen(false)} style={item}>Mi cuenta</Link>
+            <button onClick={handleLogout} style={{ ...item, color:'#F28B8B' }}>Cerrar sesión</button>
+          </div>
+        )}
+      </div>
+    )
+  }
+
   return (
-    <div style={{ borderBottom:'1px solid rgba(255,255,255,0.06)', background:'#0D0F1A', flexShrink:0, padding: isMobile ? '10px 16px' : '0 24px', height: isMobile ? 'auto' : 56, display:'flex', alignItems:'center', justifyContent:'space-between', flexWrap: isMobile ? 'wrap' : 'nowrap', gap: isMobile ? 8 : 0 }}>
+    <div style={{ borderBottom:'1px solid rgba(255,255,255,0.06)', background:'#0D0F1A', flexShrink:0, padding:'0 24px', height:56, display:'flex', alignItems:'center', justifyContent:'space-between' }}>
       <div style={{ display:'flex', alignItems:'center', gap:10 }}>
         <img src="/logo-full.png" alt="Omni Reports" style={{ height:34, width:'auto' }} />
         <div style={{ fontSize:10, color:'#5A627A' }}>Inteligencia Competitiva · AI</div>
       </div>
-      <div style={{ display:'flex', flexDirection: isMobile ? 'column' : 'row', alignItems: isMobile ? 'flex-end' : 'center', gap: isMobile ? 4 : 12 }}>
-        <div style={{ display:'flex', alignItems:'center', gap:6, background:'rgba(110,231,164,0.1)', border:'1px solid rgba(110,231,164,0.2)', borderRadius:20, padding:'4px 10px' }}>
-          <div style={{ width:6, height:6, borderRadius:'50%', background:'#6EE7A4', flexShrink:0 }} />
-          <span style={{ fontSize:10, fontWeight:700, letterSpacing:'0.08em', color:'#6EE7A4' }}>SETUP · LIVE</span>
-        </div>
-        <div style={{ display:'flex', gap:4, background:'rgba(255,255,255,0.05)', borderRadius:20, padding:4, marginTop: isMobile ? 4 : 0 }}>
+      <div style={{ display:'flex', alignItems:'center', gap:12 }}>
+        {statusPill}
+        <div style={{ display:'flex', gap:4, background:'rgba(255,255,255,0.05)', borderRadius:20, padding:4 }}>
           <button style={{ padding:'4px 10px', borderRadius:16, border:'none', background:'#8B7BFF', color:'#fff', fontSize:11, fontWeight:700, cursor:'pointer' }}>ES</button>
           <button style={{ padding:'4px 10px', borderRadius:16, border:'none', background:'transparent', color:'#5A627A', fontSize:11, fontWeight:700, cursor:'pointer' }}>EN</button>
         </div>
-        <Link href="/cuenta" style={{ color:'#9CA3AF', fontSize: isMobile ? 10 : 11, fontWeight:700, textDecoration:'none', marginTop: isMobile ? 4 : 0 }}>
+        <Link href="/cuenta" style={{ color:'#9CA3AF', fontSize:11, fontWeight:700, textDecoration:'none' }}>
           Mi cuenta
         </Link>
-        <button onClick={handleLogout} style={{ background:'transparent', border:'1px solid rgba(255,255,255,0.1)', borderRadius:20, padding: isMobile ? '4px 10px' : '6px 14px', color:'#9CA3AF', fontSize: isMobile ? 10 : 11, fontWeight:700, cursor:'pointer', marginTop: isMobile ? 4 : 0 }}>
+        <button onClick={handleLogout} style={{ background:'transparent', border:'1px solid rgba(255,255,255,0.1)', borderRadius:20, padding:'6px 14px', color:'#9CA3AF', fontSize:11, fontWeight:700, cursor:'pointer' }}>
           Cerrar sesión
         </button>
       </div>
@@ -1382,6 +1415,7 @@ export default function OnboardingPage() {
   const [isEditing, setIsEditing] = useState(false)
   const [dataLoaded, setDataLoaded] = useState(false)
   const [projectIdParam, setProjectIdParam] = useState<string | null>(null)
+  const dashPath = projectIdParam ? `/dashboard?projectId=${encodeURIComponent(projectIdParam)}` : '/dashboard'
   // Por defecto NO partner: si el fetch de accountType falla o no confirma 'PARTNER',
   // el flujo debe degradar al comportamiento original (checkout), nunca al de skip.
   const [accountType, setAccountType] = useState<string>('STANDARD')
@@ -1479,20 +1513,13 @@ export default function OnboardingPage() {
       loadAccountType(session)
 
       try {
-        const res = await fetch(`${BACKEND}/api/dashboard/${session.user.id}`, {
+        const res = await fetch(dashboardUrl(BACKEND, session.user.id, projectIdFromUrl), {
           headers: { 'Authorization': 'Bearer ' + session.access_token }
         })
         const dash = await res.json()
         if (!dash?.project) { setDataLoaded(true); return }
-        // GET /api/dashboard/:userId devuelve el proyecto MÁS RECIENTE del usuario
-        // (no filtra por projectId). Si venimos con un projectId explícito (p.ej. un
-        // partner que dio clic en "Nuevo proyecto") y ese no es el proyecto más
-        // reciente, no lo tratamos como el proyecto a editar: evita precargar datos
-        // de OTRO proyecto y evita inferir isEditing=true por error.
-        if (projectIdFromUrl && dash.project.id !== projectIdFromUrl) {
-          setDataLoaded(true)
-          return
-        }
+        // Con ?projectId= el backend devuelve ESE proyecto (validando propiedad), así que
+        // editar una empresa que no es la más reciente precarga sus propios datos.
         // Solo es edición si tiene setup completo con nombre real
         const hasRealSetup = dash?.setup?.companyName &&
           dash.setup.companyName !== 'Sin nombre' &&
@@ -1570,7 +1597,7 @@ export default function OnboardingPage() {
     setErrorMsg('')
     try {
       await saveProgress()
-      router.push('/dashboard')
+      router.push(dashPath)
     } catch(e: any) {
       setErrorMsg(e.message)
     } finally {
@@ -1589,7 +1616,7 @@ export default function OnboardingPage() {
       // Si ya tiene proyecto real, solo guardar sin generar reporte
       if (isEditing) {
         await saveProgress()
-        router.push('/dashboard')
+        router.push(dashPath)
         return
       }
 
@@ -1617,12 +1644,12 @@ export default function OnboardingPage() {
         is_editing: isEditing,
       })
       if (isEditing) {
-        router.push('/dashboard')
+        router.push(dashPath)
       } else if (projectIdParam && accountType === 'PARTNER') {
         // Proyecto adicional creado vía "Nuevo proyecto", confirmado por accountType
         // (GET /api/account/:userId) — no basta con la presencia de projectId en la
         // URL, que un usuario STANDARD podría añadir a mano. Sin costo, sin checkout.
-        router.push('/dashboard')
+        router.push(dashPath)
       } else {
         // El plan y el ciclo elegidos aquí llegan preseleccionados al checkout.
         const plan = String(data.frequency || 'WEEKLY').toLowerCase()
@@ -1652,7 +1679,7 @@ export default function OnboardingPage() {
       <div style={{ display:'flex', flex:1, flexDirection: isMobile ? 'column' : 'row', overflow: isMobile ? 'visible' : 'hidden', height: isMobile ? 'auto' : 'calc(100vh - 56px)' }}>
         {!isMobile && <Sidebar step={step} setStep={setStep} />}
         {isMobile && (
-          <div style={{ position:'sticky', top:56, zIndex:40, background:'#0D0F1A', borderBottom:'1px solid rgba(255,255,255,0.06)', padding:'10px 16px' }}>
+          <div style={{ position:'sticky', top:MOBILE_NAV_HEIGHT, zIndex:40, background:'#0D0F1A', borderBottom:'1px solid rgba(255,255,255,0.06)', padding:'10px 16px' }}>
             <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:8 }}>
               <span style={{ fontSize:12, fontWeight:700, color:'#F0F2FF' }}>{STEPS[step-1]?.label}</span>
               <span style={{ fontSize:10, fontWeight:700, color:'#5A627A' }}>{step}/7</span>
@@ -1679,7 +1706,7 @@ export default function OnboardingPage() {
           {stepContent[step]}
           {/* Navegación */}
           <div style={{ background:'linear-gradient(0deg, #0D0F1A 80%, transparent)', padding:'20px 0 0', display:'flex', justifyContent:'space-between', alignItems:'center', marginTop:32 }}>
-            <button onClick={()=>{if(step>1){setStep(step-1)}else{router.push('/dashboard')};}} style={{ display:'flex', alignItems:'center', gap:8, background:'rgba(255,255,255,0.05)', border:'1px solid rgba(255,255,255,0.1)', borderRadius:20, padding:'10px 20px', color:'#9CA3AF', fontSize:13, fontWeight:600, cursor:'pointer' }}>
+            <button onClick={()=>{if(step>1){setStep(step-1)}else{router.push(dashPath)};}} style={{ display:'flex', alignItems:'center', gap:8, background:'rgba(255,255,255,0.05)', border:'1px solid rgba(255,255,255,0.1)', borderRadius:20, padding:'10px 20px', color:'#9CA3AF', fontSize:13, fontWeight:600, cursor:'pointer' }}>
               ← {step===1?'Cancelar':'Atrás'}
             </button>
             <div style={{ display:'flex', gap:10 }}>

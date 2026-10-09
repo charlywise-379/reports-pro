@@ -2,6 +2,7 @@ import { Router, Request, Response } from 'express'
 import { prisma } from '../lib/prisma'
 import { requireAuth } from '../middleware/auth'
 import { maybeEnqueueTrialSync } from '../lib/lifecycleQueue'
+import { buildProjectQuery, projectListFor, ProjectListItem } from '../lib/dashboardProject'
 
 const router = Router()
 
@@ -19,9 +20,9 @@ router.get('/:userId', requireAuth, async (req: Request, res: Response) => {
     })
     if (dashUser) maybeEnqueueTrialSync(dashUser as any)
 
+    const requestedProjectId = req.query.projectId
     const project = await (prisma.project as any).findFirst({
-      where: { userId },
-      orderBy: { createdAt: 'desc' },
+      ...buildProjectQuery(userId, requestedProjectId),
       include: {
         competitiveSetup: true,
         subscription: true,
@@ -43,9 +44,25 @@ router.get('/:userId', requireAuth, async (req: Request, res: Response) => {
       }
     })
 
-    if (!project) return res.json({ project: null })
+    if (!project) {
+      if (typeof requestedProjectId === 'string' && requestedProjectId.trim()) {
+        return res.status(404).json({ error: 'Proyecto no encontrado' })
+      }
+      return res.json({ project: null })
+    }
+
+    let projects: ProjectListItem[] | null = null
+    if (dashUser?.accountType === 'PARTNER') {
+      const all = await (prisma.project as any).findMany({
+        where: { userId },
+        orderBy: { createdAt: 'desc' },
+        select: { id: true, name: true, competitiveSetup: { select: { companyName: true } } },
+      })
+      projects = projectListFor(dashUser.accountType, all)
+    }
 
     res.json({
+      projects,
       project: {
         id: project.id,
         name: project.name,
