@@ -1645,6 +1645,10 @@ export default function OnboardingPage() {
       })
       if (isEditing) {
         router.push(dashPath)
+      } else if (res.freeFullReportAvailable) {
+        // Código de acceso completo con su primer reporte gratis sin usar: sin cobro,
+        // genera su reporte desde el dashboard; los siguientes sí requieren plan.
+        router.push(dashPath)
       } else if (projectIdParam && accountType === 'PARTNER') {
         // Proyecto adicional creado vía "Nuevo proyecto", confirmado por accountType
         // (GET /api/account/:userId) — no basta con la presencia de projectId en la

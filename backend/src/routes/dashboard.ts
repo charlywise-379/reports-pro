@@ -3,6 +3,7 @@ import { prisma } from '../lib/prisma'
 import { requireAuth } from '../middleware/auth'
 import { maybeEnqueueTrialSync } from '../lib/lifecycleQueue'
 import { buildProjectQuery, projectListFor, ProjectListItem } from '../lib/dashboardProject'
+import { hasFreeFullReport } from '../lib/freeFullReport'
 
 const router = Router()
 
@@ -61,8 +62,23 @@ router.get('/:userId', requireAuth, async (req: Request, res: Response) => {
       projects = projectListFor(dashUser.accountType, all)
     }
 
+    const sub = project.subscription
+    const hasPaid = ['active'].includes(String(sub?.status || '').toLowerCase()) || sub?.stripeSubscriptionId != null
+    const redemption = await (prisma as any).promoCodeRedemption.findUnique({
+      where: { projectId: project.id },
+      include: { promoCode: true },
+    })
+    const freeUser = await prisma.user.findUnique({ where: { id: userId }, select: { freeReportUsedAt: true } })
+    const freeFullReportAvailable = hasFreeFullReport({
+      accountType: dashUser?.accountType,
+      promoType: redemption?.promoCode?.type,
+      freeReportUsedAt: freeUser?.freeReportUsedAt,
+      hasPaid,
+    })
+
     res.json({
       projects,
+      freeFullReportAvailable,
       project: {
         id: project.id,
         name: project.name,

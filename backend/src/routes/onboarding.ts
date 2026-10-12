@@ -5,6 +5,7 @@ import { DeliveryChannel, ReportFrequency, ServiceType, ProjectStatus, Subscript
 import { getResend } from '../lib/email'
 import { getPlanMonthlyUSD } from '../lib/stripePriceMap'
 import { autocompleteCompanyInfo, isPrivateOrLoopbackHost } from '../lib/onboardingAutocomplete'
+import { hasFreeFullReport } from '../lib/freeFullReport'
 
 const router = Router()
 
@@ -286,12 +287,30 @@ router.post('/competitive', requireAuth, async (req: Request, res: Response) => 
     // El primer reporte lo genera el usuario manualmente desde el dashboard
     // DESPUÉS de que Stripe confirme el pago vía webhook.
     // Flujo correcto: onboarding → checkout → webhook → dashboard → generar manual
+    let freeFullReportAvailable = false
+    try {
+      const redemption = await (prisma as any).promoCodeRedemption.findUnique({
+        where: { projectId: newProject.id },
+        include: { promoCode: true },
+      })
+      const freshUser = await prisma.user.findUnique({ where: { id: user.id }, select: { accountType: true, freeReportUsedAt: true } })
+      freeFullReportAvailable = hasFreeFullReport({
+        accountType: freshUser?.accountType,
+        promoType: redemption?.promoCode?.type,
+        freeReportUsedAt: freshUser?.freeReportUsedAt,
+        hasPaid: false,
+      })
+    } catch (e) {
+      console.error('[Onboarding] No se pudo calcular freeFullReportAvailable:', e)
+    }
+
     res.status(201).json({
       success: true,
       projectId: newProject.id,
       message: 'Módulo activado correctamente',
       trialEndsAt,
       promoCodeApplied,
+      freeFullReportAvailable,
     })
 
   } catch (error: any) {

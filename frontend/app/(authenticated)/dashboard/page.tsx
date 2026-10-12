@@ -547,7 +547,7 @@ export default function DashboardPage() {
   const tieneStripe = dashData?.subscription?.stripeSubscriptionId != null || stripeConfirmado
   const tieneReporteCompleto = (dashData?.reports || []).some((r: any) => r.status === 'COMPLETED' && r.isTeaser === false)
   const puedeGenerarPrimerCompleto = tieneStripe && !tieneReporteCompleto && !firstFullClicked
-  const trialVencido = !tieneStripe && accountType !== 'PARTNER' &&
+  const trialVencido = !tieneStripe && accountType !== 'PARTNER' && !dashData?.freeFullReportAvailable &&
     dashData?.project?.trialEndsAt &&
     new Date(dashData.project.trialEndsAt) < new Date()
 
@@ -620,6 +620,11 @@ export default function DashboardPage() {
               <div style={{ fontSize:12, color:T.textMuted, marginTop:4 }}>
                 {industry}{city ? ` · ${city}, ${country}` : ` · ${country}`} · {new Date().toLocaleDateString('es-MX',{weekday:'long',day:'numeric',month:'long'})}
               </div>
+              {dashData?.freeFullReportAvailable && !tieneStripe && (
+                <div style={{ fontSize:12, color:'#6EE7A4', background:'rgba(110,231,164,0.08)', border:'1px solid rgba(110,231,164,0.2)', borderRadius:10, padding:'8px 12px', marginTop:8, lineHeight:1.5 }}>
+                  Tu primer reporte completo es gratis. Los siguientes requieren un plan.
+                </div>
+              )}
               <div style={{ display:'flex', alignItems:'center', gap:8, marginTop:6, flexWrap:'wrap' }}>
                 {isPartner ? (
                   <span style={{ fontSize:11, color:'#6EE7A4', fontWeight:700, background:'rgba(110,231,164,0.1)', border:'1px solid rgba(110,231,164,0.2)', borderRadius:20, padding:'3px 10px' }}>✓ Acceso Partner · sin vencimiento</span>
