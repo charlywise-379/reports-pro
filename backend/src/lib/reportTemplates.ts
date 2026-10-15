@@ -30,6 +30,8 @@ export const PAGES: PageDef[] = [
   { file: 'p05-cambios.html', eyebrow: 'Movimientos', title: 'Cambios detectados', sub: '{{totalChanges}} cambios entre {{periodStart}} y {{periodEnd}}' },
   { file: 'p06-radar.html', eyebrow: 'Monitoreo', title: 'Tu radar de monitoreo', sub: 'Qué vigilamos y qué sigue · {{nextMonth}}' },
   { file: 'p07-comercial.html', eyebrow: 'Mercado', title: 'Inteligencia comercial', sub: 'Dónde están ganando tus competidores · Reporte #{{edition}}' },
+  { file: 'p08-oportunidades.html', eyebrow: 'Oportunidades', title: 'Dónde ganar ahora', sub: '{{opportunitiesCount}} oportunidades identificadas · puntaje de mercado {{opportunityScore}}/100' },
+  { file: 'p09-riesgos.html', eyebrow: 'Riesgos', title: 'Qué puede golpear los ingresos', sub: '{{highRisksCount}} riesgos altos · {{mediumRisksCount}} medios' },
 ]
 
 const V2_DIR = path.join(__dirname, '../templates/v2')

@@ -98,3 +98,25 @@
 .commercial .mini p,.commercial .mini b{line-height:1.3}
 .alertband b.clamp-2{display:-webkit-box}
 .acc{color:var(--accent)}
+
+/* Página 8 · Oportunidades */
+.opps{flex:none;align-content:start}
+.opp-title{display:-webkit-box;font-size:11pt;margin:3mm 0 2mm}
+.opp-foot{display:flex;justify-content:space-between;align-items:center;gap:2mm;margin-top:3mm}
+.opps .rowline .chip{min-width:0}
+.opps .rowline .num{flex:none;white-space:nowrap}
+.opp-foot .mono{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.opp-foot .chip{flex:none;max-width:48%}
+.dot--accent{background:var(--accent)}
+
+/* Página 9 · Riesgos */
+.risks-grid{flex:1;min-height:0;align-content:start;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:4mm}
+.risks-grid .stack{gap:2.2mm}
+.risks-grid .card{padding:2.4mm 3.4mm}
+.risks-grid .act{padding:2mm 2.6mm}
+.risks-grid .mini-list{gap:2.2mm;margin-top:1.5mm}
+.risks-grid p,.risks-grid b,.risks-grid .act{line-height:1.28}
+.risks-grid .ring svg{width:40px;height:40px}
+.risk-head{display:flex;align-items:center;gap:3mm;margin-bottom:1.5mm}
+.risk-head>div:last-child{min-width:0}
+.risks-grid .stack .card p{margin-bottom:1.5mm}
