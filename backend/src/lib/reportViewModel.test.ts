@@ -178,3 +178,28 @@ describe('buildViewModel (benchmark: posición y columnas)', () => {
     expect(JSON.stringify(ai)).toBe(aiBefore)
   })
 })
+
+describe('buildViewModel (fix 1)', () => {
+  it('la coma también separa rango y nota sin romper los demás casos', () => {
+    const rows = [
+      { factor: 'A', client: 'x', position: '2do lugar, empatado con Sticker Mule' },
+      { factor: 'B', client: 'x', position: '1er lugar (empate con A, B)' },
+      { factor: 'C', client: 'x', position: 'Empate técnico con Sticker Mule' },
+    ]
+    const v = vmWith({ ...FIXTURES.normal, benchmarkRows: rows })
+    expect(v.benchmarkRows.map((r: any) => [r.positionRank, r.positionNote, r.positionTone])).toEqual([
+      ['2do lugar', 'empatado con Sticker Mule', 'warn'],
+      ['1er lugar', 'empate con A, B', 'ok'],
+      ['Empate técnico con Sticker Mule', '', 'neutral'],
+    ])
+  })
+
+  it('topCompetitors: hasta 5 competidores primarios (real) con iniciales, amenaza y tono', () => {
+    const v = vm('real')
+    expect(v.topCompetitors.map((c: any) => c.name)).toEqual(['Sticker Mule', 'Creatify', 'Stickeria', 'Pegalinas.com', 'Pop México'])
+    expect(v.topCompetitors[4]).toMatchObject({ initials: 'PO', threat: 6, threatPct: 60, tone: 'warn' })
+    expect(vm('normal').topCompetitors).toHaveLength(5)
+    expect(vm('minimal').topCompetitors.length).toBeLessThanOrEqual(5)
+  })
+})
+

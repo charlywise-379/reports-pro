@@ -21,8 +21,8 @@ const BENCH_DEFAULT_FACTORS = ['Precio', 'Servicios', 'Innovación', 'Velocidad'
 
 // Separa la posición que entrega la IA («2do lugar — precio competitivo…», «3er lugar (competitivo)»)
 // en el rango corto y la nota: corta en el primer « — », « – », « - », «:» o « (» (en ese caso
-// quita el «)» final). Sin separador, todo es rango y la nota queda vacía.
-const POSITION_SEPARATORS = [' — ', ' – ', ' - ', ':', ' (']
+// quita el «)» final); también «, » («2do lugar, empatado con X»). Sin separador, todo es rango y la nota queda vacía.
+const POSITION_SEPARATORS = [' — ', ' – ', ' - ', ':', ', ', ' (']
 export function splitPosition(position: string): { rank: string; note: string } {
   let at = -1
   let sep = ''
@@ -119,7 +119,11 @@ export function buildViewModel(data: any, aiData: any, skin: Skin): any {
 
     insights: tagged(data.insights, i => ({ tone: toneForInsightCategory(i.category) })),
     actions: tagged(data.actions, a => ({ tone: toneForPriority(a.priority), priorityLabel: priorityLabel(a.priority) })),
-    topCompetitors: tagged(data.topCompetitors, c => ({ tone: toneForThreat(Number(c.threat)) })),
+    // Hasta 5 competidores primarios (el motor entrega solo 4 en topCompetitors; el KPI y la p3 muestran 5).
+    topCompetitors: arr(data.competitors).slice(0, 5).map(c => ({
+      initials: c.initials, name: c.name, color: c.color, borderColor: c.borderColor, trackColor: c.trackColor,
+      threat: c.threat, threatPct: c.threatPct, tone: toneForThreat(Number(c.threat)),
+    })),
 
     gaugeMetrics: tagged(data.gaugeMetrics, (_g, i) => ({ tone: gaugeTones[i] ?? 'neutral' })),
     sectorMetrics: tagged(data.sectorMetrics, (_m, i) => ({ tone: i < 4 ? sectorTones[i] : toneForLevel(data.riskLevel) })),

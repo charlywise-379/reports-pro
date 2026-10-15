@@ -56,21 +56,21 @@ describe('renderReportHtmlV2', () => {
     expect(html.indexOf('class="page page--dark"')).toBeGreaterThan(-1)
   })
 
-  it('la portada muestra los 4 competidores del top y ninguna regla CSS oculta filas', () => {
+  it('la portada muestra los 5 competidores primarios y ninguna regla CSS oculta filas', () => {
     const cover = pagesOf(render('normal', 'panel'))[0]
-    for (const name of ['Atlas Creativo', 'Norte Digital', 'Pixel &amp; Co', 'Marea Studio']) {
+    for (const name of ['Atlas Creativo', 'Norte Digital', 'Pixel &amp; Co', 'Marea Studio', 'Faro Agencia']) {
       expect(cover).toContain(name)
     }
     expect(buildV2Template()).not.toMatch(/nth-child\(n\+\d+\)\s*\{\s*display:\s*none/)
   })
 
-  it('portada con datos reales: 3 hallazgos, 3 acciones y 4 competidores con su texto completo', () => {
+  it('portada con datos reales: 3 hallazgos, 3 acciones y 5 competidores con su texto completo', () => {
     const cover = pagesOf(render('real', 'editorial'))[0]
     const ai = FIXTURES.real
     const esc = (t: string) => t.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;')
     for (const i of ai.insights.slice(0, 3)) expect(cover).toContain(esc(i.text))
     for (const a of ai.actions.slice(0, 3)) expect(cover).toContain(esc(a.text))
-    for (const c of ai.competitors.slice(0, 4)) expect(cover).toContain(`${esc(c.name)}</span><span class="mono tone-text">${c.threat}/10`)
+    for (const c of ai.competitors.slice(0, 5)) expect(cover).toContain(`${esc(c.name)}</span><span class="mono tone-text">${c.threat}/10`)
   })
 })
 
@@ -203,3 +203,37 @@ describe('página 10 (benchmark)', () => {
     expect(buildV2Template()).toMatch(/\.bench\.cols-1 \.bc2/)
   })
 })
+
+describe('fix 1: posición visible y competidores completos', () => {
+  const real = (ai: any) => {
+    const data = buildReportData(fixtureProject('real'), ai, FIXTURE_DATE_INFO, 1, false)
+    return renderReportHtmlV2('panel', data, ai, LOGOS_STUB)
+  }
+  it('una posición de 30 caracteres sin separador aparece completa en p10', () => {
+    const ai = { ...FIXTURES.real, benchmarkRows: FIXTURES.real.benchmarkRows.map((r: any, i: number) => i === 0 ? { ...r, position: 'Por debajo del promedio actual' } : r) }
+    const p10 = pagesOf(real(ai))[9]
+    expect(p10).toContain('<div class="mono tone-text pos-rank">Por debajo del promedio actual</div>')
+  })
+  it('.pos-rank no usa white-space:nowrap (el rango largo envuelve)', () => {
+    const css = buildV2Template().replace(/\/\*[\s\S]*?\*\//g, '')
+    const rules = [...css.matchAll(/([^{}]+)\{([^{}]*)\}/g)].filter(m => /\.pos-rank/.test(m[1]))
+    expect(rules.length).toBeGreaterThan(0)
+    for (const m of rules) expect(m[2]).not.toMatch(/white-space\s*:\s*nowrap/)
+  })
+  it('el ajuste automático también detecta desborde horizontal (scrollWidth)', () => {
+    const fn = (buildV2Template().match(/function overflows\(fit\)\s*\{[^}]*\}/) || [''])[0]
+    expect(fn).toContain('scrollHeight')
+    expect(fn).toContain('scrollWidth')
+  })
+  it('la portada y la p7 (Actividad de competidores) listan los 5 competidores primarios reales', () => {
+    const pages = pagesOf(real(FIXTURES.real))
+    const p7 = pages[6]
+    const act = p7.slice(p7.indexOf('Actividad de competidores'), p7.indexOf('Canales a explorar'))
+    for (const c of FIXTURES.real.competitors.slice(0, 5)) {
+      const name = c.name.replace(/&/g, '&amp;')
+      expect(pages[0]).toContain(name)
+      expect(act).toContain(`<b>${name}</b>`)
+    }
+  })
+})
+
