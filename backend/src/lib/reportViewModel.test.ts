@@ -5,13 +5,14 @@ vi.mock('./config', () => ({ getSecret: () => undefined }))
 vi.mock('./anthropic', () => ({ getAnthropic: () => ({}) }))
 
 import { buildReportData } from './reportEngine'
-import { FIXTURE_PROJECT, FIXTURE_DATE_INFO, FIXTURES } from './reportFixtures'
+import { FIXTURE_PROJECT, FIXTURE_DATE_INFO, FIXTURES, FixtureName, fixtureProject } from './reportFixtures'
 import { buildViewModel, ringDash, TOTAL_PAGES } from './reportViewModel'
 
-const vm = (name: 'normal' | 'extreme' | 'minimal', skin: 'editorial' | 'panel' = 'editorial', teaser = false) => {
-  const data = buildReportData(FIXTURE_PROJECT, FIXTURES[name], FIXTURE_DATE_INFO, 3, teaser)
+const vm = (name: FixtureName, skin: 'editorial' | 'panel' = 'editorial', teaser = false) => {
+  const data = buildReportData(fixtureProject(name), FIXTURES[name], FIXTURE_DATE_INFO, 3, teaser)
   return buildViewModel(data, FIXTURES[name], skin)
 }
+const vmWith = (ai: any) => buildViewModel(buildReportData(FIXTURE_PROJECT, ai, FIXTURE_DATE_INFO, 3, false), ai, 'panel')
 
 describe('ringDash', () => {
   it('escala el valor a la circunferencia y lo acota', () => {
@@ -94,5 +95,86 @@ describe('buildViewModel (tonos y listas)', () => {
     const before = JSON.stringify(data)
     buildViewModel(data, FIXTURES.normal, 'panel')
     expect(JSON.stringify(data)).toBe(before)
+  })
+})
+
+describe('buildViewModel (benchmark: posición y columnas)', () => {
+  it('separa la posición en rango y nota (normal: sin nota)', () => {
+    const r = vm('normal').benchmarkRows[0]
+    expect(r).toMatchObject({ position: '2do lugar', positionRank: '2do lugar', positionNote: '', positionTone: 'warn' })
+  })
+
+  it('separa en el primer « — », « – », « - » o «:» y calcula el tono sobre el rango', () => {
+    const rows = [
+      { factor: 'A', client: 'x', position: '2do lugar — precio competitivo entre premium 1er nivel y básico local' },
+      { factor: 'B', client: 'x', position: '1er lugar – ventaja clara' },
+      { factor: 'C', client: 'x', position: '4to lugar - detrás de 1 rival y 2 líderes' },
+      { factor: 'D', client: 'x', position: 'Empate: 1 de 3 iguales' },
+      { factor: 'E', client: 'x', position: '3er lugar' },
+    ]
+    const v = vmWith({ ...FIXTURES.normal, benchmarkRows: rows })
+    expect(v.benchmarkRows.map((r: any) => [r.positionRank, r.positionNote, r.positionTone])).toEqual([
+      ['2do lugar', 'precio competitivo entre premium 1er nivel y básico local', 'warn'],
+      ['1er lugar', 'ventaja clara', 'ok'],
+      ['4to lugar', 'detrás de 1 rival y 2 líderes', 'neutral'],
+      ['Empate', '1 de 3 iguales', 'neutral'],
+      ['3er lugar', '', 'neutral'],
+    ])
+  })
+
+  it('fixture real: la nota entre paréntesis se separa del rango y el tono no se confunde con números de la nota', () => {
+    const rows = vm('real').benchmarkRows
+    expect(rows).toHaveLength(9)
+    expect(rows[0]).toMatchObject({ positionRank: '3er lugar', positionNote: 'competitivo', positionTone: 'neutral' })
+    expect(rows[1]).toMatchObject({ positionRank: '2do lugar', positionNote: 'variedad acabados', positionTone: 'warn' })
+    expect(rows[2]).toMatchObject({ positionRank: '4to lugar', positionNote: '', positionTone: 'neutral' })
+    expect(rows[7]).toMatchObject({ positionRank: '1er lugar', positionNote: 'nicho dual único', positionTone: 'ok' })
+    expect(rows[0].position).toBe('3er lugar (competitivo)')
+  })
+
+  it('columnas usadas: cols-5 con cinco competidores con datos (normal y real)', () => {
+    expect(vm('normal').benchColsClass).toBe('cols-5')
+    const real = vm('real')
+    expect(real.benchColsClass).toBe('cols-5')
+    expect(real.benchmarkCompetitors.map((c: any) => c.name)).toEqual(['Sticker Mule', 'Creatify', 'Stickeria', 'Pegalinas.com', 'Pop México'])
+  })
+
+  it('omite columnas finales vacías (N/A en todas las filas) y les pone «—»', () => {
+    const rows = FIXTURES.normal.benchmarkRows.map((r: any) => ({ ...r, comp4: 'N/A', comp5: '' }))
+    const v = vmWith({ ...FIXTURES.normal, benchmarkRows: rows })
+    expect(v.benchColsClass).toBe('cols-3')
+    expect(v.benchmarkCompetitors.map((c: any) => c.name)).toEqual(['Atlas Creativo', 'Norte Digital', 'Pixel & Co', '—', '—'])
+  })
+
+  it('un hueco interno no reduce las columnas: n es la última columna con datos', () => {
+    const rows = FIXTURES.normal.benchmarkRows.map((r: any) => ({ ...r, comp2: 'N/A', comp5: 'N/A' }))
+    const v = vmWith({ ...FIXTURES.normal, benchmarkRows: rows })
+    expect(v.benchColsClass).toBe('cols-4')
+    expect(v.benchmarkCompetitors[1].name).toBe('—')
+    expect(v.benchmarkCompetitors[3].name).toBe('Marea Studio')
+  })
+
+  it('columna con datos sin competidor registrado en esa posición: «Otros»', () => {
+    const ai = { ...FIXTURES.normal, competitors: FIXTURES.normal.competitors.slice(0, 3) }
+    const v = vmWith(ai)
+    expect(v.benchColsClass).toBe('cols-5')
+    expect(v.benchmarkCompetitors.map((c: any) => c.name)).toEqual(['Atlas Creativo', 'Norte Digital', 'Pixel & Co', 'Otros', 'Otros'])
+  })
+
+  it('sin benchmark (minimal): una columna como mínimo y encabezados «—»', () => {
+    const v = vm('minimal')
+    expect(v.benchColsClass).toBe('cols-1')
+    expect(v.benchmarkCompetitors.map((c: any) => c.name)).toEqual(['—', '—', '—', '—', '—'])
+    expect(v.benchmarkRows[0]).toMatchObject({ positionRank: '—', positionNote: '' })
+  })
+
+  it('no muta los datos de entrada (real)', () => {
+    const ai = FIXTURES.real
+    const data = buildReportData(fixtureProject('real'), ai, FIXTURE_DATE_INFO, 1, false)
+    const before = JSON.stringify(data)
+    const aiBefore = JSON.stringify(ai)
+    buildViewModel(data, ai, 'editorial')
+    expect(JSON.stringify(data)).toBe(before)
+    expect(JSON.stringify(ai)).toBe(aiBefore)
   })
 })

@@ -19,26 +19,73 @@ const tagged = (list: unknown, fn: (item: any, i: number) => Record<string, unkn
 
 const BENCH_DEFAULT_FACTORS = ['Precio', 'Servicios', 'Innovación', 'Velocidad', 'Marca', 'Presencia digital', 'Retención', 'Cobertura']
 
+// Separa la posición que entrega la IA («2do lugar — precio competitivo…», «3er lugar (competitivo)»)
+// en el rango corto y la nota: corta en el primer « — », « – », « - », «:» o « (» (en ese caso
+// quita el «)» final). Sin separador, todo es rango y la nota queda vacía.
+const POSITION_SEPARATORS = [' — ', ' – ', ' - ', ':', ' (']
+export function splitPosition(position: string): { rank: string; note: string } {
+  let at = -1
+  let sep = ''
+  for (const s of POSITION_SEPARATORS) {
+    const i = position.indexOf(s)
+    if (i > 0 && (at < 0 || i < at)) { at = i; sep = s }
+  }
+  if (at < 0) return { rank: position.trim(), note: '' }
+  let note = position.slice(at + sep.length).trim()
+  if (sep === ' (' && note.endsWith(')')) note = note.slice(0, -1).trim()
+  return { rank: position.slice(0, at).trim(), note }
+}
+
+// Tono por el número del rango (1 = ok, 2 = warn); los números de la nota no cuentan.
+const toneForRank = (rank: string): Tone => {
+  const n = Number((rank.match(/\d+/) || [])[0])
+  return n === 1 ? 'ok' : n === 2 ? 'warn' : 'neutral'
+}
+
+const isEmptyCell = (v: unknown): boolean => {
+  const t = String(v ?? '').trim().toUpperCase()
+  return t === '' || t === 'N/A' || t === '—' || t === '-'
+}
+
 function benchmarkRows(rows: unknown): any[] {
   const list = arr(rows)
   if (list.length === 0) {
     return BENCH_DEFAULT_FACTORS.map(factor => ({
       factor, client: 'N/A', clientCls: 'is-na', c1: 'N/A', c2: 'N/A', c3: 'N/A', c4: 'N/A', c5: 'N/A',
-      position: '—', positionTone: 'neutral' as Tone,
+      position: '—', positionRank: '—', positionNote: '', positionTone: 'neutral' as Tone,
     }))
   }
   return list.map(r => {
     const client = r.client || 'N/A'
-    const position = r.position || '—'
+    const position = String(r.position || '—')
+    const { rank, note } = splitPosition(position)
     return {
       factor: r.factor || '',
       client,
       clientCls: client === 'N/A' ? 'is-na' : 'is-client',
       c1: r.comp1 || 'N/A', c2: r.comp2 || 'N/A', c3: r.comp3 || 'N/A', c4: r.comp4 || 'N/A', c5: r.comp5 || 'N/A',
       position,
-      positionTone: (String(position).includes('1') ? 'ok' : String(position).includes('2') ? 'warn' : 'neutral') as Tone,
+      positionRank: rank,
+      positionNote: note,
+      positionTone: toneForRank(rank),
     }
   })
+}
+
+// Columnas de competidores del benchmark. Una columna está vacía si es N/A o vacía en TODAS las filas.
+// Criterio con huecos: n = la última columna con datos (mínimo 1); las columnas vacías intermedias se
+// quedan visibles (encabezado «—») para no desalinear competidor y celda; solo se ocultan las finales.
+function benchmarkColumns(rows: unknown, registered: unknown): { cls: string; competitors: Array<{ name: string }> } {
+  const list = arr(rows)
+  const names = arr(registered)
+  const used = [1, 2, 3, 4, 5].map(ci => list.some(r => !isEmptyCell(r?.[`comp${ci}`])))
+  const last = used.lastIndexOf(true) + 1
+  const competitors = used.map((u, i) => {
+    const name = String(names[i]?.name ?? '').trim()
+    const hasName = name !== '' && name !== '—'
+    return { name: !u ? '—' : hasName ? name : 'Otros' }
+  })
+  return { cls: `cols-${Math.max(1, last)}`, competitors }
 }
 
 const effortFields = (r: any) => ({
@@ -58,6 +105,7 @@ export function buildViewModel(data: any, aiData: any, skin: Skin): any {
   const messageTones: Tone[] = ['info', 'warn', 'ok', 'bad']
   const segmentTones: Tone[] = ['ok', 'info', 'warn', 'neutral']
   const gaugeTones: Tone[] = [pressureTone, 'info', opportunityTone, riskTone]
+  const bench = benchmarkColumns(aiData?.benchmarkRows, data.benchmarkCompetitors)
 
   return {
     ...data,
@@ -102,6 +150,8 @@ export function buildViewModel(data: any, aiData: any, skin: Skin): any {
     mediumRisks: arr(data.mediumRisks),
 
     benchmarkRows: benchmarkRows(aiData?.benchmarkRows),
+    benchColsClass: bench.cls,
+    benchmarkCompetitors: bench.competitors,
     strengths: arr(data.strengths),
     improvements: arr(data.improvements),
 
