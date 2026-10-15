@@ -6,7 +6,7 @@ vi.mock('./anthropic', () => ({ getAnthropic: () => ({}) }))
 
 import { buildReportData } from './reportEngine'
 import { FIXTURE_PROJECT, FIXTURE_DATE_INFO, FIXTURES, LOGO_STUB } from './reportFixtures'
-import { PAGES, resolveReportTemplate, renderReportHtmlV2 } from './reportTemplates'
+import { PAGES, resolveReportTemplate, renderReportHtmlV2, buildV2Template } from './reportTemplates'
 
 const render = (fixture: 'normal' | 'extreme' | 'minimal', skin: 'editorial' | 'panel', teaser = false) => {
   const data = buildReportData(FIXTURE_PROJECT, FIXTURES[fixture], FIXTURE_DATE_INFO, 3, teaser)
@@ -53,5 +53,13 @@ describe('renderReportHtmlV2', () => {
     const html = render('normal', 'editorial')
     expect(html).toContain('Estudio Boreal')
     expect(html.indexOf('class="page page--dark"')).toBeGreaterThan(-1)
+  })
+
+  it('la portada muestra los 4 competidores y ninguna regla CSS oculta filas', () => {
+    const html = render('normal', 'panel')
+    for (const name of ['Atlas Creativo', 'Norte Digital', 'Pixel &amp; Co', 'Marea Studio']) {
+      expect(html).toContain(name)
+    }
+    expect(buildV2Template()).not.toMatch(/nth-child\(n\+\d+\)\s*\{\s*display:\s*none/)
   })
 })

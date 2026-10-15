@@ -18,4 +18,3 @@
 .cover-grid .mini-list{gap:2.5mm}
 .cover-trend .chip{display:block;flex:none;max-width:100%;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .cover-grid .rowline .mono{white-space:nowrap;flex:none}
-.cover-grid .mini-list>:nth-child(n+4){display:none}
