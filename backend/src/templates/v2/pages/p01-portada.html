@@ -28,7 +28,7 @@
   <div class="kpi"><div class="label">Competidores</div><div class="num num-md">{{competitorsCount}}</div><div class="sm muted">monitoreados</div></div>
   <div class="kpi"><div class="label">Nivel de riesgo</div><div class="num num-md">{{riskLevel}}</div><div class="sm muted">mercado actual</div></div>
 </div>
-<div class="cover-grid g3">
+<div class="cover-grid">
   <div class="card"><div class="label">Hallazgos</div><div class="mini-list lst">{{#each insights}}<div class="mini tone-{{this.tone}}"><span class="dot mt"></span><div><div class="label tone-text">{{this.category}}</div><p>{{this.text}}</p></div></div>{{/each}}</div></div>
   <div class="card"><div class="label">Acciones prioritarias</div><div class="mini-list lst">{{#each actions}}<div class="mini tone-{{this.tone}}"><span class="chip">{{this.priorityLabel}}</span><p>{{this.text}}</p></div>{{/each}}</div></div>
   <div class="card"><div class="label">Amenaza por competidor</div><div class="mini-list lst">{{#each topCompetitors}}<div class="tone-{{this.tone}}"><div class="rowline"><span>{{this.name}}</span><span class="mono tone-text">{{this.threat}}/10</span></div><div class="bar"><i style="width:{{this.threatPct}}%"></i></div></div>{{/each}}</div></div>

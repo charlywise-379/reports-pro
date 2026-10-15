@@ -1,23 +1,30 @@
 /* backend/src/templates/v2/styles/pages.css — reglas específicas de cada página */
 
-/* Página 1 · Portada */
-.cover-main{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);gap:12mm;align-items:center;flex:none;margin-bottom:4mm}
-.cover-title{font-size:48pt;font-weight:600;letter-spacing:-.04em;line-height:1.02;margin:3mm 0 2mm}
-.cover-sub{font-size:12pt;color:var(--on-dark-muted)}
-.tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:4mm}
-.tag{font-family:var(--mono);font-size:7.5pt;letter-spacing:.06em;text-transform:uppercase;padding:3px 9px;border:1px solid rgba(255,255,255,.18);border-radius:99px;color:var(--on-dark-muted)}
-.cover-trend{min-width:0;flex-wrap:wrap;row-gap:2mm;display:flex;align-items:center;gap:8px;margin-top:4mm;color:var(--on-dark-muted);font-size:8pt}
-.cover-scores{display:grid;grid-template-columns:repeat(3,1fr);gap:4mm}
-.score{display:flex;flex-direction:column;align-items:center;gap:2mm;text-align:center}
-.kpis{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));border-top:1px solid rgba(255,255,255,.1);border-bottom:1px solid rgba(255,255,255,.1);flex:none;margin-bottom:4mm}
-.kpi{padding:3.2mm 3mm 3.2mm 0;min-width:0}
+/* Página 1 · Portada — hero compacto, KPIs en franja y abajo dos columnas anchas con el texto completo */
+.cover-main{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,1fr);gap:10mm;align-items:center;flex:none}
+.cover-title{font-size:38pt;font-weight:600;letter-spacing:-.04em;line-height:1.02;margin:2mm 0 1.5mm}
+.cover-sub{font-size:10pt;line-height:1.35;color:var(--on-dark-muted)}
+.tags{display:flex;flex-wrap:wrap;gap:5px;margin-top:2.5mm}
+.tag{font-family:var(--mono);font-size:7pt;letter-spacing:.06em;text-transform:uppercase;padding:2px 8px;border:1px solid rgba(255,255,255,.18);border-radius:99px;color:var(--on-dark-muted)}
+.cover-trend{min-width:0;display:flex;flex-direction:column;align-items:flex-start;gap:1.2mm;margin-top:2.5mm;color:var(--on-dark-muted);font-size:7.5pt}
+.cover-trend .chip{font-family:var(--font);font-size:8.5pt;letter-spacing:0;text-transform:none;line-height:1.35;padding:1.2mm 2.6mm;border-radius:var(--r-sm)}
+.cover-scores{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:3mm}
+.cover-scores .ring svg{width:84px;height:84px}
+.cover-scores .num-lg{font-size:22pt}
+.score{display:flex;flex-direction:column;align-items:center;gap:1.5mm;text-align:center}
+.kpis{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));border-top:1px solid rgba(255,255,255,.1);border-bottom:1px solid rgba(255,255,255,.1);flex:none}
+.kpi{padding:2mm 3mm 2mm 0;min-width:0;display:flex;align-items:baseline;flex-wrap:wrap;column-gap:2.5mm;row-gap:.5mm}
+.kpi .label{flex-basis:100%}
 .kpi+.kpi{padding-left:4mm;border-left:1px solid rgba(255,255,255,.1)}
-.kpi .num{margin:1.5mm 0 1mm}
-.cover-grid{flex:1}
-.cover-grid .card{display:flex;flex-direction:column;gap:2mm}
-.cover-grid .mini-list{gap:2.5mm}
-.cover-trend .chip{flex:0 1 auto;min-width:0}
+.kpi .num-md{font-size:14pt}
+.cover-grid{flex:1;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.18fr) minmax(0,.56fr);gap:5mm;align-items:stretch}
+.cover-grid .card{display:flex;flex-direction:column;gap:2mm;padding:3.2mm 3.8mm}
+.cover-grid .mini-list{gap:2.4mm}
+.cover-grid p{line-height:1.36}
+.cover-grid .mini .chip{flex:none;margin-top:.3mm}
+.cover-grid .rowline{align-items:flex-start}
 .cover-grid .rowline .mono{white-space:nowrap;flex:none}
+.cover-grid .bar{margin-top:1mm}
 
 /* Página 2 · Termómetro */
 .therm{flex:none;align-items:stretch}
