@@ -41,12 +41,86 @@
     fit.dataset.z = String(z);
     if (overflows(fit)) fit.dataset.overflow = '1'; else delete fit.dataset.overflow;
   }
-  function run() {
+  function fitAll() {
     var fits = document.querySelectorAll('.page .fit');
     for (var i = 0; i < fits.length; i++) fitOne(fits[i]);
     document.body.dataset.fit = 'done';
   }
-  if (document.fonts && document.fonts.ready) document.fonts.ready.then(run); else run();
+
+  /* Pre-desenfoque del teaser (plan gratuito). El filtro CSS blur() hace que Chromium rasterice cada pagina a 300 ppi
+     sin perdida (~1.5 MB por pagina). Aqui las paginas 6+ (las mismas de la regla body.is-teaser .page:nth-of-type(n+6))
+     se desenfocan en un canvas pequeno, se guardan como JPEG y reemplazan al contenido vivo por un <img>. La capa
+     .teaser-overlay es hermana de .page-content y queda nitida. Protocolo: body[data-blur] = skipped (sin teaser) |
+     pending | done | failed. Si falla, se deja la regla CSS de desenfoque como respaldo (no se retira).
+     Limite conocido: los iconos <use href="#i-..."> no se dibujan dentro del foreignObject; es aceptable porque la pagina
+     queda desenfocada. */
+  var BLUR_FIRST_INDEX = 5, SCALE = 0.5, JPEG_QUALITY = 0.6, BLUR_PX = 4, LOAD_TIMEOUT_MS = 8000;
+  var DARK_BG = '#0B0D14', LIGHT_BG = '#F6F7FA';
+  var blurStarted = false;
+
+  function loadImage(src) {
+    return new Promise(function (resolve, reject) {
+      var img = new Image();
+      var timer = setTimeout(function () { reject(new Error('timeout al cargar el SVG')); }, LOAD_TIMEOUT_MS);
+      img.onload = function () { clearTimeout(timer); resolve(img); };
+      img.onerror = function () { clearTimeout(timer); reject(new Error('fallo al cargar el SVG')); };
+      img.src = src;
+    });
+  }
+  function pageCss() {
+    var css = Array.prototype.map.call(document.querySelectorAll('style'), function (s) { return s.textContent; }).join('\n');
+    return css.replace(/body\.is-teaser[^{]*\{[^}]*\}/g, '').replace(/\]\]>/g, ']]]]><![CDATA[>');
+  }
+  function blurPage(page, css, skin) {
+    var content = page.querySelector('.page-content');
+    if (!content) return Promise.reject(new Error('pagina sin .page-content'));
+    var w = page.clientWidth, h = page.clientHeight;
+    var dark = page.classList.contains('page--dark');
+    var inner = new XMLSerializer().serializeToString(content);
+    var size = 'width:' + w + 'px;height:' + h + 'px';
+    var xhtml = '<div xmlns="http://www.w3.org/1999/xhtml" class="' + skin + '" style="' + size + '"><style><![CDATA[' + css + ']]></style>' +
+      '<div class="page' + (dark ? ' page--dark' : '') + '" style="' + size + ';position:relative;overflow:hidden">' + inner + '</div></div>';
+    var svg = '<svg xmlns="http://www.w3.org/2000/svg" width="' + w + '" height="' + h + '"><foreignObject width="100%" height="100%">' + xhtml + '</foreignObject></svg>';
+    return loadImage('data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg)).then(function (img) {
+      var canvas = document.createElement('canvas');
+      canvas.width = Math.round(w * SCALE); canvas.height = Math.round(h * SCALE);
+      var ctx = canvas.getContext('2d');
+      ctx.fillStyle = dark ? DARK_BG : LIGHT_BG;
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.filter = 'blur(' + BLUR_PX + 'px)';
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+      var out = document.createElement('img');
+      out.src = canvas.toDataURL('image/jpeg', JPEG_QUALITY);
+      out.alt = '';
+      out.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;display:block';
+      content.style.filter = 'none';
+      content.replaceChildren(out);
+      page.setAttribute('data-prebl', '1');
+    });
+  }
+  function preBlur() {
+    if (!document.body.classList.contains('is-teaser')) { document.body.dataset.blur = 'skipped'; return; }
+    document.body.dataset.blur = 'pending';
+    var css = pageCss();
+    var skin = (document.body.className.match(/skin-\S+/) || [''])[0];
+    var pages = Array.prototype.slice.call(document.querySelectorAll('.page'), BLUR_FIRST_INDEX)
+      .filter(function (p) { return !p.hasAttribute('data-prebl'); });
+    var chain = Promise.resolve();
+    pages.forEach(function (p) { chain = chain.then(function () { return blurPage(p, css, skin); }); });
+    chain.then(function () { document.body.dataset.blur = 'done'; },
+      function () { document.body.dataset.blur = 'failed'; });
+  }
+  var fontsReady = !(document.fonts && document.fonts.ready);
+  function run() { fitAll(); maybeBlur(); }
+  function maybeBlur() {
+    if (!document.body.classList.contains('is-teaser')) { document.body.dataset.blur = 'skipped'; return; }
+    if (blurStarted || document.body.dataset.fit !== 'done' || !fontsReady || document.readyState !== 'complete') return;
+    blurStarted = true;
+    try { preBlur(); } catch (e) { document.body.dataset.blur = 'failed'; }
+  }
+  /* El pre-desenfoque corre despues del ajuste, con fuentes y pagina cargadas (una sola vez). */
+  function onFonts() { fontsReady = true; run(); }
+  if (!fontsReady) document.fonts.ready.then(onFonts); else run();
   window.addEventListener('load', run);
 })();
 </script>
