@@ -32,6 +32,8 @@ export const PAGES: PageDef[] = [
   { file: 'p07-comercial.html', eyebrow: 'Mercado', title: 'Inteligencia comercial', sub: 'Dónde están ganando tus competidores · Reporte #{{edition}}' },
   { file: 'p08-oportunidades.html', eyebrow: 'Oportunidades', title: 'Dónde ganar ahora', sub: '{{opportunitiesCount}} oportunidades identificadas · puntaje de mercado {{opportunityScore}}/100' },
   { file: 'p09-riesgos.html', eyebrow: 'Riesgos', title: 'Qué puede golpear los ingresos', sub: '{{highRisksCount}} riesgos altos · {{mediumRisksCount}} medios · el porcentaje indica la probabilidad' },
+  { file: 'p10-benchmark.html', eyebrow: 'Benchmark', title: 'Benchmark estratégico', sub: 'Tu empresa frente al mercado · semana {{weekNumber}}' },
+  { file: 'p11-recomendaciones.html', eyebrow: 'Plan de acción', title: 'Recomendaciones ejecutables', sub: 'Acciones con responsable, plazo e impacto esperado' },
 ]
 
 const V2_DIR = path.join(__dirname, '../templates/v2')

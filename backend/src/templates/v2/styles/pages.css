@@ -120,3 +120,30 @@
 .risk-head{display:flex;align-items:center;gap:3mm;margin-bottom:1.5mm}
 .risk-head>div:last-child{min-width:0}
 .risks-grid .stack .card p{margin-bottom:1.5mm}
+
+/* Página 10 · Benchmark */
+.bench{table-layout:fixed}
+.bench td{padding-top:1.9mm;padding-bottom:1.9mm;overflow-wrap:anywhere}
+.bench th:first-child,.bench td:first-child{width:36mm}
+.cell{display:inline-block;max-width:100%;padding:1px 7px;border-radius:6px;font-weight:600;font-size:8.5pt;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;vertical-align:middle}
+.cell.is-client{background:var(--accent-soft);color:var(--accent)}
+.cell.is-na{background:var(--neutral-soft);color:var(--muted)}
+.sw{flex:none}
+.ticks.ok .ic{color:var(--ok)}
+.ticks.up .ic{color:var(--warn)}
+
+/* Página 11 · Recomendaciones */
+.recs{flex:1;min-height:0;overflow:hidden;align-content:start;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr)}
+.rec-head{display:flex;gap:3mm;align-items:flex-start;margin-bottom:1mm}
+.rec-impact{display:flex;gap:2mm;align-items:flex-start;margin-top:1.2mm;color:var(--ok);font-weight:600}
+.rec-chips{display:flex;flex-wrap:wrap;gap:1.5mm;margin-top:1.2mm}
+.recs .card p{margin-bottom:0}
+.recs .stack{gap:1.6mm}
+.recs .card{padding:1.8mm 3.2mm}
+.recs .mini-list{gap:1mm;margin-top:.4mm}
+.recs .label{margin-bottom:.4mm}
+.recs p,.recs b{line-height:1.2}
+.mini-top{display:flex;align-items:baseline;gap:2.5mm}
+.mini-top b{flex:1;min-width:0}
+.mini-top span{flex:none}
+.recs + .closing{padding:3mm 6mm}

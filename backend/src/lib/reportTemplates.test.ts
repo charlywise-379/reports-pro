@@ -112,3 +112,19 @@ describe('logos', () => {
     expect(render('normal', 'panel')).not.toContain('logoBase64')
   })
 })
+
+describe('estructura final', () => {
+  it('el reporte tiene exactamente 11 páginas en el orden esperado', () => {
+    expect(PAGES).toHaveLength(11)
+    expect(PAGES.map(p => p.file)).toEqual([
+      'p01-portada.html', 'p02-termometro.html', 'p03-competidores.html', 'p04-alertas.html',
+      'p05-cambios.html', 'p06-radar.html', 'p07-comercial.html', 'p08-oportunidades.html',
+      'p09-riesgos.html', 'p10-benchmark.html', 'p11-recomendaciones.html',
+    ])
+  })
+  it('la paginación usa el total del view-model', () => {
+    const html = render('normal', 'editorial')
+    expect(html).toContain('data-total="11"')
+    expect(count(html, /class="pg"/g)).toBe(11)
+  })
+})

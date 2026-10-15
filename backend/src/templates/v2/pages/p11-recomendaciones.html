@@ -1,0 +1,8 @@
+<div class="g2 recs">
+  <div class="stack lst">{{#each highPriorityRecs}}<div class="card card--accent tone-bad"><div class="rec-head"><span class="num num-md tone-text">{{this.number}}</span><div class="grow"><b class="clamp-2">{{this.title}}</b><div class="mono sm muted clamp-1">{{this.owner}} · {{this.deadline}}</div></div></div><p class="clamp-2">{{this.description}}</p><div class="rec-impact"><svg class="ic"><use href="#i-trend-up"/></svg><span class="clamp-1">{{this.impact}}</span></div><div class="rec-chips"><span class="chip tone-{{this.difficultyTone}}">{{this.difficultyLabel}}</span><span class="chip tone-{{this.timeTone}}">{{this.timeLabel}}</span><span class="chip tone-{{this.costTone}}">{{this.costLabel}}</span></div></div>{{/each}}</div>
+  <div class="stack">
+    <div class="card"><div class="label">Prioridad media</div><div class="mini-list lst">{{#each mediumPriorityRecs}}<div class="mini tone-warn"><span class="num num-md tone-text">{{this.number}}</span><div><b class="clamp-1">{{this.title}}</b><div class="mono sm muted clamp-1">{{this.owner}} · {{this.deadline}}</div><p class="muted clamp-2">{{this.description}}</p></div></div>{{/each}}</div></div>
+    <div class="card"><div class="label">Prioridad baja</div><div class="mini-list lst">{{#each lowPriorityRecs}}<div class="mini tone-info"><span class="num num-md tone-text">{{this.number}}</span><div><div class="mini-top"><b class="clamp-1">{{this.title}}</b><span class="mono sm muted">{{this.deadline}}</span></div><p class="muted clamp-1">{{this.description}}</p></div></div>{{/each}}</div></div>
+  </div>
+</div>
+<div class="closing"><span><b>Omni Reports</b> · AI Automation</span><span class="mono sm">{{companyName}} · Reporte #{{edition}} · {{year}}</span></div>
