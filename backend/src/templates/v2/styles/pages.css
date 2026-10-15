@@ -13,7 +13,7 @@
 .kpi{padding:3.2mm 3mm 3.2mm 0;min-width:0}
 .kpi+.kpi{padding-left:4mm;border-left:1px solid rgba(255,255,255,.1)}
 .kpi .num{margin:1.5mm 0 1mm}
-.cover-grid{flex:1;min-height:0}
+.cover-grid{flex:1}
 .cover-grid .card{display:flex;flex-direction:column;gap:2mm}
 .cover-grid .mini-list{gap:2.5mm}
 .cover-trend .chip{flex:0 1 auto;min-width:0}
@@ -57,7 +57,7 @@
 .secondary .card{padding:2mm 2.6mm}
 
 /* Página 4 · Alertas */
-.alerts{flex:1;min-height:0;align-content:start;gap:5mm}
+.alerts{flex:1;align-content:start;gap:5mm}
 .alerts .stack{gap:1.8mm}
 .alerts .card{padding:1.7mm 3mm}
 .a-head{display:flex;gap:3mm;align-items:flex-start;margin-bottom:.6mm}
@@ -68,7 +68,7 @@
 
 /* Página 5 · Cambios */
 .strip{display:flex;flex-wrap:wrap;gap:8mm;padding:1.4mm 0;border-top:1px solid var(--hair);border-bottom:1px solid var(--hair);flex:none}
-.changes{flex:1;min-height:0;align-content:start}
+.changes{flex:1;align-content:start}
 .tl{display:flex;flex-direction:column;gap:.8mm;min-width:0}
 .tl-item{display:flex;gap:3mm;align-items:flex-start;padding-bottom:.8mm;border-bottom:1px solid var(--hair)}
 .tl-item .dot{margin-top:1.4mm}
@@ -79,7 +79,7 @@
 /* Página 6 · Radar */
 .meters{flex:none}
 .meter{display:flex;flex-direction:column;gap:2mm}
-.phases{flex:1;min-height:0;align-content:start}
+.phases{flex:1;align-content:start}
 .phases .card{display:flex;flex-direction:column}
 .phases .ticks{gap:6mm;font-size:10.5pt}
 .phase-t{display:block;font-size:14pt;margin:1.5mm 0 5mm}
@@ -88,7 +88,7 @@
 .closing b{font-size:12pt}
 
 /* Página 7 · Inteligencia comercial */
-.commercial{flex:1;min-height:0;align-content:start;gap:3.5mm}
+.commercial{flex:1;align-content:start;gap:3.5mm}
 .c-top{flex-grow:1.12}
 .commercial .card{padding:3mm 3.4mm}
 .commercial .mini-list{gap:1.6mm;margin-top:1.2mm}
@@ -107,7 +107,7 @@
 .dot--accent{background:var(--accent)}
 
 /* Página 9 · Riesgos */
-.risks-grid{flex:1;min-height:0;align-content:start;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:4mm}
+.risks-grid{flex:1;align-content:start;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:4mm}
 .risks-grid .stack{gap:2.2mm}
 .risks-grid .card{padding:2.4mm 3.4mm}
 .risks-grid .act{padding:2mm 2.6mm}

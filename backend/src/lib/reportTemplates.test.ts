@@ -86,6 +86,29 @@ describe('sin recortes con puntos suspensivos', () => {
   })
 })
 
+describe('ajuste automático al tamaño de la página', () => {
+  const tpl = buildV2Template()
+  it('incluye el script de ajuste que espera a las fuentes', () => {
+    expect(tpl).toContain('fonts.ready')
+    expect(tpl).toContain("dataset.fit = 'done'")
+  })
+  it('cada página envuelve su contenido en .fit', () => {
+    expect(count(render('normal', 'panel'), /class="fit"/g)).toBe(PAGES.length)
+  })
+  it('los bloques que crecen dentro de .fit no se encogen por debajo de su contenido (min-height:0 esconde el desborde al ajuste)', () => {
+    const css = tpl.replace(/\/\*[\s\S]*?\*\//g, '')
+    const rules = [...css.matchAll(/([^{}]+)\{([^{}]*)\}/g)]
+    const bad = rules.filter(m => /flex:1(?![.\d])/.test(m[2]) && /min-height:0/.test(m[2])).map(m => m[1].trim())
+    expect(bad.sort()).toEqual(['.body', '.page-content'])
+  })
+  it('.body aísla su tamaño (contain:size) para que el .fit ampliado no achique el PDF al imprimir', () => {
+    expect(tpl).toMatch(/\.body\{[^}]*contain:size/)
+  })
+  it('el CSS escala .fit con la variable --z', () => {
+    expect(tpl).toMatch(/\.fit\{[^}]*transform:scale\(var\(--z/)
+  })
+})
+
 describe('teaser', () => {
   it('marca el body, mantiene la regla de desenfoque desde la página 6 y la capa en cada página', () => {
     const html = render('normal', 'panel', true)

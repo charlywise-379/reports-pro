@@ -31,7 +31,10 @@ body{font-family:var(--font);color:var(--text);background:var(--paper);font-size
 .page--dark .eyebrow{color:var(--accent-on-dark)}
 .sec h2{font-size:20pt;font-weight:600;letter-spacing:-.02em;line-height:1.15;margin-top:2px;text-wrap:balance}
 .sec p{color:var(--muted);font-size:9pt;margin-top:3px}
-.body{flex:1;min-height:0;overflow:hidden;display:flex;flex-direction:column;gap:5mm;overflow-wrap:anywhere}
+/* .body es el marco fijo; .fit lleva el contenido y se reduce con --z (lo calcula el script de shell.html) si no cabe.
+   contain:size evita que el .fit ampliado (100% / z) haga que Chrome achique todo el PDF al imprimir. */
+.body{position:relative;flex:1;min-height:0;overflow:hidden;contain:size}
+.fit{position:absolute;left:0;top:0;width:calc(100% / var(--z,1));height:calc(100% / var(--z,1));transform:scale(var(--z,1));transform-origin:0 0;display:flex;flex-direction:column;gap:5mm;overflow:hidden;overflow-wrap:anywhere}
 .footer{flex:none;display:flex;justify-content:space-between;align-items:center;margin-top:4mm;padding-top:3.5mm;border-top:1px solid var(--hair);font-family:var(--mono);font-size:7.5pt;color:var(--muted);letter-spacing:.04em}
 .page--dark .footer{border-color:rgba(255,255,255,.1);color:var(--on-dark-muted)}
 .footer .pg::after{content:counter(pg) ' / ' attr(data-total)}

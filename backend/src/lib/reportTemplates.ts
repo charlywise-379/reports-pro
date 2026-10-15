@@ -49,7 +49,7 @@ function wrapPage(def: PageDef, inner: string): string {
     `<div class="hdr"><div class="brand"><img src="${logo}" alt="Omni Reports"><small>Inteligencia competitiva</small></div>` +
     `<div class="hdr-meta">{{companyName}} · Reporte #{{edition}} · {{year}}</div></div>` +
     sec +
-    `<div class="body">${inner}</div>` +
+    `<div class="body"><div class="fit">${inner}</div></div>` +
     `<div class="footer"><span>Omni Reports · Confidencial · No distribuir</span><span class="pg" data-total="{{totalPages}}"></span></div>` +
     `</div><div class="teaser-overlay"><div class="teaser-card"><b>Activa tu suscripción</b><span>para el reporte completo</span></div></div></div>`
   )

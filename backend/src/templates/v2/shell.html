@@ -24,5 +24,31 @@
   <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></symbol>
 </svg>
 <!--__PAGES__-->
+<script>
+/* Ajuste automático: si el contenido de una página no cabe, se reduce de forma proporcional
+   (pasos de 0.02, piso 0.78) en lugar de recortarse. Deja data-z en cada .fit, data-overflow="1"
+   si aun en el piso no cabe, y body[data-fit="done"] al terminar. */
+(function () {
+  var FLOOR = 0.78, STEP = 0.02;
+  function overflows(fit) { return fit.scrollHeight > fit.clientHeight + 1; }
+  function fitOne(fit) {
+    var z = 1;
+    fit.style.setProperty('--z', '1');
+    while (overflows(fit) && z > FLOOR) {
+      z = Math.max(FLOOR, Math.round((z - STEP) * 100) / 100);
+      fit.style.setProperty('--z', String(z));
+    }
+    fit.dataset.z = String(z);
+    if (overflows(fit)) fit.dataset.overflow = '1'; else delete fit.dataset.overflow;
+  }
+  function run() {
+    var fits = document.querySelectorAll('.page .fit');
+    for (var i = 0; i < fits.length; i++) fitOne(fits[i]);
+    document.body.dataset.fit = 'done';
+  }
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(run); else run();
+  window.addEventListener('load', run);
+})();
+</script>
 </body>
 </html>
