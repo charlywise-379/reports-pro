@@ -19,6 +19,7 @@ const teaser = process.argv.includes('--teaser')
 const CANDIDATES = [
   process.env.CHROME_PATH,
   'C:/Program Files/Google/Chrome/Application/chrome.exe',
+  'C:/Program Files/Microsoft/Edge/Application/msedge.exe',
   'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe',
   '/usr/bin/google-chrome', '/usr/bin/chromium', '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
 ].filter(Boolean) as string[]
@@ -47,11 +48,24 @@ async function main() {
           await pages[i].screenshot({ path: path.join(outDir, `p${String(i + 1).padStart(2, '0')}.png`) })
         }
 
-        const overflow: string[] = await page.evaluate(() =>
-          Array.from(document.querySelectorAll('.page')).flatMap((p, i) => {
-            const b = p.querySelector('.body') as HTMLElement | null
-            return b && b.scrollHeight > b.clientHeight + 1 ? [`p${i + 1} (+${b.scrollHeight - b.clientHeight}px)`] : []
-          }))
+        // Detecta recortes: cualquier elemento con overflow-y hidden/clip que no sea un line-clamp deliberado
+        // y cuyo contenido exceda su alto visible. Incluye .body (scrollHeight > clientHeight).
+        const overflow: string[] = await page.evaluate(() => {
+          const out: string[] = []
+          document.querySelectorAll('.page').forEach((p, i) => {
+            p.querySelectorAll('*').forEach(el => {
+              const h = el as HTMLElement
+              if (h.closest('svg') || h.closest('.teaser-overlay')) return
+              const cs = getComputedStyle(h)
+              if (cs.overflowY !== 'hidden' && cs.overflowY !== 'clip') return
+              const clamp = (cs as any).webkitLineClamp
+              if (clamp && clamp !== 'none') return
+              const excess = h.scrollHeight - h.clientHeight
+              if (excess > 1) out.push(`p${i + 1} ${h.tagName.toLowerCase()}${h.classList[0] ? '.' + h.classList[0] : ''} (+${excess}px)`)
+            })
+          })
+          return out
+        })
 
         const pdf = await page.pdf({ format: 'A4', landscape: true, printBackground: true, preferCSSPageSize: true })
         const pdfPages = (Buffer.from(pdf).toString('latin1').match(/\/Type\s*\/Page[^s]/g) || []).length

@@ -42,11 +42,11 @@ describe('renderReportHtmlV2', () => {
   }
 
   it('escapa HTML que venga de la IA', () => {
-    const ai = { ...FIXTURES.normal, mainAlertTitle: '<script>alert(1)</script> & "x"' }
+    const ai = { ...FIXTURES.normal, generalTrend: '<script>alert(1)</script> & "x"' }
     const data = buildReportData(FIXTURE_PROJECT, ai, FIXTURE_DATE_INFO, 3, false)
     const html = renderReportHtmlV2('panel', data, ai, LOGO_STUB)
     expect(html).not.toContain('<script>alert(1)</script>')
-    expect(html).not.toContain('{{mainAlertTitle}}')
+    expect(html).toContain('&lt;script&gt;alert(1)&lt;/script&gt;')
   })
 
   it('portada en la primera página y nombre de la empresa', () => {
