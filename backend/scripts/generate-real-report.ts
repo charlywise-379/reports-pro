@@ -7,7 +7,7 @@ import 'dotenv/config'
 import fs from 'fs'
 import path from 'path'
 import puppeteer from 'puppeteer-core'
-import { buildReportData, callClaudeWithSearch } from '../src/lib/reportEngine'
+import { buildReportData, buildPdfRequestBody, callClaudeWithSearch } from '../src/lib/reportEngine'
 import { renderReportHtmlV2 } from '../src/lib/reportTemplates'
 import { loadReportLogos } from '../src/lib/reportLogos'
 
@@ -72,10 +72,7 @@ async function renderPdf(html: string): Promise<Buffer> {
   const response = await fetch(`https://production-sfo.browserless.io/pdf?token=${token}`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      html,
-      options: { format: 'A4', landscape: true, printBackground: true, margin: { top: '0', right: '0', bottom: '0', left: '0' } },
-    }),
+    body: JSON.stringify(buildPdfRequestBody(html)),
   })
   if (!response.ok) {
     const body = mask(await response.text())
@@ -100,6 +97,7 @@ async function screenshots(browser: any, html: string, dir: string): Promise<{ c
   await page.setContent(html, { waitUntil: 'load' })
   await page.evaluateHandle('document.fonts.ready')
   await page.waitForFunction(() => document.body.dataset.fit === 'done', { timeout: 15000 })
+  await page.waitForFunction(() => document.body.dataset.blur && document.body.dataset.blur !== 'pending', { timeout: 20000 })
   const pages = await page.$$('.page')
   for (let i = 0; i < pages.length; i++) {
     await pages[i].screenshot({ path: path.join(dir, `p${String(i + 1).padStart(2, '0')}.png`) })

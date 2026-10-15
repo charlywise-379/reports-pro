@@ -1,10 +1,12 @@
 import { describe, it, expect, vi } from 'vitest'
+import fs from 'fs'
+import path from 'path'
 
 vi.mock('./prisma', () => ({ prisma: {} }))
 vi.mock('./config', () => ({ getSecret: () => undefined }))
 vi.mock('./anthropic', () => ({ getAnthropic: () => ({}) }))
 
-import { buildReportData } from './reportEngine'
+import { buildReportData, buildPdfRequestBody } from './reportEngine'
 import { FIXTURE_PROJECT, FIXTURE_DATE_INFO, FIXTURES, FixtureName, fixtureProject, LOGOS_STUB } from './reportFixtures'
 import { PAGES, resolveReportTemplate, renderReportHtmlV2, buildV2Template } from './reportTemplates'
 
@@ -237,3 +239,43 @@ describe('fix 1: posición visible y competidores completos', () => {
   })
 })
 
+
+describe('pre-desenfoque del teaser (PDF liviano)', () => {
+  const tpl = buildV2Template()
+  it('incluye los marcadores del script', () => {
+    for (const m of ['foreignObject', 'XMLSerializer', 'image/jpeg', 'dataset.blur']) expect(tpl).toContain(m)
+  })
+  it('solo actúa con is-teaser y marca skipped en caso contrario', () => {
+    expect(tpl).toContain("classList.contains('is-teaser')")
+    expect(tpl).toContain("dataset.blur = 'skipped'")
+    expect(tpl).toContain("dataset.blur = 'pending'")
+    expect(tpl).toContain("dataset.blur = 'done'")
+    expect(tpl).toContain("dataset.blur = 'failed'")
+  })
+  it('conserva la regla CSS de desenfoque como respaldo', () => {
+    expect(tpl).toContain('.page:nth-of-type(n+6) .page-content{filter:blur(6px)}')
+  })
+  it('no procesa dos veces una página', () => {
+    expect(tpl).toContain('data-prebl')
+  })
+})
+
+describe('buildPdfRequestBody', () => {
+  it('conserva html y opciones y espera al script de la página', () => {
+    const body = buildPdfRequestBody('<p>x</p>')
+    expect(body.html).toBe('<p>x</p>')
+    expect(body.options).toEqual({ format: 'A4', landscape: true, printBackground: true, margin: { top: '0', right: '0', bottom: '0', left: '0' } })
+    expect(body.waitForFunction.timeout).toBe(20000)
+    expect(body.waitForFunction.fn).toContain('dataset.blur')
+    expect(body.waitForFunction.fn).toContain("'pending'")
+    expect(body.waitForFunction.fn).toContain('is-teaser')
+    expect(body.waitForFunction.fn).toContain('.fit')
+  })
+})
+
+describe('v1 no se bloquea con la espera de Browserless', () => {
+  it('v1 no tiene .fit, así que la función de espera termina sin data-blur', () => {
+    const v1 = fs.readFileSync(path.join(__dirname, '../templates/competitive-report.html'), 'utf-8')
+    expect(v1).not.toMatch(/class="fit"/)
+  })
+})

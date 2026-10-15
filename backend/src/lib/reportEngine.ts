@@ -1297,6 +1297,26 @@ function getFrequencyLabel(frequency: string): string {
 }
 
 // ─── Función principal: generar PDF ──────────────────
+/**
+ * Cuerpo de la llamada /pdf de Browserless. waitForFunction espera a que el script de las plantillas v2 termine
+ * el pre-desenfoque del teaser (data-blur definido y distinto de 'pending'); solo espera en teaser v2 (is-teaser y paginas con .fit; v1 tambien usa is-teaser pero no tiene .fit), asi v1 y los reportes completos no esperan nada.
+ */
+export function buildPdfRequestBody(html: string) {
+  return {
+    html,
+    options: {
+      format: 'A4',
+      landscape: true,
+      printBackground: true,
+      margin: { top: '0', right: '0', bottom: '0', left: '0' },
+    },
+    waitForFunction: {
+      fn: "() => !document.body.classList.contains('is-teaser') || !document.querySelector('.fit') || (!!document.body.dataset.blur && document.body.dataset.blur !== 'pending')",
+      timeout: 20000,
+    },
+  }
+}
+
 export async function generateReport(project: any, outputPath: string, options?: { teaser?: boolean }): Promise<string> {
   console.log(`📄 Generando reporte REAL para: ${project.companyName || project.name || 'Sin nombre'}`)
 
@@ -1366,15 +1386,7 @@ export async function generateReport(project: any, outputPath: string, options?:
     {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        html,
-        options: {
-          format: 'A4',
-          landscape: true,
-          printBackground: true,
-          margin: { top: '0', right: '0', bottom: '0', left: '0' },
-        },
-      }),
+      body: JSON.stringify(buildPdfRequestBody(html)),
     }
   )
 
