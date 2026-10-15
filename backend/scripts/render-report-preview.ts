@@ -51,7 +51,7 @@ async function main() {
           await pages[i].screenshot({ path: path.join(outDir, `p${String(i + 1).padStart(2, '0')}.png`) })
         }
 
-        // Detecta recortes: cualquier elemento con overflow-y hidden/clip cuyo contenido exceda su alto visible.
+        // Detecta recortes: cualquier elemento con overflow-y (o overflow-x) hidden/clip cuyo contenido exceda su alto (o ancho) visible.
         // Incluye .fit (si aun en el piso del ajuste no cabe, data-overflow="1"); ignora .body, el marco fijo
         // que contiene a .fit escalado. También junta el factor z de las páginas reducidas.
         const { overflow, zs } = await page.evaluate(() => {
@@ -60,15 +60,21 @@ async function main() {
           document.querySelectorAll('.page').forEach((p, i) => {
             const fit = p.querySelector('.fit') as HTMLElement | null
             if (fit && Number(fit.dataset.z || '1') < 1) z.push(`p${i + 1} z=${fit.dataset.z}`)
-            if (fit && fit.dataset.overflow === '1') out.push(`p${i + 1} .fit en el piso z=${fit.dataset.z} (+${fit.scrollHeight - fit.clientHeight}px)`)
+            if (fit && fit.dataset.overflow === '1') out.push(`p${i + 1} .fit en el piso z=${fit.dataset.z} (+${fit.scrollHeight - fit.clientHeight}px, +${fit.scrollWidth - fit.clientWidth}px horizontal)`)
             p.querySelectorAll('*').forEach(el => {
               const h = el as HTMLElement
               if (h.closest('svg') || h.closest('.teaser-overlay') || h.classList.contains('body')) return
               if (h === fit && fit.dataset.overflow === '1') return
               const cs = getComputedStyle(h)
-              if (cs.overflowY !== 'hidden' && cs.overflowY !== 'clip') return
-              const excess = h.scrollHeight - h.clientHeight
-              if (excess > 1) out.push(`p${i + 1} ${h.tagName.toLowerCase()}${h.classList[0] ? '.' + h.classList[0] : ''} (+${excess}px)`)
+              const sel = `${h.tagName.toLowerCase()}${h.classList[0] ? '.' + h.classList[0] : ''}`
+              if (cs.overflowY === 'hidden' || cs.overflowY === 'clip') {
+                const excess = h.scrollHeight - h.clientHeight
+                if (excess > 1) out.push(`p${i + 1} ${sel} (+${excess}px)`)
+              }
+              if (cs.overflowX === 'hidden' || cs.overflowX === 'clip') {
+                const excessX = h.scrollWidth - h.clientWidth
+                if (excessX > 1) out.push(`p${i + 1} ${sel} (+${excessX}px horizontal)`)
+              }
             })
           })
           return { overflow: out, zs: z }

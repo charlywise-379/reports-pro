@@ -105,20 +105,26 @@ async function screenshots(browser: any, html: string, dir: string): Promise<{ c
     await pages[i].screenshot({ path: path.join(dir, `p${String(i + 1).padStart(2, '0')}.png`) })
   }
   // .fit que aun en el piso no cabe (data-overflow="1") es un recorte real; .body (el marco fijo) se ignora.
+  // Revisa el desborde vertical y el horizontal (overflow-x hidden/clip con scrollWidth > clientWidth).
   const result = await page.evaluate(() => {
     const out: string[] = []
     const zs: string[] = []
     document.querySelectorAll('.page').forEach((p, i) => {
       const fit = p.querySelector('.fit') as HTMLElement | null
       if (fit && Number(fit.dataset.z || '1') < 1) zs.push(`p${i + 1} z=${fit.dataset.z}`)
-      if (fit && fit.dataset.overflow === '1') out.push(`p${i + 1} .fit en el piso z=${fit.dataset.z} (+${fit.scrollHeight - fit.clientHeight}px)`)
+      if (fit && fit.dataset.overflow === '1') out.push(`p${i + 1} .fit en el piso z=${fit.dataset.z} (+${fit.scrollHeight - fit.clientHeight}px, +${fit.scrollWidth - fit.clientWidth}px horizontal)`)
       p.querySelectorAll('*').forEach(el => {
         const h = el as HTMLElement
         if (h.closest('svg') || h.closest('.teaser-overlay') || h.classList.contains('body')) return
         if (h === fit && fit.dataset.overflow === '1') return
         const cs = getComputedStyle(h)
-        if (cs.overflowY !== 'hidden' && cs.overflowY !== 'clip') return
-        if (h.scrollHeight - h.clientHeight > 1) out.push(`p${i + 1} ${h.tagName.toLowerCase()}.${(h.className || '').toString().split(' ')[0]} (+${h.scrollHeight - h.clientHeight}px)`)
+        const sel = `${h.tagName.toLowerCase()}.${(h.className || '').toString().split(' ')[0]}`
+        if ((cs.overflowY === 'hidden' || cs.overflowY === 'clip') && h.scrollHeight - h.clientHeight > 1) {
+          out.push(`p${i + 1} ${sel} (+${h.scrollHeight - h.clientHeight}px)`)
+        }
+        if ((cs.overflowX === 'hidden' || cs.overflowX === 'clip') && h.scrollWidth - h.clientWidth > 1) {
+          out.push(`p${i + 1} ${sel} (+${h.scrollWidth - h.clientWidth}px horizontal)`)
+        }
       })
     })
     return { clipped: out, zs }

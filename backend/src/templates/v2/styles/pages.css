@@ -140,7 +140,7 @@
 .bench th.bcl{width:42mm}
 .bench th.bp{width:34mm}
 .bench td.bf b{font-size:8.5pt;line-height:1.25}
-.bench .pos-rank{font-size:8pt;white-space:nowrap}
+.bench .pos-rank{font-size:8pt;line-height:1.25}
 .bench .pos-note{font-size:7.5pt;line-height:1.25;margin-top:.3mm}
 .bench .pos-note:empty{margin:0}
 .bench.cols-1 .bc2,.bench.cols-1 .bc3,.bench.cols-1 .bc4,.bench.cols-1 .bc5,

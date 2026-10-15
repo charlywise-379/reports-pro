@@ -26,11 +26,11 @@
 <!--__PAGES__-->
 <script>
 /* Ajuste automático: si el contenido de una página no cabe, se reduce de forma proporcional
-   (pasos de 0.02, piso 0.78) en lugar de recortarse. Deja data-z en cada .fit, data-overflow="1"
+   (pasos de 0.02, piso 0.78) en lugar de recortarse; cuenta el desborde vertical y el horizontal. Deja data-z en cada .fit, data-overflow="1"
    si aun en el piso no cabe, y body[data-fit="done"] al terminar. */
 (function () {
   var FLOOR = 0.78, STEP = 0.02;
-  function overflows(fit) { return fit.scrollHeight > fit.clientHeight + 1; }
+  function overflows(fit) { return fit.scrollHeight > fit.clientHeight + 1 || fit.scrollWidth > fit.clientWidth + 1; }
   function fitOne(fit) {
     var z = 1;
     fit.style.setProperty('--z', '1');
