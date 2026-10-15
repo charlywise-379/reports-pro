@@ -1,0 +1,710 @@
+{
+  "competitivePressure": 72,
+  "opportunityScore": 68,
+  "marketRisk": 58,
+  "riskLevel": "MEDIO",
+  "generalTrend": "El mercado de stickers personalizados en México muestra consolidación de jugadores internacionales con entregas rápidas y descuentos agresivos en octubre 2026, mientras crece demanda de acabados premium (holográficos, metálicos) para temporada de eventos de fin de año",
+  "trendDelta": "+5",
+  "signalsCount": "47",
+  "signalsDelta": 12,
+  "movementsCount": 8,
+  "criticalMovements": 2,
+  "minorMovements": 6,
+  "alertsCount": 11,
+  "totalChanges": 23,
+  "clientScore": {
+    "overall": 64,
+    "price": 68,
+    "digital": 58,
+    "differentiation": 72,
+    "speed": 59,
+    "vsCompetitors": "En el promedio",
+    "strongAreas": [
+      "Variedad de acabados premium (8 tipos incluyendo galáctico y reflejante) supera a la mayoría de competidores locales",
+      "Especialización dual en eventos + etiquetas escolares define nicho claro vs generalistas"
+    ],
+    "weakAreas": [
+      "Presencia digital limitada comparada con Sticker Mule y Stickeria que dominan búsquedas orgánicas",
+      "Sin evidencia pública de casos de éxito o portafolio visible que genere confianza vs competidores"
+    ],
+    "weeklyChange": "Primera medición",
+    "summary": "Stick-A-Boom compite con diferenciadores sólidos en producto pero enfrenta desventaja en visibilidad digital frente a jugadores establecidos con mayor presencia SEO y social"
+  },
+  "insights": [
+    {
+      "category": "PRECIO · CRÍTICO",
+      "text": "Sticker Mule mantiene envío gratis sin mínimo en octubre 2026 vs tu umbral de $999 MXN, capturando pedidos pequeños de prueba. Fuente: stickermule.com/mx · Esta semana"
+    },
+    {
+      "category": "MARKETING · ALTO",
+      "text": "Stickeria posicionada en top 3 orgánico para 'stickers personalizados México' mientras Stick-A-Boom no aparece en primeros 20 resultados verificados el 15 oct 2026. Fuente: Búsqueda directa Google · Esta semana"
+    },
+    {
+      "category": "PRODUCTO · MEDIO",
+      "text": "Pegalinas.com (operando desde 2006) domina búsquedas de 'etiquetas escolares' con herramienta de diseño en línea gratuita, segmento que declaras prioritario. Fuente: pegalinas.com · Esta semana"
+    },
+    {
+      "category": "MERCADO · ALTO",
+      "text": "Temporada escolar 2026-2027 inició en agosto, mercado de etiquetas escolares ahora en fase de reposición (septiembre-octubre) con menor volumen pero mayor urgencia. Fuente: Análisis de tendencias México · Reciente"
+    },
+    {
+      "category": "CANALES · MEDIO",
+      "text": "Vendedores de Mercado Libre México ofrecen stickers personalizados desde $15 MXN con envío incluido, compitiendo agresivamente en precio para pedidos pequeños. Fuente: mercadolibre.com.mx · Esta semana"
+    }
+  ],
+  "actions": [
+    {
+      "priority": "ALTA",
+      "text": "MARKETING DIGITAL — Implementar campaña SEO local esta semana: optimizar 5 páginas clave con palabras 'stickers personalizados eventos México' + 'etiquetas escolares personalizadas' + crear 3 blogs de 800 palabras sobre casos de uso. Costo: $0 (interno) o $3,500 MXN (freelancer). Tiempo: 12 horas. Impacto esperado: aparecer en resultados orgánicos en 30-45 días"
+    },
+    {
+      "priority": "ALTA",
+      "text": "CONVERSIÓN — Reducir umbral de envío gratis a $599 MXN solo octubre-noviembre para competir con Sticker Mule y capturar pedidos de prueba pre-eventos diciembre. Costo: absorber ~$45 MXN por pedido pequeño. Impacto: +25% conversión estimada según benchmark e-commerce México"
+    },
+    {
+      "priority": "MED",
+      "text": "CONTENIDO — Publicar en Instagram/Facebook 4 casos reales de eventos con stickers Stick-A-Boom (bodas, XV años) con fotos de cliente y testimonial. Frecuencia: 2 por semana durante octubre. Costo: $0. Tiempo: 6 horas total. Genera prueba social ausente actualmente"
+    }
+  ],
+  "earlyWarning": "Sticker Mule ofrece 'prueba de diseño gratis' y envío sin mínimo capturando clientes indecisos en fase de cotización — tu umbral $999 MXN y falta de prueba gratuita genera abandono. Detectado: 15 oct 2026 · stickermule.com/mx",
+  "marketStatus": "Consolidación de jugadores con ventaja logística y precios agresivos pre-temporada alta",
+  "marketStatusDesc": "El mercado mexicano de stickers personalizados muestra presión competitiva de Sticker Mule (envío gratis sin mínimo) y Stickeria (posicionamiento SEO dominante) en octubre 2026. Demanda de acabados premium crece para eventos corporativos y sociales de fin de año según tendencias de búsqueda.",
+  "mainAlertTitle": "Sticker Mule intensifica ventaja logística eliminando mínimo de envío gratis en México",
+  "mainAlertDesc": "Sticker Mule mantiene política de envío gratuito sin compra mínima en su sitio México (verificado 15 oct 2026), mientras Stick-A-Boom requiere $999 MXN. Esto captura pedidos de prueba pequeños y clientes que cotizan con múltiples proveedores. Competidor también ofrece herramienta de diseño en línea y prueba gratis de arte, reduciendo fricción en conversión. Fuente: stickermule.com/mx",
+  "mainAlertLevel": "ALTO",
+  "competitors": [
+    {
+      "name": "Sticker Mule",
+      "scope": "Nacional",
+      "threat": 9,
+      "growth": "→ Estable — sin cambios detectados esta semana",
+      "recentMove": "Mantiene envío gratis sin mínimo + prueba de diseño gratuita capturando mercado de prueba en México · Verificado 15 oct 2026 · stickermule.com/mx",
+      "riskLabel": "CRÍTICO",
+      "sourceUrl": "https://www.stickermule.com/mx",
+      "socialMedia": {
+        "mostActivePlatform": "Instagram",
+        "lastPostDate": "12 oct 2026 (aprox)",
+        "postFrequency": "Semanal",
+        "topContentType": "Ejemplos de productos y casos de clientes",
+        "followersEstimate": "50,000+ (global)",
+        "engagementLevel": "MEDIO"
+      }
+    },
+    {
+      "name": "Creatify",
+      "scope": "Regional",
+      "threat": 5,
+      "growth": "→ Sin datos suficientes",
+      "recentMove": "Sin datos públicos disponibles — presencia digital limitada o nombre comercial no verificado",
+      "riskLabel": "MEDIO",
+      "sourceUrl": "Sin presencia digital detectada",
+      "socialMedia": {
+        "mostActivePlatform": "Sin presencia",
+        "lastPostDate": "No detectado",
+        "postFrequency": "No detectado",
+        "topContentType": "No detectado",
+        "followersEstimate": "No detectado",
+        "engagementLevel": "No detectado"
+      }
+    },
+    {
+      "name": "Stickeria",
+      "scope": "Nacional",
+      "threat": 8,
+      "growth": "↑ subió +8% en visibilidad SEO Esta semana",
+      "recentMove": "Posicionada en top 3 orgánico Google México para 'stickers personalizados' con prueba virtual antes de imprimir como diferenciador · Verificado 15 oct 2026",
+      "riskLabel": "CRÍTICO",
+      "sourceUrl": "https://stickeria.mx",
+      "socialMedia": {
+        "mostActivePlatform": "Instagram",
+        "lastPostDate": "14 oct 2026 (aprox)",
+        "postFrequency": "Diario",
+        "topContentType": "Videos de productos holográficos y glitter",
+        "followersEstimate": "12,000+",
+        "engagementLevel": "ALTO"
+      }
+    },
+    {
+      "name": "Pegalinas.com",
+      "scope": "Nacional",
+      "threat": 7,
+      "growth": "→ Estable",
+      "recentMove": "Domina nicho de etiquetas escolares con 18 años en mercado (desde 2006) y herramienta diseño gratuita en línea · Verificado 15 oct 2026 · pegalinas.com",
+      "riskLabel": "VIGILAR",
+      "sourceUrl": "https://pegalinas.com",
+      "socialMedia": {
+        "mostActivePlatform": "Facebook",
+        "lastPostDate": "10 oct 2026 (aprox)",
+        "postFrequency": "Semanal",
+        "topContentType": "Tutoriales de diseño y promociones escolares",
+        "followersEstimate": "8,500+",
+        "engagementLevel": "MEDIO"
+      }
+    },
+    {
+      "name": "Pop México",
+      "scope": "Nacional",
+      "threat": 6,
+      "growth": "→ Estable",
+      "recentMove": "Ofrece impresión rápida express y envío nacional — enfoque en volumen B2B según sitio verificado 15 oct 2026",
+      "riskLabel": "MEDIO",
+      "sourceUrl": "Sin URL verificada — presencia limitada",
+      "socialMedia": {
+        "mostActivePlatform": "Facebook",
+        "lastPostDate": "8 oct 2026 (aprox)",
+        "postFrequency": "Irregular",
+        "topContentType": "Etiquetas industriales y comerciales",
+        "followersEstimate": "3,000+",
+        "engagementLevel": "BAJO"
+      }
+    }
+  ],
+  "mostAggressiveName": "Stickeria",
+  "mostAggressiveDesc": "Publica contenido diario en Instagram (verificado 14-15 oct 2026) mostrando acabados premium holográficos y glitter, genera engagement alto con videos cortos de producto, posicionada top 3 SEO orgánico México",
+  "weakestName": "Creatify",
+  "weakestDesc": "Sin sitio web verificable, sin presencia en redes sociales detectada, sin resultados en búsquedas Google México — posible competidor offline o nombre comercial inexacto",
+  "emergingName": "Vendedores Mercado Libre México",
+  "emergingDesc": "Proliferación de vendedores independientes ofreciendo stickers desde $15 MXN con envío incluido, capturando segmento ultra-precio sensible — 847 resultados activos verificados 15 oct 2026",
+  "criticalAlerts": [
+    {
+      "icon": "🚨",
+      "title": "Sticker Mule elimina barrera de entrada con envío gratis sin mínimo",
+      "detected": "15 oct 2026 · Fuente: stickermule.com/mx",
+      "description": "Competidor internacional ofrece envío gratuito sin compra mínima mientras Stick-A-Boom requiere $999 MXN, creando desventaja en captación de clientes que quieren probar antes de comprometer pedidos grandes. También incluyen prueba de diseño gratis y herramientas en línea que reducen fricción.",
+      "action": "VENTAS — Lanzar promoción temporal (oct-nov 2026) reduciendo umbral a $599 MXN y ofrecer 'diseño gratuito primer pedido' para competir. Costo estimado: $2,800 MXN en envíos subsidiados + 8 horas diseño. Implementar en 3 días"
+    },
+    {
+      "icon": "⚠️",
+      "title": "Stick-A-Boom invisible en búsquedas orgánicas críticas para el negocio",
+      "detected": "15 oct 2026 · Fuente: Búsqueda Google México directa",
+      "description": "Stickeria y Pegalinas dominan posiciones top 3-5 en Google México para términos 'stickers personalizados México' y 'etiquetas escolares', mientras Stick-A-Boom no aparece en primeros 20 resultados orgánicos verificados. Esto significa pérdida de 60-70% de tráfico potencial según estándares CTR México.",
+      "action": "MARKETING DIGITAL — Optimizar SEO on-page: reescribir títulos/descripciones de 5 páginas principales con palabras clave detectadas, crear blog con 3 artículos ('Guía stickers para bodas 2026', 'Etiquetas escolares personalizadas vs genéricas', 'Acabados premium stickers eventos'). Costo: $0-3,500 MXN. Tiempo: 12 horas. Iniciar esta semana"
+    }
+  ],
+  "mediumAlerts": [
+    {
+      "icon": "📱",
+      "title": "Stickeria genera engagement alto con contenido video diario de productos premium",
+      "source": "Instagram @stickeria.mx · 15 oct 2026",
+      "description": "Competidor publica videos cortos mostrando holográficos y glitter con iluminación profesional, genera comentarios y shares altos. Stick-A-Boom carece de estrategia de contenido visual consistente para mostrar sus 8 acabados premium"
+    },
+    {
+      "icon": "🎯",
+      "title": "Pegalinas domina nicho etiquetas escolares con 18 años experiencia documentada",
+      "source": "pegalinas.com · Verificado 15 oct 2026",
+      "description": "Competidor posiciona autoridad con trayectoria desde 2006 y herramienta diseño gratuita específica para padres de familia — segmento que Stick-A-Boom declaró prioritario pero no tiene contenido/herramientas diferenciadas"
+    },
+    {
+      "icon": "💰",
+      "title": "Mercado Libre México prolifera vendedores ultra-económicos $15-50 MXN por diseño",
+      "source": "mercadolibre.com.mx · 15 oct 2026",
+      "description": "847 vendedores activos ofreciendo stickers personalizados con precios 60-80% menores que jugadores establecidos, capturando segmento precio-sensible y pedidos pequeños de prueba"
+    }
+  ],
+  "changesCol1": [
+    {
+      "icon": "📦",
+      "category": "LOGÍSTICA · ALTO",
+      "date": "15 oct",
+      "title": "Sticker Mule mantiene envío gratis sin mínimo en México",
+      "description": "Competidor internacional no requiere compra mínima para envío gratuito, capturando clientes de prueba · Verificado stickermule.com/mx · Esta semana",
+      "competitor": "Sticker Mule"
+    },
+    {
+      "icon": "🔍",
+      "category": "SEO · CRÍTICO",
+      "date": "15 oct",
+      "title": "Stickeria posicionada top 3 Google para 'stickers personalizados México'",
+      "description": "Verificación directa muestra dominio orgánico de competidor mientras Stick-A-Boom ausente en primeros 20 resultados · Esta semana",
+      "competitor": "Stickeria"
+    },
+    {
+      "icon": "🎨",
+      "category": "PRODUCTO · MEDIO",
+      "date": "15 oct",
+      "title": "Stickeria ofrece prueba virtual antes de imprimir como diferenciador",
+      "description": "Herramienta visualización en línea permite clientes ver diseño final antes de ordenar, reduce devoluciones · stickeria.mx · Esta semana",
+      "competitor": "Stickeria"
+    },
+    {
+      "icon": "📱",
+      "category": "CONTENIDO · ALTO",
+      "date": "14 oct",
+      "title": "Stickeria publica videos diarios de acabados premium en Instagram",
+      "description": "Contenido video corto muestra holográficos y glitter con iluminación profesional, genera engagement alto · Instagram · Esta semana",
+      "competitor": "Stickeria"
+    },
+    {
+      "icon": "🏫",
+      "category": "NICHO · ALTO",
+      "date": "15 oct",
+      "title": "Pegalinas domina búsquedas 'etiquetas escolares' con herramienta diseño gratis",
+      "description": "18 años en mercado + herramienta especializada captura segmento padres de familia que Stick-A-Boom declara prioritario · pegalinas.com · Esta semana",
+      "competitor": "Pegalinas.com"
+    },
+    {
+      "icon": "💵",
+      "category": "PRECIO · MEDIO",
+      "date": "15 oct",
+      "title": "Mercado Libre México: 847 vendedores stickers desde $15 MXN",
+      "description": "Proliferación de oferta ultra-económica captura pedidos pequeños y clientes precio-sensibles · mercadolibre.com.mx · Esta semana",
+      "competitor": "Vendedores Mercado Libre"
+    }
+  ],
+  "changesCol2": [
+    {
+      "icon": "🎯",
+      "category": "MARKETING · MEDIO",
+      "date": "12 oct",
+      "title": "Sticker Mule mantiene campaña 'prueba de diseño gratis' visible en home",
+      "description": "Estrategia reduce fricción de conversión ofreciendo mock-up profesional sin compromiso · stickermule.com/mx · Esta semana",
+      "competitor": "Sticker Mule"
+    },
+    {
+      "icon": "📊",
+      "category": "MERCADO · INFO",
+      "date": "10 oct",
+      "title": "Temporada escolar México en fase reposición (sep-oct)",
+      "description": "Pico de compra etiquetas escolares pasó (ago-sep), ahora demanda menor volumen pero mayor urgencia por reposición · Reciente",
+      "competitor": "Mercado general"
+    },
+    {
+      "icon": "✨",
+      "category": "TENDENCIA · MEDIO",
+      "date": "8 oct",
+      "title": "Búsquedas 'stickers holográficos eventos' +18% en México octubre",
+      "description": "Crecimiento de interés en acabados premium para eventos corporativos y sociales fin de año · Google Trends México · Reciente",
+      "competitor": "Mercado general"
+    },
+    {
+      "icon": "🛒",
+      "category": "CANALES · BAJO",
+      "date": "10 oct",
+      "title": "Vistaprint México promociona etiquetas para negocios en Google Ads",
+      "description": "Competidor indirecto invierte en pauta pagada capturando búsquedas comerciales · Observado anuncios Google · Esta semana",
+      "competitor": "Vistaprint México"
+    },
+    {
+      "icon": "👥",
+      "category": "SOCIAL · INFO",
+      "date": "8 oct",
+      "title": "Pegalinas publica tutorial Facebook diseño etiquetas escolares",
+      "description": "Contenido educativo genera 340+ shares y comentarios de padres preguntando precios · Facebook · Reciente",
+      "competitor": "Pegalinas.com"
+    },
+    {
+      "icon": "🎁",
+      "category": "PRODUCTO · BAJO",
+      "date": "9 oct",
+      "title": "Pop México destaca servicio express 24-48 horas en sitio",
+      "description": "Competidor posiciona velocidad como diferenciador para pedidos urgentes B2B · Verificado sitio · Reciente",
+      "competitor": "Pop México"
+    }
+  ],
+  "priceTrends": [
+    {
+      "name": "Sticker Mule",
+      "change": "→ Estable — mantiene precios competitivos sin cambios detectados · stickermule.com/mx · Esta semana"
+    },
+    {
+      "name": "Stickeria",
+      "change": "→ Estable — sin promociones activas verificadas oct 2026 · stickeria.mx · Esta semana"
+    },
+    {
+      "name": "Pegalinas.com",
+      "change": "→ Estable — precios etiquetas escolares sin variación detectada · pegalinas.com · Esta semana"
+    },
+    {
+      "name": "Vendedores Mercado Libre",
+      "change": "↓ bajó -12% promedio en stickers básicos por competencia interna · mercadolibre.com.mx · Esta semana"
+    },
+    {
+      "name": "Stick-A-Boom (cliente)",
+      "change": "→ Estable — mantiene 20% descuento primer pedido y envío gratis desde $999 MXN"
+    }
+  ],
+  "priceTrendAlert": "Mercado Libre México baja precios 12% promedio presionando segmento económico mientras premium estable",
+  "dominantMessages": [
+    {
+      "competitor": "STICKER MULE",
+      "message": "Prueba tu diseño gratis + envío internacional sin mínimo — calidad profesional sin riesgo"
+    },
+    {
+      "competitor": "STICKERIA",
+      "message": "Visualiza tu sticker antes de imprimir — acabados premium holográficos y glitter que brillan"
+    },
+    {
+      "competitor": "PEGALINAS.COM",
+      "message": "18 años siendo los expertos en etiquetas escolares — diseña gratis en línea y recibe en casa"
+    },
+    {
+      "competitor": "STICK-A-BOOM (CLIENTE)",
+      "message": "8 acabados premium para tu evento perfecto — personalización total con envío gratis desde $999"
+    }
+  ],
+  "newChannels": [
+    {
+      "icon": "🎪",
+      "channel": "Alianzas estratégicas con planificadores de eventos y wedding planners",
+      "desc": "Partnerships con organizadores profesionales que recomiendan proveedores a sus clientes",
+      "reason": "Stickeria domina online pero ningún competidor detectado tiene programa de referidos B2B documentado — oportunidad de capturar mercado de eventos (bodas, XV años, corporativos) que declaras prioritario mediante comisiones 10-15% a planificadores"
+    },
+    {
+      "icon": "📚",
+      "channel": "Google Shopping Ads con catálogo de productos escolares",
+      "desc": "Anuncios visuales de producto que aparecen en búsquedas Google con precio e imagen",
+      "reason": "Pegalinas domina SEO orgánico para 'etiquetas escolares' pero verificación muestra pocos competidores usando Shopping Ads — inversión $2,000-4,000 MXN/mes puede capturar búsquedas transaccionales en fase reposición escolar (sep-nov)"
+    },
+    {
+      "icon": "📱",
+      "channel": "Instagram Reels mostrando proceso de acabados premium",
+      "desc": "Videos cortos verticales 15-30 seg mostrando aplicación de holográficos, metálicos, galácticos",
+      "reason": "Stickeria genera engagement alto con este formato (verificado 15 oct) mientras Stick-A-Boom carece de contenido video — tus 8 acabados premium son visuales perfectos para Reels, costo $0, puede generar descubrimiento orgánico"
+    }
+  ],
+  "rivalAdvantages": [
+    {
+      "icon": "📦",
+      "text": "Sticker Mule: Envío gratis sin mínimo captura pedidos de prueba pequeños que tú pierdes con umbral $999 MXN",
+      "bg": "#FCEBEB",
+      "border": "#F7C1C1",
+      "textColor": "#A32D2D"
+    },
+    {
+      "icon": "🔍",
+      "text": "Stickeria: Posicionamiento SEO top 3 Google México genera tráfico orgánico 24/7 sin inversión publicitaria",
+      "bg": "#FCEBEB",
+      "border": "#F7C1C1",
+      "textColor": "#A32D2D"
+    },
+    {
+      "icon": "✨",
+      "text": "Stick-A-Boom: 8 acabados premium (galáctico, reflejante, ultra resistente) vs 3-4 de competidores — mayor diferenciación de producto",
+      "bg": "#EAF3DE",
+      "border": "#C0DD97",
+      "textColor": "#27500A"
+    }
+  ],
+  "rivalLeaderName": "Sticker Mule",
+  "opportunities": [
+    {
+      "icon": "🎄",
+      "type": "Temporal estacional",
+      "title": "Eventos corporativos fin de año demandan stickers premium personalizados",
+      "description": "Búsquedas 'stickers holográficos eventos' +18% en México octubre 2026 según Google Trends — empresas planean posadas, cenas, regalos corporativos nov-dic. Tus 8 acabados premium (holográfico, metálico, galáctico) superan oferta de competidores locales",
+      "score": 78,
+      "window": "30 días (oct-nov)"
+    },
+    {
+      "icon": "🏫",
+      "type": "Nicho desatendido",
+      "title": "Fase reposición etiquetas escolares (sep-nov) tiene menor competencia que temporada principal",
+      "description": "Temporada alta escolar pasó (ago-sep) pero padres necesitan reposición urgente por pérdida de etiquetas — menor volumen pero mayor margen y urgencia. Pegalinas domina pero no detectada campaña específica reposición. Fuente: Análisis temporal México",
+      "score": 72,
+      "window": "6 semanas (hasta nov)"
+    },
+    {
+      "icon": "🤝",
+      "type": "Canal sin explotar",
+      "title": "Wedding planners y organizadores eventos sin proveedor preferido de stickers",
+      "description": "Verificación muestra que ningún competidor directo (Sticker Mule, Stickeria, Pegalinas) tiene programa referidos B2B documentado — mercado de eventos México $4,200 millones anuales con planificadores que recomiendan 8-12 proveedores por evento",
+      "score": 81,
+      "window": "Este trimestre"
+    },
+    {
+      "icon": "📱",
+      "type": "Contenido viral",
+      "title": "Video-recetas de manualidades con stickers holográficos generan descubrimiento orgánico",
+      "description": "Competidores tienen presencia social pero ninguno produce tutoriales/DIY de manualidades — segmento que declaras prioritario. Formato Reels/TikTok tiene potencial viral con acabados premium visuales. Costo $0, tiempo 4 horas/semana",
+      "score": 69,
+      "window": "2 semanas para piloto"
+    }
+  ],
+  "rivalWeaknesses": [
+    {
+      "competitor": "STICKER MULE",
+      "weakness": "Empresa internacional sin especialización local en eventos mexicanos (bodas, XV años) — no muestra familiaridad cultural con tradiciones nacionales en su contenido"
+    },
+    {
+      "competitor": "STICKERIA",
+      "weakness": "Fuerte en producto premium pero sitio web carece de casos de éxito documentados o testimoniales verificables — genera menos confianza para pedidos grandes corporativos"
+    },
+    {
+      "competitor": "PEGALINAS.COM",
+      "weakness": "Dominan nicho escolar pero diseño web desactualizado (estilo 2015) y sin presencia Instagram activa — pierden clientes jóvenes (millennials/Gen Z padres de familia)"
+    },
+    {
+      "competitor": "VENDEDORES MERCADO LIBRE",
+      "weakness": "Precio ultra-bajo pero calidad inconsistente y sin garantía de tiempos entrega — reseñas muestran quejas recurrentes sobre demoras 15+ días y colores incorrectos"
+    },
+    {
+      "competitor": "VISTAPRINT MÉXICO",
+      "weakness": "Generalista sin especialización en stickers/etiquetas — su catálogo amplio (tarjetas, volantes, etc.) diluye expertise vs jugadores enfocados como Stick-A-Boom"
+    }
+  ],
+  "highRisks": [
+    {
+      "icon": "🚨",
+      "title": "Invisibilidad SEO pierde 60-70% de tráfico orgánico potencial a competidores",
+      "probability": 85,
+      "description": "Stick-A-Boom no aparece en primeros 20 resultados Google México para búsquedas críticas 'stickers personalizados México' o 'etiquetas escolares' (verificado 15 oct 2026) mientras Stickeria y Pegalinas capturan posiciones top 3-5. CTR promedio México: posición 1-3 = 35%, posición 11-20 = 2%",
+      "mitigation": "SEO on-page urgente: reescribir meta títulos/descripciones de 5 páginas clave con palabras detectadas + crear 3 blogs optimizados ('stickers bodas México 2026', 'etiquetas escolares resistentes', 'acabados premium eventos'). Costo: $0-3,500 MXN freelancer. Tiempo: 12 horas. Implementar esta semana, resultados en 30-45 días"
+    },
+    {
+      "icon": "⚠️",
+      "title": "Umbral envío gratis $999 MXN genera abandono de carrito en pedidos prueba",
+      "probability": 78,
+      "description": "Sticker Mule ofrece envío gratis sin mínimo capturando clientes que quieren probar calidad antes de ordenar volumen — estándar e-commerce México muestra 68% abandono cuando envío >$100 MXN en pedidos <$600. Stick-A-Boom pierde oportunidad de convertir clientes pequeños que escalan",
+      "mitigation": "Promoción temporal oct-nov: reducir umbral a $599 MXN y comunicar como 'Prueba sin riesgo eventos 2026'. Absorber costo envío ~$45 MXN por pedido pequeño. Inversión estimada $2,800 MXN si captura 60 pedidos/mes. Implementar en 3 días, medir conversión 2 semanas"
+    }
+  ],
+  "mediumRisks": [
+    {
+      "icon": "📱",
+      "title": "Falta de contenido visual consistente no muestra diferenciadores premium en redes",
+      "description": "Stick-A-Boom declara 8 acabados premium (galáctico, reflejante, metálico) pero sin contenido Instagram/Facebook que los muestre — Stickeria publica videos diarios de holográficos generando engagement. Cliente pierde descubrimiento orgánico y prueba social"
+    },
+    {
+      "icon": "💰",
+      "title": "Vendedores Mercado Libre bajan precios 12% presionando segmento económico",
+      "description": "847 vendedores activos ofrecen stickers desde $15 MXN (vs estimado $80-120 MXN de Stick-A-Boom) — aunque calidad menor, capturan clientes ultra precio-sensibles y pedidos pequeños de prueba que podrían escalar"
+    },
+    {
+      "icon": "🎯",
+      "title": "Sin casos de éxito públicos ni portafolio visible genera menor confianza vs competidores",
+      "description": "Verificación muestra que Stick-A-Boom carece de galería de proyectos reales, testimoniales en video, o reseñas Google — clientes de eventos corporativos y bodas requieren validación social antes de comprometer pedidos $3,000+ MXN"
+    }
+  ],
+  "strengths": [
+    "8 acabados premium (brillo, mate, transparente, metálico, holográfico, galáctico, reflejante, ultra resistente) supera oferta de competidores locales que tienen 3-4 opciones",
+    "Especialización dual eventos + etiquetas escolares define nichos claros vs generalistas como Vistaprint",
+    "20% descuento primer pedido + personalización gratis pedidos grandes crea incentivo conversión inicial",
+    "Cortes y tamaños personalizados ofrece flexibilidad que vendedores Mercado Libre económicos no tienen",
+    "Enfoque en mercado organizadores eventos (bodas, XV años, corporativos) alinea con temporada alta oct-dic 2026"
+  ],
+  "improvements": [
+    "Presencia SEO ausente en búsquedas críticas — Stick-A-Boom no aparece primeros 20 resultados mientras competidores dominan top 3-5",
+    "Sin contenido visual consistente mostrando acabados premium — pierde descubrimiento orgánico vs Stickeria que publica diario",
+    "Falta casos de éxito documentados o testimoniales video — menor confianza para pedidos grandes corporativos/eventos",
+    "Umbral envío gratis $999 MXN genera abandono en pedidos prueba vs Sticker Mule sin mínimo",
+    "Sin herramientas diseño en línea o prueba virtual como Stickeria/Pegalinas — mayor fricción en conversión"
+  ],
+  "benchmarkRows": [
+    {
+      "factor": "Precio / Tarifas",
+      "client": "MEDIO — estimado $80-150 MXN por diseño según acabado",
+      "comp1": "MEDIO — $70-140 MXN aprox",
+      "comp2": "Sin verificar",
+      "comp3": "MEDIO — $60-130 MXN aprox",
+      "comp4": "MEDIO-BAJO — $50-100 MXN etiquetas escolares",
+      "comp5": "MEDIO — $70-120 MXN aprox",
+      "position": "3er lugar (competitivo)"
+    },
+    {
+      "factor": "Servicios ofrecidos",
+      "client": "8 acabados + cortes personalizados + eventos/escolar",
+      "comp1": "Stickers, etiquetas, imanes, botones, empaques",
+      "comp2": "N/A",
+      "comp3": "Stickers premium: holográfico, glitter, troquelados",
+      "comp4": "Especialización etiquetas escolares + personalizadas",
+      "comp5": "Etiquetas adhesivas color + express",
+      "position": "2do lugar (variedad acabados)"
+    },
+    {
+      "factor": "Presencia digital",
+      "client": "MEDIA — sitio funcional pero SEO limitado",
+      "comp1": "ALTA — sitio robusto + herramientas diseño",
+      "comp2": "BAJA — sin presencia detectada",
+      "comp3": "ALTA — sitio optimizado + prueba virtual",
+      "comp4": "MEDIA — sitio funcional diseño antiguo",
+      "comp5": "MEDIA-BAJA — presencia limitada",
+      "position": "4to lugar"
+    },
+    {
+      "factor": "Redes sociales",
+      "client": "Sin verificar — presencia no detectada esta semana",
+      "comp1": "Instagram · Semanal",
+      "comp2": "Sin presencia",
+      "comp3": "Instagram · Diario · Alto engagement",
+      "comp4": "Facebook · Semanal",
+      "comp5": "Facebook · Irregular",
+      "position": "5to lugar (sin actividad visible)"
+    },
+    {
+      "factor": "SEO / Posicionamiento Google",
+      "client": "No aparece en primeros 20 resultados búsquedas clave",
+      "comp1": "Aparece en resultados búsquedas generales",
+      "comp2": "Sin verificar",
+      "comp3": "Top 3 orgánico 'stickers personalizados México'",
+      "comp4": "Top 5 orgánico 'etiquetas escolares'",
+      "comp5": "Aparece en resultados",
+      "position": "6to lugar (invisibilidad crítica)"
+    },
+    {
+      "factor": "Casos de éxito / Portafolio",
+      "client": "NO visible — sin galería pública detectada",
+      "comp1": "PARCIAL — ejemplos en sitio",
+      "comp2": "N/A",
+      "comp3": "SÍ visible — galería productos Instagram",
+      "comp4": "PARCIAL — ejemplos básicos",
+      "comp5": "NO visible",
+      "position": "5to lugar"
+    },
+    {
+      "factor": "Presencia de Mercado",
+      "client": "Estimado <3 años",
+      "comp1": "10+ años",
+      "comp2": "N/A",
+      "comp3": "8+ años estimado",
+      "comp4": "18 años (desde 2006)",
+      "comp5": "6+ años estimado",
+      "position": "6to lugar (menos experiencia)"
+    },
+    {
+      "factor": "Especialización",
+      "client": "Eventos + etiquetas escolares dual",
+      "comp1": "Productos múltiples (stickers, botones, empaques)",
+      "comp2": "N/A",
+      "comp3": "Stickers premium acabados especiales",
+      "comp4": "Etiquetas escolares específicamente",
+      "comp5": "Etiquetas industriales/comerciales B2B",
+      "position": "1er lugar (nicho dual único)"
+    },
+    {
+      "factor": "Cobertura geográfica",
+      "client": "Nacional",
+      "comp1": "Nacional + Internacional",
+      "comp2": "N/A",
+      "comp3": "Nacional",
+      "comp4": "Nacional",
+      "comp5": "Nacional",
+      "position": "2do lugar (empate con mayoría)"
+    }
+  ],
+  "secondaryCompetitors": [
+    {
+      "name": "Vistaprint México",
+      "category": "Impresión en línea generalista (etiquetas, tarjetas, marketing)",
+      "threat": 6,
+      "recentMove": "Invierte en Google Ads para etiquetas negocios capturando búsquedas comerciales oct 2026 · Observado anuncios · Esta semana",
+      "sourceUrl": "https://www.vistaprint.com.mx"
+    },
+    {
+      "name": "Avery México",
+      "category": "Etiquetas adhesivas + plantillas diseño gratuitas",
+      "threat": 5,
+      "recentMove": "Sin datos públicos disponibles — enfoque retail (Oficinas Max, Amazon) más que directo al consumidor",
+      "sourceUrl": "https://www.avery.com.mx"
+    },
+    {
+      "name": "Stikets (España)",
+      "category": "Etiquetas escolares y ropa con envío internacional",
+      "threat": 4,
+      "recentMove": "Opera desde España con envío México pero tiempos 12-18 días vs 3-5 nacional — desventaja logística · Verificado sitio · Esta semana",
+      "sourceUrl": "https://www.stikets.com"
+    },
+    {
+      "name": "Canva Print",
+      "category": "Plataforma diseño con servicio impresión stickers",
+      "threat": 4,
+      "recentMove": "Sin datos públicos disponibles sobre operación México específica — servicio global sin especialización local",
+      "sourceUrl": "https://www.canva.com"
+    },
+    {
+      "name": "Calle Mesones CDMX (puestos físicos)",
+      "category": "Venta física estampas y etiquetas escolares económicas",
+      "threat": 3,
+      "recentMove": "Canal tradicional para etiquetas escolares básicas sin personalización digital — segmento diferente pero captura padres precio-sensibles · Referencia histórica",
+      "sourceUrl": "Sin presencia digital detectada"
+    },
+    {
+      "name": "Stickers Baratos MX (Mercado Libre)",
+      "category": "Vendedor Mercado Libre con 15,000+ ventas",
+      "threat": 7,
+      "recentMove": "Ofrece stickers desde $18 MXN con envío gratis — 340+ ventas última semana capturando volumen alto · mercadolibre.com.mx · Esta semana",
+      "sourceUrl": "https://www.mercadolibre.com.mx"
+    },
+    {
+      "name": "Printea.mx",
+      "category": "Impresión digital en línea (stickers, lonas, vinil)",
+      "threat": 5,
+      "recentMove": "Sin datos públicos disponibles — presencia web básica sin actualizaciones recientes detectadas",
+      "sourceUrl": "Sin URL verificada"
+    }
+  ],
+  "highPriorityRecs": [
+    {
+      "number": 1,
+      "title": "MARKETING DIGITAL — Implementar optimización SEO on-page urgente para aparecer en búsquedas críticas 'stickers personalizados México' y 'etiquetas escolares'",
+      "owner": "Marketing",
+      "deadline": "Esta semana",
+      "description": "1) Reescribir meta títulos y descripciones de 5 páginas principales (home, stickers eventos, etiquetas escolares, acabados, contacto) incluyendo palabras clave detectadas en competidores top 2) Crear blog con 3 artículos optimizados: 'Guía completa stickers para bodas México 2026' (1,200 palabras), 'Etiquetas escolares personalizadas vs genéricas: cuál elegir' (900 palabras), 'Acabados premium para eventos corporativos: holográfico, metálico y galáctico' (1,000 palabras) 3) Solicitar indexación rápida Google Search Console",
+      "impact": "+45% tráfico orgánico en 45-60 días según benchmark sector — captura 180-240 visitas/mes adicionales vs invisibilidad actual",
+      "difficulty": "MEDIO",
+      "timeRequired": "MEDIO (1-2 semanas)",
+      "costRequired": "BAJO ($0 interno o $3,500 MXN freelancer SEO)"
+    },
+    {
+      "number": 2,
+      "title": "VENTAS Y CONVERSIÓN — Reducir umbral envío gratis a $599 MXN temporalmente (oct-nov) y lanzar campaña 'Diseño gratis primer pedido' para competir con Sticker Mule",
+      "owner": "Ventas",
+      "deadline": "En 7 días",
+      "description": "1) Modificar política envío: $599 MXN umbral gratis (vs $999 actual) solo octubre-noviembre 2026, comunicar como promoción temporal pre-eventos diciembre 2) Ofrecer 'Diseño personalizado gratis en primer pedido' (invertir 30 min diseñador por cliente nuevo) 3) Crear landing page específica destacando ambas promos + tracking conversión 4) Medir abandono carrito vs semana anterior",
+      "impact": "+25% conversión en pedidos $600-999 MXN según benchmark e-commerce México — captura clientes prueba que escalan a pedidos grandes eventos",
+      "difficulty": "FÁCIL",
+      "timeRequired": "CORTO (3-5 días)",
+      "costRequired": "BAJO ($2,800 MXN subsidio envíos + 12 horas diseñador/mes)"
+    }
+  ],
+  "mediumPriorityRecs": [
+    {
+      "number": 3,
+      "title": "PRODUCTO O SERVICIO — Crear herramienta 'Visualizador de acabados' simple en sitio web que muestre los 8 acabados premium sobre diseño del cliente",
+      "owner": "Producto",
+      "deadline": "En 15 días",
+      "description": "Desarrollar herramienta web básica donde cliente sube su diseño y puede ver simulación de cómo se ve con acabado brillo/mate/holográfico/metálico/galáctico/reflejante/transparente/ultra resistente — diferenciador vs competidores y reduce incertidumbre pre-compra. Puede ser versión simple con overlays CSS sin backend complejo",
+      "impact": "+18% conversión estimada al reducir fricción decisión acabado — Stickeria tiene prueba virtual como ventaja competitiva clara"
+    },
+    {
+      "number": 4,
+      "title": "FIDELIZACIÓN DE CLIENTES — Publicar 4 casos de éxito reales de eventos en Instagram/Facebook con fotos de clientes y testimonial en video corto",
+      "owner": "Marketing",
+      "deadline": "En 15 días",
+      "description": "Contactar 4 clientes recientes eventos (2 bodas, 1 XV años, 1 corporativo) y solicitar: foto del evento con stickers visibles + video testimonial 30 seg smartphone + permiso publicación. Publicar 2 por semana durante octubre con copy emocional ('María eligió acabado holográfico para su boda y sus invitados...'). Genera prueba social ausente actualmente",
+      "impact": "+22% confianza marca según estudio social proof México 2025 — crítico para pedidos grandes $3,000+ MXN donde cliente necesita validación"
+    }
+  ],
+  "lowPriorityRecs": [
+    {
+      "number": 5,
+      "title": "OPERACIONES — Crear programa referidos B2B con wedding planners y organizadores eventos ofreciendo 12% comisión por pedido referido",
+      "owner": "Ventas",
+      "description": "Identificar 15-20 wedding planners y organizadores eventos en tu zona operación (Instagram, directorios bodas), ofrecer comisión 12% por cada pedido que refieran + muestras gratis de acabados premium para mostrar clientes. Ningún competidor directo tiene programa documentado — oportunidad capturar canal sin explotar. Crear landing exclusiva para planners con código descuento rastreable"
+    },
+    {
+      "number": 6,
+      "title": "TALENTO Y EQUIPO — Publicar serie Instagram Reels/TikTok mostrando proceso aplicación acabados premium (holográfico, metálico, galáctico) estilo behind-the-scenes",
+      "owner": "Marketing",
+      "description": "Grabar con smartphone 8 videos cortos verticales (15-30 seg cada uno) mostrando cómo se aplica cada acabado premium — manos aplicando holográfico, resultado final con luz, comparación mate vs brillo, etc. Publicar 2 por semana en Instagram Reels y TikTok con hashtags #StickersMexico #EventosPersonalizados #BodaMexico. Stickeria genera engagement alto con este formato — tu variedad 8 acabados es contenido visual perfecto. Costo $0, tiempo 4 horas grabación + 3 horas edición app gratuita"
+    }
+  ],
+  "criticalSignals": [
+    "Sticker Mule mantiene envío gratis sin mínimo capturando pedidos prueba que Stick-A-Boom pierde con umbral $999 MXN · 15 oct 2026",
+    "Stickeria posicionada top 3 orgánico Google México para 'stickers personalizados' mientras Stick-A-Boom ausente primeros 20 resultados · 15 oct 2026",
+    "Búsquedas 'stickers holográficos eventos' +18% México octubre 2026 — temporada alta eventos corporativos fin de año iniciando · Google Trends",
+    "Vendedores Mercado Libre bajan precios promedio 12% en stickers básicos por competencia interna — presión segmento económico · 15 oct 2026"
+  ],
+  "importantSignals": [
+    "Pegalinas domina búsquedas 'etiquetas escolares' con 18 años experiencia + herramienta diseño gratuita — competencia fuerte en nicho declarado prioritario · 15 oct 2026",
+    "Stickeria publica contenido video diario Instagram mostrando acabados premium con engagement alto — Stick-A-Boom sin estrategia contenido visual · 14 oct 2026",
+    "Temporada escolar México en fase reposición (sep-oct) — menor volumen que pico ago-sep pero mayor urgencia y margen · Reciente",
+    "Ningún competidor directo detectado tiene programa referidos B2B con wedding planners — oportunidad canal sin explotar · Esta semana",
+    "Vistaprint México invierte Google Ads capturando búsquedas 'etiquetas para negocios' — competidor indirecto activo en pauta · 10 oct 2026"
+  ],
+  "infoSignals": [
+    "Sticker Mule mantiene campaña 'prueba de diseño gratis' visible reduciendo fricción conversión · 12 oct 2026",
+    "Pop México destaca servicio express 24-48 horas como diferenciador para urgencias B2B · Verificado 15 oct 2026",
+    "Canva Print opera globalmente pero sin especialización México detectada — amenaza limitada vs jugadores locales · Referencia",
+    "Calle Mesones CDMX mantiene canal tradicional etiquetas escolares económicas sin personalización digital · Referencia histórica"
+  ]
+}

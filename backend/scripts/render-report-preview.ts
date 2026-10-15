@@ -1,21 +1,21 @@
 // Vista previa visual del reporte v2: renderiza cada página como PNG y verifica que el PDF tenga
 // el número esperado de páginas y que ningún cuerpo de página se desborde. Espera a que el ajuste
 // automático de shell.html termine (body[data-fit="done"]) e imprime el factor z de cada página reducida.
-// Uso: npx tsx scripts/render-report-preview.ts [--skin editorial|panel|all] [--fixture normal|extreme|minimal|all] [--teaser]
+// Uso: npx tsx scripts/render-report-preview.ts [--skin editorial|panel|all] [--fixture normal|extreme|minimal|real|all] [--teaser]
 import fs from 'fs'
 import path from 'path'
 import puppeteer from 'puppeteer-core'
 import { buildReportData } from '../src/lib/reportEngine'
 import { renderReportHtmlV2, PAGES } from '../src/lib/reportTemplates'
 import { loadReportLogos } from '../src/lib/reportLogos'
-import { FIXTURE_PROJECT, FIXTURE_DATE_INFO, FIXTURES } from '../src/lib/reportFixtures'
+import { FIXTURE_DATE_INFO, FIXTURES, FixtureName, fixtureProject } from '../src/lib/reportFixtures'
 
 const arg = (name: string, fallback: string) => {
   const i = process.argv.indexOf(`--${name}`)
   return i >= 0 ? process.argv[i + 1] : fallback
 }
 const skins = arg('skin', 'all') === 'all' ? ['editorial', 'panel'] : [arg('skin', 'editorial')]
-const fixtures = arg('fixture', 'all') === 'all' ? ['normal', 'extreme', 'minimal'] : [arg('fixture', 'normal')]
+const fixtures: FixtureName[] = arg('fixture', 'all') === 'all' ? ['normal', 'extreme', 'minimal', 'real'] : [arg('fixture', 'normal') as FixtureName]
 const teaser = process.argv.includes('--teaser')
 
 const CANDIDATES = [
@@ -36,8 +36,8 @@ async function main() {
       for (const fx of fixtures) {
         const outDir = path.join(__dirname, '..', 'preview-out', `${skin}-${fx}${teaser ? '-teaser' : ''}`)
         fs.mkdirSync(outDir, { recursive: true })
-        const data = buildReportData(FIXTURE_PROJECT, (FIXTURES as any)[fx], FIXTURE_DATE_INFO, 3, teaser)
-        const html = renderReportHtmlV2(skin as any, data, (FIXTURES as any)[fx], loadReportLogos())
+        const data = buildReportData(fixtureProject(fx), FIXTURES[fx], FIXTURE_DATE_INFO, 3, teaser)
+        const html = renderReportHtmlV2(skin as any, data, FIXTURES[fx], loadReportLogos())
         fs.writeFileSync(path.join(outDir, 'report.html'), html)
 
         const page = await browser.newPage()

@@ -1,6 +1,10 @@
 // Datos de ejemplo para pruebas y para el script de vista previa del reporte.
-// `aiNormal` imita lo que devuelve la IA; `makeExtreme` lo estira (textos largos, máximos de
-// cada lista, palabras sin espacios); `aiMinimal` ({}) fuerza todos los valores por defecto.
+// `aiNormal` imita lo que devuelve la IA; `makeExtreme` lo estira a un extremo REALISTA (cadenas
+// largas +100 a +150 caracteres, listas en el máximo del prompt, un URL sin espacios);
+// `aiMinimal` ({}) fuerza todos los valores por defecto; `real` es un análisis real de la IA
+// (caso Stick-A-Boom) que se lee del disco solo cuando se pide.
+import fs from 'fs'
+import path from 'path'
 export const LOGO_STUB =
   'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg=='
 
@@ -172,11 +176,13 @@ export const aiNormal: any = {
   infoSignals: ['Rankings App Store', 'Menciones en medios', 'Movimiento de keywords SEO', 'Cambios regulatorios'],
 }
 
-const LONG = 'Texto largo de prueba que simula una respuesta extensa de la IA con detalles, cifras, fuentes y contexto adicional para comprobar que ninguna tarjeta se desborda ni empuja contenido fuera de la página. '
-const WORD = 'ReallyLongUnbrokenWord'.repeat(3)
+// Sufijos calibrados con los textos reales de la IA: las cadenas largas (> 40) crecen ~125 caracteres
+// (con una fuente tipo URL sin espacios, como las que cita la IA) y las medianas ~40.
+const LONG_SUFFIX = ' · Fuente: competidor-ejemplo.com.mx/promociones/temporada-alta-2026 · verificado esta semana con cifras y contexto'
+const MID_SUFFIX = ' · detalle adicional verificado esta semana'
 
 function stretch(v: any): any {
-  if (typeof v === 'string') return v.length > 12 ? (LONG + v + ' ' + WORD) : v
+  if (typeof v === 'string') return v.length > 40 ? v + LONG_SUFFIX : v.length > 12 ? v + MID_SUFFIX : v
   if (Array.isArray(v)) return v.map(stretch)
   if (v && typeof v === 'object') return Object.fromEntries(Object.entries(v).map(([k, x]) => [k, k === 'icon' ? x : stretch(x)]))
   return v
@@ -204,8 +210,45 @@ export function makeExtreme(base: any): any {
 export const aiExtreme: any = makeExtreme(aiNormal)
 export const aiMinimal: any = {}
 
-export const FIXTURES: Record<'normal' | 'extreme' | 'minimal', any> = {
+// Proyecto del caso real (Stick-A-Boom) para renderizar `FIXTURES.real` con su giro y mercado reales.
+export const FIXTURE_PROJECT_REAL: any = {
+  id: 'stickaboom-muestra',
+  name: 'Stick-A-Boom — Inteligencia Competitiva',
+  companyName: 'Stick-A-Boom',
+  frequency: 'WEEKLY',
+  deliveryChannel: 'EMAIL',
+  deliveryTime: '07:00',
+  setup: {
+    companyName: 'Stick-A-Boom',
+    website: 'https://stickaboom.com',
+    industry: 'Impresión de stickers, calcomanías y etiquetas personalizadas (tienda en línea)',
+    targetMarket: 'Organizadores de eventos (bodas, XV años, cumpleaños y corporativos), padres de familia que compran etiquetas escolares, emprendedores que compran al mayoreo y personas de manualidades',
+    country: 'México',
+    geographicScope: ['Nacional'],
+    focusAreas: ['Precios', 'Lanzamientos de producto', 'Promociones y descuentos', 'Redes sociales', 'Posicionamiento en buscadores', 'Envíos y tiempos de entrega'],
+    mainProducts: [
+      'Calcomanías personalizadas en acabado brillo, mate, transparente y metálico',
+      'Stickers holográficos, galácticos y reflejantes', 'Hojas de stickers', 'Etiquetas escolares', 'Etiquetas para regalos y eventos',
+    ],
+    directCompetitors: [
+      { name: 'Sticker Mule' }, { name: 'Creatify' }, { name: 'Stickeria' }, { name: 'Pegalinas.com' }, { name: 'Pop México' },
+    ],
+  },
+}
+
+export type FixtureName = 'normal' | 'extreme' | 'minimal' | 'real'
+
+let realCache: any
+export const FIXTURES = {
   normal: aiNormal,
   extreme: aiExtreme,
   minimal: aiMinimal,
-}
+  // Perezoso: importar este módulo no lee el archivo (y el JSON no entra a la compilación de producción).
+  get real(): any {
+    if (!realCache) realCache = JSON.parse(fs.readFileSync(path.join(__dirname, 'fixtures', 'ai-real-stickaboom.json'), 'utf-8'))
+    return realCache
+  },
+} as Record<FixtureName, any>
+
+// Proyecto con el que se renderiza cada fixture (la real usa el caso Stick-A-Boom).
+export const fixtureProject = (name: FixtureName): any => (name === 'real' ? FIXTURE_PROJECT_REAL : FIXTURE_PROJECT)
