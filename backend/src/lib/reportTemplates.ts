@@ -28,6 +28,8 @@ export const PAGES: PageDef[] = [
   { file: 'p03-competidores.html', eyebrow: 'Competidores', title: 'Competidores con más actividad', sub: 'Ordenados por amenaza real · Reporte #{{edition}}' },
   { file: 'p04-alertas.html', eyebrow: 'Alertas', title: 'Alertas de la semana', sub: 'Lo que requiere atención primero · {{periodStart}} — {{periodEnd}}' },
   { file: 'p05-cambios.html', eyebrow: 'Movimientos', title: 'Cambios detectados', sub: '{{totalChanges}} cambios entre {{periodStart}} y {{periodEnd}}' },
+  { file: 'p06-radar.html', eyebrow: 'Monitoreo', title: 'Tu radar de monitoreo', sub: 'Qué vigilamos y qué sigue · {{nextMonth}}' },
+  { file: 'p07-comercial.html', eyebrow: 'Mercado', title: 'Inteligencia comercial', sub: 'Dónde están ganando tus competidores · Reporte #{{edition}}' },
 ]
 
 const V2_DIR = path.join(__dirname, '../templates/v2')

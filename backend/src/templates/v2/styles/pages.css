@@ -77,3 +77,24 @@
 .tl-item>div{flex:1;min-width:0}
 .tl-item b,.tl-item p{line-height:1.3}
 .tl-meta{display:flex;align-items:center;gap:2mm;margin-bottom:0;min-width:0}
+
+/* Página 6 · Radar */
+.meters{flex:none}
+.meter{display:flex;flex-direction:column;gap:2mm}
+.phases{flex:1;min-height:0;align-content:stretch}
+.phases .card{display:flex;flex-direction:column}
+.phases .ticks{gap:6mm;font-size:10.5pt}
+.phase-t{display:block;font-size:14pt;margin:1.5mm 0 5mm}
+.closing{flex:none;display:flex;justify-content:space-between;align-items:center;gap:6mm;padding:4mm 6mm;border-radius:var(--r-md);background:var(--ink-900);color:var(--on-dark)}
+.closing .label{color:var(--on-dark-muted)}
+.closing b{font-size:12pt}
+
+/* Página 7 · Inteligencia comercial */
+.commercial{flex:1;min-height:0;align-content:start;gap:3.5mm}
+.c-top{flex-grow:1.12}
+.commercial .card{overflow:hidden;padding:3mm 3.4mm}
+.commercial .mini-list{gap:1.6mm;margin-top:1.2mm}
+.commercial .rowline .mono{white-space:nowrap;flex:none}
+.commercial .mini p,.commercial .mini b{line-height:1.3}
+.alertband b.clamp-2{display:-webkit-box}
+.acc{color:var(--accent)}

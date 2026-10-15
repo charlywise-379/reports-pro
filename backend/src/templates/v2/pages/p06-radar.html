@@ -1,0 +1,17 @@
+<div class="g3 meters">
+  <div class="meter tone-{{pressureTone}}"><div class="rowline"><span class="label">Presión competitiva</span><span class="mono tone-text">{{competitivePressure}}/100</span></div><div class="bar bar--lg"><i style="width:{{competitivePressure}}%"></i></div></div>
+  <div class="meter tone-{{opportunityTone}}"><div class="rowline"><span class="label">Oportunidad</span><span class="mono tone-text">{{opportunityScore}}/100</span></div><div class="bar bar--lg"><i style="width:{{opportunityScore}}%"></i></div></div>
+  <div class="meter tone-{{riskTone}}"><div class="rowline"><span class="label">Riesgo de mercado</span><span class="mono tone-text">{{marketRisk}}% · {{highRisksCount}} altos</span></div><div class="bar bar--lg"><i style="width:{{marketRisk}}%"></i></div></div>
+</div>
+<div class="g3 phases">
+  <div class="card card--accent tone-bad"><div class="label tone-text">Semana 1 · Primeros 7 días</div><b class="phase-t">Defensa activa</b><ul class="ticks lst">{{#each criticalSignals}}<li><span class="dot mt"></span><span class="clamp-2">{{this}}</span></li>{{/each}}</ul></div>
+  <div class="card card--accent tone-warn"><div class="label tone-text">Semana 2 · 8-14 días</div><b class="phase-t">Expansión y respuesta</b><ul class="ticks lst">{{#each importantSignals}}<li><span class="dot mt"></span><span class="clamp-2">{{this}}</span></li>{{/each}}</ul></div>
+  <div class="card card--accent tone-info"><div class="label tone-text">Semanas 3-4 · 15-30 días</div><b class="phase-t">Consolidación</b><ul class="ticks lst">{{#each infoSignals}}<li><span class="dot mt"></span><span class="clamp-2">{{this}}</span></li>{{/each}}</ul></div>
+</div>
+<div class="strip">
+  <span><b class="mono">{{frequency}}</b> <span class="muted">frecuencia</span></span>
+  <span><b class="mono">{{activeAreas}}</b> <span class="muted">áreas activas</span></span>
+  <span><b class="mono">{{competitorsCount}}</b> <span class="muted">competidores</span></span>
+  <span><b class="mono">{{signalsCount}}</b> <span class="muted">señales esta semana</span></span>
+</div>
+<div class="closing"><div><div class="label">Próxima entrega</div><b>{{nextReportDate}} · {{nextReportTime}}</b></div><div class="mono sm">Reporte #{{nextEdition}} · {{deliveryChannel}}</div></div>
