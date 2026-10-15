@@ -615,7 +615,7 @@ Responde ÚNICAMENTE con JSON válido comenzando con { sin texto previo ni markd
 
 
 // ─── Llamar a Claude con web search ──────────────────
-async function callClaudeWithSearch(project: any, dateInfo: any): Promise<any> {
+export async function callClaudeWithSearch(project: any, dateInfo: any): Promise<any> {
   console.log('🤖 Iniciando análisis con Claude AI + web search...')
 
   const competitors = project.setup?.directCompetitors?.filter((c: any) => c.name) || []
