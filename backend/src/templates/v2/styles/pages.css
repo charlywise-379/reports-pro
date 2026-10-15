@@ -1,0 +1,20 @@
+/* backend/src/templates/v2/styles/pages.css — reglas específicas de cada página */
+
+/* Página 1 · Portada */
+.cover-main{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);gap:12mm;align-items:center;flex:none;margin-bottom:6mm}
+.cover-title{font-size:48pt;font-weight:600;letter-spacing:-.04em;line-height:1.02;margin:3mm 0 2mm;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.cover-sub{font-size:12pt;color:var(--on-dark-muted)}
+.tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:4mm}
+.tag{font-family:var(--mono);font-size:7.5pt;letter-spacing:.06em;text-transform:uppercase;padding:3px 9px;border:1px solid rgba(255,255,255,.18);border-radius:99px;color:var(--on-dark-muted)}
+.cover-trend{min-width:0;flex-wrap:wrap;row-gap:2mm;display:flex;align-items:center;gap:8px;margin-top:4mm;color:var(--on-dark-muted);font-size:8pt}
+.cover-scores{display:grid;grid-template-columns:repeat(3,1fr);gap:4mm}
+.score{display:flex;flex-direction:column;align-items:center;gap:2mm;text-align:center}
+.kpis{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));border-top:1px solid rgba(255,255,255,.1);border-bottom:1px solid rgba(255,255,255,.1);flex:none;margin-bottom:5mm}
+.kpi{padding:3.2mm 3mm 3.2mm 0;min-width:0}
+.kpi+.kpi{padding-left:4mm;border-left:1px solid rgba(255,255,255,.1)}
+.kpi .num{margin:1.5mm 0 1mm}
+.cover-grid{flex:1;min-height:0}
+.cover-grid .card{overflow:hidden;display:flex;flex-direction:column;gap:3mm}
+.cover-trend .chip{flex:none;max-width:100%;min-width:0}
+.cover-grid .rowline .mono{white-space:nowrap;flex:none}
+.cover-grid .mini-list{overflow:hidden}

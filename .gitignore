@@ -18,3 +18,4 @@ docs/superpowers/
 /pnpm-lock.yaml
 outputs/
 backups/
+backend/preview-out/

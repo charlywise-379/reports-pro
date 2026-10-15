@@ -1,0 +1,35 @@
+<div class="cover-main">
+  <div>
+    <div class="eyebrow">Reporte de inteligencia competitiva · Edición {{edition}}</div>
+    <h1 class="cover-title">{{companyName}}</h1>
+    <p class="cover-sub">{{industry}} · {{targetMarket}}</p>
+    <div class="tags lst">{{#each tags}}<span class="tag">{{this}}</span>{{/each}}</div>
+    <div class="cover-trend"><span class="chip tone-info">{{generalTrend}}</span><span class="mono">{{trendDelta}} pts vs. reporte anterior · {{periodStart}} — {{periodEnd}}</span></div>
+  </div>
+  <div class="cover-scores">
+    <div class="score tone-{{pressureTone}}">
+      <div class="ring"><svg width="104" height="104" viewBox="0 0 110 110"><circle class="trk" cx="55" cy="55" r="46" fill="none" stroke-width="7"/><circle class="val" cx="55" cy="55" r="46" fill="none" stroke-width="7" stroke-dasharray="{{pressureDash}} 289"/></svg><div class="ring-v"><span class="num num-lg">{{competitivePressure}}</span></div></div>
+      <div class="label">Presión competitiva</div>
+    </div>
+    <div class="score tone-{{opportunityTone}}">
+      <div class="ring"><svg width="104" height="104" viewBox="0 0 110 110"><circle class="trk" cx="55" cy="55" r="46" fill="none" stroke-width="7"/><circle class="val" cx="55" cy="55" r="46" fill="none" stroke-width="7" stroke-dasharray="{{opportunityDash}} 289"/></svg><div class="ring-v"><span class="num num-lg">{{opportunityScore}}</span></div></div>
+      <div class="label">Oportunidad</div>
+    </div>
+    <div class="score tone-{{riskTone}}">
+      <div class="ring"><svg width="104" height="104" viewBox="0 0 110 110"><circle class="trk" cx="55" cy="55" r="46" fill="none" stroke-width="7"/><circle class="val" cx="55" cy="55" r="46" fill="none" stroke-width="7" stroke-dasharray="{{riskDash}} 289"/></svg><div class="ring-v"><span class="num num-lg">{{marketRisk}}</span></div></div>
+      <div class="label">Riesgo · {{riskLevel}}</div>
+    </div>
+  </div>
+</div>
+<div class="kpis">
+  <div class="kpi"><div class="label">Señales detectadas</div><div class="num num-md">{{signalsCount}}</div><div class="sm muted">+{{signalsDelta}}% vs. anterior</div></div>
+  <div class="kpi"><div class="label">Movimientos clave</div><div class="num num-md">{{movementsCount}}</div><div class="sm muted">{{criticalMovements}} críticos · {{minorMovements}} menores</div></div>
+  <div class="kpi"><div class="label">Alertas activas</div><div class="num num-md">{{alertsCount}}</div><div class="sm muted">requieren atención</div></div>
+  <div class="kpi"><div class="label">Competidores</div><div class="num num-md">{{competitorsCount}}</div><div class="sm muted">monitoreados</div></div>
+  <div class="kpi"><div class="label">Nivel de riesgo</div><div class="num num-md">{{riskLevel}}</div><div class="sm muted">mercado actual</div></div>
+</div>
+<div class="cover-grid g3">
+  <div class="card"><div class="label">Hallazgos</div><div class="mini-list lst">{{#each insights}}<div class="mini tone-{{this.tone}}"><span class="dot mt"></span><div><div class="label tone-text">{{this.category}}</div><p class="clamp-3">{{this.text}}</p></div></div>{{/each}}</div></div>
+  <div class="card"><div class="label">Acciones prioritarias</div><div class="mini-list lst">{{#each actions}}<div class="mini tone-{{this.tone}}"><span class="chip">{{this.priorityLabel}}</span><p class="clamp-3">{{this.text}}</p></div>{{/each}}</div></div>
+  <div class="card"><div class="label">Amenaza por competidor</div><div class="mini-list lst">{{#each topCompetitors}}<div class="tone-{{this.tone}}"><div class="rowline"><span class="clamp-1">{{this.name}}</span><span class="mono tone-text">{{this.threat}}/10</span></div><div class="bar"><i style="width:{{this.threatPct}}%"></i></div></div>{{/each}}</div></div>
+</div>
