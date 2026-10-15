@@ -45,7 +45,7 @@ async function main() {
         await page.setContent(html, { waitUntil: 'load' })
         await page.evaluateHandle('document.fonts.ready')
         await page.waitForFunction(() => document.body.dataset.fit === 'done', { timeout: 15000 })
-        await page.waitForFunction(() => document.body.dataset.blur && document.body.dataset.blur !== 'pending', { timeout: 20000 })
+        await page.waitForFunction(() => document.body.dataset.blur && document.body.dataset.blur !== 'pending', { timeout: 20000 }).catch(() => undefined)
         const blurState = await page.evaluate(() => document.body.dataset.blur || '')
 
         const pages = await page.$$('.page')

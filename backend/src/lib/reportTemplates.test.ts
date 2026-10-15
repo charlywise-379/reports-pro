@@ -270,6 +270,7 @@ describe('buildPdfRequestBody', () => {
     expect(body.waitForFunction.fn).toContain("'pending'")
     expect(body.waitForFunction.fn).toContain('is-teaser')
     expect(body.waitForFunction.fn).toContain('.fit')
+    expect(body.bestAttempt).toBe(true)
   })
 })
 
@@ -277,5 +278,25 @@ describe('v1 no se bloquea con la espera de Browserless', () => {
   it('v1 no tiene .fit, así que la función de espera termina sin data-blur', () => {
     const v1 = fs.readFileSync(path.join(__dirname, '../templates/competitive-report.html'), 'utf-8')
     expect(v1).not.toMatch(/class="fit"/)
+  })
+})
+
+describe('pre-desenfoque: protección contra bloqueos', () => {
+  const tpl = buildV2Template()
+  it('tiene un watchdog con setTimeout que marca failed si el estado no se resuelve', () => {
+    expect(tpl).toMatch(/WATCHDOG_MS\s*=\s*12000/)
+    expect(tpl).toMatch(/setTimeout\(function \(\) \{[^}]*dataset\.blur = 'failed'/)
+  })
+  it('tiene un plazo total menor que el timeout de Browserless (20000) y menor que el watchdog', () => {
+    const total = Number(/TOTAL_DEADLINE_MS\s*=\s*(\d+)/.exec(tpl)?.[1])
+    const wd = Number(/WATCHDOG_MS\s*=\s*(\d+)/.exec(tpl)?.[1])
+    const img = Number(/LOAD_TIMEOUT_MS\s*=\s*(\d+)/.exec(tpl)?.[1])
+    expect(total).toBeLessThan(wd)
+    expect(wd).toBeLessThan(20000)
+    expect(img).toBeLessThanOrEqual(3000)
+  })
+  it('envuelve fitAll en try/finally y revisa failed entre páginas', () => {
+    expect(tpl).toMatch(/try \{ fitAll\(\); \} finally/)
+    expect(tpl).toContain("dataset.blur === 'failed'")
   })
 })

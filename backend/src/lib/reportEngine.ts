@@ -1314,6 +1314,8 @@ export function buildPdfRequestBody(html: string) {
       fn: "() => !document.body.classList.contains('is-teaser') || !document.querySelector('.fit') || (!!document.body.dataset.blur && document.body.dataset.blur !== 'pending')",
       timeout: 20000,
     },
+    // Si la espera vence, Browserless imprime lo que haya en lugar de fallar la solicitud.
+    bestAttempt: true,
   }
 }
 

@@ -54,14 +54,16 @@
      pending | done | failed. Si falla, se deja la regla CSS de desenfoque como respaldo (no se retira).
      Limite conocido: los iconos <use href="#i-..."> no se dibujan dentro del foreignObject; es aceptable porque la pagina
      queda desenfocada. */
-  var BLUR_FIRST_INDEX = 5, SCALE = 0.5, JPEG_QUALITY = 0.6, BLUR_PX = 4, LOAD_TIMEOUT_MS = 8000;
+  var BLUR_FIRST_INDEX = 5, SCALE = 0.5, JPEG_QUALITY = 0.6, BLUR_PX = 4, LOAD_TIMEOUT_MS = 3000;
+  var TOTAL_DEADLINE_MS = 10000, WATCHDOG_MS = 12000;
   var DARK_BG = '#0B0D14', LIGHT_BG = '#F6F7FA';
-  var blurStarted = false;
+  var blurStarted = false, blurDeadline = 0;
+  function blurFailed() { return document.body.dataset.blur === 'failed'; }
 
   function loadImage(src) {
     return new Promise(function (resolve, reject) {
       var img = new Image();
-      var timer = setTimeout(function () { reject(new Error('timeout al cargar el SVG')); }, LOAD_TIMEOUT_MS);
+      var timer = setTimeout(function () { reject(new Error('timeout al cargar el SVG')); }, Math.max(1, Math.min(LOAD_TIMEOUT_MS, blurDeadline - Date.now())));
       img.onload = function () { clearTimeout(timer); resolve(img); };
       img.onerror = function () { clearTimeout(timer); reject(new Error('fallo al cargar el SVG')); };
       img.src = src;
@@ -82,6 +84,7 @@
       '<div class="page' + (dark ? ' page--dark' : '') + '" style="' + size + ';position:relative;overflow:hidden">' + inner + '</div></div>';
     var svg = '<svg xmlns="http://www.w3.org/2000/svg" width="' + w + '" height="' + h + '"><foreignObject width="100%" height="100%">' + xhtml + '</foreignObject></svg>';
     return loadImage('data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg)).then(function (img) {
+      if (blurFailed()) throw new Error('pre-desenfoque cancelado');
       var canvas = document.createElement('canvas');
       canvas.width = Math.round(w * SCALE); canvas.height = Math.round(h * SCALE);
       var ctx = canvas.getContext('2d');
@@ -101,17 +104,24 @@
   function preBlur() {
     if (!document.body.classList.contains('is-teaser')) { document.body.dataset.blur = 'skipped'; return; }
     document.body.dataset.blur = 'pending';
+    blurDeadline = Date.now() + TOTAL_DEADLINE_MS;
     var css = pageCss();
     var skin = (document.body.className.match(/skin-\S+/) || [''])[0];
     var pages = Array.prototype.slice.call(document.querySelectorAll('.page'), BLUR_FIRST_INDEX)
       .filter(function (p) { return !p.hasAttribute('data-prebl'); });
     var chain = Promise.resolve();
-    pages.forEach(function (p) { chain = chain.then(function () { return blurPage(p, css, skin); }); });
-    chain.then(function () { document.body.dataset.blur = 'done'; },
+    pages.forEach(function (p) { chain = chain.then(function () {
+        if (blurFailed() || Date.now() >= blurDeadline) throw new Error('plazo del pre-desenfoque agotado');
+        return blurPage(p, css, skin);
+      }); });
+    chain.then(function () { if (!blurFailed()) document.body.dataset.blur = 'done'; },
       function () { document.body.dataset.blur = 'failed'; });
   }
   var fontsReady = !(document.fonts && document.fonts.ready);
-  function run() { fitAll(); maybeBlur(); }
+  /* Si fitAll lanza, igual se marca el ajuste como terminado y se intenta el pre-desenfoque. */
+  function run() {
+    try { fitAll(); } finally { document.body.dataset.fit = 'done'; maybeBlur(); }
+  }
   function maybeBlur() {
     if (!document.body.classList.contains('is-teaser')) { document.body.dataset.blur = 'skipped'; return; }
     if (blurStarted || document.body.dataset.fit !== 'done' || !fontsReady || document.readyState !== 'complete') return;
@@ -119,6 +129,11 @@
     try { preBlur(); } catch (e) { document.body.dataset.blur = 'failed'; }
   }
   /* El pre-desenfoque corre despues del ajuste, con fuentes y pagina cargadas (una sola vez). */
+  /* Watchdog independiente de fonts.ready: en teaser v2, si el estado sigue sin definir o en pending, pasa a failed
+     (queda el desenfoque CSS) antes de que venza la espera de Browserless (20 s), y la cadena de paginas se detiene. */
+  if (document.body.classList.contains('is-teaser')) {
+    setTimeout(function () { if (!document.body.dataset.blur || document.body.dataset.blur === 'pending') document.body.dataset.blur = 'failed'; }, WATCHDOG_MS);
+  }
   function onFonts() { fontsReady = true; run(); }
   if (!fontsReady) document.fonts.ready.then(onFonts); else run();
   window.addEventListener('load', run);
