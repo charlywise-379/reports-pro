@@ -5,6 +5,7 @@ import path from 'path'
 import { renderTemplate } from './reportRender'
 import { reportFontFaces } from './reportFonts'
 import { buildViewModel, Skin } from './reportViewModel'
+import { ReportLogos } from './reportLogos'
 
 export type TemplateKind = 'v1' | 'editorial' | 'panel'
 
@@ -33,12 +34,13 @@ const V2_DIR = path.join(__dirname, '../templates/v2')
 const read = (rel: string): string => fs.readFileSync(path.join(V2_DIR, rel), 'utf-8')
 
 function wrapPage(def: PageDef, inner: string): string {
+  const logo = def.dark ? '{{logoOnDark}}' : '{{logoOnLight}}'
   const sec = def.title
     ? `<div class="sec"><div class="eyebrow">${def.eyebrow ?? ''}</div><h2>${def.title}</h2>${def.sub ? `<p>${def.sub}</p>` : ''}</div>`
     : ''
   return (
     `<div class="page${def.dark ? ' page--dark' : ''}"><div class="page-content">` +
-    `<div class="hdr"><div class="brand"><img src="{{logoBase64}}" alt=""><span>Omni Reports</span><small>Inteligencia competitiva</small></div>` +
+    `<div class="hdr"><div class="brand"><img src="${logo}" alt="Omni Reports"><small>Inteligencia competitiva</small></div>` +
     `<div class="hdr-meta">{{companyName}} · Reporte #{{edition}} · {{year}}</div></div>` +
     sec +
     `<div class="body">${inner}</div>` +
@@ -56,7 +58,7 @@ export function buildV2Template(): string {
     .replace('<!--__PAGES__-->', () => pages)
 }
 
-export function renderReportHtmlV2(kind: Skin, data: any, aiData: any, logoBase64: string): string {
+export function renderReportHtmlV2(kind: Skin, data: any, aiData: any, logos: ReportLogos): string {
   const vm = buildViewModel(data, aiData, kind)
-  return renderTemplate(buildV2Template(), { ...vm, logoBase64 }, { escape: true })
+  return renderTemplate(buildV2Template(), { ...vm, logoOnDark: logos.onDark, logoOnLight: logos.onLight }, { escape: true })
 }

@@ -4,6 +4,11 @@
 export const LOGO_STUB =
   'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg=='
 
+export const LOGOS_STUB = {
+  onDark: LOGO_STUB,
+  onLight: LOGO_STUB.replace('data:image/png;', 'data:image/png;name=light;'),
+}
+
 export const FIXTURE_PROJECT: any = {
   id: 'proj_fixture_001',
   name: 'Estudio Boreal',

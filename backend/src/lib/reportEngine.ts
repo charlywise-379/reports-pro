@@ -6,6 +6,7 @@ import { prisma } from './prisma'
 import { getSecret } from './config'
 import { renderTemplate } from './reportRender'
 import { resolveReportTemplate, renderReportHtmlV2 } from './reportTemplates'
+import { loadReportLogos } from './reportLogos'
 
 // ─── Tipos ───────────────────────────────────────────
 interface ReportData {
@@ -1343,16 +1344,16 @@ export async function generateReport(project: any, outputPath: string, options?:
   const data = buildReportData(project, aiData, dateInfo, editionNumber, options?.teaser === true)
 
   // 3. Cargar y renderizar template (REPORT_TEMPLATE: v1 | editorial | panel; por defecto v1)
-  const logoPath = path.join(__dirname, '../assets/logo-icon.png')
-  const logoBase64 = 'data:image/png;base64,' + fs.readFileSync(logoPath).toString('base64')
   const templateKind = resolveReportTemplate(process.env.REPORT_TEMPLATE)
   let html: string
   if (templateKind === 'v1') {
     const templatePath = path.join(__dirname, '../templates/competitive-report.html')
     const template = fs.readFileSync(templatePath, 'utf-8')
+    const logoPath = path.join(__dirname, '../assets/logo-icon.png')
+    const logoBase64 = 'data:image/png;base64,' + fs.readFileSync(logoPath).toString('base64')
     html = renderTemplate(template, { ...data, logoBase64 })
   } else {
-    html = renderReportHtmlV2(templateKind, data, aiData, logoBase64)
+    html = renderReportHtmlV2(templateKind, data, aiData, loadReportLogos())
   }
 
   // 4. Generar PDF via Browserless

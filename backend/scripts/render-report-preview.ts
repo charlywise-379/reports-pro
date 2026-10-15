@@ -6,7 +6,8 @@ import path from 'path'
 import puppeteer from 'puppeteer-core'
 import { buildReportData } from '../src/lib/reportEngine'
 import { renderReportHtmlV2, PAGES } from '../src/lib/reportTemplates'
-import { FIXTURE_PROJECT, FIXTURE_DATE_INFO, FIXTURES, LOGO_STUB } from '../src/lib/reportFixtures'
+import { loadReportLogos } from '../src/lib/reportLogos'
+import { FIXTURE_PROJECT, FIXTURE_DATE_INFO, FIXTURES } from '../src/lib/reportFixtures'
 
 const arg = (name: string, fallback: string) => {
   const i = process.argv.indexOf(`--${name}`)
@@ -35,7 +36,7 @@ async function main() {
         const outDir = path.join(__dirname, '..', 'preview-out', `${skin}-${fx}${teaser ? '-teaser' : ''}`)
         fs.mkdirSync(outDir, { recursive: true })
         const data = buildReportData(FIXTURE_PROJECT, (FIXTURES as any)[fx], FIXTURE_DATE_INFO, 3, teaser)
-        const html = renderReportHtmlV2(skin as any, data, (FIXTURES as any)[fx], LOGO_STUB)
+        const html = renderReportHtmlV2(skin as any, data, (FIXTURES as any)[fx], loadReportLogos())
         fs.writeFileSync(path.join(outDir, 'report.html'), html)
 
         const page = await browser.newPage()

@@ -19,8 +19,8 @@ body{font-family:var(--font);color:var(--text);background:var(--paper);font-size
 
 /* Encabezado, título de sección, cuerpo y pie */
 .hdr{display:flex;justify-content:space-between;align-items:center;padding-bottom:4.5mm;border-bottom:1px solid var(--hair);margin-bottom:6mm;flex:none}
-.brand{display:flex;align-items:center;gap:8px;font-weight:600;font-size:9pt;letter-spacing:-.01em}
-.brand img{width:18px;height:18px;object-fit:contain}
+.brand{display:flex;align-items:center;gap:3mm}
+.brand img{height:4.8mm;width:auto;object-fit:contain;display:block}
 .brand small{font-family:var(--mono);font-weight:400;font-size:7.5pt;color:var(--muted);letter-spacing:.08em;text-transform:uppercase}
 .hdr-meta{font-family:var(--mono);font-size:7.5pt;color:var(--muted);letter-spacing:.04em}
 .page--dark .hdr{border-color:rgba(255,255,255,.1)}

@@ -5,12 +5,12 @@ vi.mock('./config', () => ({ getSecret: () => undefined }))
 vi.mock('./anthropic', () => ({ getAnthropic: () => ({}) }))
 
 import { buildReportData } from './reportEngine'
-import { FIXTURE_PROJECT, FIXTURE_DATE_INFO, FIXTURES, LOGO_STUB } from './reportFixtures'
+import { FIXTURE_PROJECT, FIXTURE_DATE_INFO, FIXTURES, LOGOS_STUB } from './reportFixtures'
 import { PAGES, resolveReportTemplate, renderReportHtmlV2, buildV2Template } from './reportTemplates'
 
 const render = (fixture: 'normal' | 'extreme' | 'minimal', skin: 'editorial' | 'panel', teaser = false) => {
   const data = buildReportData(FIXTURE_PROJECT, FIXTURES[fixture], FIXTURE_DATE_INFO, 3, teaser)
-  return renderReportHtmlV2(skin, data, FIXTURES[fixture], LOGO_STUB)
+  return renderReportHtmlV2(skin, data, FIXTURES[fixture], LOGOS_STUB)
 }
 const count = (html: string, re: RegExp) => (html.match(re) || []).length
 
@@ -44,7 +44,7 @@ describe('renderReportHtmlV2', () => {
   it('escapa HTML que venga de la IA', () => {
     const ai = { ...FIXTURES.normal, generalTrend: '<script>alert(1)</script> & "x"' }
     const data = buildReportData(FIXTURE_PROJECT, ai, FIXTURE_DATE_INFO, 3, false)
-    const html = renderReportHtmlV2('panel', data, ai, LOGO_STUB)
+    const html = renderReportHtmlV2('panel', data, ai, LOGOS_STUB)
     expect(html).not.toContain('<script>alert(1)</script>')
     expect(html).toContain('&lt;script&gt;alert(1)&lt;/script&gt;')
   })
@@ -86,5 +86,19 @@ describe('teaser', () => {
 describe('clamps de páginas 4 y 5', () => {
   it('no sobreescribe -webkit-line-clamp desde pages.css (el valor vive en la clase clamp-N)', () => {
     expect(buildV2Template()).not.toMatch(/\.(alerts|tl-item)[^{]*\{[^}]*-webkit-line-clamp/)
+  })
+})
+
+describe('logos', () => {
+  const pages = (html: string) => html.split(/<div class="page(?: page--dark)?"><div class="page-content">/).slice(1)
+  it('la portada oscura usa el logo para fondo oscuro y las páginas claras el de fondo claro', () => {
+    const [cover, second] = pages(render('normal', 'editorial'))
+    expect(cover).toContain(LOGOS_STUB.onDark)
+    expect(cover).not.toContain(LOGOS_STUB.onLight)
+    expect(second).toContain(LOGOS_STUB.onLight)
+    expect(second).not.toContain(LOGOS_STUB.onDark)
+  })
+  it('no quedan referencias al marcador antiguo', () => {
+    expect(render('normal', 'panel')).not.toContain('logoBase64')
   })
 })
