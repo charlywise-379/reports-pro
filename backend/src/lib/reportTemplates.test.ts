@@ -66,9 +66,23 @@ describe('renderReportHtmlV2', () => {
 
 describe('regla .chip', () => {
   const rule = (buildV2Template().match(/\.chip\{([^}]*)\}/) || [])[1] || ''
-  it('trunca con puntos suspensivos y no usa inline-flex', () => {
-    expect(rule).toContain('text-overflow:ellipsis')
+  it('envuelve el texto: sin overflow:hidden, white-space:normal y sin inline-flex', () => {
+    expect(rule).not.toContain('overflow:hidden')
+    expect(rule).toContain('white-space:normal')
     expect(rule).not.toContain('display:inline-flex')
+  })
+})
+
+describe('sin recortes con puntos suspensivos', () => {
+  const tpl = buildV2Template()
+  it('el CSS no usa -webkit-line-clamp ni text-overflow:ellipsis', () => {
+    expect(tpl).not.toContain('-webkit-line-clamp')
+    expect(tpl).not.toMatch(/text-overflow\s*:\s*ellipsis/)
+  })
+  it('el HTML de las páginas no usa clases clamp-N', () => {
+    const html = render('normal', 'editorial')
+    const body = html.slice(html.indexOf('<body'))
+    expect(body).not.toContain('clamp-')
   })
 })
 
@@ -83,17 +97,11 @@ describe('teaser', () => {
   })
 })
 
-describe('clamps de páginas 4 y 5', () => {
-  it('no sobreescribe -webkit-line-clamp desde pages.css (el valor vive en la clase clamp-N)', () => {
-    expect(buildV2Template()).not.toMatch(/\.(alerts|tl-item)[^{]*\{[^}]*-webkit-line-clamp/)
-  })
-})
-
 describe('página 9 (riesgos)', () => {
   const pages = (html: string) => html.split(/<div class="page(?: page--dark)?"><div class="page-content">/).slice(1)
-  it('el título del riesgo alto admite 2 líneas y no repite la etiqueta PROBABILIDAD por tarjeta', () => {
+  it('muestra el título del riesgo alto y no repite la etiqueta PROBABILIDAD por tarjeta', () => {
     const p9 = pages(render('normal', 'editorial'))[8]
-    expect(p9).toContain('class="clamp-2">Pérdida de clientes por precio')
+    expect(p9).toContain('Pérdida de clientes por precio')
     expect(p9).not.toMatch(/risk-head[\s\S]*?PROBABILIDAD/i)
     expect(p9).toContain('el porcentaje indica la probabilidad')
   })
@@ -132,9 +140,5 @@ describe('estructura final', () => {
     const rules = [...css.matchAll(/([^{}]+)\{([^{}]*)\}/g)]
     const bad = rules.filter(m => m[1].split(',').some(sel => sel.trim() === '.recs') && /overflow(-y)?\s*:\s*hidden/.test(m[2]))
     expect(bad).toHaveLength(0)
-  })
-  it('el factor del benchmark admite 2 líneas', () => {
-    const html = render('normal', 'panel')
-    expect(html).toMatch(/<b class="clamp-2">SEO (?:\/|&#x2F;) Posicionamiento Google<\/b>/)
   })
 })

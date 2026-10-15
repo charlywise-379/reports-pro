@@ -1,10 +1,10 @@
 <div class="g2 alerts">
   <div class="stack">
     <div><span class="chip tone-bad">{{criticalAlertsCount}} críticas</span></div>
-    <div class="stack lst">{{#each criticalAlerts}}<div class="card card--accent tone-bad"><div class="a-head"><svg class="ic tone-text"><use href="#i-alert"/></svg><div><b class="clamp-2">{{this.title}}</b><div class="sm muted clamp-1">{{this.detected}}</div></div></div><p class="clamp-3">{{this.description}}</p><div class="act"><svg class="ic"><use href="#i-spark"/></svg><span class="clamp-2">{{this.action}}</span></div></div>{{/each}}</div>
+    <div class="stack lst">{{#each criticalAlerts}}<div class="card card--accent tone-bad"><div class="a-head"><svg class="ic tone-text"><use href="#i-alert"/></svg><div><b>{{this.title}}</b><div class="sm muted">{{this.detected}}</div></div></div><p>{{this.description}}</p><div class="act"><svg class="ic"><use href="#i-spark"/></svg><span>{{this.action}}</span></div></div>{{/each}}</div>
   </div>
   <div class="stack">
     <div><span class="chip tone-warn">{{mediumAlertsCount}} medias</span></div>
-    <div class="stack lst">{{#each mediumAlerts}}<div class="card tone-warn"><div class="a-head"><span class="dot mt"></span><div><b class="clamp-2">{{this.title}}</b><div class="sm muted clamp-1">{{this.source}}</div></div></div><p class="clamp-2">{{this.description}}</p></div>{{/each}}</div>
+    <div class="stack lst">{{#each mediumAlerts}}<div class="card tone-warn"><div class="a-head"><span class="dot mt"></span><div><b>{{this.title}}</b><div class="sm muted">{{this.source}}</div></div></div><p>{{this.description}}</p></div>{{/each}}</div>
   </div>
 </div>

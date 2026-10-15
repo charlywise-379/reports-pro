@@ -2,7 +2,7 @@
 
 /* Página 1 · Portada */
 .cover-main{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);gap:12mm;align-items:center;flex:none;margin-bottom:4mm}
-.cover-title{font-size:48pt;font-weight:600;letter-spacing:-.04em;line-height:1.02;margin:3mm 0 2mm;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.cover-title{font-size:48pt;font-weight:600;letter-spacing:-.04em;line-height:1.02;margin:3mm 0 2mm}
 .cover-sub{font-size:12pt;color:var(--on-dark-muted)}
 .tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:4mm}
 .tag{font-family:var(--mono);font-size:7.5pt;letter-spacing:.06em;text-transform:uppercase;padding:3px 9px;border:1px solid rgba(255,255,255,.18);border-radius:99px;color:var(--on-dark-muted)}
@@ -14,9 +14,9 @@
 .kpi+.kpi{padding-left:4mm;border-left:1px solid rgba(255,255,255,.1)}
 .kpi .num{margin:1.5mm 0 1mm}
 .cover-grid{flex:1;min-height:0}
-.cover-grid .card{overflow:hidden;display:flex;flex-direction:column;gap:2mm}
+.cover-grid .card{display:flex;flex-direction:column;gap:2mm}
 .cover-grid .mini-list{gap:2.5mm}
-.cover-trend .chip{display:block;flex:none;max-width:100%;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cover-trend .chip{flex:0 1 auto;min-width:0}
 .cover-grid .rowline .mono{white-space:nowrap;flex:none}
 
 /* Página 2 · Termómetro */
@@ -39,14 +39,12 @@
 .therm-main .ring svg{width:150px;height:150px}
 .alertband{padding:3mm 5mm}
 .alertband>div{min-width:0}
-.alertband b.clamp-1{display:-webkit-box}
 .alertband .chip{flex:none}
-.alertband span.clamp-2{display:-webkit-box}
+.alertband>div>span{display:block}
 .comp{table-layout:fixed}
 .comp th:nth-child(1){width:7mm}
 .comp th:nth-child(2){width:44mm}
 .comp th:nth-child(3){width:28mm}
-.comp td:nth-child(3) .clamp-1{-webkit-line-clamp:2}
 .comp th:nth-child(4){width:33mm}
 .comp th:nth-child(5){width:30mm}
 .comp th:nth-child(7){width:22mm}
@@ -92,20 +90,19 @@
 /* Página 7 · Inteligencia comercial */
 .commercial{flex:1;min-height:0;align-content:start;gap:3.5mm}
 .c-top{flex-grow:1.12}
-.commercial .card{overflow:hidden;padding:3mm 3.4mm}
+.commercial .card{padding:3mm 3.4mm}
 .commercial .mini-list{gap:1.6mm;margin-top:1.2mm}
 .commercial .rowline .mono{white-space:nowrap;flex:none}
 .commercial .mini p,.commercial .mini b{line-height:1.3}
-.alertband b.clamp-2{display:-webkit-box}
 .acc{color:var(--accent)}
 
 /* Página 8 · Oportunidades */
 .opps{flex:none;align-content:start}
-.opp-title{display:-webkit-box;font-size:11pt;margin:3mm 0 2mm}
+.opp-title{display:block;font-size:11pt;margin:3mm 0 2mm}
 .opp-foot{display:flex;justify-content:space-between;align-items:center;gap:2mm;margin-top:3mm}
 .opps .rowline .chip{min-width:0}
 .opps .rowline .num{flex:none;white-space:nowrap}
-.opp-foot .mono{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.opp-foot .mono{flex:1;min-width:0}
 .opp-foot .chip{flex:none;max-width:48%}
 .dot--accent{background:var(--accent)}
 
@@ -125,7 +122,7 @@
 .bench{table-layout:fixed}
 .bench td{padding-top:1.1mm;padding-bottom:1.1mm;line-height:1.25;overflow-wrap:anywhere}
 .bench th:first-child,.bench td:first-child{width:44mm}
-.cell{display:inline-block;max-width:100%;padding:1px 7px;border-radius:6px;font-weight:600;font-size:8.5pt;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;vertical-align:middle}
+.cell{display:inline-block;max-width:100%;padding:1px 7px;border-radius:6px;font-weight:600;font-size:8.5pt;vertical-align:middle}
 .cell.is-client{background:var(--accent-soft);color:var(--accent)}
 .cell.is-na{background:var(--neutral-soft);color:var(--muted)}
 .sw{flex:none}
