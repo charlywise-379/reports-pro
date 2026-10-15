@@ -299,4 +299,15 @@ describe('pre-desenfoque: protección contra bloqueos', () => {
     expect(tpl).toMatch(/try \{ fitAll\(\); \} finally/)
     expect(tpl).toContain("dataset.blur === 'failed'")
   })
+  it('maybeBlur y preBlur salen si ya es failed, antes de escribir pending', () => {
+    for (const fn of ['maybeBlur', 'preBlur']) {
+      const body = tpl.slice(tpl.indexOf(`function ${fn}()`))
+      const iGuard = body.indexOf('if (blurFailed()) return')
+      const iPending = body.indexOf("dataset.blur = 'pending'")
+      expect(iGuard).toBeGreaterThan(-1)
+      if (fn === 'preBlur') expect(iGuard).toBeLessThan(iPending)
+    }
+    const mb = tpl.slice(tpl.indexOf('function maybeBlur()'))
+    expect(mb.indexOf('if (blurFailed()) return')).toBeLessThan(mb.indexOf('preBlur()'))
+  })
 })
