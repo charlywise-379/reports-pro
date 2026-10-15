@@ -89,6 +89,16 @@ describe('clamps de páginas 4 y 5', () => {
   })
 })
 
+describe('página 9 (riesgos)', () => {
+  const pages = (html: string) => html.split(/<div class="page(?: page--dark)?"><div class="page-content">/).slice(1)
+  it('el título del riesgo alto admite 2 líneas y no repite la etiqueta PROBABILIDAD por tarjeta', () => {
+    const p9 = pages(render('normal', 'editorial'))[8]
+    expect(p9).toContain('class="clamp-2">Pérdida de clientes por precio')
+    expect(p9).not.toMatch(/risk-head[\s\S]*?PROBABILIDAD/i)
+    expect(p9).toContain('el porcentaje indica la probabilidad')
+  })
+})
+
 describe('logos', () => {
   const pages = (html: string) => html.split(/<div class="page(?: page--dark)?"><div class="page-content">/).slice(1)
   it('la portada oscura usa el logo para fondo oscuro y las páginas claras el de fondo claro', () => {
