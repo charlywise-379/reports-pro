@@ -66,7 +66,7 @@ b{font-weight:600}
 /* Componentes */
 .card{background:var(--card);border:1px solid var(--hair);border-radius:var(--r-md);padding:4.2mm;min-width:0}
 .page--dark .card{background:var(--ink-800);border-color:rgba(255,255,255,.08);color:var(--on-dark)}
-.chip{display:inline-flex;align-items:center;gap:4px;max-width:100%;overflow:hidden;text-overflow:ellipsis;font-family:var(--mono);font-size:7.5pt;font-weight:500;letter-spacing:.06em;text-transform:uppercase;padding:2px 7px;border-radius:99px;background:var(--tone-soft);color:var(--tone);white-space:nowrap}
+.chip{display:inline-block;max-width:100%;overflow:hidden;text-overflow:ellipsis;vertical-align:middle;line-height:1.5;font-family:var(--mono);font-size:7.5pt;font-weight:500;letter-spacing:.06em;text-transform:uppercase;padding:2px 7px;border-radius:99px;background:var(--tone-soft);color:var(--tone);white-space:nowrap}
 .dot{width:6px;height:6px;border-radius:50%;background:var(--tone,var(--accent));flex:none}
 .dot.mt{margin-top:5px}
 .bar{height:4px;border-radius:99px;background:var(--hair);overflow:hidden}

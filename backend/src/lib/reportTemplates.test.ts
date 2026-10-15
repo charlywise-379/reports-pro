@@ -63,3 +63,11 @@ describe('renderReportHtmlV2', () => {
     expect(buildV2Template()).not.toMatch(/nth-child\(n\+\d+\)\s*\{\s*display:\s*none/)
   })
 })
+
+describe('regla .chip', () => {
+  const rule = (buildV2Template().match(/\.chip\{([^}]*)\}/) || [])[1] || ''
+  it('trunca con puntos suspensivos y no usa inline-flex', () => {
+    expect(rule).toContain('text-overflow:ellipsis')
+    expect(rule).not.toContain('display:inline-flex')
+  })
+})

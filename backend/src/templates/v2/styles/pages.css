@@ -36,12 +36,11 @@
 
 /* Ajustes de densidad (p2 y p3) */
 .therm-main{gap:2mm}
-.therm-main .chip{white-space:nowrap}
 .therm-main .ring svg{width:150px;height:150px}
 .alertband{padding:3mm 5mm}
 .alertband>div{min-width:0}
 .alertband b.clamp-1{display:-webkit-box}
-.alertband .chip{flex:none;white-space:nowrap}
+.alertband .chip{flex:none}
 .alertband span.clamp-2{display:-webkit-box}
 .comp{table-layout:fixed}
 .comp th:nth-child(1){width:7mm}
@@ -54,7 +53,6 @@
 .comp td{padding-top:1.5mm;padding-bottom:1.5mm}
 .thr .mono{white-space:nowrap}
 .thr .bar{width:16mm;flex:none}
-.comp .chip{white-space:nowrap}
 .highlights{gap:4mm}
 .highlights .card{padding:2.4mm 3mm}
 .secondary{gap:3mm}
