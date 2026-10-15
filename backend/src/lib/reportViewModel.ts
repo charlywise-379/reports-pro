@@ -75,7 +75,7 @@ function benchmarkRows(rows: unknown): any[] {
 // Columnas de competidores del benchmark. Una columna está vacía si es N/A o vacía en TODAS las filas.
 // Criterio con huecos: n = la última columna con datos (mínimo 1); las columnas vacías intermedias se
 // quedan visibles (encabezado «—») para no desalinear competidor y celda; solo se ocultan las finales.
-function benchmarkColumns(rows: unknown, registered: unknown): { cls: string; competitors: Array<{ name: string }> } {
+function benchmarkColumns(rows: unknown, registered: unknown): { cls: string; competitors: Array<{ name: string; col: string }> } {
   const list = arr(rows)
   const names = arr(registered)
   const used = [1, 2, 3, 4, 5].map(ci => list.some(r => !isEmptyCell(r?.[`comp${ci}`])))
@@ -83,7 +83,7 @@ function benchmarkColumns(rows: unknown, registered: unknown): { cls: string; co
   const competitors = used.map((u, i) => {
     const name = String(names[i]?.name ?? '').trim()
     const hasName = name !== '' && name !== '—'
-    return { name: !u ? '—' : hasName ? name : 'Otros' }
+    return { name: !u ? '—' : hasName ? name : 'Otros', col: `bc${i + 1}` }
   })
   return { cls: `cols-${Math.max(1, last)}`, competitors }
 }

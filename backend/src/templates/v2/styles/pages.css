@@ -131,17 +131,29 @@
 .risk-head>div:last-child{min-width:0}
 .risks-grid .stack .card p{margin-bottom:1.5mm}
 
-/* Página 10 · Benchmark */
+/* Página 10 · Benchmark — celdas con la frase completa (envuelve), posición en rango + nota;
+   solo se ocultan columnas de competidor vacías en TODAS las filas (benchColsClass del view-model) */
 .bench{table-layout:fixed}
-.bench td{padding-top:1.1mm;padding-bottom:1.1mm;line-height:1.25;overflow-wrap:anywhere}
-.bench th:first-child,.bench td:first-child{width:44mm}
-.cell{display:inline-block;max-width:100%;padding:1px 7px;border-radius:6px;font-weight:600;font-size:8.5pt;vertical-align:middle}
+.bench th{padding-bottom:1.4mm;line-height:1.3}
+.bench td{padding-top:.9mm;padding-bottom:.9mm;line-height:1.22;overflow-wrap:anywhere;font-size:8pt;vertical-align:top}
+.bench th.bf{width:33mm}
+.bench th.bcl{width:42mm}
+.bench th.bp{width:34mm}
+.bench td.bf b{font-size:8.5pt;line-height:1.25}
+.bench .pos-rank{font-size:8pt;white-space:nowrap}
+.bench .pos-note{font-size:7.5pt;line-height:1.25;margin-top:.3mm}
+.bench .pos-note:empty{margin:0}
+.bench.cols-1 .bc2,.bench.cols-1 .bc3,.bench.cols-1 .bc4,.bench.cols-1 .bc5,
+.bench.cols-2 .bc3,.bench.cols-2 .bc4,.bench.cols-2 .bc5,
+.bench.cols-3 .bc4,.bench.cols-3 .bc5,
+.bench.cols-4 .bc5{display:none}
+.cell{display:inline-block;max-width:100%;padding:0 1.4mm;border-radius:5px;font-weight:600;font-size:8pt;line-height:1.3;vertical-align:top}
 .cell.is-client{background:var(--accent-soft);color:var(--accent)}
 .cell.is-na{background:var(--neutral-soft);color:var(--muted)}
-.sw{flex:none}
-.sw .card{padding:2.6mm 4mm}
-.sw .ticks{gap:1.2mm}
-.sw li{line-height:1.25}
+.sw{flex:none;gap:4mm}
+.sw .card{padding:2.4mm 4mm}
+.sw .ticks{gap:1mm;margin-top:.8mm}
+.sw li{line-height:1.25;font-size:8.5pt}
 .ticks.ok .ic{color:var(--ok)}
 .ticks.up .ic{color:var(--warn)}
 
