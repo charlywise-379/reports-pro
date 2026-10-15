@@ -23,6 +23,8 @@ export interface PageDef {
 
 export const PAGES: PageDef[] = [
   { file: 'p01-portada.html', dark: true },
+  { file: 'p02-termometro.html', eyebrow: 'Panorama', title: 'Termómetro del mercado', sub: 'Estado general del ecosistema competitivo · {{periodStart}} — {{periodEnd}}' },
+  { file: 'p03-competidores.html', eyebrow: 'Competidores', title: 'Competidores con más actividad', sub: 'Ordenados por amenaza real · Reporte #{{edition}}' },
 ]
 
 const V2_DIR = path.join(__dirname, '../templates/v2')

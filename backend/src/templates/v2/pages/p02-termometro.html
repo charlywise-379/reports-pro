@@ -1,0 +1,11 @@
+<div class="g2 therm">
+  <div class="card therm-main tone-{{pressureTone}}">
+    <div class="label">Presión competitiva</div>
+    <div class="ring"><svg width="170" height="170" viewBox="0 0 170 170"><circle class="trk" cx="85" cy="85" r="70" fill="none" stroke-width="9"/><circle class="val" cx="85" cy="85" r="70" fill="none" stroke-width="9" stroke-dasharray="{{pressureLgDash}} 440"/></svg><div class="ring-v"><span class="num num-xl">{{competitivePressure}}</span><span class="label">de 100</span></div></div>
+    <span class="chip">{{marketStatus}}</span>
+    <p class="muted clamp-3">{{marketStatusDesc}}</p>
+  </div>
+  <div class="g2 gauges lst">{{#each gaugeMetrics}}<div class="card gauge tone-{{this.tone}}"><div class="ring"><svg width="84" height="84" viewBox="0 0 88 88"><circle class="trk" cx="44" cy="44" r="36" fill="none" stroke-width="7"/><circle class="val" cx="44" cy="44" r="36" fill="none" stroke-width="7" stroke-dasharray="{{this.dash}} {{this.gap}}"/></svg><div class="ring-v"><span class="num num-md">{{this.value}}</span></div></div><div><div class="label">{{this.label}}</div><span class="chip">{{this.status}}</span></div></div>{{/each}}</div>
+</div>
+<div class="g5 sectors lst">{{#each sectorMetrics}}<div class="card tone-{{this.tone}}"><div class="label">{{this.label}}</div><div class="num num-md tone-text clamp-1">{{this.value}}</div><div class="sm muted">{{this.sub}}</div></div>{{/each}}</div>
+<div class="alertband tone-{{mainAlertTone}}"><svg class="ic"><use href="#i-alert"/></svg><div><b class="clamp-1">{{mainAlertTitle}}</b><span class="muted clamp-2">{{mainAlertDesc}}</span></div><span class="chip">{{mainAlertLevel}}</span></div>
