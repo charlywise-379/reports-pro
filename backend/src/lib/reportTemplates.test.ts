@@ -82,3 +82,9 @@ describe('teaser', () => {
     expect(plain).toContain('<body class="skin-panel">')
   })
 })
+
+describe('clamps de páginas 4 y 5', () => {
+  it('no sobreescribe -webkit-line-clamp desde pages.css (el valor vive en la clase clamp-N)', () => {
+    expect(buildV2Template()).not.toMatch(/\.(alerts|tl-item)[^{]*\{[^}]*-webkit-line-clamp/)
+  })
+})
