@@ -4,6 +4,7 @@ import fs from 'fs'
 import path from 'path'
 import { prisma } from './prisma'
 import { getSecret } from './config'
+import { renderTemplate } from './reportRender'
 
 // ─── Tipos ───────────────────────────────────────────
 interface ReportData {
@@ -755,7 +756,7 @@ const ACTION_COLORS: Record<string, { color: string; borderColor: string }> = {
 }
 
 // ─── Construir ReportData desde respuesta de Claude ──
-function buildReportData(project: any, aiData: any, dateInfo: any, editionNumber: number, teaser: boolean): ReportData {
+export function buildReportData(project: any, aiData: any, dateInfo: any, editionNumber: number, teaser: boolean): ReportData {
   const now = new Date()
   const nextReport = getNextReportDate(project.frequency, now)
   const companyName = project.companyName || project.name || 'Tu Empresa'
@@ -1203,42 +1204,6 @@ function buildReportData(project: any, aiData: any, dateInfo: any, editionNumber
   }
 }
 
-// ─── Renderizar plantilla con datos ──────────────────
-function renderTemplate(template: string, data: any): string {
-  let html = template
-
-  const processEach = (str: string, context: any): string => {
-    let result = str
-    let maxPasses = 5
-    while (maxPasses-- > 0) {
-      const before = result
-      result = result.replace(/\{\{#each ([\w.]+)\}\}([\s\S]*?)\{\{\/each\}\}/g, (_match, key, block) => {
-        let arr: any[]
-        if (key === 'this') arr = Array.isArray(context) ? context : []
-        else if (key.startsWith('this.')) arr = context?.[key.slice(5)] ?? []
-        else arr = context?.[key] ?? []
-        if (!Array.isArray(arr)) return ''
-        return arr.map((item: any) => {
-          let rendered = processEach(block, item)
-          rendered = rendered.replace(/\{\{this\.(\w+)\}\}/g, (_: string, prop: string) => item?.[prop] !== undefined ? String(item[prop]) : '')
-          rendered = rendered.replace(/\{\{this\}\}/g, () => typeof item === 'string' ? item : '')
-          rendered = rendered.replace(/\{\{(\w+)\}\}/g, (_: string, prop: string) => {
-            if (item?.[prop] !== undefined) return String(item[prop])
-            if (context?.[prop] !== undefined) return String(context[prop])
-            return ''
-          })
-          return rendered
-        }).join('')
-      })
-      if (result === before) break
-    }
-    return result
-  }
-
-  html = processEach(html, data)
-  html = html.replace(/\{\{(\w+)\}\}/g, (_match, key) => data[key] !== undefined ? String(data[key]) : '')
-  return html
-}
 
 // ─── Calcular próxima fecha de entrega según frecuencia real,
 //     saltando fines de semana (sábado y domingo son inhábiles) ──
