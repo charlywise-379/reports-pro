@@ -191,9 +191,10 @@ export function makeExtreme(base: any): any {
   e.mediumAlerts = grow(e.mediumAlerts, 4)
   e.secondaryCompetitors = grow(e.secondaryCompetitors, 8)
   e.mediumRisks = grow(e.mediumRisks, 6)
-  e.highPriorityRecs = grow(e.highPriorityRecs, 3)
-  e.mediumPriorityRecs = grow(e.mediumPriorityRecs, 4)
-  e.lowPriorityRecs = grow(e.lowPriorityRecs, 4)
+  e.highPriorityRecs = grow(e.highPriorityRecs, 2)
+  e.mediumPriorityRecs = grow(e.mediumPriorityRecs, 2)
+  e.lowPriorityRecs = grow(e.lowPriorityRecs, 2)
+  e.benchmarkRows = grow(e.benchmarkRows, 9).map((r: any, i: number) => i < 6 ? r : { ...r, factor: ['Redes sociales', 'Presencia de Mercado', 'Especialización'][i - 6] })
   e.insights = [...e.insights]
   e.competitors = grow(e.competitors, 5)
   e.competitors[0].name = 'Competidor con un nombre excepcionalmente largo S.A. de C.V.'

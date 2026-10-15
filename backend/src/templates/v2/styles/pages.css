@@ -123,26 +123,29 @@
 
 /* Página 10 · Benchmark */
 .bench{table-layout:fixed}
-.bench td{padding-top:1.9mm;padding-bottom:1.9mm;overflow-wrap:anywhere}
-.bench th:first-child,.bench td:first-child{width:36mm}
+.bench td{padding-top:1.1mm;padding-bottom:1.1mm;line-height:1.25;overflow-wrap:anywhere}
+.bench th:first-child,.bench td:first-child{width:44mm}
 .cell{display:inline-block;max-width:100%;padding:1px 7px;border-radius:6px;font-weight:600;font-size:8.5pt;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;vertical-align:middle}
 .cell.is-client{background:var(--accent-soft);color:var(--accent)}
 .cell.is-na{background:var(--neutral-soft);color:var(--muted)}
 .sw{flex:none}
+.sw .card{padding:2.6mm 4mm}
+.sw .ticks{gap:1.2mm}
+.sw li{line-height:1.25}
 .ticks.ok .ic{color:var(--ok)}
 .ticks.up .ic{color:var(--warn)}
 
 /* Página 11 · Recomendaciones */
-.recs{flex:1;min-height:0;overflow:hidden;align-content:start;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr)}
+.recs{flex:none;align-content:start;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr)}
 .rec-head{display:flex;gap:3mm;align-items:flex-start;margin-bottom:1mm}
 .rec-impact{display:flex;gap:2mm;align-items:flex-start;margin-top:1.2mm;color:var(--ok);font-weight:600}
 .rec-chips{display:flex;flex-wrap:wrap;gap:1.5mm;margin-top:1.2mm}
 .recs .card p{margin-bottom:0}
-.recs .stack{gap:1.6mm}
-.recs .card{padding:1.8mm 3.2mm}
-.recs .mini-list{gap:1mm;margin-top:.4mm}
+.recs .stack{gap:3mm}
+.recs .card{padding:3mm 3.6mm}
+.recs .mini-list{gap:2.4mm;margin-top:1mm}
 .recs .label{margin-bottom:.4mm}
-.recs p,.recs b{line-height:1.2}
+.recs p,.recs b{line-height:1.3}
 .mini-top{display:flex;align-items:baseline;gap:2.5mm}
 .mini-top b{flex:1;min-width:0}
 .mini-top span{flex:none}

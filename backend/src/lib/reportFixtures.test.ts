@@ -31,4 +31,11 @@ describe('fixtures del reporte', () => {
     expect(d.changesCol1.length).toBe(6)
     expect(d.secondaryCompetitors.length).toBe(8)
   })
+  it('la fixture extrema ejerce los máximos reales de benchmark y recomendaciones', () => {
+    expect((FIXTURES.extreme as any).benchmarkRows.length).toBe(9)
+    const d = buildReportData(FIXTURE_PROJECT, FIXTURES.extreme, FIXTURE_DATE_INFO, 3, false)
+    expect(d.highPriorityRecs.length).toBe(2)
+    expect(d.mediumPriorityRecs.length).toBe(2)
+    expect(d.lowPriorityRecs.length).toBe(2)
+  })
 })

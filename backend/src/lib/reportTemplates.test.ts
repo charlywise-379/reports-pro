@@ -127,4 +127,14 @@ describe('estructura final', () => {
     expect(html).toContain('data-total="11"')
     expect(count(html, /class="pg"/g)).toBe(11)
   })
+  it('.recs no oculta contenido con overflow:hidden', () => {
+    const css = buildV2Template().replace(/\/\*[\s\S]*?\*\//g, '')
+    const rules = [...css.matchAll(/([^{}]+)\{([^{}]*)\}/g)]
+    const bad = rules.filter(m => m[1].split(',').some(sel => sel.trim() === '.recs') && /overflow(-y)?\s*:\s*hidden/.test(m[2]))
+    expect(bad).toHaveLength(0)
+  })
+  it('el factor del benchmark admite 2 líneas', () => {
+    const html = render('normal', 'panel')
+    expect(html).toMatch(/<b class="clamp-2">SEO (?:\/|&#x2F;) Posicionamiento Google<\/b>/)
+  })
 })
