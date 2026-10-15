@@ -45,6 +45,8 @@ async function main() {
         await page.setContent(html, { waitUntil: 'load' })
         await page.evaluateHandle('document.fonts.ready')
         await page.waitForFunction(() => document.body.dataset.fit === 'done', { timeout: 15000 })
+        await page.waitForFunction(() => document.body.dataset.blur && document.body.dataset.blur !== 'pending', { timeout: 20000 })
+        const blurState = await page.evaluate(() => document.body.dataset.blur || '')
 
         const pages = await page.$$('.page')
         for (let i = 0; i < pages.length; i++) {
@@ -84,9 +86,13 @@ async function main() {
         const pdfPages = (Buffer.from(pdf).toString('latin1').match(/\/Type\s*\/Page[^s]/g) || []).length
         fs.writeFileSync(path.join(outDir, 'report.pdf'), pdf)
 
-        const ok = pdfPages === PAGES.length && overflow.length === 0
+        const MAX_TEASER_BYTES = 3 * 1024 * 1024
+        const teaserProblems: string[] = []
+        if (teaser && blurState !== 'done') teaserProblems.push(`data-blur=${blurState}`)
+        if (teaser && pdf.length > MAX_TEASER_BYTES) teaserProblems.push(`PDF de ${pdf.length} bytes > 3 MB`)
+        const ok = pdfPages === PAGES.length && overflow.length === 0 && teaserProblems.length === 0
         if (!ok) failed = true
-        console.log(`${ok ? 'OK ' : 'FALLA'} ${skin}/${fx}: ${pdfPages}/${PAGES.length} páginas${overflow.length ? ' · desborde en ' + overflow.join(', ') : ''}`)
+        console.log(`${ok ? 'OK ' : 'FALLA'} ${skin}/${fx}: ${pdfPages}/${PAGES.length} páginas · ${pdf.length} bytes · blur=${blurState}${teaserProblems.length ? ' · ' + teaserProblems.join(', ') : ''}${overflow.length ? ' · desborde en ' + overflow.join(', ') : ''}`)
         console.log(`     ajuste: ${zs.length ? zs.join(', ') : 'ninguna página reducida'}`)
         await page.close()
       }
