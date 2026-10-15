@@ -85,24 +85,28 @@
 .tl-item b,.tl-item p{line-height:1.3}
 .tl-meta{display:flex;align-items:center;gap:2mm;margin-bottom:0;min-width:0}
 
-/* Página 6 · Radar */
+/* Página 6 · Radar — fases con altura por contenido y señales compactas */
 .meters{flex:none}
 .meter{display:flex;flex-direction:column;gap:2mm}
-.phases{flex:1;align-content:start}
-.phases .card{display:flex;flex-direction:column}
-.phases .ticks{gap:6mm;font-size:10.5pt}
-.phase-t{display:block;font-size:14pt;margin:1.5mm 0 5mm}
+.phases{flex:1;align-content:start;align-items:start;gap:4mm}
+.phases .card{display:flex;flex-direction:column;padding:3mm 3.6mm}
+.phases .ticks{gap:2.6mm;font-size:9.5pt}
+.phases .ticks li{line-height:1.36}
+.phase-t{display:block;font-size:13pt;margin:1mm 0 2.6mm}
 .closing{flex:none;display:flex;justify-content:space-between;align-items:center;gap:6mm;padding:4mm 6mm;border-radius:var(--r-md);background:var(--ink-900);color:var(--on-dark)}
 .closing .label{color:var(--on-dark-muted)}
 .closing b{font-size:12pt}
 
-/* Página 7 · Inteligencia comercial */
-.commercial{flex:1;align-content:start;gap:3.5mm}
-.c-top{flex-grow:1.12}
+/* Página 7 · Inteligencia comercial — columnas según el largo típico de cada bloque, alturas por contenido */
+.commercial{flex:none;align-content:start;align-items:start;gap:3.5mm}
+.c-top{grid-template-columns:minmax(0,1.3fr) minmax(0,1.1fr) minmax(0,.8fr)}
+.c-bottom{grid-template-columns:minmax(0,.6fr) minmax(0,1.55fr) minmax(0,1.05fr)}
 .commercial .card{padding:3mm 3.4mm}
-.commercial .mini-list{gap:1.6mm;margin-top:1.2mm}
+.commercial .mini-list{gap:1.8mm;margin-top:1.2mm}
 .commercial .rowline .mono{white-space:nowrap;flex:none}
-.commercial .mini p,.commercial .mini b{line-height:1.3}
+.commercial .rowline b{min-width:0}
+.commercial .mini p,.commercial .mini b,.commercial .price b,.commercial .price div{line-height:1.3}
+.commercial .price .sm{margin-top:.3mm}
 .acc{color:var(--accent)}
 
 /* Página 8 · Oportunidades */
