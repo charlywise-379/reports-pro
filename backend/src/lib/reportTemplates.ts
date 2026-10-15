@@ -25,6 +25,8 @@ export const PAGES: PageDef[] = [
   { file: 'p01-portada.html', dark: true },
   { file: 'p02-termometro.html', eyebrow: 'Panorama', title: 'Termómetro del mercado', sub: 'Estado general del ecosistema competitivo · {{periodStart}} — {{periodEnd}}' },
   { file: 'p03-competidores.html', eyebrow: 'Competidores', title: 'Competidores con más actividad', sub: 'Ordenados por amenaza real · Reporte #{{edition}}' },
+  { file: 'p04-alertas.html', eyebrow: 'Alertas', title: 'Alertas de la semana', sub: 'Lo que requiere atención primero · {{periodStart}} — {{periodEnd}}' },
+  { file: 'p05-cambios.html', eyebrow: 'Movimientos', title: 'Cambios detectados', sub: '{{totalChanges}} cambios entre {{periodStart}} y {{periodEnd}}' },
 ]
 
 const V2_DIR = path.join(__dirname, '../templates/v2')

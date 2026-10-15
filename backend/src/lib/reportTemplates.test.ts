@@ -71,3 +71,14 @@ describe('regla .chip', () => {
     expect(rule).not.toContain('display:inline-flex')
   })
 })
+
+describe('teaser', () => {
+  it('marca el body, mantiene la regla de desenfoque desde la página 6 y la capa en cada página', () => {
+    const html = render('normal', 'panel', true)
+    expect(html).toContain('<body class="is-teaser skin-panel">')
+    expect(html).toContain('.page:nth-of-type(n+6) .page-content{filter:blur(6px)}')
+    expect(count(html, /<div class="teaser-overlay">/g)).toBe(PAGES.length)
+    const plain = render('normal', 'panel', false)
+    expect(plain).toContain('<body class="skin-panel">')
+  })
+})
