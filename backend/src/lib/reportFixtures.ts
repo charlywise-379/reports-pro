@@ -181,10 +181,15 @@ export const aiNormal: any = {
 const LONG_SUFFIX = ' · Fuente: competidor-ejemplo.com.mx/promociones/temporada-alta-2026 · verificado esta semana con cifras y contexto'
 const MID_SUFFIX = ' · detalle adicional verificado esta semana'
 
+// Campos que la IA entrega cortos (nombres, etiquetas, fechas): no crecen, como en los datos reales.
+const SHORT_KEYS = new Set(['icon', 'factor', 'name', 'competitor', 'category', 'riskLabel', 'priority', 'owner', 'deadline',
+  'difficulty', 'timeRequired', 'costRequired', 'scope', 'date', 'type', 'window', 'rivalLeaderName', 'mainAlertLevel', 'riskLevel',
+  'mostAggressiveName', 'weakestName', 'emergingName'])
+
 function stretch(v: any): any {
   if (typeof v === 'string') return v.length > 40 ? v + LONG_SUFFIX : v.length > 12 ? v + MID_SUFFIX : v
   if (Array.isArray(v)) return v.map(stretch)
-  if (v && typeof v === 'object') return Object.fromEntries(Object.entries(v).map(([k, x]) => [k, k === 'icon' ? x : stretch(x)]))
+  if (v && typeof v === 'object') return Object.fromEntries(Object.entries(v).map(([k, x]) => [k, SHORT_KEYS.has(k) ? x : stretch(x)]))
   return v
 }
 
@@ -200,7 +205,15 @@ export function makeExtreme(base: any): any {
   e.highPriorityRecs = grow(e.highPriorityRecs, 2)
   e.mediumPriorityRecs = grow(e.mediumPriorityRecs, 2)
   e.lowPriorityRecs = grow(e.lowPriorityRecs, 2)
-  e.benchmarkRows = grow(e.benchmarkRows, 9).map((r: any, i: number) => i < 6 ? r : { ...r, factor: ['Redes sociales', 'Presencia de Mercado', 'Especialización'][i - 6] })
+  // Benchmark como lo entrega la IA real: celdas en frase y posición con nota.
+  const cellNote = (v: string) => (v.length > 40 ? v : `${v} — verificado esta semana`)
+  e.benchmarkRows = grow(e.benchmarkRows, 9).map((r: any, i: number) => ({
+    ...r,
+    factor: i < 6 ? r.factor : ['Redes sociales', 'Presencia de Mercado', 'Especialización'][i - 6],
+    client: cellNote(r.client), comp1: cellNote(r.comp1), comp2: cellNote(r.comp2), comp3: cellNote(r.comp3),
+    comp4: cellNote(r.comp4), comp5: cellNote(r.comp5),
+    position: `${r.position} — competitivo entre premium y básico local`,
+  }))
   e.insights = [...e.insights]
   e.competitors = grow(e.competitors, 5)
   e.competitors[0].name = 'Competidor con un nombre excepcionalmente largo S.A. de C.V.'
