@@ -158,7 +158,7 @@
 .ticks.up .ic{color:var(--warn)}
 
 /* Página 11 · Recomendaciones */
-.recs{flex:none;align-content:start;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr)}
+.recs{flex:none;align-content:start;align-items:start;grid-template-columns:minmax(0,1fr) minmax(0,1.3fr);gap:4mm}
 .rec-head{display:flex;gap:3mm;align-items:flex-start;margin-bottom:1mm}
 .rec-impact{display:flex;gap:2mm;align-items:flex-start;margin-top:1.2mm;color:var(--ok);font-weight:600}
 .rec-chips{display:flex;flex-wrap:wrap;gap:1.5mm;margin-top:1.2mm}
