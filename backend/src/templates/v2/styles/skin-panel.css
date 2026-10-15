@@ -5,6 +5,6 @@
 .skin-panel .eyebrow{display:inline-block;background:var(--accent-soft);padding:2px 9px;border-radius:99px;letter-spacing:.12em}
 .skin-panel .page--dark .eyebrow{background:rgba(139,123,255,.16)}
 .skin-panel .bar{height:5px}
-.skin-panel .hdr{background:var(--card);border:1px solid var(--hair);border-radius:99px;padding:2.2mm 5mm;margin-bottom:6mm}
-.skin-panel .page--dark .hdr{background:var(--ink-800);border-color:rgba(255,255,255,.08)}
+.skin-panel .hdr{background:var(--card);border:1px solid var(--hair);border-radius:99px;padding:1.6mm 5mm;margin-bottom:5.5mm}
+.skin-panel .page--dark .hdr{background:var(--ink-800);border-color:rgba(255,255,255,.08);margin-bottom:4mm;padding-top:1.2mm;padding-bottom:1.2mm}
 .skin-panel .kpi{background:transparent}
