@@ -5,14 +5,15 @@ vi.mock('./config', () => ({ getSecret: () => undefined }))
 vi.mock('./anthropic', () => ({ getAnthropic: () => ({}) }))
 
 import { buildReportData } from './reportEngine'
-import { FIXTURE_PROJECT, FIXTURE_DATE_INFO, FIXTURES, LOGOS_STUB } from './reportFixtures'
+import { FIXTURE_PROJECT, FIXTURE_DATE_INFO, FIXTURES, FixtureName, fixtureProject, LOGOS_STUB } from './reportFixtures'
 import { PAGES, resolveReportTemplate, renderReportHtmlV2, buildV2Template } from './reportTemplates'
 
-const render = (fixture: 'normal' | 'extreme' | 'minimal', skin: 'editorial' | 'panel', teaser = false) => {
-  const data = buildReportData(FIXTURE_PROJECT, FIXTURES[fixture], FIXTURE_DATE_INFO, 3, teaser)
+const render = (fixture: FixtureName, skin: 'editorial' | 'panel', teaser = false) => {
+  const data = buildReportData(fixtureProject(fixture), FIXTURES[fixture], FIXTURE_DATE_INFO, 3, teaser)
   return renderReportHtmlV2(skin, data, FIXTURES[fixture], LOGOS_STUB)
 }
 const count = (html: string, re: RegExp) => (html.match(re) || []).length
+const pagesOf = (html: string) => html.split(/<div class="page(?: page--dark)?"><div class="page-content">/).slice(1)
 
 describe('resolveReportTemplate', () => {
   it('reconoce editorial y panel sin importar mayúsculas ni espacios', () => {
@@ -29,7 +30,7 @@ describe('resolveReportTemplate', () => {
 
 describe('renderReportHtmlV2', () => {
   for (const skin of ['editorial', 'panel'] as const) {
-    for (const fixture of ['normal', 'extreme', 'minimal'] as const) {
+    for (const fixture of ['normal', 'extreme', 'minimal', 'real'] as const) {
       it(`${skin}/${fixture}: una página por parcial, sin marcadores sin resolver`, () => {
         const html = render(fixture, skin)
         expect(count(html, /<div class="page[ "]/g)).toBe(PAGES.length)
@@ -55,12 +56,21 @@ describe('renderReportHtmlV2', () => {
     expect(html.indexOf('class="page page--dark"')).toBeGreaterThan(-1)
   })
 
-  it('la portada muestra los 4 competidores y ninguna regla CSS oculta filas', () => {
-    const html = render('normal', 'panel')
+  it('la portada muestra los 4 competidores del top y ninguna regla CSS oculta filas', () => {
+    const cover = pagesOf(render('normal', 'panel'))[0]
     for (const name of ['Atlas Creativo', 'Norte Digital', 'Pixel &amp; Co', 'Marea Studio']) {
-      expect(html).toContain(name)
+      expect(cover).toContain(name)
     }
     expect(buildV2Template()).not.toMatch(/nth-child\(n\+\d+\)\s*\{\s*display:\s*none/)
+  })
+
+  it('portada con datos reales: 3 hallazgos, 3 acciones y 4 competidores con su texto completo', () => {
+    const cover = pagesOf(render('real', 'editorial'))[0]
+    const ai = FIXTURES.real
+    const esc = (t: string) => t.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;')
+    for (const i of ai.insights.slice(0, 3)) expect(cover).toContain(esc(i.text))
+    for (const a of ai.actions.slice(0, 3)) expect(cover).toContain(esc(a.text))
+    for (const c of ai.competitors.slice(0, 4)) expect(cover).toContain(`${esc(c.name)}</span><span class="mono tone-text">${c.threat}/10`)
   })
 })
 
@@ -75,8 +85,9 @@ describe('regla .chip', () => {
 
 describe('sin recortes con puntos suspensivos', () => {
   const tpl = buildV2Template()
-  it('el CSS no usa -webkit-line-clamp ni text-overflow:ellipsis', () => {
+  it('el CSS no usa line-clamp (con o sin prefijo) ni text-overflow:ellipsis', () => {
     expect(tpl).not.toContain('-webkit-line-clamp')
+    expect(tpl).not.toMatch(/line-clamp/)
     expect(tpl).not.toMatch(/text-overflow\s*:\s*ellipsis/)
   })
   it('el HTML de las páginas no usa clases clamp-N', () => {
@@ -163,5 +174,32 @@ describe('estructura final', () => {
     const rules = [...css.matchAll(/([^{}]+)\{([^{}]*)\}/g)]
     const bad = rules.filter(m => m[1].split(',').some(sel => sel.trim() === '.recs') && /overflow(-y)?\s*:\s*hidden/.test(m[2]))
     expect(bad).toHaveLength(0)
+  })
+})
+
+describe('página 3 (competidores)', () => {
+  it('ya no tiene la columna «Giro» (repetía el giro del cliente en cada fila)', () => {
+    for (const fx of ['normal', 'real'] as const) {
+      const p3 = pagesOf(render(fx, 'panel'))[2]
+      expect(p3).toContain('<th>Competidor</th>')
+      expect(p3).not.toMatch(/<th[^>]*>Giro<\/th>/)
+    }
+  })
+})
+
+describe('página 10 (benchmark)', () => {
+  it('con datos reales muestra las 9 filas, el rango y la nota de posición completa', () => {
+    const p10 = pagesOf(render('real', 'editorial'))[9]
+    expect(p10).toContain('class="tbl bench cols-5"')
+    expect(count(p10, /<td class="bp /g)).toBe(9)
+    expect(p10).toContain('<div class="mono tone-text pos-rank">6to lugar</div><div class="sm muted pos-note">invisibilidad crítica</div>')
+    expect(p10).toContain('<div class="sm muted pos-note">empate con mayoría</div>')
+    expect(p10).toContain('No aparece en primeros 20 resultados búsquedas clave')
+    expect(p10).toContain('Etiquetas industriales/comerciales B2B')
+  })
+  it('oculta columnas vacías solo con clases del marcado', () => {
+    const p10 = pagesOf(render('minimal', 'panel'))[9]
+    expect(p10).toContain('class="tbl bench cols-1"')
+    expect(buildV2Template()).toMatch(/\.bench\.cols-1 \.bc2/)
   })
 })
