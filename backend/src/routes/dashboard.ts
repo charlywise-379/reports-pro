@@ -5,6 +5,7 @@ import { maybeEnqueueTrialSync } from '../lib/lifecycleQueue'
 import { buildProjectQuery, projectListFor, ProjectListItem } from '../lib/dashboardProject'
 import { hasFreeFullReport } from '../lib/freeFullReport'
 import { summarizePromoAccess } from '../lib/userPromoAccess'
+import { projectLimitInfo } from '../lib/projectLimits'
 
 const router = Router()
 
@@ -18,7 +19,7 @@ router.get('/:userId', requireAuth, async (req: Request, res: Response) => {
 
     const dashUser = await prisma.user.findUnique({
       where: { id: userId },
-      select: { id: true, accountType: true, mailchimpSyncedAt: true, mailchimpTrialTaggedAt: true },
+      select: { id: true, accountType: true, maxProjects: true, mailchimpSyncedAt: true, mailchimpTrialTaggedAt: true },
     })
     if (dashUser) maybeEnqueueTrialSync(dashUser as any)
 
@@ -53,15 +54,17 @@ router.get('/:userId', requireAuth, async (req: Request, res: Response) => {
       return res.json({ project: null })
     }
 
-    let projects: ProjectListItem[] | null = null
-    if (dashUser?.accountType === 'PARTNER') {
-      const all = await (prisma.project as any).findMany({
-        where: { userId },
-        orderBy: { createdAt: 'desc' },
-        select: { id: true, name: true, competitiveSetup: { select: { companyName: true } } },
-      })
-      projects = projectListFor(dashUser.accountType, all)
-    }
+    const allProjects = await (prisma.project as any).findMany({
+      where: { userId },
+      orderBy: { createdAt: 'desc' },
+      select: { id: true, name: true, competitiveSetup: { select: { companyName: true } } },
+    })
+    const projects: ProjectListItem[] | null = projectListFor(dashUser?.accountType, allProjects)
+    const projectLimit = projectLimitInfo({
+      accountType: dashUser?.accountType,
+      maxProjects: (dashUser as any)?.maxProjects,
+      projectCount: allProjects.length,
+    })
 
     const sub = project.subscription
     const hasPaid = ['active'].includes(String(sub?.status || '').toLowerCase()) || sub?.stripeSubscriptionId != null
@@ -79,6 +82,7 @@ router.get('/:userId', requireAuth, async (req: Request, res: Response) => {
 
     res.json({
       projects,
+      projectLimit,
       freeFullReportAvailable,
       project: {
         id: project.id,

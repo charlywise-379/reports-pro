@@ -12,11 +12,11 @@ export function buildProjectQuery(userId: string, requestedProjectId: unknown): 
 
 export interface ProjectListItem { id: string; name: string | null; companyName: string | null }
 
-// Solo las cuentas PARTNER pueden tener y ver varios proyectos; el resto recibe null.
+// Los partners y los usuarios con más de un proyecto reciben la lista; el resto, null.
 export function projectListFor(
   accountType: string | null | undefined,
   projects: { id: string; name?: string | null; competitiveSetup?: { companyName?: string | null } | null }[],
 ): ProjectListItem[] | null {
-  if (accountType !== 'PARTNER') return null
+  if (accountType !== 'PARTNER' && projects.length < 2) return null
   return projects.map(p => ({ id: p.id, name: p.name ?? null, companyName: p.competitiveSetup?.companyName ?? null }))
 }

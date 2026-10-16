@@ -25,8 +25,14 @@ describe('projectListFor', () => {
       { id: 'p2', name: null, companyName: null },
     ])
   })
-  it('STANDARD o desconocido recibe null', () => {
-    expect(projectListFor('STANDARD', projects)).toBeNull()
-    expect(projectListFor(undefined, projects)).toBeNull()
+  it('usuario normal con un solo proyecto recibe null', () => {
+    expect(projectListFor('STANDARD', [projects[0]])).toBeNull()
+    expect(projectListFor(undefined, [projects[0]])).toBeNull()
+  })
+  it('usuario normal con más de un proyecto recibe la lista (empresas adicionales)', () => {
+    expect(projectListFor('STANDARD', projects)).toEqual([
+      { id: 'p1', name: 'A', companyName: 'Acme' },
+      { id: 'p2', name: null, companyName: null },
+    ])
   })
 })
