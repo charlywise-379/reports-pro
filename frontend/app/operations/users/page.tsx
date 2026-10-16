@@ -9,6 +9,7 @@ import { StatusBadge, Avatar } from '@/lib/operations/StatusBadge'
 type UserRow = {
   id: string; email: string; fullName: string | null; phone: string | null
   isSuspended: boolean; createdAt: string; projectCount: number; modules: string[]
+  maxProjects: number; accountType: string
 }
 
 const actionBtn = (T: any, danger?: boolean): React.CSSProperties => ({
@@ -32,6 +33,9 @@ export default function OperationsUsersPage() {
   const [pwSaving, setPwSaving] = useState(false)
   const [pwCopied, setPwCopied] = useState(false)
   const [pwMsg, setPwMsg] = useState<{ ok: boolean; text: string } | null>(null)
+  const [limitUser, setLimitUser] = useState<UserRow | null>(null)
+  const [limitValue, setLimitValue] = useState('')
+  const [limitMsg, setLimitMsg] = useState<{ ok: boolean; text: string } | null>(null)
   const { theme } = useTheme()
   const T = palette[theme]
 
@@ -73,6 +77,17 @@ export default function OperationsUsersPage() {
   }
 
   const openPwModal = (u: UserRow) => { setPwUser(u); setPwValue(''); setPwShow(false); setPwMsg(null); setPwCopied(false) }
+
+  const openLimitModal = (u: UserRow) => { setLimitUser(u); setLimitValue(String(u.maxProjects)); setLimitMsg(null) }
+
+  const handleSaveLimit = async () => {
+    if (!limitUser) return
+    const n = Number(limitValue)
+    if (!Number.isInteger(n) || n < 1 || n > 20) { setLimitMsg({ ok: false, text: 'Escribe un número entero entre 1 y 20' }); return }
+    const res = await adminFetch(`/api/operations/users/${limitUser.id}`, { method: 'PATCH', body: JSON.stringify({ maxProjects: n }) })
+    if (res.ok) { setLimitMsg({ ok: true, text: 'Límite actualizado' }); load() }
+    else { const d = await res.json().catch(() => null); setLimitMsg({ ok: false, text: d?.error || 'No se pudo actualizar' }) }
+  }
 
   const generatePassword = () => {
     const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789!@#$%&*'
@@ -136,7 +151,7 @@ export default function OperationsUsersPage() {
         <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13, minWidth: 700 }}>
           <thead>
             <tr style={{ borderBottom: `1px solid ${T.border}`, textAlign: 'left' }}>
-              {['Usuario', 'Teléfono', 'Proyectos', 'Módulos', 'Estado', 'Acciones'].map(h => (
+              {['Usuario', 'Teléfono', 'Empresas', 'Módulos', 'Estado', 'Acciones'].map(h => (
                 <th key={h} style={{ padding: '10px 14px', color: T.textMuted, fontWeight: 600, fontSize: 11 }}>{h}</th>
               ))}
             </tr>
@@ -154,7 +169,7 @@ export default function OperationsUsersPage() {
                   </div>
                 </td>
                 <td style={{ padding: '10px 14px', fontSize: 12, color: T.text }}>{u.phone || '—'}</td>
-                <td style={{ padding: '10px 14px' }}>{u.projectCount}</td>
+                <td style={{ padding: '10px 14px' }}>{u.projectCount}/{u.accountType === 'PARTNER' ? '∞' : u.maxProjects}</td>
                 <td style={{ padding: '10px 14px', fontSize: 11, color: T.textMuted }}>{u.modules.join(', ') || '—'}</td>
                 <td style={{ padding: '10px 14px' }}>
                   {u.isSuspended
@@ -167,6 +182,9 @@ export default function OperationsUsersPage() {
                       ? <button onClick={() => handleReactivate(u.id)} style={actionBtn(T)}><RotateCcw size={11} /> Reactivar</button>
                       : <button disabled title="Aún no implementado: suspender no bloquea el login del cliente todavía" onClick={() => setSelected(u)} style={{ ...actionBtn(T), cursor: 'not-allowed', opacity: 0.5 }}><Ban size={11} /> Suspender</button>}
                     <button onClick={() => handleResetPassword(u.id)} style={actionBtn(T)}><KeyRound size={11} /> Reset password</button>
+                    {u.accountType !== 'PARTNER' && (
+                      <button onClick={() => openLimitModal(u)} style={actionBtn(T)}>Máx. empresas</button>
+                    )}
                     <button onClick={() => openPwModal(u)} style={actionBtn(T)}><Lock size={11} /> Cambiar contraseña</button>
                     <button onClick={() => handleDelete(u.id)} style={actionBtn(T, true)}><Trash2 size={11} /> Eliminar</button>
                   </div>
@@ -185,6 +203,23 @@ export default function OperationsUsersPage() {
           <button onClick={() => setPage(p => p + 1)} disabled={page * 25 >= total} style={{ background: 'none', border: `1px solid ${T.border}`, borderRadius: 6, padding: '4px 10px', color: T.text, cursor: 'pointer' }}>Siguiente</button>
         </div>
       </div>
+
+      {limitUser && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100, padding: 16 }}>
+          <div style={{ background: T.surface, border: `1px solid ${T.border}`, borderRadius: 12, padding: 24, width: 420, maxWidth: '100%' }}>
+            <div style={{ fontSize: 15, fontWeight: 700, marginBottom: 4 }}>Máximo de empresas</div>
+            <div style={{ fontSize: 12, color: T.textMuted, marginBottom: 14 }}>{limitUser.email}</div>
+            <input type="number" min={1} max={20} value={limitValue} onChange={e => { setLimitValue(e.target.value); setLimitMsg(null) }}
+              style={{ width: '100%', padding: '8px 10px', background: T.bg, border: `1px solid ${T.border}`, borderRadius: 8, color: T.text, marginBottom: 14 }} />
+            {limitMsg && <div style={{ fontSize: 12, marginBottom: 14, color: limitMsg.ok ? T.success : T.danger }}>{limitMsg.text}</div>}
+            <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+              <button onClick={() => setLimitUser(null)} style={{ background: 'none', border: `1px solid ${T.border}`, borderRadius: 8, padding: '8px 14px', color: T.text, cursor: 'pointer' }}>Cerrar</button>
+              <button onClick={handleSaveLimit}
+                style={{ background: T.accent, border: 'none', borderRadius: 8, padding: '8px 14px', color: '#fff', cursor: 'pointer' }}>Guardar</button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {pwUser && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100, padding: 16 }}>

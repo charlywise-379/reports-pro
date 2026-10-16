@@ -78,7 +78,9 @@ model User {
   suspendedReason  String?
   createdAt        DateTime       @default(now())
   updatedAt        DateTime       @updatedAt
+  // Legado: ya no se lee ni se escribe; el reporte gratis se marca en Project.freeReportUsedAt.
   freeReportUsedAt DateTime?
+  maxProjects      Int            @default(1)
   pendingPromoCode String?
   accountType            AccountType    @default(STANDARD)
   partnerAgency          PartnerAgency?
@@ -105,6 +107,7 @@ model Project {
   trialStartedAt   DateTime          @default(now())
   trialEndsAt      DateTime
   nextReportAt     DateTime?
+  freeReportUsedAt DateTime?
   reportSlug       String            @unique @default(cuid())
   createdAt        DateTime          @default(now())
   updatedAt        DateTime          @updatedAt

@@ -5,13 +5,15 @@ import { getPriceAmountUSD, resolvePriceId, configuredPriceIds } from '../lib/st
 import { requireAuth } from '../middleware/auth'
 import { enqueueMailchimpSync } from '../lib/lifecycleQueue'
 import { getSecret } from '../lib/config'
+import { resolveCheckoutProjectId } from '../lib/checkoutProject'
+import { summarizePromoAccess } from '../lib/userPromoAccess'
 
 const router = Router()
 
 // POST /api/stripe/create-checkout-session
 router.post('/create-checkout-session', async (req: Request, res: Response) => {
   try {
-    const { userId, planKey, billingCycle, skipTrial } = req.body
+    const { userId, planKey, billingCycle, skipTrial, projectId: requestedProjectId } = req.body
 
     // TODO(compat): quitar tras un release — frontends viejos mandan priceId
     const legacyPriceId = !planKey && typeof req.body.priceId === 'string' && configuredPriceIds().includes(req.body.priceId)
@@ -36,8 +38,16 @@ router.post('/create-checkout-session', async (req: Request, res: Response) => {
     }
 
     // Buscar proyecto del usuario
-    const project = await (prisma.project as any).findFirst({ where: { userId } })
-    if (!project) return res.status(404).json({ error: 'Proyecto no encontrado' })
+    // Proyecto a cobrar: el que pide el cliente (validado) o, sin projectId, el primero del usuario.
+    // TODO(fuera de alcance): esta ruta no exige autenticación y confía en el userId del cuerpo; ya era así.
+    const userProjects = await (prisma.project as any).findMany({
+      where: { userId },
+      orderBy: { createdAt: 'asc' },
+      select: { id: true },
+    })
+    const resolved = resolveCheckoutProjectId(userProjects, requestedProjectId)
+    if (!resolved.ok) return res.status(resolved.status).json({ error: resolved.error })
+    const project = { id: resolved.projectId }
 
     // Buscar o crear customer en Stripe
     let customerId: string
@@ -60,11 +70,11 @@ router.post('/create-checkout-session', async (req: Request, res: Response) => {
     const existingSubCheck = await (prisma.subscription as any).findFirst({ where: { projectId: project.id } })
     const yaUsoTrial = existingSubCheck?.stripeSubscriptionId != null
 
-    const promoRedemption = await (prisma as any).promoCodeRedemption.findUnique({
-      where: { projectId: project.id },
-      include: { promoCode: true },
+    const redemptions = await (prisma as any).promoCodeRedemption.findMany({
+      where: { userId },
+      include: { promoCode: { select: { type: true } } },
     })
-    const hasFullAccessPromo = promoRedemption?.promoCode?.type === 'FULL_ACCESS_NO_TRIAL'
+    const { hasFullAccessPromo } = summarizePromoAccess(redemptions.map((r: any) => ({ type: r.promoCode?.type })))
 
     const session = await stripe.checkout.sessions.create({
       customer: customerId,

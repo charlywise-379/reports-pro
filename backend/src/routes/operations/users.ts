@@ -7,6 +7,7 @@ import { reportQueue } from '../../lib/queue'
 import { stripe } from '../../lib/stripe'
 import { deleteFromR2 } from '../../lib/r2'
 import { setUserPassword } from '../../lib/adminSetPassword'
+import { updateUserSchema } from '../../lib/adminUserSchema'
 
 const router = Router()
 
@@ -50,6 +51,7 @@ router.get('/', requireAdmin, async (req: Request, res: Response) => {
         projectCount: u.projects.length,
         modules: [...new Set(u.projects.map(p => p.serviceType))],
         accountType: u.accountType,
+        maxProjects: u.maxProjects,
         partnerAgency: u.partnerAgency,
       })),
       total,
@@ -113,11 +115,6 @@ router.get('/:id', requireAdmin, async (req: Request, res: Response) => {
     console.error('[operations] error:', e)
     res.status(500).json({ error: 'Error interno' })
   }
-})
-
-const updateUserSchema = z.object({
-  fullName: z.string().min(1).optional(),
-  phone: z.string().nullable().optional(),
 })
 
 router.patch('/:id', requireAdmin, async (req: Request, res: Response) => {

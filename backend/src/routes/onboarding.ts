@@ -6,6 +6,7 @@ import { getResend } from '../lib/email'
 import { getPlanMonthlyUSD } from '../lib/stripePriceMap'
 import { autocompleteCompanyInfo, isPrivateOrLoopbackHost } from '../lib/onboardingAutocomplete'
 import { hasFreeFullReport } from '../lib/freeFullReport'
+import { summarizePromoAccess } from '../lib/userPromoAccess'
 
 const router = Router()
 
@@ -289,15 +290,16 @@ router.post('/competitive', requireAuth, async (req: Request, res: Response) => 
     // Flujo correcto: onboarding → checkout → webhook → dashboard → generar manual
     let freeFullReportAvailable = false
     try {
-      const redemption = await (prisma as any).promoCodeRedemption.findUnique({
-        where: { projectId: newProject.id },
-        include: { promoCode: true },
+      const redemptions = await (prisma as any).promoCodeRedemption.findMany({
+        where: { userId: user.id },
+        include: { promoCode: { select: { type: true } } },
       })
-      const freshUser = await prisma.user.findUnique({ where: { id: user.id }, select: { accountType: true, freeReportUsedAt: true } })
+      const { hasFullAccessPromo } = summarizePromoAccess(redemptions.map((r: any) => ({ type: r.promoCode?.type })))
+      const freshUser = await prisma.user.findUnique({ where: { id: user.id }, select: { accountType: true } })
       freeFullReportAvailable = hasFreeFullReport({
         accountType: freshUser?.accountType,
-        promoType: redemption?.promoCode?.type,
-        freeReportUsedAt: freshUser?.freeReportUsedAt,
+        promoType: hasFullAccessPromo ? 'FULL_ACCESS_NO_TRIAL' : null,
+        freeReportUsedAt: (newProject as any).freeReportUsedAt ?? null,
         hasPaid: false,
       })
     } catch (e) {

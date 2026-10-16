@@ -4,6 +4,8 @@ import { requireAuth } from '../middleware/auth'
 import { maybeEnqueueTrialSync } from '../lib/lifecycleQueue'
 import { buildProjectQuery, projectListFor, ProjectListItem } from '../lib/dashboardProject'
 import { hasFreeFullReport } from '../lib/freeFullReport'
+import { summarizePromoAccess } from '../lib/userPromoAccess'
+import { projectLimitInfo } from '../lib/projectLimits'
 
 const router = Router()
 
@@ -17,7 +19,7 @@ router.get('/:userId', requireAuth, async (req: Request, res: Response) => {
 
     const dashUser = await prisma.user.findUnique({
       where: { id: userId },
-      select: { id: true, accountType: true, mailchimpSyncedAt: true, mailchimpTrialTaggedAt: true },
+      select: { id: true, accountType: true, maxProjects: true, mailchimpSyncedAt: true, mailchimpTrialTaggedAt: true },
     })
     if (dashUser) maybeEnqueueTrialSync(dashUser as any)
 
@@ -52,32 +54,35 @@ router.get('/:userId', requireAuth, async (req: Request, res: Response) => {
       return res.json({ project: null })
     }
 
-    let projects: ProjectListItem[] | null = null
-    if (dashUser?.accountType === 'PARTNER') {
-      const all = await (prisma.project as any).findMany({
-        where: { userId },
-        orderBy: { createdAt: 'desc' },
-        select: { id: true, name: true, competitiveSetup: { select: { companyName: true } } },
-      })
-      projects = projectListFor(dashUser.accountType, all)
-    }
+    const allProjects = await (prisma.project as any).findMany({
+      where: { userId },
+      orderBy: { createdAt: 'desc' },
+      select: { id: true, name: true, competitiveSetup: { select: { companyName: true } } },
+    })
+    const projects: ProjectListItem[] | null = projectListFor(dashUser?.accountType, allProjects)
+    const projectLimit = projectLimitInfo({
+      accountType: dashUser?.accountType,
+      maxProjects: (dashUser as any)?.maxProjects,
+      projectCount: allProjects.length,
+    })
 
     const sub = project.subscription
     const hasPaid = ['active'].includes(String(sub?.status || '').toLowerCase()) || sub?.stripeSubscriptionId != null
-    const redemption = await (prisma as any).promoCodeRedemption.findUnique({
-      where: { projectId: project.id },
-      include: { promoCode: true },
+    const redemptions = await (prisma as any).promoCodeRedemption.findMany({
+      where: { userId },
+      include: { promoCode: { select: { type: true } } },
     })
-    const freeUser = await prisma.user.findUnique({ where: { id: userId }, select: { freeReportUsedAt: true } })
+    const { hasFullAccessPromo } = summarizePromoAccess(redemptions.map((r: any) => ({ type: r.promoCode?.type })))
     const freeFullReportAvailable = hasFreeFullReport({
       accountType: dashUser?.accountType,
-      promoType: redemption?.promoCode?.type,
-      freeReportUsedAt: freeUser?.freeReportUsedAt,
+      promoType: hasFullAccessPromo ? 'FULL_ACCESS_NO_TRIAL' : null,
+      freeReportUsedAt: project.freeReportUsedAt,
       hasPaid,
     })
 
     res.json({
       projects,
+      projectLimit,
       freeFullReportAvailable,
       project: {
         id: project.id,
