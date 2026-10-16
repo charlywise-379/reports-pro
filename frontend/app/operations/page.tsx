@@ -5,6 +5,7 @@ import { FileText, Users, CreditCard, TrendingUp, DollarSign, Repeat, LucideIcon
 import { adminFetch } from '@/lib/operations/api'
 import { palette } from '@/lib/operations/theme'
 import { useTheme } from '@/lib/operations/ThemeContext'
+import Select from '@/components/Select'
 
 const MODULES = [
   { value: '', label: 'Todos los módulos' },
@@ -53,6 +54,7 @@ export default function OperationsDashboardPage() {
   const [module, setModule] = useState('')
   const { theme } = useTheme()
   const T = palette[theme]
+  const selColors = { bg: T.surface, fg: T.text, border: T.border, accent: T.accent, popup: T.surface }
 
   useEffect(() => {
     adminFetch(`/api/operations/dashboard${module ? `?module=${module}` : ''}`)
@@ -68,10 +70,9 @@ export default function OperationsDashboardPage() {
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20, flexWrap: 'wrap', gap: 10 }}>
         <h1 style={{ fontSize: 20, fontWeight: 800 }}>Dashboard</h1>
-        <select value={module} onChange={e => setModule(e.target.value)}
-          style={{ background: T.surface, border: `1px solid ${T.border}`, borderRadius: 8, padding: '8px 12px', color: T.text }}>
+        <Select tone={theme} colors={selColors} value={module} onChange={e => setModule(e.target.value)}>
           {MODULES.map(m => <option key={m.value} value={m.value}>{m.label}</option>)}
-        </select>
+        </Select>
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 14, marginBottom: 24 }}>

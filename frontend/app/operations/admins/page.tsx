@@ -6,6 +6,7 @@ import { adminFetch } from '@/lib/operations/api'
 import { palette } from '@/lib/operations/theme'
 import { useTheme } from '@/lib/operations/ThemeContext'
 import { StatusBadge, Avatar } from '@/lib/operations/StatusBadge'
+import Select from '@/components/Select'
 
 type AdminRow = { id: string; email: string; fullName: string; role: 'SUPER_ADMIN' | 'ADMIN'; createdAt: string }
 
@@ -24,6 +25,7 @@ export default function OperationsAdminsPage() {
   const [error, setError] = useState('')
   const { theme } = useTheme()
   const T = palette[theme]
+  const selColors = { bg: T.surface, fg: T.text, border: T.border, accent: T.accent, popup: T.surface }
 
   const load = () => {
     adminFetch('/api/operations/admins').then(res => res.ok ? res.json() : { admins: [] }).then(data => setAdmins(data.admins || []))
@@ -118,11 +120,11 @@ export default function OperationsAdminsPage() {
               style={{ width: '100%', padding: 10, marginBottom: 10, background: T.bg, border: `1px solid ${T.border}`, borderRadius: 8, color: T.text }} />
             <input placeholder="Password (mín. 8 caracteres)" type="password" value={form.password} onChange={e => setForm({ ...form, password: e.target.value })}
               style={{ width: '100%', padding: 10, marginBottom: 10, background: T.bg, border: `1px solid ${T.border}`, borderRadius: 8, color: T.text }} />
-            <select value={form.role} onChange={e => setForm({ ...form, role: e.target.value as any })}
-              style={{ width: '100%', padding: 10, marginBottom: 16, background: T.bg, border: `1px solid ${T.border}`, borderRadius: 8, color: T.text }}>
+            <Select tone={theme} colors={selColors} value={form.role} onChange={e => setForm({ ...form, role: e.target.value as any })}
+              style={{ width: '100%', marginBottom: 16 }}>
               <option value="ADMIN">Admin</option>
               <option value="SUPER_ADMIN">Super Admin</option>
-            </select>
+            </Select>
             <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
               <button onClick={() => setShowCreate(false)} style={{ background: 'none', border: `1px solid ${T.border}`, borderRadius: 8, padding: '8px 14px', color: T.text, cursor: 'pointer' }}>Cancelar</button>
               <button onClick={handleCreate} style={{ background: T.accent, border: 'none', borderRadius: 8, padding: '8px 14px', color: '#fff', cursor: 'pointer' }}>Crear</button>

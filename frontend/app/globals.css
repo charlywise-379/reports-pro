@@ -24,3 +24,50 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* Selectores de la plataforma (componente <Select>): mismo aspecto en dashboard, onboarding y Operations.
+   Los colores llegan por variables CSS que pone el componente según el tema. */
+.ui-select {
+  appearance: none;
+  -webkit-appearance: none;
+  background-color: var(--sel-bg);
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 12px 12px;
+  color: var(--sel-fg);
+  border: 1px solid var(--sel-border);
+  border-radius: 10px;
+  padding: 8px 34px 8px 12px;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.3;
+  cursor: pointer;
+  outline: none;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease;
+  text-overflow: ellipsis;
+}
+.ui-select[data-tone='dark'] {
+  color-scheme: dark;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' fill='none' stroke='%239D8FFF' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M2.5 4.5 6 8l3.5-3.5'/%3E%3C/svg%3E");
+}
+.ui-select[data-tone='light'] {
+  color-scheme: light;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' fill='none' stroke='%23534AB7' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M2.5 4.5 6 8l3.5-3.5'/%3E%3C/svg%3E");
+}
+.ui-select:hover:not(:disabled) { border-color: var(--sel-accent); }
+.ui-select:focus-visible {
+  border-color: var(--sel-accent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--sel-accent) 28%, transparent);
+}
+.ui-select:disabled { opacity: 0.55; cursor: not-allowed; }
+/* Lista desplegable: fondo sólido (nunca transparente) y texto legible en ambos temas. */
+.ui-select option,
+.ui-select optgroup {
+  background-color: var(--sel-popup);
+  color: var(--sel-fg);
+  font-size: 13px;
+  font-weight: 500;
+}
+.ui-select optgroup { color: var(--sel-accent); font-weight: 700; font-style: normal; }
+.ui-select option:checked { background-color: var(--sel-accent); color: #fff; }

@@ -5,6 +5,7 @@ import { adminFetch } from '@/lib/operations/api'
 import { palette } from '@/lib/operations/theme'
 import { useTheme } from '@/lib/operations/ThemeContext'
 import { StatusBadge, Avatar } from '@/lib/operations/StatusBadge'
+import Select from '@/components/Select'
 
 type SubRow = {
   id: string; status: string; frequency: string; pricePerMonth: number; trialEndsAt: string
@@ -37,6 +38,7 @@ export default function OperationsSubscriptionsPage() {
   const [status, setStatus] = useState('')
   const { theme } = useTheme()
   const T = palette[theme]
+  const selColors = { bg: T.surface, fg: T.text, border: T.border, accent: T.accent, popup: T.surface }
 
   const load = () => {
     const params = new URLSearchParams({ page: String(page), pageSize: '25' })
@@ -76,15 +78,15 @@ export default function OperationsSubscriptionsPage() {
         </button>
       </div>
 
-      <select value={status} onChange={e => { setStatus(e.target.value); setPage(1) }}
-        style={{ padding: '8px 12px', background: T.surface, border: `1px solid ${T.border}`, borderRadius: 8, color: T.text, marginBottom: 16 }}>
+      <Select tone={theme} colors={selColors} value={status} onChange={e => { setStatus(e.target.value); setPage(1) }}
+        style={{ marginBottom: 16 }}>
         <option value="">Todos los estados</option>
         <option value="TRIALING">Trial</option>
         <option value="ACTIVE">Activa</option>
         <option value="PAST_DUE">Pago vencido</option>
         <option value="CANCELLED">Cancelada</option>
         <option value="UNPAID">Sin pagar</option>
-      </select>
+      </Select>
 
       <div style={{ background: T.surface, border: `1px solid ${T.border}`, borderRadius: 12, overflow: 'auto' }}>
         <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13, minWidth: 700 }}>

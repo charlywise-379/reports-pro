@@ -6,6 +6,7 @@ import { createClient } from '@/lib/supabase/client'
 import posthog from 'posthog-js'
 import TutorialModal, { hasSeenTutorial } from '../../../components/TutorialModal'
 import { dashboardTutorialSteps } from '../../../lib/tutorials'
+import Select from '../../../components/Select'
 import { dashboardUrl, getSelectedProjectId, setSelectedProjectId } from '@/lib/selectedProject'
 
 const S: Record<string, React.CSSProperties> = {
@@ -609,13 +610,13 @@ export default function DashboardPage() {
                 <span style={{ color: isDark ? '#8B7BFF' : '#26215C' }}>{companyName}</span>
               </div>
               {(dashData?.projects?.length ?? 0) > 1 && (
-                <select value={dashData?.project?.id || ''} aria-label="Cambiar de empresa"
+                <Select tone={isDark ? 'dark' : 'light'} value={dashData?.project?.id || ''} aria-label="Cambiar de empresa"
                   onChange={e => { if (user) setSelectedProjectId(user.id, e.target.value); window.location.href = `/dashboard?projectId=${encodeURIComponent(e.target.value)}` }}
-                  style={{ marginTop:8, maxWidth:'100%', fontSize:12, fontWeight:600, color:T.text, background:T.inputBg, border:'1px solid rgba(139,123,255,0.3)', borderRadius:10, padding:'6px 10px', cursor:'pointer' }}>
+                  style={{ marginTop:8, maxWidth:'100%', fontSize:12, fontWeight:600, padding:'6px 32px 6px 10px' }}>
                   {dashData.projects.map((p: any) => (
                     <option key={p.id} value={p.id}>{p.companyName || p.name || 'Proyecto sin nombre'}</option>
                   ))}
-                </select>
+                </Select>
               )}
               {dashData?.projectLimit?.max != null && dashData.projectLimit.max > 1 && (
                 <div style={{ marginTop:4 }}>

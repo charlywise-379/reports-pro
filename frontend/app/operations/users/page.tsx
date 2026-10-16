@@ -5,6 +5,7 @@ import { adminFetch } from '@/lib/operations/api'
 import { palette } from '@/lib/operations/theme'
 import { useTheme } from '@/lib/operations/ThemeContext'
 import { StatusBadge, Avatar } from '@/lib/operations/StatusBadge'
+import Select from '@/components/Select'
 
 type UserRow = {
   id: string; email: string; fullName: string | null; phone: string | null
@@ -38,6 +39,7 @@ export default function OperationsUsersPage() {
   const [limitMsg, setLimitMsg] = useState<{ ok: boolean; text: string } | null>(null)
   const { theme } = useTheme()
   const T = palette[theme]
+  const selColors = { bg: T.surface, fg: T.text, border: T.border, accent: T.accent, popup: T.surface }
 
   const load = () => {
     const params = new URLSearchParams({ page: String(page), pageSize: '25' })
@@ -139,12 +141,11 @@ export default function OperationsUsersPage() {
           <input placeholder="Buscar por nombre o email" value={search} onChange={e => { setSearch(e.target.value); setPage(1) }}
             style={{ width: '100%', padding: '8px 12px 8px 32px', background: T.surface, border: `1px solid ${T.border}`, borderRadius: 8, color: T.text }} />
         </div>
-        <select value={status} onChange={e => { setStatus(e.target.value); setPage(1) }}
-          style={{ padding: '8px 12px', background: T.surface, border: `1px solid ${T.border}`, borderRadius: 8, color: T.text }}>
+        <Select tone={theme} colors={selColors} value={status} onChange={e => { setStatus(e.target.value); setPage(1) }}>
           <option value="">Todos los estados</option>
           <option value="active">Activos</option>
           <option value="suspended">Suspendidos</option>
-        </select>
+        </Select>
       </div>
 
       <div style={{ background: T.surface, border: `1px solid ${T.border}`, borderRadius: 12, overflow: 'auto' }}>

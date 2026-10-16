@@ -5,6 +5,7 @@ import { adminFetch } from '@/lib/operations/api'
 import { palette } from '@/lib/operations/theme'
 import { useTheme } from '@/lib/operations/ThemeContext'
 import { StatusBadge, Avatar } from '@/lib/operations/StatusBadge'
+import Select from '@/components/Select'
 
 type ReportRow = {
   id: string; status: string; createdAt: string; pdfSizeBytes: number | null; errorMessage: string | null
@@ -49,6 +50,7 @@ export default function OperationsReportsPage() {
   const [status, setStatus] = useState('')
   const { theme } = useTheme()
   const T = palette[theme]
+  const selColors = { bg: T.surface, fg: T.text, border: T.border, accent: T.accent, popup: T.surface }
 
   const load = () => {
     const params = new URLSearchParams({ page: String(page), pageSize: '25' })
@@ -87,10 +89,10 @@ export default function OperationsReportsPage() {
         </button>
       </div>
 
-      <select value={status} onChange={e => { setStatus(e.target.value); setPage(1) }}
-        style={{ padding: '8px 12px', background: T.surface, border: `1px solid ${T.border}`, borderRadius: 8, color: T.text, marginBottom: 16 }}>
+      <Select tone={theme} colors={selColors} value={status} onChange={e => { setStatus(e.target.value); setPage(1) }}
+        style={{ marginBottom: 16 }}>
         {STATUS_OPTIONS.map(s => <option key={s} value={s}>{s || 'Todos los estados'}</option>)}
-      </select>
+      </Select>
 
       <div style={{ background: T.surface, border: `1px solid ${T.border}`, borderRadius: 12, overflow: 'auto' }}>
         <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13, minWidth: 700 }}>

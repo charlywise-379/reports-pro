@@ -5,6 +5,7 @@ import { adminFetch } from '@/lib/operations/api'
 import { palette } from '@/lib/operations/theme'
 import { useTheme } from '@/lib/operations/ThemeContext'
 import { StatusBadge } from '@/lib/operations/StatusBadge'
+import Select from '@/components/Select'
 
 type PromoCodeRow = {
   id: string
@@ -27,6 +28,7 @@ export default function OperationsPromoCodesPage() {
   const [creating, setCreating] = useState(false)
   const { theme } = useTheme()
   const T = palette[theme]
+  const selColors = { bg: T.surface, fg: T.text, border: T.border, accent: T.accent, popup: T.surface }
 
   const load = () => {
     adminFetch('/api/operations/promo-codes')
@@ -82,14 +84,15 @@ export default function OperationsPromoCodesPage() {
           placeholder="Máx. canjes"
           style={{ padding: '6px 10px', borderRadius: 6, border: `1px solid ${T.border}`, background: 'transparent', color: T.text, fontSize: 13, width: 100 }}
         />
-        <select
+        <Select
+          tone={theme}
+          colors={selColors}
           value={newType}
           onChange={e => setNewType(e.target.value as 'STANDARD' | 'FULL_ACCESS_NO_TRIAL')}
-          style={{ padding: '6px 10px', borderRadius: 6, border: `1px solid ${T.border}`, background: T.surface, color: T.text, fontSize: 13 }}
         >
           <option value="STANDARD">Estándar (requiere trial)</option>
           <option value="FULL_ACCESS_NO_TRIAL">Acceso completo sin trial</option>
-        </select>
+        </Select>
         <button
           onClick={handleCreate}
           disabled={creating}

@@ -10,6 +10,7 @@ import type { IconType } from 'react-icons'
 import { Search, HelpCircle, Bot } from 'lucide-react'
 import TutorialModal, { hasSeenTutorial } from '../../../components/TutorialModal'
 import { competitiveOnboardingTutorialSteps } from '../../../lib/tutorials'
+import Select from '../../../components/Select'
 
 const STEPS = [
   { id: 1, label: 'Tu empresa' },
@@ -246,7 +247,7 @@ function Step1({ data, set, runAutocomplete }: any) {
         <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:14, marginBottom:14 }}>
           <div>
             <label style={S.label}>Industria</label>
-            <select style={{...S.input, appearance:'none' as const}} value={data.industry} onChange={e=>set('industry',e.target.value)}>
+            <Select style={{width:'100%'}} value={data.industry} onChange={e=>set('industry',e.target.value)}>
               <option value="">Seleccionar industria...</option>
               {INDUSTRY_GROUPS.map(g=>(
                 <optgroup key={g.group} label={`── ${g.group} ──`}>
@@ -254,7 +255,7 @@ function Step1({ data, set, runAutocomplete }: any) {
                 </optgroup>
               ))}
               <option value="Otro">Otro (especificar)</option>
-            </select>
+            </Select>
 {data.industry === 'Otro' && (
   <input style={{...S.input, marginTop:8}} value={data.industryCustom||''} onChange={e=>set('industryCustom',e.target.value)} placeholder="Describe el giro de tu negocio..." />
 )}
@@ -279,11 +280,11 @@ function Step1({ data, set, runAutocomplete }: any) {
           </div>
           <div>
             <label style={S.label}>País</label>
-            <select style={{...S.input, appearance:'none' as const}} value={data.pais||'México'} onChange={e=>set('pais',e.target.value)}>
+            <Select style={{width:'100%'}} value={data.pais||'México'} onChange={e=>set('pais',e.target.value)}>
               {['México','Colombia','Argentina','Chile','Perú','Ecuador','Guatemala','Costa Rica','Panamá','República Dominicana','España','Estados Unidos','Otro'].map(p=>(
                 <option key={p}>{p}</option>
               ))}
-            </select>
+            </Select>
           </div>
         </div>
       </div>
