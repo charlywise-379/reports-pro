@@ -8,6 +8,7 @@ import fs from 'fs'
 import { MIN_HOURS_BY_FREQUENCY } from '../lib/frequency'
 import { computeReportEligibility, computeReportFlags } from '../lib/reportFlags'
 import { summarizePromoAccess } from '../lib/userPromoAccess'
+import { hasConfiguredSetup } from '../lib/scheduleEligibility'
 
 export function startReportWorker() {
   const worker = new Worker<ReportJobData>(
@@ -22,6 +23,12 @@ export function startReportWorker() {
       })
 
       if (!project) throw new Error('Proyecto no encontrado: ' + projectId)
+
+      // Los jobs programados nunca deben generar (ni gastar el reporte gratis) sin onboarding terminado
+      if (trigger === 'scheduled' && !hasConfiguredSetup(project as any)) {
+        console.log(`[Worker] Proyecto ${projectId} sin configuración completa — saltando (scheduled)`)
+        return { skipped: true, reason: 'setup_not_configured' }
+      }
 
       // Verificar que el proyecto tiene suscripcion activa, trial vigente,
       // o un promo code de tipo FULL_ACCESS_NO_TRIAL sin usar aun

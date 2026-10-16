@@ -1,6 +1,7 @@
 import { reportQueue } from '../lib/queue'
 import { prisma } from '../lib/prisma'
 import { MIN_HOURS_BY_FREQUENCY } from '../lib/frequency'
+import { hasConfiguredSetup } from '../lib/scheduleEligibility'
 
 export async function scheduleReports() {
   try {
@@ -42,6 +43,11 @@ export async function scheduleReports() {
     let encolados = 0
 
     for (const project of projects) {
+      if (!hasConfiguredSetup(project)) {
+        console.log(`[Scheduler] ${project.name} — sin configuración completa (onboarding pendiente), saltando`)
+        continue
+      }
+
       const freq = project.frequency || 'WEEKLY'
 
       // Bloqueo fin de semana solo para DAILY
