@@ -123,7 +123,7 @@ export default function DashboardPage() {
     }
   }
 
-  // Nuevo proyecto (solo cuentas partner) — crea un proyecto borrador y abre el wizard
+  // Nuevo proyecto (si el límite lo permite) — crea un proyecto borrador y abre el wizard
   const handleNewProject = async () => {
     if (!token || creatingProject) return
     setCreatingProject(true)
@@ -777,7 +777,7 @@ export default function DashboardPage() {
           </div>
           <div style={{ display:'grid', gridTemplateColumns: isMobile ? '1fr 1fr' : '1fr 1fr 1fr 1fr', gap:10 }}>
             {[
-              { label:'Editar Configuración para Reportes', color:'#8B7BFF', bg:'rgba(139,123,255,0.12)', border:'rgba(139,123,255,0.3)', href: isPartner && dashData?.project?.id ? `/onboarding?projectId=${dashData.project.id}` : '/onboarding',
+              { label:'Editar Configuración para Reportes', color:'#8B7BFF', bg:'rgba(139,123,255,0.12)', border:'rgba(139,123,255,0.3)', href: dashData?.project?.id ? `/onboarding?projectId=${dashData.project.id}` : '/onboarding',
                 icon:<path d="M12 20h9M16.5 3.5a2.12 2.12 0 113 3L7 19l-4 1 1-4z"/> },
               { label: generating ? 'Generando...' : canGenerate ? 'Generar Reporte' : proximaFechaReporte ? 'Próximo: ' + proximaFechaReporte.toLocaleDateString('es-MX', {day:'2-digit', month:'short'}) + ' ' + proximaFechaReporte.toLocaleTimeString('es-MX', {hour:'2-digit', minute:'2-digit'}) : 'Generar Reporte', color: canGenerate || generating ? '#6EE7A4' : '#5A627A', bg: canGenerate || generating ? 'rgba(110,231,164,0.08)' : 'rgba(255,255,255,0.02)', border: canGenerate || generating ? 'rgba(110,231,164,0.2)' : 'rgba(255,255,255,0.06)', href:'#', onClick: canGenerate && !generating ? handleGenerateClick : undefined,
                 icon:<><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></> },
