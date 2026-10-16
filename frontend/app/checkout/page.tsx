@@ -35,8 +35,10 @@ export default function CheckoutPage() {
   const [loading, setLoading] = useState(false)
   const [isExpired, setIsExpired] = useState(false)
   const [checkingAccess, setCheckingAccess] = useState(true)
+  const [projectId, setProjectId] = useState<string | null>(null)
   useEffect(() => {
     const params = new URLSearchParams(window.location.search)
+    setProjectId(params.get('projectId'))
     setIsExpired(params.get('expired') === '1')
     // Preselección desde el onboarding (?plan=weekly&billing=annual)
     const plan = params.get('plan')
@@ -94,7 +96,7 @@ export default function CheckoutPage() {
       const res = await fetch(`${BACKEND}/api/stripe/create-checkout-session`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId: user.id, planKey: plan.key, billingCycle: billing, skipTrial })
+        body: JSON.stringify({ userId: user.id, planKey: plan.key, billingCycle: billing, skipTrial, ...(projectId ? { projectId } : {}) })
       })
       const data = await res.json()
       if (data.url) window.location.href = data.url
