@@ -750,7 +750,7 @@ export default function DashboardPage() {
               <button onClick={()=>{setEditName(dashData?.setup?.companyName||'');setShowEditProfile(true)}} style={{ fontSize:10, fontWeight:600, color:'#8B7BFF', background:'rgba(139,123,255,0.1)', border:'1px solid rgba(139,123,255,0.2)', borderRadius:20, padding:'6px 12px', cursor:'pointer', whiteSpace:'nowrap' }}>Editar Perfil</button>
               <button onClick={handlePasswordReset} style={{ fontSize:10, fontWeight:600, color: passwordSent ? '#6EE7A4' : '#9CA3AF', background:T.inputBg, border:'1px solid rgba(255,255,255,0.08)', borderRadius:20, padding:'6px 12px', cursor:'pointer', whiteSpace:'nowrap' }}>{passwordSent ? '✓ Email enviado' : 'Cambiar contraseña'}</button>
               {tieneStripe && (
-                <button onClick={() => router.push('/upgrade')} style={{ fontSize:10, fontWeight:600, color:'#6EE7A4', background:'rgba(110,231,164,0.08)', border:'1px solid rgba(110,231,164,0.2)', borderRadius:20, padding:'6px 12px', cursor:'pointer', whiteSpace:'nowrap' }}>
+                <button onClick={() => router.push(`/upgrade${dashData?.project?.id ? `?projectId=${dashData.project.id}` : ''}`)} style={{ fontSize:10, fontWeight:600, color:'#6EE7A4', background:'rgba(110,231,164,0.08)', border:'1px solid rgba(110,231,164,0.2)', borderRadius:20, padding:'6px 12px', cursor:'pointer', whiteSpace:'nowrap' }}>
                   Gestionar suscripción →
                 </button>
               )}
@@ -764,7 +764,7 @@ export default function DashboardPage() {
               <button onClick={()=>{setEditName(dashData?.setup?.companyName||'');setShowEditProfile(true)}} style={{ fontSize:12, fontWeight:600, color:'#8B7BFF', background:'rgba(139,123,255,0.1)', border:'1px solid rgba(139,123,255,0.2)', borderRadius:20, padding:'8px 18px', cursor:'pointer', whiteSpace:'nowrap' }}>Editar Perfil</button>
               <button onClick={handlePasswordReset} style={{ fontSize:12, fontWeight:600, color: passwordSent ? '#6EE7A4' : '#9CA3AF', background:T.inputBg, border:'1px solid rgba(255,255,255,0.08)', borderRadius:20, padding:'8px 18px', cursor:'pointer', whiteSpace:'nowrap' }}>{passwordSent ? '✓ Email enviado' : 'Cambiar contraseña'}</button>
               {tieneStripe && (
-                <button onClick={() => router.push('/upgrade')} style={{ fontSize:12, fontWeight:600, color:'#6EE7A4', background:'rgba(110,231,164,0.08)', border:'1px solid rgba(110,231,164,0.2)', borderRadius:20, padding:'8px 18px', cursor:'pointer', whiteSpace:'nowrap' }}>
+                <button onClick={() => router.push(`/upgrade${dashData?.project?.id ? `?projectId=${dashData.project.id}` : ''}`)} style={{ fontSize:12, fontWeight:600, color:'#6EE7A4', background:'rgba(110,231,164,0.08)', border:'1px solid rgba(110,231,164,0.2)', borderRadius:20, padding:'8px 18px', cursor:'pointer', whiteSpace:'nowrap' }}>
                   Gestionar suscripción →
                 </button>
               )}
@@ -1306,7 +1306,7 @@ export default function DashboardPage() {
               Entendido
             </button>
             <button
-              onClick={() => { setShowLimitModal(false); router.push('/upgrade') }}
+              onClick={() => { setShowLimitModal(false); router.push(`/upgrade${dashData?.project?.id ? `?projectId=${dashData.project.id}` : ''}`) }}
               style={{ flex:1, background:'linear-gradient(135deg,#8B7BFF,#5DD4D4)', border:'none', borderRadius:20, padding:'12px', color:'#0D0F1A', fontSize:13, fontWeight:900, cursor:'pointer' }}>
               Ver planes →
             </button>
