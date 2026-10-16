@@ -7,6 +7,7 @@ import path from 'path'
 import fs from 'fs'
 import { MIN_HOURS_BY_FREQUENCY } from '../lib/frequency'
 import { computeReportEligibility, computeReportFlags } from '../lib/reportFlags'
+import { summarizePromoAccess } from '../lib/userPromoAccess'
 
 export function startReportWorker() {
   const worker = new Worker<ReportJobData>(
@@ -30,36 +31,39 @@ export function startReportWorker() {
       const tieneStripe = sub?.stripeSubscriptionId != null &&
         ['active', 'trialing'].includes((sub?.status || '').toLowerCase())
 
-      const promoRedemption = await (prisma as any).promoCodeRedemption.findUnique({
-        where: { projectId },
-        include: { promoCode: true },
+      // El acceso del código promocional cuenta a nivel de usuario (todas sus empresas);
+      // el reporte gratis se marca por empresa (project.freeReportUsedAt).
+      const redemptions = await (prisma as any).promoCodeRedemption.findMany({
+        where: { userId: project.userId },
+        include: { promoCode: { select: { type: true } } },
       })
-      const hasFullAccessPromo = promoRedemption?.promoCode?.type === 'FULL_ACCESS_NO_TRIAL'
+      const { hasPromoAccess, hasFullAccessPromo } = summarizePromoAccess(
+        redemptions.map((r: any) => ({ type: r.promoCode?.type })),
+      )
 
       const userForGate = await prisma.user.findUnique({
         where: { id: project.userId },
-        select: { freeReportUsedAt: true, accountType: true },
+        select: { accountType: true },
       })
       const accountType: 'STANDARD' | 'PARTNER' = (userForGate as any)?.accountType === 'PARTNER' ? 'PARTNER' : 'STANDARD'
-      const eligibleViaFullAccessPromo = hasFullAccessPromo && !userForGate?.freeReportUsedAt
+      const projectFreeReportUsedAt = ((project as any).freeReportUsedAt as Date | null) ?? null
+      const eligibleViaFullAccessPromo = hasFullAccessPromo && !projectFreeReportUsedAt
 
       if (!computeReportEligibility({ accountType, trialVigente, tieneStripe, eligibleViaFullAccessPromo })) {
         console.log(`[Worker] Proyecto ${projectId} sin suscripcion activa — saltando`)
         return { skipped: true, reason: 'no_active_subscription' }
       }
 
-      const user = userForGate
-      const hasPromoAccess = promoRedemption != null
       const hasPaid = (sub?.status || '').toLowerCase() === 'active'
       const { isFreeReport, isTeaser } = computeReportFlags({
         accountType,
         hasPaid,
-        freeReportUsedAt: (user?.freeReportUsedAt as Date | null) ?? null,
+        freeReportUsedAt: projectFreeReportUsedAt,
         hasPromoAccess,
       })
 
-      if (accountType !== 'PARTNER' && !hasPaid && user?.freeReportUsedAt) {
-        console.log(`[Worker] User ${project.userId} already used their free report — skipping`)
+      if (accountType !== 'PARTNER' && !hasPaid && projectFreeReportUsedAt) {
+        console.log(`[Worker] Proyecto ${projectId} ya usó su reporte gratis — esperando pago`)
         return { skipped: true, reason: 'free_report_already_used' }
       }
 
@@ -114,8 +118,8 @@ export function startReportWorker() {
                 isTeaser,
               }
             }),
-            prisma.user.update({
-              where: { id: project.userId },
+            prisma.project.update({
+              where: { id: project.id },
               data: { freeReportUsedAt: new Date() },
             }),
           ])

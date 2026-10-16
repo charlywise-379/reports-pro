@@ -27,7 +27,6 @@ export async function scheduleReports() {
       include: {
         subscription: true,
         competitiveSetup: true,
-        user: { select: { freeReportUsedAt: true } },
         reports: {
           where: { status: 'COMPLETED' as any },
           orderBy: { createdAt: 'desc' },
@@ -92,8 +91,8 @@ export async function scheduleReports() {
         (Date.now() - new Date(lastReport.createdAt).getTime()) / (1000 * 60 * 60) >= horasMinimas
 
       const hasPaid = project.status === 'ACTIVE' || project.subscription?.status === 'ACTIVE'
-      if (!hasPaid && (project as any).user?.freeReportUsedAt) {
-        console.log(`[Scheduler] ${project.name} — user already used their free report, awaiting payment`)
+      if (!hasPaid && (project as any).freeReportUsedAt) {
+        console.log(`[Scheduler] ${project.name} — la empresa ya usó su reporte gratis, esperando pago`)
         continue
       }
 

@@ -68,3 +68,20 @@ describe('computeReportFlags', () => {
     })).toEqual({ isFreeReport: false, isTeaser: false })
   })
 })
+
+describe('varias empresas del mismo usuario (reporte gratis por proyecto)', () => {
+  const userWithFullPromo = { accountType: 'STANDARD' as const, hasPaid: false, hasPromoAccess: true }
+
+  it('cada empresa nueva (freeReportUsedAt null) recibe su primer reporte completo (no desenfocado)', () => {
+    expect(computeReportFlags({ ...userWithFullPromo, freeReportUsedAt: null })).toEqual({ isFreeReport: true, isTeaser: false })
+  })
+  it('una empresa que ya usó su reporte gratis ya no es gratis (exige pago)', () => {
+    expect(computeReportFlags({ ...userWithFullPromo, freeReportUsedAt: new Date() })).toEqual({ isFreeReport: false, isTeaser: false })
+  })
+  it('sin acceso promocional, el primer reporte de cada empresa es el gratuito desenfocado', () => {
+    expect(computeReportFlags({ accountType: 'STANDARD', hasPaid: false, hasPromoAccess: false, freeReportUsedAt: null })).toEqual({ isFreeReport: true, isTeaser: true })
+  })
+  it('elegibilidad: con acceso completo sin usar es elegible aunque el trial haya vencido', () => {
+    expect(computeReportEligibility({ accountType: 'STANDARD', trialVigente: false, tieneStripe: false, eligibleViaFullAccessPromo: true })).toBe(true)
+  })
+})

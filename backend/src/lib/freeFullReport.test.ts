@@ -20,3 +20,13 @@ describe('hasFreeFullReport', () => {
     expect(hasFreeFullReport({ ...base, accountType: 'PARTNER' })).toBe(false)
   })
 })
+
+describe('hasFreeFullReport por empresa', () => {
+  const base = { accountType: 'STANDARD', promoType: 'FULL_ACCESS_NO_TRIAL', freeReportUsedAt: null, hasPaid: false }
+  it('una empresa sin reporte gratis usado lo tiene aunque otra empresa del usuario ya lo haya usado', () => {
+    expect(hasFreeFullReport(base)).toBe(true)
+  })
+  it('la empresa que ya lo usó no lo tiene', () => {
+    expect(hasFreeFullReport({ ...base, freeReportUsedAt: new Date() })).toBe(false)
+  })
+})
