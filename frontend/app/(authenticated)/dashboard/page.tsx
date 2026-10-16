@@ -617,7 +617,7 @@ export default function DashboardPage() {
                   ))}
                 </select>
               )}
-              {dashData?.projectLimit?.max != null && (
+              {dashData?.projectLimit?.max != null && dashData.projectLimit.max > 1 && (
                 <div style={{ marginTop:4 }}>
                   <span style={{ fontSize:11, color:T.textMuted }}>{dashData.projectLimit.used} de {dashData.projectLimit.max} empresas</span>
                 </div>
