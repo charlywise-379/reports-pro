@@ -310,7 +310,7 @@ export default function DashboardPage() {
         }
       } else if (data.error === 'trial_limit') {
         stopPolling()
-        router.push('/checkout?expired=1')
+        router.push(`/checkout?expired=1${dashData?.project?.id ? `&projectId=${dashData.project.id}` : ''}`)
       } else if (data.error === 'frequency_limit') {
         // Bug #6: Modal elegante en vez de alert()
         stopPolling()
@@ -561,7 +561,7 @@ export default function DashboardPage() {
           Activa tu plan para seguir recibiendo inteligencia competitiva automatizada.
           Desde <strong style={{ color:'#8B7BFF' }}>$49 USD/mes</strong>. Sin compromisos, cancela cuando quieras.
         </p>
-        <button onClick={() => router.push('/checkout?expired=1')}
+        <button onClick={() => router.push(`/checkout?expired=1${dashData?.project?.id ? `&projectId=${dashData.project.id}` : ''}`)}
           style={{ background:'linear-gradient(135deg,#8B7BFF,#5DD4D4)', border:'none', borderRadius:20, padding:'14px 36px', color:'#0D0F1A', fontSize:14, fontWeight:900, cursor:'pointer', marginBottom:16, width:'100%' }}>
           Ver planes y activar
         </button>
@@ -608,7 +608,7 @@ export default function DashboardPage() {
               <div style={{ fontSize: isMobile ? 22 : 26, fontWeight:900, color: isDark ? T.text : '#26215C', lineHeight:1.1 }}>
                 <span style={{ color: isDark ? '#8B7BFF' : '#26215C' }}>{companyName}</span>
               </div>
-              {isPartner && (dashData?.projects?.length ?? 0) > 1 && (
+              {(dashData?.projects?.length ?? 0) > 1 && (
                 <select value={dashData?.project?.id || ''} aria-label="Cambiar de empresa"
                   onChange={e => { if (user) setSelectedProjectId(user.id, e.target.value); window.location.href = `/dashboard?projectId=${encodeURIComponent(e.target.value)}` }}
                   style={{ marginTop:8, maxWidth:'100%', fontSize:12, fontWeight:600, color:T.text, background:T.inputBg, border:'1px solid rgba(139,123,255,0.3)', borderRadius:10, padding:'6px 10px', cursor:'pointer' }}>
@@ -616,6 +616,11 @@ export default function DashboardPage() {
                     <option key={p.id} value={p.id}>{p.companyName || p.name || 'Proyecto sin nombre'}</option>
                   ))}
                 </select>
+              )}
+              {dashData?.projectLimit?.max != null && (
+                <div style={{ marginTop:4 }}>
+                  <span style={{ fontSize:11, color:T.textMuted }}>{dashData.projectLimit.used} de {dashData.projectLimit.max} empresas</span>
+                </div>
               )}
               <div style={{ fontSize:12, color:T.textMuted, marginTop:4 }}>
                 {industry}{city ? ` · ${city}, ${country}` : ` · ${country}`} · {new Date().toLocaleDateString('es-MX',{weekday:'long',day:'numeric',month:'long'})}
@@ -749,7 +754,7 @@ export default function DashboardPage() {
                   Gestionar suscripción →
                 </button>
               )}
-              {accountType === 'PARTNER' && (
+              {dashData?.projectLimit?.canCreate && (
                 <button onClick={handleNewProject} disabled={creatingProject} style={{ fontSize:10, fontWeight:600, color:'#0D0F1A', background:'linear-gradient(135deg,#8B7BFF,#5DD4D4)', border:'none', borderRadius:20, padding:'6px 12px', cursor: creatingProject ? 'not-allowed' : 'pointer', whiteSpace:'nowrap', opacity: creatingProject ? 0.7 : 1 }}>
                   {creatingProject ? 'Creando...' : '+ Nuevo proyecto'}
                 </button>
@@ -763,7 +768,7 @@ export default function DashboardPage() {
                   Gestionar suscripción →
                 </button>
               )}
-              {accountType === 'PARTNER' && (
+              {dashData?.projectLimit?.canCreate && (
                 <button onClick={handleNewProject} disabled={creatingProject} style={{ fontSize:12, fontWeight:600, color:'#0D0F1A', background:'linear-gradient(135deg,#8B7BFF,#5DD4D4)', border:'none', borderRadius:20, padding:'8px 18px', cursor: creatingProject ? 'not-allowed' : 'pointer', whiteSpace:'nowrap', opacity: creatingProject ? 0.7 : 1 }}>
                   {creatingProject ? 'Creando...' : '+ Nuevo proyecto'}
                 </button>

@@ -1658,7 +1658,7 @@ export default function OnboardingPage() {
         // El plan y el ciclo elegidos aquí llegan preseleccionados al checkout.
         const plan = String(data.frequency || 'WEEKLY').toLowerCase()
         const billing = data.annualBilling ? 'annual' : 'monthly'
-        router.push(`/checkout?plan=${plan}&billing=${billing}`)
+        router.push(`/checkout?plan=${plan}&billing=${billing}${res.projectId ? `&projectId=${res.projectId}` : ''}`)
       }
     } catch (err: any) {
       setErrorMsg(err.message)
