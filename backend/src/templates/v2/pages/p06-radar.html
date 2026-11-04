@@ -1,17 +1,31 @@
-<div class="g3 meters">
-  <div class="meter tone-{{pressureTone}}"><div class="rowline"><span class="label">Presión competitiva</span><span class="mono tone-text">{{competitivePressure}}/100</span></div><div class="bar bar--lg"><i style="width:{{competitivePressure}}%"></i></div></div>
-  <div class="meter tone-{{opportunityTone}}"><div class="rowline"><span class="label">Oportunidad</span><span class="mono tone-text">{{opportunityScore}}/100</span></div><div class="bar bar--lg"><i style="width:{{opportunityScore}}%"></i></div></div>
-  <div class="meter tone-{{riskTone}}"><div class="rowline"><span class="label">Riesgo de mercado</span><span class="mono tone-text">{{marketRisk}}% · {{highRisksCount}} altos</span></div><div class="bar bar--lg"><i style="width:{{marketRisk}}%"></i></div></div>
+<div class="therms">
+  <div class="therm-o tone-info"><div class="ring"><svg width="60" height="60" viewBox="0 0 70 70"><circle class="trk" cx="35" cy="35" r="28" fill="none" stroke-width="6"/><circle class="val" cx="35" cy="35" r="28" fill="none" stroke-width="6" stroke-dasharray="{{opportunityDash6}} 176"/></svg><div class="ring-v"><span class="num num-md">{{opportunityScore}}</span></div></div><div><div class="label">Sentimiento Overall</div><b>Análisis integral</b><div class="sm muted">Evaluación completa del reporte esta semana</div></div></div>
+  <div class="therm-s tone-bad"><div class="label">Competidores</div><div class="ring"><svg width="48" height="48" viewBox="0 0 70 70"><circle class="trk" cx="35" cy="35" r="28" fill="none" stroke-width="6"/><circle class="val" cx="35" cy="35" r="28" fill="none" stroke-width="6" stroke-dasharray="{{pressureDash6}} 176"/></svg><div class="ring-v"><span class="mono tone-text">{{competitivePressure}}</span></div></div><span class="chip">{{riskLevel}}</span></div>
+  <div class="therm-s tone-warn"><div class="label">Mercado</div><div class="ring"><svg width="48" height="48" viewBox="0 0 70 70"><circle class="trk" cx="35" cy="35" r="28" fill="none" stroke-width="6"/><circle class="val" cx="35" cy="35" r="28" fill="none" stroke-width="6" stroke-dasharray="{{riskDash6}} 176"/></svg><div class="ring-v"><span class="mono tone-text">{{marketRisk}}</span></div></div><span class="chip">Moderado</span></div>
+  <div class="therm-s tone-ok"><div class="label">Oportunidades</div><div class="ring"><svg width="48" height="48" viewBox="0 0 70 70"><circle class="trk" cx="35" cy="35" r="28" fill="none" stroke-width="6"/><circle class="val" cx="35" cy="35" r="28" fill="none" stroke-width="6" stroke-dasharray="{{opportunityDash6}} 176"/></svg><div class="ring-v"><span class="mono tone-text">{{opportunityScore}}</span></div></div><span class="chip">Alto</span></div>
+  <div class="therm-s tone-info"><div class="label">Riesgos</div><div class="ring"><svg width="48" height="48" viewBox="0 0 70 70"><circle class="trk" cx="35" cy="35" r="28" fill="none" stroke-width="6"/></svg><div class="ring-v"><span class="mono tone-text">{{highRisksCount}}</span></div></div><span class="chip">{{riskLevel}}</span></div>
 </div>
-<div class="g3 phases">
-  <div class="card card--accent tone-bad"><div class="label tone-text">Semana 1 · Primeros 7 días</div><b class="phase-t">Defensa activa</b><ul class="ticks lst">{{#each criticalSignals}}<li><span class="dot mt"></span><span>{{this}}</span></li>{{/each}}</ul></div>
-  <div class="card card--accent tone-warn"><div class="label tone-text">Semana 2 · 8-14 días</div><b class="phase-t">Expansión y respuesta</b><ul class="ticks lst">{{#each importantSignals}}<li><span class="dot mt"></span><span>{{this}}</span></li>{{/each}}</ul></div>
-  <div class="card card--accent tone-info"><div class="label tone-text">Semanas 3-4 · 15-30 días</div><b class="phase-t">Consolidación</b><ul class="ticks lst">{{#each infoSignals}}<li><span class="dot mt"></span><span>{{this}}</span></li>{{/each}}</ul></div>
+<div class="stack cal">
+  <div class="label">Calendario de monitoreo · {{nextMonth}}</div>
+  <div class="g3 phases">
+    <div class="card card--accent tone-bad"><div class="label tone-text">Semana 1 · Primeros 7 días</div><b class="phase-t">Defensa activa</b><ul class="ticks lst">{{#each weekPlan1}}<li><span class="dot mt"></span><span>{{this}}</span></li>{{/each}}</ul></div>
+    <div class="card card--accent tone-warn"><div class="label tone-text">Semana 2 · 8-14 días</div><b class="phase-t">Expansión y respuesta</b><ul class="ticks lst">{{#each weekPlan2}}<li><span class="dot mt"></span><span>{{this}}</span></li>{{/each}}</ul></div>
+    <div class="card card--accent tone-info"><div class="label tone-text">Semanas 3-4 · 15-30 días</div><b class="phase-t">Consolidación</b><ul class="ticks lst">{{#each weekPlan3}}<li><span class="dot mt"></span><span>{{this}}</span></li>{{/each}}</ul></div>
+  </div>
 </div>
-<div class="strip">
-  <span><b class="mono">{{frequency}}</b> <span class="muted">frecuencia</span></span>
-  <span><b class="mono">{{activeAreas}}</b> <span class="muted">áreas activas</span></span>
-  <span><b class="mono">{{competitorsCount}}</b> <span class="muted">competidores</span></span>
-  <span><b class="mono">{{signalsCount}}</b> <span class="muted">señales esta semana</span></span>
+<div class="card signals">
+  <div class="label">Señales clave a vigilar este mes</div>
+  <div class="g3">
+    <div class="tone-bad"><div class="label tone-text">Crítico — Alertar inmediato</div><ul class="ticks lst">{{#each criticalSignals}}<li><span class="dot mt"></span><span>{{this}}</span></li>{{/each}}</ul></div>
+    <div class="tone-warn"><div class="label tone-text">Importante — Revisar semanal</div><ul class="ticks lst">{{#each importantSignals}}<li><span class="dot mt"></span><span>{{this}}</span></li>{{/each}}</ul></div>
+    <div class="tone-info"><div class="label tone-text">Informativo — Seguimiento</div><ul class="ticks lst">{{#each infoSignals}}<li><span class="dot mt"></span><span>{{this}}</span></li>{{/each}}</ul></div>
+  </div>
 </div>
-<div class="closing"><div><div class="label">Próxima entrega</div><b>{{nextReportDate}} · {{nextReportTime}}</b></div><div class="mono sm">Reporte #{{nextEdition}} · {{deliveryChannel}}</div></div>
+<div class="closing">
+  <div><div class="label">Próxima entrega · Edición {{nextEdition}}</div><b>Inteligencia {{frequency}} · {{companyName}}</b><div class="mono sm">{{nextReportDate}} · {{nextReportTime}} · {{deliveryChannel}}</div></div>
+  <div class="closing-stats">
+    <div><div class="label">Áreas activas</div><b class="mono">{{activeAreas}}/9</b></div>
+    <div><div class="label">Competidores</div><b class="mono">{{competitorsCount}}</b></div>
+    <div><div class="label">Señales/sem</div><b class="mono">{{signalsCount}}</b></div>
+  </div>
+</div>

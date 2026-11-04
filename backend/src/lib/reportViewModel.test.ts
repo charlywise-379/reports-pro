@@ -47,7 +47,6 @@ describe('buildViewModel (tonos y listas)', () => {
     const v = vm('normal')
     expect(v.insights.map((i: any) => i.tone)).toEqual(['bad', 'ok', 'info'])
     expect(v.actions.map((a: any) => a.tone)).toEqual(['bad', 'warn', 'info'])
-    expect(v.actions[1].priorityLabel).toBe('MEDIA')
     expect(v.competitors[0]).toMatchObject({ threatTone: 'bad', riskTone: 'bad', growthTone: 'ok' })
     expect(v.competitors[3]).toMatchObject({ threatTone: 'ok', riskTone: 'ok', growthTone: 'bad' })
     expect(v.changesCol1[0].tone).toBe('bad')      // PRECIO
@@ -62,11 +61,12 @@ describe('buildViewModel (tonos y listas)', () => {
     expect(v.rivalAdvantages.map((r: any) => r.tone)).toEqual(['bad', 'bad', 'ok'])
   })
 
-  it('recomendaciones: esfuerzo con acentos y etiquetas', () => {
+  it('página 6: calendario semanal igual que v1 (señales de la IA, máximo 4; sin datos, respaldo con competidores)', () => {
     const v = vm('normal')
-    expect(v.highPriorityRecs[0]).toMatchObject({ difficultyTone: 'ok', difficultyLabel: 'Fácil de implementar', timeTone: 'ok', costTone: 'ok' })
-    expect(v.highPriorityRecs[1]).toMatchObject({ difficultyTone: 'warn', timeTone: 'warn', costTone: 'warn' })
-    expect(v.mediumPriorityRecs[1]).toMatchObject({ difficultyTone: 'bad', difficultyLabel: 'Complejo de implementar', costLabel: 'Alta inversión' })
+    expect(v.weekPlan1).toEqual(FIXTURES.normal.criticalSignals.slice(0, 4))
+    const m = vm('minimal')
+    expect(m.weekPlan1).toHaveLength(4)
+    expect(m.weekPlan3).toEqual(['Monitorear nuevo jugador en sector', 'Actualizar materiales comerciales', 'Revisión de equipo y talento', 'Análisis SEO y keywords'])
   })
 
   it('benchmark: filas estructuradas', () => {
@@ -132,40 +132,11 @@ describe('buildViewModel (benchmark: posición y columnas)', () => {
     expect(rows[0].position).toBe('3er lugar (competitivo)')
   })
 
-  it('columnas usadas: cols-5 con cinco competidores con datos (normal y real)', () => {
-    expect(vm('normal').benchColsClass).toBe('cols-5')
+  it('encabezados del benchmark: los 5 competidores del motor, como en v1 (sin ocultar columnas)', () => {
     const real = vm('real')
-    expect(real.benchColsClass).toBe('cols-5')
     expect(real.benchmarkCompetitors.map((c: any) => c.name)).toEqual(['Sticker Mule', 'Creatify', 'Stickeria', 'Pegalinas.com', 'Pop México'])
-  })
-
-  it('omite columnas finales vacías (N/A en todas las filas) y les pone «—»', () => {
-    const rows = FIXTURES.normal.benchmarkRows.map((r: any) => ({ ...r, comp4: 'N/A', comp5: '' }))
-    const v = vmWith({ ...FIXTURES.normal, benchmarkRows: rows })
-    expect(v.benchColsClass).toBe('cols-3')
-    expect(v.benchmarkCompetitors.map((c: any) => c.name)).toEqual(['Atlas Creativo', 'Norte Digital', 'Pixel & Co', '—', '—'])
-  })
-
-  it('un hueco interno no reduce las columnas: n es la última columna con datos', () => {
-    const rows = FIXTURES.normal.benchmarkRows.map((r: any) => ({ ...r, comp2: 'N/A', comp5: 'N/A' }))
-    const v = vmWith({ ...FIXTURES.normal, benchmarkRows: rows })
-    expect(v.benchColsClass).toBe('cols-4')
-    expect(v.benchmarkCompetitors[1].name).toBe('—')
-    expect(v.benchmarkCompetitors[3].name).toBe('Marea Studio')
-  })
-
-  it('columna con datos sin competidor registrado en esa posición: «Otros»', () => {
-    const ai = { ...FIXTURES.normal, competitors: FIXTURES.normal.competitors.slice(0, 3) }
-    const v = vmWith(ai)
-    expect(v.benchColsClass).toBe('cols-5')
-    expect(v.benchmarkCompetitors.map((c: any) => c.name)).toEqual(['Atlas Creativo', 'Norte Digital', 'Pixel & Co', 'Otros', 'Otros'])
-  })
-
-  it('sin benchmark (minimal): una columna como mínimo y encabezados «—»', () => {
-    const v = vm('minimal')
-    expect(v.benchColsClass).toBe('cols-1')
-    expect(v.benchmarkCompetitors.map((c: any) => c.name)).toEqual(['—', '—', '—', '—', '—'])
-    expect(v.benchmarkRows[0]).toMatchObject({ positionRank: '—', positionNote: '' })
+    expect(vm('minimal').benchmarkCompetitors).toHaveLength(5)
+    expect(vm('normal')).not.toHaveProperty('benchColsClass')
   })
 
   it('no muta los datos de entrada (real)', () => {
@@ -194,12 +165,10 @@ describe('buildViewModel (fix 1)', () => {
     ])
   })
 
-  it('topCompetitors: hasta 5 competidores primarios (real) con iniciales, amenaza y tono', () => {
+  it('topCompetitors: los mismos 4 que v1 (motor) con tono por amenaza', () => {
     const v = vm('real')
-    expect(v.topCompetitors.map((c: any) => c.name)).toEqual(['Sticker Mule', 'Creatify', 'Stickeria', 'Pegalinas.com', 'Pop México'])
-    expect(v.topCompetitors[4]).toMatchObject({ initials: 'PO', threat: 6, threatPct: 60, tone: 'warn' })
-    expect(vm('normal').topCompetitors).toHaveLength(5)
-    expect(vm('minimal').topCompetitors.length).toBeLessThanOrEqual(5)
+    expect(v.topCompetitors.map((c: any) => c.name)).toEqual(['Sticker Mule', 'Creatify', 'Stickeria', 'Pegalinas.com'])
+    expect(v.topCompetitors[0]).toMatchObject({ initials: 'ST', threat: 9, tone: 'bad' })
   })
 })
 

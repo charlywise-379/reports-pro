@@ -1,35 +1,48 @@
+<div class="cover-top">
+  <div class="brand"><img src="{{logoOnDark}}" alt="Omni Reports"><div><div class="brand-name">Omni Reports · AI Automation</div><small>Inteligencia competitiva</small></div></div>
+  <div class="cover-meta">
+    <div><div class="label">Período</div><span class="mono">{{periodStart}} — {{periodEnd}}</span></div>
+    <div><div class="label">Edición</div><span class="mono">Reporte #{{edition}}</span></div>
+    <div><div class="label">Generado</div><span class="mono">{{generatedAt}}</span></div>
+    <span class="cover-trend-top">{{generalTrend}}</span>
+  </div>
+</div>
 <div class="cover-main">
   <div>
     <div class="eyebrow">Reporte de inteligencia competitiva · Edición {{edition}}</div>
     <h1 class="cover-title">{{companyName}}</h1>
-    <p class="cover-sub">{{industry}} · {{targetMarket}}</p>
+    <p class="cover-sub">Agencia de Marketing Digital · {{targetMarket}}</p>
     <div class="tags lst">{{#each tags}}<span class="tag">{{this}}</span>{{/each}}</div>
-    <div class="cover-trend"><span class="chip tone-info">{{generalTrend}}</span><span class="mono">{{trendDelta}} pts vs. reporte anterior · {{periodStart}} — {{periodEnd}}</span></div>
   </div>
   <div class="cover-scores">
     <div class="score tone-{{pressureTone}}">
-      <div class="ring"><svg width="104" height="104" viewBox="0 0 110 110"><circle class="trk" cx="55" cy="55" r="46" fill="none" stroke-width="7"/><circle class="val" cx="55" cy="55" r="46" fill="none" stroke-width="7" stroke-dasharray="{{pressureDash}} 289"/></svg><div class="ring-v"><span class="num num-lg">{{competitivePressure}}</span></div></div>
-      <div class="label">Presión competitiva</div>
+      <div class="ring"><svg width="104" height="104" viewBox="0 0 110 110"><circle class="trk" cx="55" cy="55" r="46" fill="none" stroke-width="7"/><circle class="val" cx="55" cy="55" r="46" fill="none" stroke-width="7" stroke-dasharray="{{pressureDash}} 289"/></svg><div class="ring-v"><span class="num num-lg">{{competitivePressure}}</span><span class="sm muted">de 100</span></div></div>
+      <div class="label">Competitive<br>Pressure™</div>
     </div>
     <div class="score tone-{{opportunityTone}}">
-      <div class="ring"><svg width="104" height="104" viewBox="0 0 110 110"><circle class="trk" cx="55" cy="55" r="46" fill="none" stroke-width="7"/><circle class="val" cx="55" cy="55" r="46" fill="none" stroke-width="7" stroke-dasharray="{{opportunityDash}} 289"/></svg><div class="ring-v"><span class="num num-lg">{{opportunityScore}}</span></div></div>
-      <div class="label">Oportunidad</div>
+      <div class="ring"><svg width="104" height="104" viewBox="0 0 110 110"><circle class="trk" cx="55" cy="55" r="46" fill="none" stroke-width="7"/><circle class="val" cx="55" cy="55" r="46" fill="none" stroke-width="7" stroke-dasharray="{{opportunityDash}} 289"/></svg><div class="ring-v"><span class="num num-lg">{{opportunityScore}}</span><span class="sm muted">de 100</span></div></div>
+      <div class="label">Opportunity<br>Score™</div>
     </div>
     <div class="score tone-{{riskTone}}">
-      <div class="ring"><svg width="104" height="104" viewBox="0 0 110 110"><circle class="trk" cx="55" cy="55" r="46" fill="none" stroke-width="7"/><circle class="val" cx="55" cy="55" r="46" fill="none" stroke-width="7" stroke-dasharray="{{riskDash}} 289"/></svg><div class="ring-v"><span class="num num-lg">{{marketRisk}}</span></div></div>
-      <div class="label">Riesgo · {{riskLevel}}</div>
+      <div class="ring"><svg width="104" height="104" viewBox="0 0 110 110"><circle class="trk" cx="55" cy="55" r="46" fill="none" stroke-width="7"/><circle class="val" cx="55" cy="55" r="46" fill="none" stroke-width="7" stroke-dasharray="{{riskDash}} 289"/></svg><div class="ring-v"><span class="num num-lg">{{marketRisk}}%</span><span class="sm muted">pérdida estimada</span></div></div>
+      <div class="label">Riesgo<br>mercado</div>
+      <span class="chip">{{riskLevel}}</span>
     </div>
   </div>
 </div>
 <div class="kpis">
-  <div class="kpi"><div class="label">Señales detectadas</div><div class="num num-md">{{signalsCount}}</div><div class="sm muted">+{{signalsDelta}}% vs. anterior</div></div>
+  <div class="kpi"><div class="label">Señales detectadas</div><div class="num num-md">{{signalsCount}}</div><div class="sm muted">↑ +{{signalsDelta}}% vs anterior</div></div>
   <div class="kpi"><div class="label">Movimientos clave</div><div class="num num-md">{{movementsCount}}</div><div class="sm muted">{{criticalMovements}} críticos · {{minorMovements}} menores</div></div>
-  <div class="kpi"><div class="label">Alertas activas</div><div class="num num-md">{{alertsCount}}</div><div class="sm muted">requieren atención</div></div>
-  <div class="kpi"><div class="label">Competidores</div><div class="num num-md">{{competitorsCount}}</div><div class="sm muted">monitoreados</div></div>
-  <div class="kpi"><div class="label">Nivel de riesgo</div><div class="num num-md">{{riskLevel}}</div><div class="sm muted">mercado actual</div></div>
+  <div class="kpi"><div class="label">Alertas activas</div><div class="num num-md">{{alertsCount}}</div><div class="sm muted">requieren atención hoy</div></div>
+  <div class="kpi"><div class="label">Competidores</div><div class="num num-md">{{competitorsCount}}</div><div class="sm muted">monitoreados activos</div></div>
+  <div class="kpi tone-{{riskLevelTone}}"><div class="label">Nivel de riesgo</div><div class="num num-md tone-text">{{riskLevel}}</div><div class="sm muted">monitoreo intensificado</div></div>
 </div>
 <div class="cover-grid">
-  <div class="card"><div class="label">Hallazgos</div><div class="mini-list lst">{{#each insights}}<div class="mini tone-{{this.tone}}"><span class="dot mt"></span><div><div class="label tone-text">{{this.category}}</div><p>{{this.text}}</p></div></div>{{/each}}</div></div>
-  <div class="card"><div class="label">Acciones prioritarias</div><div class="mini-list lst">{{#each actions}}<div class="mini tone-{{this.tone}}"><span class="chip">{{this.priorityLabel}}</span><p>{{this.text}}</p></div>{{/each}}</div></div>
-  <div class="card"><div class="label">Amenaza por competidor</div><div class="mini-list lst">{{#each topCompetitors}}<div class="tone-{{this.tone}}"><div class="rowline"><span>{{this.name}}</span><span class="mono tone-text">{{this.threat}}/10</span></div><div class="bar"><i style="width:{{this.threatPct}}%"></i></div></div>{{/each}}</div></div>
+  <div class="card"><div class="label">3 Insights críticos</div><div class="mini-list lst">{{#each insights}}<div class="mini tone-{{this.tone}}"><span class="dot mt"></span><div><div class="label tone-text">{{this.category}}</div><p>{{this.text}}</p></div></div>{{/each}}</div></div>
+  <div class="card"><div class="label">3 Acciones inmediatas</div><div class="mini-list lst">{{#each actions}}<div class="mini tone-{{this.tone}}"><span class="chip">{{this.priority}}</span><p>{{this.text}}</p></div>{{/each}}</div></div>
+  <div class="stack cover-side">
+    <div class="card"><div class="label">Tendencia general</div><b class="trend-v">{{generalTrend}}</b><div class="sm muted mono">vs reporte anterior {{trendDelta}} pts</div></div>
+    <div class="card"><div class="label">Ranking de amenaza</div><div class="mini-list lst">{{#each topCompetitors}}<div class="tone-{{this.tone}}"><div class="rowline"><span class="who"><span class="avatar">{{this.initials}}</span><span>{{this.name}}</span></span><span class="mono tone-text">{{this.threat}}/10</span></div><div class="bar"><i style="width:{{this.threatPct}}%"></i></div></div>{{/each}}</div></div>
+  </div>
 </div>
+<div class="alertband tone-warn"><svg class="ic"><use href="#i-alert"/></svg><div><div class="label tone-text">Early Warning™</div><span>{{earlyWarning}}</span></div></div>

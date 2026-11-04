@@ -1,11 +1,14 @@
 <div class="g3 commercial c-top">
-  <div class="card"><div class="label">Tendencia de precios</div><div class="mini-list lst">{{#each priceTrends}}<div class="price tone-{{this.tone}}"><b>{{this.name}}</b><div class="sm tone-text">{{this.change}}</div></div>{{/each}}</div></div>
-  <div class="card"><div class="label">Mensajes dominantes</div><div class="mini-list lst">{{#each dominantMessages}}<div class="mini tone-{{this.tone}}"><span class="dot mt"></span><div><b>{{this.competitor}}</b><p class="muted">{{this.message}}</p></div></div>{{/each}}</div></div>
-  <div class="card"><div class="label">Segmentos objetivo</div><div class="mini-list lst">{{#each targetSegments}}<div class="tone-{{this.tone}}"><div class="rowline"><b>{{this.name}}</b><span class="mono tone-text">{{this.pct}}%</span></div><div class="bar"><i style="width:{{this.pct}}%"></i></div><p class="sm muted">{{this.desc}}</p></div>{{/each}}</div></div>
+  <div class="card"><div class="label">Tendencias de precios</div><div class="mini-list lst">{{#each priceTrends}}<div class="price tone-{{this.tone}}"><b>{{this.name}}</b><div class="sm tone-text">{{this.change}}</div></div>{{/each}}</div></div>
+  <div class="card"><div class="label">Mensajes dominantes</div><div class="mini-list lst">{{#each dominantMessages}}<div class="mini tone-{{this.tone}}"><span class="dot mt"></span><div><b>{{this.competitor}}</b><p class="muted">"{{this.message}}"</p></div></div>{{/each}}</div></div>
+  <div class="card"><div class="label">Segmentos atacados</div><div class="mini-list lst">{{#each targetSegments}}<div class="tone-{{this.tone}}"><b>{{this.name}}</b><div class="bar seg-bar"><i style="width:{{this.pct}}%"></i></div><p class="sm muted">{{this.desc}}</p></div>{{/each}}</div></div>
 </div>
-<div class="alertband tone-warn"><svg class="ic"><use href="#i-trend-up"/></svg><b>{{priceTrendAlert}}</b></div>
-<div class="g3 commercial c-bottom">
-  <div class="card"><div class="label">Actividad de competidores</div><div class="mini-list lst">{{#each topCompetitors}}<div class="rowline tone-{{this.tone}}"><span class="who"><span class="avatar">{{this.initials}}</span><b>{{this.name}}</b></span><span class="mono tone-text">{{this.threat}}/10</span></div>{{/each}}</div></div>
-  <div class="card"><div class="label">Canales a explorar</div><div class="mini-list lst">{{#each newChannels}}<div class="mini"><svg class="ic acc"><use href="#i-target"/></svg><div><b>{{this.channel}}</b><p class="muted">{{this.reason}}</p></div></div>{{/each}}</div></div>
-  <div class="card"><div class="label">Rival líder · {{rivalLeaderName}}</div><div class="mini-list lst">{{#each rivalAdvantages}}<div class="mini tone-{{this.tone}}"><svg class="ic tone-text"><use href="#i-flag"/></svg><p>{{this.text}}</p></div>{{/each}}</div></div>
+<div class="alertband tone-warn"><svg class="ic"><use href="#i-alert"/></svg><div><b class="inline">Alerta de precios:</b> {{priceTrendAlert}}</div></div>
+<div class="card social">
+  <div class="label">Actividad en redes sociales · Mejores impactos de competidores</div>
+  <div class="g4 lst">{{#each topCompetitors}}<div class="social-item"><div class="who"><span class="avatar">{{this.initials}}</span><b>{{this.name}}</b></div><p class="sm muted">Contenido más reciente en redes detectado esta semana</p><div class="rowline"><span class="sm muted">Alcance estimado</span><span class="mono">{{this.threat}}K+</span></div></div>{{/each}}</div>
+</div>
+<div class="g2 commercial c-bottom">
+  <div class="card"><div class="label">Nuevos canales de venta recomendados</div><div class="mini-list lst">{{#each newChannels}}<div class="mini"><svg class="ic acc"><use href="#i-target"/></svg><div><b>{{this.channel}}</b><p class="muted">{{this.desc}}</p><div class="act tone-info"><svg class="ic"><use href="#i-spark"/></svg><span>{{this.reason}}</span></div></div></div>{{/each}}</div></div>
+  <div class="card"><div class="rowline"><div class="label">Ventajas visibles del rival líder</div><span class="chip tone-neutral">{{rivalLeaderName}}</span></div><div class="mini-list lst">{{#each rivalAdvantages}}<div class="mini tone-{{this.tone}}"><svg class="ic tone-text"><use href="#i-flag"/></svg><p>{{this.text}}</p></div>{{/each}}</div></div>
 </div>

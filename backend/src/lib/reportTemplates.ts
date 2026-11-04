@@ -19,21 +19,40 @@ export interface PageDef {
   eyebrow?: string
   title?: string
   sub?: string
+  /** HTML a la derecha del título (contadores o recuadros que v1 muestra en su encabezado). */
+  aside?: string
   dark?: boolean
+  /** Portada: la página trae su propio encabezado. */
+  cover?: boolean
+  /** Texto final del pie (v1: «Fin del reporte» en la última página). */
+  footerEnd?: string
 }
 
+// Estructura y textos idénticos a la plantilla v1 (competitive-report.html); v2 solo cambia el estilo.
 export const PAGES: PageDef[] = [
-  { file: 'p01-portada.html', dark: true },
-  { file: 'p02-termometro.html', eyebrow: 'Panorama', title: 'Termómetro del mercado', sub: 'Estado general del ecosistema competitivo · {{periodStart}} — {{periodEnd}}' },
-  { file: 'p03-competidores.html', eyebrow: 'Competidores', title: 'Competidores con más actividad', sub: 'Ordenados por amenaza real · Reporte #{{edition}}' },
-  { file: 'p04-alertas.html', eyebrow: 'Alertas', title: 'Alertas de la semana', sub: 'Lo que requiere atención primero · {{periodStart}} — {{periodEnd}}' },
-  { file: 'p05-cambios.html', eyebrow: 'Movimientos', title: 'Cambios detectados', sub: '{{totalChanges}} cambios entre {{periodStart}} y {{periodEnd}}' },
-  { file: 'p06-radar.html', eyebrow: 'Monitoreo', title: 'Tu radar de monitoreo', sub: 'Qué vigilamos y qué sigue · {{nextMonth}}' },
-  { file: 'p07-comercial.html', eyebrow: 'Mercado', title: 'Inteligencia comercial', sub: 'Dónde están ganando tus competidores · Reporte #{{edition}}' },
-  { file: 'p08-oportunidades.html', eyebrow: 'Oportunidades', title: 'Dónde ganar ahora', sub: '{{opportunitiesCount}} oportunidades identificadas · puntaje de mercado {{opportunityScore}}/100' },
-  { file: 'p09-riesgos.html', eyebrow: 'Riesgos', title: 'Qué puede golpear los ingresos', sub: '{{highRisksCount}} riesgos altos · {{mediumRisksCount}} medios · el porcentaje indica la probabilidad' },
-  { file: 'p10-benchmark.html', eyebrow: 'Benchmark', title: 'Benchmark estratégico', sub: 'Tu empresa frente al mercado · semana {{weekNumber}}' },
-  { file: 'p11-recomendaciones.html', eyebrow: 'Plan de acción', title: 'Recomendaciones ejecutables', sub: 'Acciones con responsable, plazo e impacto esperado' },
+  { file: 'p01-portada.html', dark: true, cover: true },
+  { file: 'p02-termometro.html', title: 'Termómetro del Mercado', sub: 'Estado general del ecosistema competitivo · Reporte #{{edition}} · {{year}}' },
+  { file: 'p03-competidores.html', title: 'Competidores con más actividad (monitoreo)', sub: 'Ordenados por amenaza real · Reporte #{{edition}} · {{year}}' },
+  {
+    file: 'p04-alertas.html', eyebrow: 'Página 4 · Early Warning Alerts™', title: 'Alertas de la competencia / Sector y Segmento Competitivo',
+    aside: '<span class="chip tone-bad">{{criticalAlertsCount}} alertas críticas</span><span class="chip tone-warn">{{mediumAlertsCount}} alertas medias</span>',
+  },
+  { file: 'p05-cambios.html', title: 'Cambios Detectados Esta Semana', sub: '{{totalChanges}} movimientos registrados · Reporte #{{edition}} · {{periodStart}} — {{periodEnd}}' },
+  {
+    file: 'p06-radar.html', eyebrow: 'Página 6 · Plan Próximos 30 Días', title: 'Tu radar de monitoreo · {{nextMonth}}', sub: 'Qué vigilar · Cuándo actuar · Cómo responder',
+    aside: '<div class="aside-box"><div class="label">Próximo reporte</div><b>{{nextReportDate}}</b><div class="sm muted mono">{{nextReportTime}} · {{deliveryChannel}}</div></div>',
+  },
+  { file: 'p07-comercial.html', title: 'Inteligencia Comercial', sub: 'Dónde están ganando dinero tus competidores · Reporte #{{edition}} · {{year}}' },
+  {
+    file: 'p08-oportunidades.html', eyebrow: 'Página 8 · Opportunity Score™', title: 'Oportunidades — Dónde ganar ahora', sub: '{{opportunitiesCount}} oportunidades priorizadas · Ventana 30 días',
+    aside: '<div class="aside-box tone-ok"><div class="label">Opportunity Score™</div><span class="num num-lg tone-text">{{opportunityScore}}</span><div class="sm muted mono">de 100 · Alto potencial</div></div>',
+  },
+  {
+    file: 'p09-riesgos.html', eyebrow: 'Página 9 · Riesgos Estratégicos', title: 'Riesgos — Qué puede golpear los ingresos', sub: 'Matriz de riesgo · Probabilidad × Impacto · Semana {{weekNumber}}',
+    aside: '<div class="aside-box tone-bad"><div class="label">Riesgos altos</div><span class="num num-md tone-text">{{highRisksCount}}</span></div><div class="aside-box tone-warn"><div class="label">Riesgos medios</div><span class="num num-md tone-text">{{mediumRisksCount}}</span></div>',
+  },
+  { file: 'p10-benchmark.html', title: 'Benchmark Estratégico', sub: 'Tu empresa vs el mercado · 8 factores clave · Semana {{weekNumber}}' },
+  { file: 'p11-recomendaciones.html', title: 'Recomendaciones Ejecutables', sub: 'No teoría. Acción inmediata. · Responsable + Tiempo estimado + Impacto', footerEnd: 'Fin del reporte' },
 ]
 
 const V2_DIR = path.join(__dirname, '../templates/v2')
@@ -41,16 +60,20 @@ const read = (rel: string): string => fs.readFileSync(path.join(V2_DIR, rel), 'u
 
 function wrapPage(def: PageDef, inner: string): string {
   const logo = def.dark ? '{{logoOnDark}}' : '{{logoOnLight}}'
+  const hdr = def.cover
+    ? ''
+    : `<div class="hdr"><div class="brand"><img src="${logo}" alt="Omni Reports"><div><div class="brand-name">Omni Reports · AI Automation</div><small>Inteligencia competitiva</small></div></div>` +
+      `<div class="hdr-meta">{{companyName}} · Reporte #{{edition}} · {{year}}<span class="pg" data-total="{{totalPages}}"></span></div></div>`
   const sec = def.title
-    ? `<div class="sec"><div class="eyebrow">${def.eyebrow ?? ''}</div><h2>${def.title}</h2>${def.sub ? `<p>${def.sub}</p>` : ''}</div>`
+    ? `<div class="sec"><div class="sec-main">${def.eyebrow ? `<div class="eyebrow">${def.eyebrow}</div>` : ''}<h2>${def.title}</h2>${def.sub ? `<p>${def.sub}</p>` : ''}</div>` +
+      `${def.aside ? `<div class="sec-aside">${def.aside}</div>` : ''}</div>`
     : ''
   return (
     `<div class="page${def.dark ? ' page--dark' : ''}"><div class="page-content">` +
-    `<div class="hdr"><div class="brand"><img src="${logo}" alt="Omni Reports"><small>Inteligencia competitiva</small></div>` +
-    `<div class="hdr-meta">{{companyName}} · Reporte #{{edition}} · {{year}}</div></div>` +
+    hdr +
     sec +
     `<div class="body"><div class="fit">${inner}</div></div>` +
-    `<div class="footer"><span>Omni Reports · Confidencial · No distribuir</span><span class="pg" data-total="{{totalPages}}"></span></div>` +
+    `<div class="footer"><span>Omni Reports · Confidencial · No distribuir</span><span>{{companyName}} · Reporte #{{edition}} · {{year}} · <span class="pg" data-total="{{totalPages}}"></span>${def.footerEnd ? ` · ${def.footerEnd}` : ''}</span></div>` +
     `</div><div class="teaser-overlay"><div class="teaser-card"><b>Activa tu suscripción</b><span>para el reporte completo</span></div></div></div>`
   )
 }

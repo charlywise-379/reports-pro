@@ -2,7 +2,7 @@
 // copia enriquecida con tonos semánticos, anillos de medidor y estructuras listas para la plantilla.
 import {
   Tone, toneForPressure, toneForOpportunity, toneForRisk, toneForThreat, toneForProbability,
-  toneForLevel, toneForDelta, toneForPriority, priorityLabel, toneForEffort, effortLabel,
+  toneForLevel, toneForDelta, toneForPriority,
   toneForChangeCategory, toneForInsightCategory,
 } from './reportPalette'
 
@@ -42,11 +42,6 @@ const toneForRank = (rank: string): Tone => {
   return n === 1 ? 'ok' : n === 2 ? 'warn' : 'neutral'
 }
 
-const isEmptyCell = (v: unknown): boolean => {
-  const t = String(v ?? '').trim().toUpperCase()
-  return t === '' || t === 'N/A' || t === '—' || t === '-'
-}
-
 function benchmarkRows(rows: unknown): any[] {
   const list = arr(rows)
   if (list.length === 0) {
@@ -72,27 +67,9 @@ function benchmarkRows(rows: unknown): any[] {
   })
 }
 
-// Columnas de competidores del benchmark. Una columna está vacía si es N/A o vacía en TODAS las filas.
-// Criterio con huecos: n = la última columna con datos (mínimo 1); las columnas vacías intermedias se
-// quedan visibles (encabezado «—») para no desalinear competidor y celda; solo se ocultan las finales.
-function benchmarkColumns(rows: unknown, registered: unknown): { cls: string; competitors: Array<{ name: string; col: string }> } {
-  const list = arr(rows)
-  const names = arr(registered)
-  const used = [1, 2, 3, 4, 5].map(ci => list.some(r => !isEmptyCell(r?.[`comp${ci}`])))
-  const last = used.lastIndexOf(true) + 1
-  const competitors = used.map((u, i) => {
-    const name = String(names[i]?.name ?? '').trim()
-    const hasName = name !== '' && name !== '—'
-    return { name: !u ? '—' : hasName ? name : 'Otros', col: `bc${i + 1}` }
-  })
-  return { cls: `cols-${Math.max(1, last)}`, competitors }
-}
-
-const effortFields = (r: any) => ({
-  difficultyTone: toneForEffort(r.difficulty), difficultyLabel: effortLabel('difficulty', r.difficulty),
-  timeTone: toneForEffort(r.timeRequired), timeLabel: effortLabel('time', r.timeRequired),
-  costTone: toneForEffort(r.costRequired), costLabel: effortLabel('cost', r.costRequired),
-})
+// Calendario de la página 6: mismas listas y respaldo que weeklyPlansHTML de v1 (máximo 4 por semana).
+const weekPlan = (signals: unknown, fallback: string[]): string[] => (Array.isArray(signals) ? signals : fallback).slice(0, 4)
+const compName = (data: any, i: number, letter: string): string => arr(data.competitors)[i]?.name || `Competidor ${letter}`
 
 export function buildViewModel(data: any, aiData: any, skin: Skin): any {
   const pressure = clampPct(data.competitivePressure)
@@ -105,7 +82,6 @@ export function buildViewModel(data: any, aiData: any, skin: Skin): any {
   const messageTones: Tone[] = ['info', 'warn', 'ok', 'bad']
   const segmentTones: Tone[] = ['ok', 'info', 'warn', 'neutral']
   const gaugeTones: Tone[] = [pressureTone, 'info', opportunityTone, riskTone]
-  const bench = benchmarkColumns(aiData?.benchmarkRows, data.benchmarkCompetitors)
 
   return {
     ...data,
@@ -116,14 +92,21 @@ export function buildViewModel(data: any, aiData: any, skin: Skin): any {
     pressureLgDash: ringDash(pressure, 440),
     riskDash: ringDash(risk, 289),
     mainAlertTone: toneForLevel(data.mainAlertLevel),
+    // Semáforo del nivel de riesgo textual (BAJO/MEDIO/ALTO) para la cifra de la portada.
+    riskLevelTone: toneForLevel(data.riskLevel),
 
     insights: tagged(data.insights, i => ({ tone: toneForInsightCategory(i.category) })),
-    actions: tagged(data.actions, a => ({ tone: toneForPriority(a.priority), priorityLabel: priorityLabel(a.priority) })),
-    // Hasta 5 competidores primarios (el motor entrega solo 4 en topCompetitors; el KPI y la p3 muestran 5).
-    topCompetitors: arr(data.competitors).slice(0, 5).map(c => ({
-      initials: c.initials, name: c.name, color: c.color, borderColor: c.borderColor, trackColor: c.trackColor,
-      threat: c.threat, threatPct: c.threatPct, tone: toneForThreat(Number(c.threat)),
-    })),
+    actions: tagged(data.actions, a => ({ tone: toneForPriority(a.priority) })),
+    // Mismos competidores que v1 (topCompetitors del motor).
+    topCompetitors: tagged(data.topCompetitors, c => ({ tone: toneForThreat(Number(c.threat)) })),
+
+    // Página 6: anillos de los cinco termómetros (r=28) y calendario semanal igual que weeklyPlansHTML de v1.
+    opportunityDash6: ringDash(opportunity, 176),
+    pressureDash6: ringDash(pressure, 176),
+    riskDash6: ringDash(risk, 176),
+    weekPlan1: weekPlan(aiData?.criticalSignals, [`Monitoreo diario de ${compName(data, 0, 'A')}`, `Seguimiento de ${compName(data, 1, 'B')}`, 'Retención de clientes clave', 'Confirmar o descartar alertas']),
+    weekPlan2: weekPlan(aiData?.importantSignals, ['Lanzar piloto en nuevos mercados', `Seguimiento de ${compName(data, 2, 'C')}`, 'Activar canal digital adicional', 'Medir eficiencia publicitaria']),
+    weekPlan3: weekPlan(aiData?.infoSignals, ['Monitorear nuevo jugador en sector', 'Actualizar materiales comerciales', 'Revisión de equipo y talento', 'Análisis SEO y keywords']),
 
     gaugeMetrics: tagged(data.gaugeMetrics, (_g, i) => ({ tone: gaugeTones[i] ?? 'neutral' })),
     sectorMetrics: tagged(data.sectorMetrics, (_m, i) => ({ tone: i < 4 ? sectorTones[i] : toneForLevel(data.riskLevel) })),
@@ -135,8 +118,10 @@ export function buildViewModel(data: any, aiData: any, skin: Skin): any {
     })),
     secondaryCompetitors: tagged(data.secondaryCompetitors, c => ({ threatTone: toneForThreat(Number(c.threat)) })),
 
-    changesCol1: tagged(data.changesCol1, c => ({ tone: toneForChangeCategory(c.category) })),
-    changesCol2: tagged(data.changesCol2, c => ({ tone: toneForChangeCategory(c.category) })),
+    // `tone` clasifica por categoría (PRECIO, TALENTO…); `levelTone` es el semáforo de urgencia por el nivel
+    // que trae la categoría («SEO · CRÍTICO», «MARKETING · MEDIO»), igual que en los insights de la portada.
+    changesCol1: tagged(data.changesCol1, c => ({ tone: toneForChangeCategory(c.category), levelTone: toneForInsightCategory(c.category) })),
+    changesCol2: tagged(data.changesCol2, c => ({ tone: toneForChangeCategory(c.category), levelTone: toneForInsightCategory(c.category) })),
     criticalAlerts: arr(data.criticalAlerts),
     mediumAlerts: arr(data.mediumAlerts),
 
@@ -148,19 +133,24 @@ export function buildViewModel(data: any, aiData: any, skin: Skin): any {
       tone: String(r.icon || '').includes('✅') || /tu ventaja/i.test(String(r.text || '')) ? 'ok' : 'bad',
     })),
 
-    opportunities: tagged(data.opportunities, o => ({ tone: Number(o.score) >= 75 ? 'ok' : 'info' })),
+    // scorePct alimenta la barra del score; actionTone destaca «ACTUAR YA» frente a «PLANIFICAR».
+    opportunities: tagged(data.opportunities, o => ({
+      tone: Number(o.score) >= 75 ? 'ok' : 'info',
+      scorePct: clampPct(o.score),
+      actionTone: /ACTUAR/i.test(String(o.actionLabel || '')) ? 'ok' : 'neutral',
+    })),
     rivalWeaknesses: arr(data.rivalWeaknesses),
-    highRisks: tagged(data.highRisks, r => ({ tone: toneForProbability(Number(r.probability)) })),
+    highRisks: tagged(data.highRisks, r => ({ tone: toneForProbability(Number(r.probability)), impactRingDash: ringDash(Number(r.impact) * 10, 151) })),
     mediumRisks: arr(data.mediumRisks),
 
+    // Benchmark igual que v1: las 5 columnas de competidores siempre y la posición completa.
     benchmarkRows: benchmarkRows(aiData?.benchmarkRows),
-    benchColsClass: bench.cls,
-    benchmarkCompetitors: bench.competitors,
+    benchmarkCompetitors: arr(data.benchmarkCompetitors),
     strengths: arr(data.strengths),
     improvements: arr(data.improvements),
 
-    highPriorityRecs: tagged(data.highPriorityRecs, effortFields),
-    mediumPriorityRecs: tagged(data.mediumPriorityRecs, effortFields),
+    highPriorityRecs: arr(data.highPriorityRecs),
+    mediumPriorityRecs: arr(data.mediumPriorityRecs),
     lowPriorityRecs: arr(data.lowPriorityRecs),
 
     criticalSignals: arr(data.criticalSignals),
