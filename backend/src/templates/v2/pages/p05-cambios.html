@@ -1,10 +1,13 @@
-<div class="strip">
-  <span><b class="mono">{{criticalMovements}}</b> <span class="muted">críticos</span></span>
-  <span><b class="mono">{{minorMovements}}</b> <span class="muted">menores</span></span>
-  <span><b class="mono">{{activeCompetitors}}</b> <span class="muted">competidores con actividad</span></span>
-  <span><b class="mono">{{alertsCount}}</b> <span class="muted">alertas activas</span></span>
-</div>
 <div class="g2 changes">
-  <div class="tl lst">{{#each changesCol1}}<div class="tl-item tone-{{this.tone}}"><span class="dot"></span><div><div class="tl-meta"><span class="chip">{{this.category}}</span><span class="mono sm muted">{{this.competitor}} · {{this.date}}</span></div><b>{{this.title}}</b><p class="muted">{{this.description}}</p></div></div>{{/each}}</div>
-  <div class="tl lst">{{#each changesCol2}}<div class="tl-item tone-{{this.tone}}"><span class="dot"></span><div><div class="tl-meta"><span class="chip">{{this.category}}</span><span class="mono sm muted">{{this.competitor}} · {{this.date}}</span></div><b>{{this.title}}</b><p class="muted">{{this.description}}</p></div></div>{{/each}}</div>
+  <div class="tl lst">{{#each changesCol1}}<div class="tl-item tone-{{this.tone}}"><span class="dot"></span><div><div class="tl-meta"><span class="chip">{{this.category}}</span><span class="mono sm muted">{{this.date}}</span></div><b>{{this.title}}</b><p class="muted">{{this.description}}</p><div class="sm mono tl-comp">{{this.competitor}}</div></div></div>{{/each}}</div>
+  <div class="tl lst">{{#each changesCol2}}<div class="tl-item tone-{{this.tone}}"><span class="dot"></span><div><div class="tl-meta"><span class="chip">{{this.category}}</span><span class="mono sm muted">{{this.date}}</span></div><b>{{this.title}}</b><p class="muted">{{this.description}}</p><div class="sm mono tl-comp">{{this.competitor}}</div></div></div>{{/each}}</div>
+</div>
+<div class="strip">
+  <span class="mono muted">RPT #{{edition}}</span>
+  <span><b class="mono">{{criticalMovements}}</b> <span class="muted">Críticos</span></span>
+  <span><b class="mono">{{minorMovements}}</b> <span class="muted">Medios</span></span>
+  <span><b class="mono">{{activeCompetitors}}</b> <span class="muted">Competidores</span></span>
+  <span><b class="mono">{{totalChanges}}</b> <span class="muted">Cambios</span></span>
+  <span><b class="mono">{{alertsCount}}</b> <span class="muted">Alertas</span></span>
+  <span><b class="mono">↑{{signalsDelta}}%</b> <span class="muted">vs ant.</span></span>
 </div>

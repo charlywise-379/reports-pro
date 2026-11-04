@@ -12,21 +12,26 @@
 *{box-sizing:border-box;margin:0;padding:0}
 html{-webkit-print-color-adjust:exact;print-color-adjust:exact}
 body{font-family:var(--font);color:var(--text);background:var(--paper);font-size:9pt;line-height:1.45;counter-reset:pg;-webkit-font-smoothing:antialiased}
-.page{position:relative;width:297mm;height:210mm;overflow:hidden;page-break-after:always;break-after:page;background:var(--paper);padding:13mm 16mm 11mm;display:flex;flex-direction:column;counter-increment:pg}
+.page{position:relative;width:297mm;height:210mm;overflow:hidden;page-break-after:always;break-after:page;background:var(--paper);padding:10mm 15mm 8.5mm;display:flex;flex-direction:column;counter-increment:pg}
 .page:last-of-type{page-break-after:auto;break-after:auto}
 .page--dark{background:var(--ink-900);color:var(--on-dark)}
 .page-content{flex:1;min-height:0;display:flex;flex-direction:column}
 
 /* Encabezado, título de sección, cuerpo y pie */
-.hdr{display:flex;justify-content:space-between;align-items:center;padding-bottom:4mm;border-bottom:1px solid var(--hair);margin-bottom:5.5mm;flex:none}
+.hdr{display:flex;justify-content:space-between;align-items:center;padding-bottom:3mm;border-bottom:1px solid var(--hair);margin-bottom:4.5mm;flex:none}
 .brand{display:flex;align-items:center;gap:3mm}
 .brand img{height:6mm;width:auto;object-fit:contain;display:block}
-.brand small{font-family:var(--mono);font-weight:400;font-size:7.5pt;color:var(--muted);letter-spacing:.08em;text-transform:uppercase}
+.brand-name{font-size:8pt;font-weight:600;line-height:1.2}
+.brand small{display:block;font-family:var(--mono);font-weight:400;font-size:7.5pt;color:var(--muted);letter-spacing:.08em;text-transform:uppercase}
 .hdr-meta{font-family:var(--mono);font-size:7.5pt;color:var(--muted);letter-spacing:.04em}
 .page--dark .hdr{border-color:rgba(255,255,255,.1)}
 .page--dark .brand img{height:7.5mm}
 .page--dark .hdr-meta,.page--dark .brand small{color:var(--on-dark-muted)}
-.sec{flex:none;margin-bottom:5mm}
+.sec{flex:none;margin-bottom:4mm;display:flex;justify-content:space-between;align-items:flex-end;gap:8mm}
+.sec-main{min-width:0}
+.sec-aside{display:flex;gap:3mm;align-items:stretch;flex:none}
+.aside-box{border-left:2px solid var(--tone,var(--accent));padding:1mm 0 1mm 3mm;display:flex;flex-direction:column;gap:.6mm}
+.aside-box b{font-size:11pt}
 .eyebrow{font-family:var(--mono);font-size:7.5pt;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);font-weight:500}
 .page--dark .eyebrow{color:var(--accent-on-dark)}
 .sec h2{font-size:20pt;font-weight:600;letter-spacing:-.02em;line-height:1.15;margin-top:2px;text-wrap:balance}
@@ -35,9 +40,10 @@ body{font-family:var(--font);color:var(--text);background:var(--paper);font-size
    contain:size evita que el .fit ampliado (100% / z) haga que Chrome achique todo el PDF al imprimir. */
 .body{position:relative;flex:1;min-height:0;overflow:hidden;contain:size}
 .fit{position:absolute;left:0;top:0;width:calc(100% / var(--z,1));height:calc(100% / var(--z,1));transform:scale(var(--z,1));transform-origin:0 0;display:flex;flex-direction:column;gap:5mm;overflow:hidden;overflow-wrap:anywhere}
-.footer{flex:none;display:flex;justify-content:space-between;align-items:center;margin-top:4mm;padding-top:3.5mm;border-top:1px solid var(--hair);font-family:var(--mono);font-size:7.5pt;color:var(--muted);letter-spacing:.04em}
+.footer{flex:none;display:flex;justify-content:space-between;align-items:center;margin-top:3mm;padding-top:2.5mm;border-top:1px solid var(--hair);font-family:var(--mono);font-size:7.5pt;color:var(--muted);letter-spacing:.04em}
 .page--dark .footer{border-color:rgba(255,255,255,.1);color:var(--on-dark-muted)}
-.footer .pg::after{content:counter(pg) ' / ' attr(data-total)}
+.pg::after{content:'Pág. ' counter(pg) ' de ' attr(data-total)}
+.hdr-meta .pg::before{content:' · '}
 
 /* Utilidades de layout */
 .row{display:flex;gap:5mm}.grow{flex:1;min-width:0}

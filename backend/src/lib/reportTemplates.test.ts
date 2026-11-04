@@ -58,21 +58,23 @@ describe('renderReportHtmlV2', () => {
     expect(html.indexOf('class="page page--dark"')).toBeGreaterThan(-1)
   })
 
-  it('la portada muestra los 5 competidores primarios y ninguna regla CSS oculta filas', () => {
+  it('la portada muestra los 4 competidores del ranking de amenaza (como v1) y ninguna regla CSS oculta filas', () => {
     const cover = pagesOf(render('normal', 'panel'))[0]
-    for (const name of ['Atlas Creativo', 'Norte Digital', 'Pixel &amp; Co', 'Marea Studio', 'Faro Agencia']) {
+    for (const name of ['Atlas Creativo', 'Norte Digital', 'Pixel &amp; Co', 'Marea Studio']) {
       expect(cover).toContain(name)
     }
     expect(buildV2Template()).not.toMatch(/nth-child\(n\+\d+\)\s*\{\s*display:\s*none/)
   })
 
-  it('portada con datos reales: 3 hallazgos, 3 acciones y 5 competidores con su texto completo', () => {
+  it('portada con datos reales: 3 insights, 3 acciones, early warning y 4 competidores con su texto completo', () => {
     const cover = pagesOf(render('real', 'editorial'))[0]
     const ai = FIXTURES.real
     const esc = (t: string) => t.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;')
     for (const i of ai.insights.slice(0, 3)) expect(cover).toContain(esc(i.text))
     for (const a of ai.actions.slice(0, 3)) expect(cover).toContain(esc(a.text))
-    for (const c of ai.competitors.slice(0, 5)) expect(cover).toContain(`${esc(c.name)}</span><span class="mono tone-text">${c.threat}/10`)
+    for (const c of ai.competitors.slice(0, 4)) expect(cover).toContain(`${esc(c.name)}</span></span><span class="mono tone-text">${c.threat}/10`)
+    expect(cover).toContain('Early Warning™')
+    expect(cover).toContain(esc(ai.earlyWarning))
   })
 })
 
@@ -139,7 +141,7 @@ describe('página 9 (riesgos)', () => {
     const p9 = pages(render('normal', 'editorial'))[8]
     expect(p9).toContain('Pérdida de clientes por precio')
     expect(p9).not.toMatch(/risk-head[\s\S]*?PROBABILIDAD/i)
-    expect(p9).toContain('el porcentaje indica la probabilidad')
+    expect(p9).toContain('Matriz de riesgo · Probabilidad × Impacto')
   })
 })
 
@@ -169,7 +171,7 @@ describe('estructura final', () => {
   it('la paginación usa el total del view-model', () => {
     const html = render('normal', 'editorial')
     expect(html).toContain('data-total="11"')
-    expect(count(html, /class="pg"/g)).toBe(11)
+    expect(count(html, /class="pg"/g)).toBe(21) // encabezado y pie, como v1 (la portada no tiene encabezado)
   })
   it('.recs no oculta contenido con overflow:hidden', () => {
     const css = buildV2Template().replace(/\/\*[\s\S]*?\*\//g, '')
@@ -180,29 +182,27 @@ describe('estructura final', () => {
 })
 
 describe('página 3 (competidores)', () => {
-  it('ya no tiene la columna «Giro» (repetía el giro del cliente en cada fila)', () => {
+  it('tiene las mismas columnas que v1, incluida «Categoría»', () => {
     for (const fx of ['normal', 'real'] as const) {
       const p3 = pagesOf(render(fx, 'panel'))[2]
-      expect(p3).toContain('<th>Competidor</th>')
-      expect(p3).not.toMatch(/<th[^>]*>Giro<\/th>/)
+      expect(p3).toContain('<th>#</th><th>Empresa</th><th>Categoría</th><th>Amenaza</th><th>Crecimiento</th><th>Movimiento reciente</th><th>Riesgo</th>')
     }
   })
 })
 
 describe('página 10 (benchmark)', () => {
-  it('con datos reales muestra las 9 filas, el rango y la nota de posición completa', () => {
+  it('con datos reales muestra las 9 filas y la posición completa, como v1', () => {
     const p10 = pagesOf(render('real', 'editorial'))[9]
-    expect(p10).toContain('class="tbl bench cols-5"')
     expect(count(p10, /<td class="bp /g)).toBe(9)
-    expect(p10).toContain('<div class="mono tone-text pos-rank">6to lugar</div><div class="sm muted pos-note">invisibilidad crítica</div>')
-    expect(p10).toContain('<div class="sm muted pos-note">empate con mayoría</div>')
+    expect(p10).toContain('<span class="mono tone-text pos">6to lugar (invisibilidad crítica)</span>')
     expect(p10).toContain('No aparece en primeros 20 resultados búsquedas clave')
     expect(p10).toContain('Etiquetas industriales/comerciales B2B')
   })
-  it('oculta columnas vacías solo con clases del marcado', () => {
+  it('muestra siempre las 5 columnas de competidores, como v1 (sin datos: encabezado «—» y N/A)', () => {
     const p10 = pagesOf(render('minimal', 'panel'))[9]
-    expect(p10).toContain('class="tbl bench cols-1"')
-    expect(buildV2Template()).toMatch(/\.bench\.cols-1 \.bc2/)
+    const head = p10.slice(p10.indexOf('<thead>'), p10.indexOf('</thead>'))
+    expect(count(head, /<th[ >]/g)).toBe(8)
+    expect(buildV2Template()).not.toMatch(/\.bench\.cols-/)
   })
 })
 
@@ -214,11 +214,11 @@ describe('fix 1: posición visible y competidores completos', () => {
   it('una posición de 30 caracteres sin separador aparece completa en p10', () => {
     const ai = { ...FIXTURES.real, benchmarkRows: FIXTURES.real.benchmarkRows.map((r: any, i: number) => i === 0 ? { ...r, position: 'Por debajo del promedio actual' } : r) }
     const p10 = pagesOf(real(ai))[9]
-    expect(p10).toContain('<div class="mono tone-text pos-rank">Por debajo del promedio actual</div>')
+    expect(p10).toContain('<span class="mono tone-text pos">Por debajo del promedio actual</span>')
   })
-  it('.pos-rank no usa white-space:nowrap (el rango largo envuelve)', () => {
+  it('.pos no usa white-space:nowrap (la posición larga envuelve)', () => {
     const css = buildV2Template().replace(/\/\*[\s\S]*?\*\//g, '')
-    const rules = [...css.matchAll(/([^{}]+)\{([^{}]*)\}/g)].filter(m => /\.pos-rank/.test(m[1]))
+    const rules = [...css.matchAll(/([^{}]+)\{([^{}]*)\}/g)].filter(m => /\.bench \.pos(?![\w-])/.test(m[1]))
     expect(rules.length).toBeGreaterThan(0)
     for (const m of rules) expect(m[2]).not.toMatch(/white-space\s*:\s*nowrap/)
   })
@@ -227,11 +227,11 @@ describe('fix 1: posición visible y competidores completos', () => {
     expect(fn).toContain('scrollHeight')
     expect(fn).toContain('scrollWidth')
   })
-  it('la portada y la p7 (Actividad de competidores) listan los 5 competidores primarios reales', () => {
+  it('la portada y la p7 (Actividad en redes sociales) listan los 4 competidores del ranking, como v1', () => {
     const pages = pagesOf(real(FIXTURES.real))
     const p7 = pages[6]
-    const act = p7.slice(p7.indexOf('Actividad de competidores'), p7.indexOf('Canales a explorar'))
-    for (const c of FIXTURES.real.competitors.slice(0, 5)) {
+    const act = p7.slice(p7.indexOf('Actividad en redes sociales'), p7.indexOf('Nuevos canales de venta'))
+    for (const c of FIXTURES.real.competitors.slice(0, 4)) {
       const name = c.name.replace(/&/g, '&amp;')
       expect(pages[0]).toContain(name)
       expect(act).toContain(`<b>${name}</b>`)
