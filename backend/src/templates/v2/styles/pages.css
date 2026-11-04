@@ -150,7 +150,8 @@
 
 /* Página 8 · Oportunidades */
 .opps{flex:none;align-content:start}
-.opp-title{display:block;font-size:11pt;margin:3mm 0 2mm}
+.opp-score{margin-top:1.8mm}
+.opp-title{display:block;font-size:11pt;margin:2.4mm 0 2mm}
 .opp-foot{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:1.5mm 2mm;margin-top:3mm}
 .opps .rowline .chip{min-width:0}
 .opps .rowline .mono{flex:none;white-space:nowrap}

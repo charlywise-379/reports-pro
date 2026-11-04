@@ -92,6 +92,8 @@ export function buildViewModel(data: any, aiData: any, skin: Skin): any {
     pressureLgDash: ringDash(pressure, 440),
     riskDash: ringDash(risk, 289),
     mainAlertTone: toneForLevel(data.mainAlertLevel),
+    // Semáforo del nivel de riesgo textual (BAJO/MEDIO/ALTO) para la cifra de la portada.
+    riskLevelTone: toneForLevel(data.riskLevel),
 
     insights: tagged(data.insights, i => ({ tone: toneForInsightCategory(i.category) })),
     actions: tagged(data.actions, a => ({ tone: toneForPriority(a.priority) })),
@@ -116,8 +118,10 @@ export function buildViewModel(data: any, aiData: any, skin: Skin): any {
     })),
     secondaryCompetitors: tagged(data.secondaryCompetitors, c => ({ threatTone: toneForThreat(Number(c.threat)) })),
 
-    changesCol1: tagged(data.changesCol1, c => ({ tone: toneForChangeCategory(c.category) })),
-    changesCol2: tagged(data.changesCol2, c => ({ tone: toneForChangeCategory(c.category) })),
+    // `tone` clasifica por categoría (PRECIO, TALENTO…); `levelTone` es el semáforo de urgencia por el nivel
+    // que trae la categoría («SEO · CRÍTICO», «MARKETING · MEDIO»), igual que en los insights de la portada.
+    changesCol1: tagged(data.changesCol1, c => ({ tone: toneForChangeCategory(c.category), levelTone: toneForInsightCategory(c.category) })),
+    changesCol2: tagged(data.changesCol2, c => ({ tone: toneForChangeCategory(c.category), levelTone: toneForInsightCategory(c.category) })),
     criticalAlerts: arr(data.criticalAlerts),
     mediumAlerts: arr(data.mediumAlerts),
 
@@ -129,7 +133,12 @@ export function buildViewModel(data: any, aiData: any, skin: Skin): any {
       tone: String(r.icon || '').includes('✅') || /tu ventaja/i.test(String(r.text || '')) ? 'ok' : 'bad',
     })),
 
-    opportunities: tagged(data.opportunities, o => ({ tone: Number(o.score) >= 75 ? 'ok' : 'info' })),
+    // scorePct alimenta la barra del score; actionTone destaca «ACTUAR YA» frente a «PLANIFICAR».
+    opportunities: tagged(data.opportunities, o => ({
+      tone: Number(o.score) >= 75 ? 'ok' : 'info',
+      scorePct: clampPct(o.score),
+      actionTone: /ACTUAR/i.test(String(o.actionLabel || '')) ? 'ok' : 'neutral',
+    })),
     rivalWeaknesses: arr(data.rivalWeaknesses),
     highRisks: tagged(data.highRisks, r => ({ tone: toneForProbability(Number(r.probability)), impactRingDash: ringDash(Number(r.impact) * 10, 151) })),
     mediumRisks: arr(data.mediumRisks),

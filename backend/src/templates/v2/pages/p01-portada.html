@@ -35,7 +35,7 @@
   <div class="kpi"><div class="label">Movimientos clave</div><div class="num num-md">{{movementsCount}}</div><div class="sm muted">{{criticalMovements}} críticos · {{minorMovements}} menores</div></div>
   <div class="kpi"><div class="label">Alertas activas</div><div class="num num-md">{{alertsCount}}</div><div class="sm muted">requieren atención hoy</div></div>
   <div class="kpi"><div class="label">Competidores</div><div class="num num-md">{{competitorsCount}}</div><div class="sm muted">monitoreados activos</div></div>
-  <div class="kpi"><div class="label">Nivel de riesgo</div><div class="num num-md">{{riskLevel}}</div><div class="sm muted">monitoreo intensificado</div></div>
+  <div class="kpi tone-{{riskLevelTone}}"><div class="label">Nivel de riesgo</div><div class="num num-md tone-text">{{riskLevel}}</div><div class="sm muted">monitoreo intensificado</div></div>
 </div>
 <div class="cover-grid">
   <div class="card"><div class="label">3 Insights críticos</div><div class="mini-list lst">{{#each insights}}<div class="mini tone-{{this.tone}}"><span class="dot mt"></span><div><div class="label tone-text">{{this.category}}</div><p>{{this.text}}</p></div></div>{{/each}}</div></div>

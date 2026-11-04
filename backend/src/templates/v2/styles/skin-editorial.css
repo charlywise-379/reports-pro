@@ -4,9 +4,66 @@
 .skin-editorial .card--accent{border-top-color:var(--tone)}
 .skin-editorial .sec h2{font-size:21pt;font-weight:500;letter-spacing:-.03em}
 .skin-editorial .num{font-weight:500}
-.skin-editorial .chip{background:transparent;border:1px solid var(--tone)}
 .skin-editorial .avatar{background:transparent;border:1px solid var(--hair)}
-.skin-editorial .act,.skin-editorial .alertband{background:transparent;border-left:2px solid var(--tone);border-radius:0}
-.skin-editorial .alertband .chip{background:transparent}
+.skin-editorial .act{background:transparent;border-left:2px solid var(--tone);border-radius:0}
 .skin-editorial .eyebrow{letter-spacing:.2em}
 .skin-editorial .page:not(.page--dark){background:#FBFBFC}
+
+/* Jerarquía de énfasis (de más a menos):
+   1. «Caliente» (.hot y .alertband): fondo suave del tono + filete lateral + ícono grande. Solo para lo que exige acción:
+      alertas críticas (p4), riesgos altos (p9), recomendaciones de prioridad alta (p11), Early Warning (p1),
+      alerta principal (p2) y alerta de precios (p7). La acción/impacto va en un recuadro blanco dentro del bloque.
+   2. Destacado: fondo suave sin filete (hallazgos de p3, columna crítica de p6) y chips de estado rellenos (semáforo).
+   3. Sobrio: líneas finas, texto en gris; los chips neutros (clasificación) van en línea fina. */
+
+/* Semáforo: chips rellenos con el fondo suave del tono; los neutros quedan en línea fina */
+.skin-editorial .chip{background:var(--tone-soft);border:1px solid transparent}
+.skin-editorial .chip.tone-neutral{background:transparent;border-color:var(--hair);color:var(--muted)}
+.skin-editorial .therm-main>.chip{background:transparent;border-color:var(--tone)}
+/* Sobre la portada oscura, los fondos suaves son translúcidos del mismo tono */
+.skin-editorial .page--dark .tone-ok{--tone-soft:rgba(18,161,80,.2)}
+.skin-editorial .page--dark .tone-warn{--tone-soft:rgba(199,119,0,.22)}
+.skin-editorial .page--dark .tone-bad{--tone-soft:rgba(217,45,58,.22)}
+.skin-editorial .page--dark .tone-info{--tone-soft:rgba(139,123,255,.22)}
+.skin-editorial .page--dark .tone-neutral{--tone-soft:rgba(255,255,255,.08)}
+.skin-editorial .page--dark .chip.tone-neutral{border-color:rgba(255,255,255,.2);color:var(--on-dark-muted)}
+
+/* Puntos de estado un poco más grandes (insights, señales en vigilancia, riesgos medios, mensajes) */
+.skin-editorial .mini>.dot,.skin-editorial .a-head>.dot{width:8px;height:8px}
+.skin-editorial .tl-item .dot{width:8px;height:8px;margin-top:1.2mm}
+
+/* Avisos (alertband): banda con fondo suave del tono, filete lateral e ícono grande */
+.skin-editorial .alertband{background:var(--tone-soft);border-left:3px solid var(--tone);border-radius:0 var(--r-sm) var(--r-sm) 0;padding:3.2mm 5mm}
+.skin-editorial .alertband .ic{width:22px;height:22px}
+.skin-editorial .alertband b:not(.inline){font-size:10pt}
+.skin-editorial .alertband .chip{background:var(--card);border-color:var(--tone)}
+.skin-editorial .page--dark .alertband .chip{background:transparent}
+
+/* Bloques calientes: alertas críticas, riesgos altos y recomendaciones de prioridad alta */
+.skin-editorial .card.hot{background:var(--tone-soft);border-top:0;border-left:3px solid var(--tone);border-radius:0 var(--r-sm) var(--r-sm) 0;padding:2.2mm 3.4mm 2.6mm}
+.skin-editorial .alerts .card.hot{padding:1.8mm 3.2mm 2.2mm}
+/* Un riesgo alto con probabilidad baja (tono ok) no es urgente: panel gris; el anillo y el chip conservan el semáforo */
+.skin-editorial .card.hot.tone-ok{background:var(--neutral-soft);border-left-color:var(--neutral)}
+.skin-editorial .hot .chip{background:var(--card);border-color:var(--tone)}
+.skin-editorial .hot .act{background:var(--card);border-left:0;border-radius:var(--r-sm);padding:1.6mm 2.6mm}
+.skin-editorial .alerts .hot .act{padding:1.2mm 2.4mm}
+.skin-editorial .hot .a-head .ic{width:18px;height:18px}
+.skin-editorial .hot .rec-impact{background:var(--card);border-radius:var(--r-sm);padding:1.4mm 2.6mm;margin-top:1.8mm}
+
+/* Página 2 · escala de presión con las tres zonas (bajo/moderado/alto) en fondo suave bajo la barra */
+.skin-editorial .therm-main .bar--lg{height:8px;background:linear-gradient(90deg,var(--ok-soft) 0 33%,var(--warn-soft) 33% 67%,var(--bad-soft) 67% 100%)}
+
+/* Página 3 · amenaza más legible; los tres hallazgos (más agresivo, debilitado, emergente) en fondo suave */
+.skin-editorial .thr .mono{font-weight:600}
+.skin-editorial .highlights .card{background:var(--tone-soft);border-top:2px solid var(--tone);border-radius:0 0 var(--r-sm) var(--r-sm);padding:1.4mm 3mm 1.6mm}
+
+/* Página 5 · el semáforo va en el punto y el chip de nivel; el competidor queda en gris */
+.skin-editorial .tl-comp{color:var(--muted)}
+
+/* Página 6 · solo la columna «Crítico — alertar inmediato» va en fondo suave */
+.skin-editorial .signals .g3>div{padding:1mm 2.2mm 1.4mm;border-radius:var(--r-sm)}
+.skin-editorial .signals .g3>.tone-bad{background:var(--tone-soft);border-left:3px solid var(--tone);border-radius:0 var(--r-sm) var(--r-sm) 0}
+
+/* Página 11 · número de cada recomendación en un círculo del tono de su prioridad */
+.skin-editorial .recs .num-md{display:inline-flex;align-items:center;justify-content:center;width:8mm;height:8mm;border-radius:50%;background:var(--tone-soft);font-size:12pt;flex:none}
+.skin-editorial .hot .num-md{background:var(--card)}
