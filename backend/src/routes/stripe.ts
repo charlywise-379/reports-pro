@@ -173,8 +173,11 @@ router.post('/webhook', async (req: Request, res: Response) => {
         const updateData: any = {
           status: sub.status.toUpperCase(),
         }
-        if (sub.current_period_end) {
-          updateData.stripeCurrentPeriodEnd = new Date(sub.current_period_end * 1000)
+        // El payload del webhook usa la apiVersion del endpoint (no la del SDK):
+        // desde 2025-03-31 current_period_end vive en cada item, no en la raíz.
+        const periodEnd = (sub as any).current_period_end ?? (sub as any).items?.data?.[0]?.current_period_end
+        if (periodEnd) {
+          updateData.stripeCurrentPeriodEnd = new Date(periodEnd * 1000)
         }
         updateData.cancelAtPeriodEnd = sub.cancel_at_period_end ?? false
 
