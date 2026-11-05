@@ -7,6 +7,8 @@ import { reportQueue } from '../../lib/queue'
 import { stripe } from '../../lib/stripe'
 import { deleteFromR2 } from '../../lib/r2'
 import { setUserPassword } from '../../lib/adminSetPassword'
+import { confirmUserEmail } from '../../lib/adminConfirmEmail'
+import { sendPasswordResetEmail } from '../../lib/email'
 import { updateUserSchema } from '../../lib/adminUserSchema'
 
 const router = Router()
@@ -40,6 +42,13 @@ router.get('/', requireAdmin, async (req: Request, res: Response) => {
       prisma.user.count({ where }),
     ])
 
+    // Estado de confirmación del correo (vive en auth.users de Supabase, no en public.users).
+    const ids = users.map(u => u.id)
+    const authRows = ids.length
+      ? await prisma.$queryRaw<{ id: string; confirmed: boolean }[]>`select id::text as id, email_confirmed_at is not null as confirmed from auth.users where id::text = any(${ids})`
+      : []
+    const confirmedById = new Map(authRows.map(r => [r.id, r.confirmed]))
+
     res.json({
       users: users.map(u => ({
         id: u.id,
@@ -53,6 +62,7 @@ router.get('/', requireAdmin, async (req: Request, res: Response) => {
         accountType: u.accountType,
         maxProjects: u.maxProjects,
         partnerAgency: u.partnerAgency,
+        emailConfirmed: confirmedById.get(u.id) ?? true,
       })),
       total,
       page: parseInt(page),
@@ -185,17 +195,48 @@ router.post('/:id/reset-password', requireAdmin, async (req: Request, res: Respo
     const user = await prisma.user.findUnique({ where: { id } })
     if (!user) return res.status(404).json({ error: 'Usuario no encontrado' })
 
-    const { error } = await supabaseAdmin.auth.admin.generateLink({
+    // generateLink solo crea el enlace (Supabase no envía correo con la API admin): lo enviamos nosotros.
+    const { data, error } = await supabaseAdmin.auth.admin.generateLink({
       type: 'recovery',
       email: user.email,
+      options: { redirectTo: `${process.env.FRONTEND_URL}/reset-password` },
     })
     if (error) return res.status(500).json({ error: 'No se pudo generar el link de recuperación' })
+
+    try {
+      await sendPasswordResetEmail(user.email, user.fullName || user.email, data.properties.action_link)
+    } catch (sendError) {
+      console.error('[operations] error enviando correo de recuperación:', sendError)
+      return res.status(502).json({ error: 'No se pudo enviar el correo de recuperación' })
+    }
 
     await prisma.auditLog.create({
       data: { userId: req.adminId!, event: 'admin_reset_password', metadata: { targetUserId: id, email: user.email } },
     })
 
     res.json({ ok: true })
+  } catch (e: any) {
+    console.error('[operations] error:', e)
+    res.status(500).json({ error: 'Error interno' })
+  }
+})
+
+router.post('/:id/confirm-email', requireAdmin, async (req: Request, res: Response) => {
+  try {
+    const id = req.params.id as string
+    const result = await confirmUserEmail(
+      {
+        findUser: uid => prisma.user.findUnique({ where: { id: uid }, select: { id: true, email: true } }),
+        confirmAuthEmail: async uid => {
+          const { error } = await supabaseAdmin.auth.admin.updateUserById(uid, { email_confirm: true })
+          if (error) console.error('[operations] error confirmando correo en Supabase:', error)
+          return { error }
+        },
+        audit: (event, metadata) => prisma.auditLog.create({ data: { userId: req.adminId!, event, metadata: metadata as any } }),
+      },
+      id,
+    )
+    res.status(result.status).json(result.body)
   } catch (e: any) {
     console.error('[operations] error:', e)
     res.status(500).json({ error: 'Error interno' })
