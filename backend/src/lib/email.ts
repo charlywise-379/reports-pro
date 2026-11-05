@@ -189,6 +189,53 @@ export async function sendConfirmationEmail(
   console.log(`📧 Email de confirmación enviado a: ${to}`)
 }
 
+// Correo de recuperación de contraseña disparado desde el backoffice. Lanza si Resend rechaza el envío.
+export async function sendPasswordResetEmail(to: string, fullName: string, resetUrl: string): Promise<void> {
+  const html = `
+<!DOCTYPE html>
+<html>
+<head><meta charset="UTF-8"/></head>
+<body style="font-family:system-ui,sans-serif;background:#F4F2FF;margin:0;padding:20px">
+  <div style="max-width:560px;margin:0 auto;background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(83,74,183,0.12)">
+    <div style="background:#1A1730;padding:28px 32px">
+      <div style="margin-bottom:16px">
+        <img src="https://omnireports.pro/logo-full.png" height="32" alt="Omni Reports" style="display:block;height:32px;width:auto">
+      </div>
+      <div style="font-size:22px;font-weight:900;color:#F0F2FF;line-height:1.2">Restablece tu contraseña 🔑</div>
+    </div>
+    <div style="padding:28px 32px">
+      <p style="font-size:14px;color:#444;line-height:1.6;margin-bottom:20px">
+        Hola ${fullName}, recibimos una solicitud para restablecer la contraseña de tu cuenta de Omni Reports. Usa el botón para elegir una nueva.
+      </p>
+      <div style="text-align:center">
+        <a href="${resetUrl}" style="display:inline-block;background:linear-gradient(135deg,#534AB7,#1D9E75);color:#ffffff;text-decoration:none;padding:14px 28px;border-radius:20px;font-weight:700;font-size:14px;margin:20px 0">
+          Restablecer contraseña →
+        </a>
+      </div>
+      <p style="font-size:12px;color:#888;text-align:center;margin-top:16px">
+        Si no solicitaste este cambio, puedes ignorar este correo; tu contraseña actual sigue funcionando.
+      </p>
+    </div>
+    <div style="background:#F4F2FF;padding:16px 32px;text-align:center;font-size:11px;color:#8B7BFF">
+      Omni Reports · AI Automation ·
+      <a href="https://omnireports.pro" style="color:#8B7BFF">omnireports.pro</a>
+    </div>
+  </div>
+</body>
+</html>
+  `
+
+  const { error } = await getResend().emails.send({
+    from: 'Omni Reports <reportes@flow11.mx>',
+    to,
+    subject: 'Restablece tu contraseña — Omni Reports',
+    html,
+  })
+  if (error) throw new Error(`Resend rechazó el correo de recuperación: ${error.message}`)
+
+  console.log(`📧 Email de recuperación de contraseña enviado a: ${to}`)
+}
+
 export async function sendReportErrorEmail(
   to: string,
   companyName: string

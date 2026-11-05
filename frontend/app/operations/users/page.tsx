@@ -1,6 +1,6 @@
 'use client'
 import { useEffect, useState } from 'react'
-import { Download, Ban, RotateCcw, KeyRound, Trash2, CheckCircle, Search, Lock, Eye, EyeOff, Copy, Wand2 } from 'lucide-react'
+import { Download, Ban, RotateCcw, KeyRound, Trash2, CheckCircle, Search, Lock, Eye, EyeOff, Copy, Wand2, MailCheck, MailWarning } from 'lucide-react'
 import { adminFetch } from '@/lib/operations/api'
 import { palette } from '@/lib/operations/theme'
 import { useTheme } from '@/lib/operations/ThemeContext'
@@ -10,7 +10,7 @@ import Select from '@/components/Select'
 type UserRow = {
   id: string; email: string; fullName: string | null; phone: string | null
   isSuspended: boolean; createdAt: string; projectCount: number; modules: string[]
-  maxProjects: number; accountType: string
+  maxProjects: number; accountType: string; emailConfirmed: boolean
 }
 
 const actionBtn = (T: any, danger?: boolean): React.CSSProperties => ({
@@ -65,6 +65,14 @@ export default function OperationsUsersPage() {
     load()
   }
 
+  const handleConfirmEmail = async (u: UserRow) => {
+    if (!confirm(`¿Activar la cuenta de ${u.email} sin que confirme su correo? Podrá iniciar sesión de inmediato.`)) return
+    const res = await adminFetch(`/api/operations/users/${u.id}/confirm-email`, { method: 'POST' })
+    const data = await res.json().catch(() => null)
+    if (!res.ok) alert(data?.error || 'No se pudo activar la cuenta')
+    load()
+  }
+
   const handleDelete = async (id: string) => {
     if (!confirm('¿Eliminar este usuario permanentemente? Esta acción no se puede deshacer.')) return
     const res = await adminFetch(`/api/operations/users/${id}`, { method: 'DELETE' })
@@ -73,9 +81,11 @@ export default function OperationsUsersPage() {
     load()
   }
 
-  const handleResetPassword = async (id: string) => {
-    const res = await adminFetch(`/api/operations/users/${id}/reset-password`, { method: 'POST' })
-    alert(res.ok ? 'Link de recuperación generado.' : 'Error al generar el link.')
+  const handleResetPassword = async (u: UserRow) => {
+    if (!confirm(`¿Enviar a ${u.email} un correo para restablecer su contraseña?`)) return
+    const res = await adminFetch(`/api/operations/users/${u.id}/reset-password`, { method: 'POST' })
+    const data = await res.json().catch(() => null)
+    alert(res.ok ? `Correo de recuperación enviado a ${u.email}.` : (data?.error || 'No se pudo enviar el correo de recuperación.'))
   }
 
   const openPwModal = (u: UserRow) => { setPwUser(u); setPwValue(''); setPwShow(false); setPwMsg(null); setPwCopied(false) }
@@ -175,14 +185,19 @@ export default function OperationsUsersPage() {
                 <td style={{ padding: '10px 14px' }}>
                   {u.isSuspended
                     ? <StatusBadge label="Suspendido" color={T.danger} icon={Ban} />
-                    : <StatusBadge label="Activo" color={T.success} icon={CheckCircle} />}
+                    : !u.emailConfirmed
+                      ? <StatusBadge label="Sin confirmar" color={T.warning} icon={MailWarning} />
+                      : <StatusBadge label="Activo" color={T.success} icon={CheckCircle} />}
                 </td>
                 <td style={{ padding: '10px 14px' }}>
                   <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                    {!u.emailConfirmed && (
+                      <button onClick={() => handleConfirmEmail(u)} style={actionBtn(T)}><MailCheck size={11} /> Activar cuenta</button>
+                    )}
                     {u.isSuspended
                       ? <button onClick={() => handleReactivate(u.id)} style={actionBtn(T)}><RotateCcw size={11} /> Reactivar</button>
                       : <button disabled title="Aún no implementado: suspender no bloquea el login del cliente todavía" onClick={() => setSelected(u)} style={{ ...actionBtn(T), cursor: 'not-allowed', opacity: 0.5 }}><Ban size={11} /> Suspender</button>}
-                    <button onClick={() => handleResetPassword(u.id)} style={actionBtn(T)}><KeyRound size={11} /> Reset password</button>
+                    <button onClick={() => handleResetPassword(u)} style={actionBtn(T)}><KeyRound size={11} /> Reset password</button>
                     {u.accountType !== 'PARTNER' && (
                       <button onClick={() => openLimitModal(u)} style={actionBtn(T)}>Máx. empresas</button>
                     )}
