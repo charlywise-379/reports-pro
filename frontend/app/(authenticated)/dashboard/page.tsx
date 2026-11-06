@@ -47,6 +47,9 @@ function useIsMobile() {
   return isMobile
 }
 
+// Margen para que el worker tome un reporte recién encolado y cree su fila GENERATING.
+const QUEUE_GRACE_MS = 90_000
+
 export default function DashboardPage() {
   const router = useRouter()
   const supabase = createClient()
@@ -181,6 +184,8 @@ export default function DashboardPage() {
   const pollingRef = useRef<NodeJS.Timeout | null>(null)
   const countdownRef = useRef<NodeJS.Timeout | null>(null)
   const [countdown, setCountdown] = useState(600)
+  const startedAtRef = useRef<number | null>(null)
+  const graceUntilRef = useRef(0)
   const [stuckMinutes, setStuckMinutes] = useState(0)
   const [isDark, setIsDark] = useState(true)
   useEffect(() => {
@@ -224,9 +229,12 @@ export default function DashboardPage() {
       const sid = typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('sid') : null
       if (sid) {
         try {
-          await fetch(`${BACKEND}/api/stripe/verify-session/${sid}`, {
+          const vr = await fetch(`${BACKEND}/api/stripe/verify-session/${sid}`, {
             headers: { 'Authorization': 'Bearer ' + session.access_token }
           })
+          const vd = await vr.json().catch(() => null)
+          // Tras el pago el backend encola el primer reporte: mostrar el contador desde ya
+          if (vd?.firstReportPending) startPolling()
         } catch(e) {}
       }
 
@@ -353,7 +361,7 @@ export default function DashboardPage() {
           setShowLimitModal(true)
         } else {
           // Está generándose normalmente
-          startPolling()
+          startPolling(reporteGenerando ? new Date(reporteGenerando.createdAt).getTime() : undefined)
           setStuckMinutes(minutosGenerando)
           setLimitMessage('Ya hay un reporte generándose.')
           setNextReportInfo(`Lleva ${minutosGenerando} min. Se desbloquea automáticamente a los 10 min.`)
@@ -381,23 +389,32 @@ export default function DashboardPage() {
       clearInterval(countdownRef.current)
       countdownRef.current = null
     }
+    startedAtRef.current = null
+    graceUntilRef.current = 0
     setCountdown(600)
     setPollingActive(false)
     setGenerating(false)
   }, [])
 
-  const startPolling = useCallback(() => {
-    if (pollingRef.current) return // ya está corriendo
+  // El contador se calcula desde la hora real de inicio del reporte (createdAt de la fila GENERATING),
+  // así no se reinicia al recargar la página.
+  const syncCountdown = useCallback(() => {
+    const start = startedAtRef.current ?? Date.now()
+    setCountdown(Math.max(0, 600 - Math.floor((Date.now() - start) / 1000)))
+  }, [])
+
+  // startedAt: hora de inicio conocida (reporte ya en GENERATING). Sin ella, el reporte acaba de
+  // encolarse: se da un margen para que el worker cree la fila antes de dar el polling por terminado.
+  const startPolling = useCallback((startedAt?: number) => {
+    if (startedAt) startedAtRef.current = startedAt
+    else if (!startedAtRef.current) startedAtRef.current = Date.now()
+    if (pollingRef.current) { syncCountdown(); return } // ya está corriendo
+    if (!startedAt) graceUntilRef.current = Date.now() + QUEUE_GRACE_MS
     setPollingActive(true)
     setGenerating(true)
-    setCountdown(600)
+    syncCountdown()
     if (countdownRef.current) clearInterval(countdownRef.current)
-    countdownRef.current = setInterval(() => {
-      setCountdown(prev => {
-        if (prev <= 1) { clearInterval(countdownRef.current!); return 0 }
-        return prev - 1
-      })
-    }, 1000)
+    countdownRef.current = setInterval(syncCountdown, 1000)
     pollingRef.current = setInterval(async () => {
       try {
         const { data: { session: s2 } } = await supabase.auth.getSession()
@@ -406,16 +423,17 @@ export default function DashboardPage() {
           headers: { 'Authorization': 'Bearer ' + s2.access_token }
         })
         const data = await res.json()
-        const sigueGenerando = (data?.reports || []).some((r: any) => r.status === 'GENERATING')
+        const filaGenerando = (data?.reports || []).find((r: any) => r.status === 'GENERATING')
+        if (filaGenerando) startedAtRef.current = new Date(filaGenerando.createdAt).getTime()
         setDashData(data)
         const latest = (data.reports || []).find((r: any) => r.sectionsJson) || (data.reports || []).find((r: any) => r.status === 'COMPLETED')
         if (latest) setSelectedReport(latest)
-        if (!sigueGenerando) {
+        if (!filaGenerando && Date.now() >= graceUntilRef.current) {
           stopPolling()
         }
       } catch(e) {}
     }, 8000)
-  }, [stopPolling])
+  }, [stopPolling, syncCountdown])
 
   // Detectar reportes GENERATING al cargar el dashboard — con auto-desbloqueo a los 10 min
   useEffect(() => {
@@ -429,10 +447,10 @@ export default function DashboardPage() {
         // Reporte stuck — desbloquear automáticamente
         console.log('[Dashboard] Reporte stuck +10min — desbloqueando automáticamente')
         stopPolling()
-      } else if (!pollingRef.current) {
-        startPolling()
+      } else {
+        startPolling(new Date(reporteGenerando.createdAt).getTime())
       }
-    } else if (!hayGenerando && pollingRef.current) {
+    } else if (!hayGenerando && pollingRef.current && Date.now() >= graceUntilRef.current) {
       stopPolling()
     }
   }, [dashData?.reports])

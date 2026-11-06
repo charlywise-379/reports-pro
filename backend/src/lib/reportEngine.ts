@@ -7,6 +7,7 @@ import { getSecret } from './config'
 import { renderTemplate } from './reportRender'
 import { resolveReportTemplate, renderReportHtmlV2 } from './reportTemplates'
 import { loadReportLogos } from './reportLogos'
+import { stripCitationTags } from './stripCitations'
 
 // ─── Tipos ───────────────────────────────────────────
 interface ReportData {
@@ -727,7 +728,7 @@ REGLA DE ORO: Cada dato debe poder ser verificado por el cliente. Si no puedes v
   if (!jsonText.startsWith('{')) jsonText = '{' + jsonText
 
   try {
-    const parsed = JSON.parse(jsonText)
+    const parsed = stripCitationTags(JSON.parse(jsonText))
     console.log('✅ JSON de Claude parseado correctamente')
     return parsed
   } catch (e) {

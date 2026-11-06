@@ -9,6 +9,7 @@ import { MIN_HOURS_BY_FREQUENCY } from '../lib/frequency'
 import { computeReportEligibility, computeReportFlags } from '../lib/reportFlags'
 import { summarizePromoAccess } from '../lib/userPromoAccess'
 import { hasConfiguredSetup } from '../lib/scheduleEligibility'
+import { reportEmailRecipients, ccEmailsFromSetup } from '../lib/reportRecipients'
 
 export function startReportWorker() {
   const worker = new Worker<ReportJobData>(
@@ -149,26 +150,49 @@ export function startReportWorker() {
         const BACKEND_URL = process.env.BACKEND_URL || 'https://reports-pro-production.up.railway.app'
         const publicDownloadUrl = `${BACKEND_URL}/api/reports/public/${reportRecord.id}/${reportRecord.downloadToken}`
 
-        if (project.deliveryEmail) {
-          const { sendReportEmail } = await import('../lib/email')
-          const setupForCC = (project as any).competitiveSetup
-          let ccEmails: string[] = []
+        // Entrega: el PDF ya está generado y guardado; un fallo de envío no debe marcar el reporte
+        // como fallido ni reintentar el job (eso regeneraría y cobraría otro reporte).
+        const delivered: ('EMAIL' | 'WHATSAPP')[] = []
+        const deliveryErrors: string[] = []
+
+        const owner = await prisma.user.findUnique({ where: { id: project.userId }, select: { email: true } })
+        const recipients = reportEmailRecipients({
+          accountEmail: owner?.email,
+          deliveryEmail: project.deliveryEmail,
+          ccEmails: ccEmailsFromSetup((project as any).competitiveSetup),
+        })
+        if (recipients.to.length) {
           try {
-            const ctx = setupForCC?.additionalContext
-              ? (typeof setupForCC.additionalContext === 'string' ? JSON.parse(setupForCC.additionalContext) : setupForCC.additionalContext)
-              : {}
-            ccEmails = ctx.ccEmails || []
-          } catch(e) {}
-          await sendReportEmail(project.deliveryEmail, companyName, publicDownloadUrl, reportCount, reportCount, ccEmails)
+            const { sendReportEmail } = await import('../lib/email')
+            await sendReportEmail(recipients.to, companyName, publicDownloadUrl, reportCount, reportCount, recipients.cc)
+            delivered.push('EMAIL')
+          } catch (e: any) {
+            console.error('[Worker] Error enviando el correo del reporte:', e.message)
+            deliveryErrors.push('email: ' + e.message)
+          }
         }
 
         const deliveryPhone = (project as any).deliveryPhone
         const deliveryChannels = (project as any).deliveryChannels || []
         if (deliveryPhone && deliveryChannels.includes('WHATSAPP')) {
-          const { sendReportWhatsApp } = await import('../lib/whatsapp')
-          await sendReportWhatsApp(deliveryPhone, companyName, publicDownloadUrl, reportCount)
-          console.log('[WhatsApp] Reporte enviado a ' + deliveryPhone)
+          try {
+            const { sendReportWhatsApp } = await import('../lib/whatsapp')
+            await sendReportWhatsApp(deliveryPhone, companyName, publicDownloadUrl, reportCount)
+            delivered.push('WHATSAPP')
+            console.log('[WhatsApp] Reporte enviado a ' + deliveryPhone)
+          } catch (e: any) {
+            console.error('[Worker] Error enviando el reporte por WhatsApp:', e.message)
+            deliveryErrors.push('whatsapp: ' + e.message)
+          }
         }
+
+        await prisma.report.update({
+          where: { id: reportRecord.id },
+          data: {
+            ...(delivered.length > 0 && { deliveredAt: new Date(), deliveryChannels: delivered as any }),
+            deliveryError: deliveryErrors.length ? deliveryErrors.join(' | ') : null,
+          },
+        }).catch((e: any) => console.error('[Worker] No se pudo registrar la entrega:', e.message))
 
         console.log(`[Worker] Reporte completado: ${filename}`)
         return { success: true, filename }
@@ -203,9 +227,11 @@ export function startReportWorker() {
 
       const companyName = (project as any).competitiveSetup?.companyName || 'Tu empresa'
 
-      if (project.deliveryEmail) {
+      const owner = await prisma.user.findUnique({ where: { id: project.userId }, select: { email: true } })
+      const { to } = reportEmailRecipients({ accountEmail: owner?.email, deliveryEmail: project.deliveryEmail })
+      if (to.length) {
         const { sendReportErrorEmail } = await import('../lib/email')
-        await sendReportErrorEmail(project.deliveryEmail, companyName)
+        await sendReportErrorEmail(to, companyName)
       }
 
       const deliveryPhone = (project as any).deliveryPhone
