@@ -1108,7 +1108,7 @@ export default function DashboardPage() {
         <div style={{ display:'grid', gridTemplateColumns: isMobile ? '1fr 1fr' : '1fr 1fr 1fr 1fr', gap:10, marginBottom:14 }}>
           {[
             { label:'PRESIÓN COMPETITIVA', value: s.competitivePressure ? `${s.competitivePressure}%` : '—', sub: s.generalTrend || 'Sin datos', color:'#8B7BFF', pct: s.competitivePressure || 0 },
-            { label:'ALERTAS CRÍTICAS', value: s.criticalAlertsCount !== undefined ? String(s.criticalAlertsCount) : '—', sub: s.mediumAlertsCount !== undefined ? `${s.mediumAlertsCount} alertas medias` : 'Sin datos', color:'#FF6B6B', pct: s.criticalAlertsCount ? Math.min(s.criticalAlertsCount * 20, 100) : 0 },
+            { label:'ALERTAS CRÍTICAS', value: s.criticalAlertsCount !== undefined ? String(s.criticalAlertsCount) : '—', sub: s.mediumAlertsCount !== undefined ? `${s.highAlertsCount !== undefined ? `${s.highAlertsCount} altas · ` : ''}${s.mediumAlertsCount} alertas medias` : 'Sin datos', color:'#FF6B6B', pct: s.criticalAlertsCount ? Math.min(s.criticalAlertsCount * 20, 100) : 0 },
             { label:'OPORTUNIDADES', value: s.opportunityScore ? `${s.opportunityScore}%` : '—', sub: s.opportunities ? `${s.opportunities.length} identificadas` : 'Sin datos', color:'#6EE7A4', pct: s.opportunityScore || 0 },
             { label:'RIESGO DE MERCADO', value: s.marketRisk ? `${s.marketRisk}%` : '—', sub: s.riskLevel || 'Sin datos', color:'#F2C063', pct: s.marketRisk || 0 },
           ].map((k,i)=>(
@@ -1124,18 +1124,26 @@ export default function DashboardPage() {
         {/* ZONA 3 — Alertas críticas reales */}
         {s.criticalAlerts && s.criticalAlerts.length > 0 && (
           <div style={{...S.card, background:T.bgCard, border:`1px solid ${T.border}`, boxShadow: isDark ? "none" : "0 1px 4px rgba(83,74,183,0.08)"}}>
-            <span style={{...S.lbl, color:T.lbl}}>🔴 ALERTAS CRÍTICAS · ACCIÓN INMEDIATA</span>
+            <span style={{...S.lbl, color:T.lbl}}>🔴 ALERTAS CRÍTICAS Y ALTAS · ACCIÓN INMEDIATA</span>
             <div style={{ display:'flex', flexDirection:'column', gap:8 }}>
-              {s.criticalAlerts.map((a: any, i: number) => (
-                <div key={i} style={{ display:'flex', gap:10, padding:'10px 12px', background: isDark ? 'rgba(255,107,107,0.05)' : '#FEF2F2', border:'1px solid rgba(255,107,107,0.25)', borderRadius:10 }}>
+              {s.criticalAlerts.map((a: any, i: number) => {
+                // level: CRÍTICA (o sin nivel, reportes anteriores) | ALTA (umbral de urgencia)
+                const alta = a.level === 'ALTA'
+                const c = alta ? '217,130,43' : '255,107,107'
+                return (
+                <div key={i} style={{ display:'flex', gap:10, padding:'10px 12px', background: isDark ? `rgba(${c},0.05)` : (alta ? '#FFF7ED' : '#FEF2F2'), border:`1px solid rgba(${c},0.25)`, borderRadius:10 }}>
                   <span style={{ fontSize:18, flexShrink:0 }}>{a.icon || '⚠️'}</span>
                   <div style={{ flex:1 }}>
-                    <div style={{ fontSize:12, fontWeight:700, color:T.text, marginBottom:2 }}>{a.title}</div>
+                    <div style={{ fontSize:12, fontWeight:700, color:T.text, marginBottom:2 }}>
+                      <span style={{ fontSize:9, fontWeight:800, color:'#fff', background:`rgb(${c})`, borderRadius:6, padding:'1px 6px', marginRight:6 }}>{alta ? 'ALTA' : 'CRÍTICA'}</span>
+                      {a.title}
+                    </div>
                     <div style={{ fontSize:11, color:T.textSub }}>{a.description}</div>
-                    {a.action && <div style={{ fontSize:10, color:'#FF6B6B', marginTop:4, fontWeight:600 }}>💡 {a.action}</div>}
+                    {a.action && <div style={{ fontSize:10, color: alta ? '#D9822B' : '#FF6B6B', marginTop:4, fontWeight:600 }}>💡 {a.action}</div>}
                   </div>
                 </div>
-              ))}
+                )
+              })}
             </div>
           </div>
         )}

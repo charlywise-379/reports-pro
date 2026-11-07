@@ -5,6 +5,7 @@ vi.mock('./config', () => ({ getSecret: () => undefined }))
 vi.mock('./anthropic', () => ({ getAnthropic: () => ({}) }))
 
 import { buildReportData } from './reportEngine'
+import { toneForPressure, toneForOpportunity, toneForRisk } from './reportPalette'
 import { FIXTURE_PROJECT, FIXTURE_DATE_INFO, FIXTURES, FixtureName, fixtureProject } from './reportFixtures'
 import { buildViewModel, ringDash, TOTAL_PAGES } from './reportViewModel'
 
@@ -35,11 +36,12 @@ describe('buildViewModel', () => {
 describe('buildViewModel (tonos y listas)', () => {
   it('tonos principales con la fixture normal', () => {
     const v = vm('normal')
-    expect(v.pressureTone).toBe('warn')        // 72 > 50
-    expect(v.opportunityTone).toBe('info')     // 68 >= 45
-    expect(v.riskTone).toBe('warn')            // 44 > 35
-    expect(v.pressureLgDash).toBe(ringDash(72, 440))
-    expect(v.riskDash).toBe(ringDash(44, 289))
+    // Los scores ya no vienen fijos en la fixture: se calculan con reportScoring a partir de la evidencia.
+    expect(v.pressureTone).toBe(toneForPressure(v.competitivePressure))
+    expect(v.opportunityTone).toBe(toneForOpportunity(v.opportunityScore))
+    expect(v.riskTone).toBe(toneForRisk(v.marketRisk))
+    expect(v.pressureLgDash).toBe(ringDash(v.competitivePressure, 440))
+    expect(v.riskDash).toBe(ringDash(v.marketRisk, 289))
     expect(v.mainAlertTone).toBe('bad')        // ALTO
   })
 

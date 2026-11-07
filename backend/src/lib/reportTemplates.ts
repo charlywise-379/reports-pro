@@ -35,7 +35,7 @@ export const PAGES: PageDef[] = [
   { file: 'p03-competidores.html', title: 'Competidores con más actividad (monitoreo)', sub: 'Ordenados por amenaza real · Reporte #{{edition}} · {{year}}' },
   {
     file: 'p04-alertas.html', eyebrow: 'Página 4 · Early Warning Alerts™', title: 'Alertas de la competencia / Sector y Segmento Competitivo',
-    aside: '<span class="chip tone-bad">{{criticalAlertsCount}} alertas críticas</span><span class="chip tone-warn">{{mediumAlertsCount}} alertas medias</span>',
+    aside: '<span class="chip tone-bad">{{criticalAlertsCount}} alertas críticas</span><span class="chip tone-warn">{{highAlertsCount}} alertas altas</span><span class="chip tone-neutral">{{mediumAlertsCount}} alertas medias</span>',
   },
   { file: 'p05-cambios.html', title: 'Cambios Detectados Esta Semana', sub: '{{totalChanges}} movimientos registrados · Reporte #{{edition}} · {{periodStart}} — {{periodEnd}}' },
   {

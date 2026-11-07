@@ -107,7 +107,7 @@
     </div>
   </div>
   <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr 1fr;background:#1A1730;border-top:1px solid rgba(255,255,255,0.07)">
-    <div style="padding:9px 16px;border-right:1px solid rgba(255,255,255,0.07)"><div style="font-size:7px;font-weight:700;letter-spacing:.1em;color:#5A627A;margin-bottom:2px">SEÑALES DETECTADAS</div><div style="font-size:18px;font-weight:900;color:#8B7BFF">{{signalsCount}}</div><div style="font-size:8px;color:#6EE7A4">↑ +{{signalsDelta}}% vs anterior</div></div>
+    <div style="padding:9px 16px;border-right:1px solid rgba(255,255,255,0.07)"><div style="font-size:7px;font-weight:700;letter-spacing:.1em;color:#5A627A;margin-bottom:2px">SEÑALES DETECTADAS</div><div style="font-size:18px;font-weight:900;color:#8B7BFF">{{signalsCount}}</div><div style="font-size:8px;color:#6EE7A4">{{signalsDeltaText}}</div></div>
     <div style="padding:9px 16px;border-right:1px solid rgba(255,255,255,0.07)"><div style="font-size:7px;font-weight:700;letter-spacing:.1em;color:#5A627A;margin-bottom:2px">MOVIMIENTOS CLAVE</div><div style="font-size:18px;font-weight:900;color:#FF6B6B">{{movementsCount}}</div><div style="font-size:8px;color:#5A627A">{{criticalMovements}} críticos · {{minorMovements}} menores</div></div>
     <div style="padding:9px 16px;border-right:1px solid rgba(255,255,255,0.07)"><div style="font-size:7px;font-weight:700;letter-spacing:.1em;color:#5A627A;margin-bottom:2px">ALERTAS ACTIVAS</div><div style="font-size:18px;font-weight:900;color:#F2C063">{{alertsCount}}</div><div style="font-size:8px;color:#5A627A">requieren atención hoy</div></div>
     <div style="padding:9px 16px;border-right:1px solid rgba(255,255,255,0.07)"><div style="font-size:7px;font-weight:700;letter-spacing:.1em;color:#5A627A;margin-bottom:2px">COMPETIDORES</div><div style="font-size:18px;font-weight:900;color:#5DD4D4">{{competitorsCount}}</div><div style="font-size:8px;color:#5A627A">monitoreados activos</div></div>
@@ -134,7 +134,7 @@
       <div style="margin-top:8px;background:#F8F7FF;border-radius:8px;border:1px solid #EEEDFE;padding:8px;text-align:center">
         <div style="font-size:7px;font-weight:700;color:#534AB7;letter-spacing:.1em;margin-bottom:3px">TENDENCIA GENERAL</div>
         <div style="font-size:13px;font-weight:900;color:#1D9E75;line-height:1.2">{{generalTrend}}</div>
-        <div style="font-size:8px;color:#888;margin-top:2px">vs reporte anterior {{trendDelta}} pts</div>
+        <div style="font-size:8px;color:#888;margin-top:2px">{{trendDeltaText}}</div>
       </div>
     </div>
     <div style="padding:14px 18px">
@@ -333,21 +333,22 @@
     <div style="font-size:15px;font-weight:900;color:#F0F2FF;margin-left:10px">Alertas de la competencia / Sector y Segmento Competitivo</div>
     <div style="display:flex;gap:7px;margin-top:6px;margin-left:10px">
       <div style="display:flex;align-items:center;gap:5px;background:rgba(255,107,107,0.15);border:1px solid rgba(255,107,107,0.3);border-radius:20px;padding:3px 9px"><div style="width:5px;height:5px;border-radius:50%;background:#FF6B6B"></div><span style="font-size:8px;font-weight:700;color:#FF6B6B">{{criticalAlertsCount}} ALERTAS CRÍTICAS</span></div>
+      <div style="display:flex;align-items:center;gap:5px;background:rgba(217,130,43,0.15);border:1px solid rgba(217,130,43,0.35);border-radius:20px;padding:3px 9px"><div style="width:5px;height:5px;border-radius:50%;background:#D9822B"></div><span style="font-size:8px;font-weight:700;color:#E89A4A">{{highAlertsCount}} ALERTAS ALTAS</span></div>
       <div style="display:flex;align-items:center;gap:5px;background:rgba(242,192,99,0.15);border:1px solid rgba(242,192,99,0.3);border-radius:20px;padding:3px 9px"><div style="width:5px;height:5px;border-radius:50%;background:#F2C063"></div><span style="font-size:8px;font-weight:700;color:#F2C063">{{mediumAlertsCount}} ALERTAS MEDIAS</span></div>
     </div>
   </div>
   <div class="body-wrap">
-    <div style="font-size:7px;font-weight:700;letter-spacing:.15em;color:#FF6B6B;text-transform:uppercase;margin-bottom:8px">🔴 Alertas críticas — acción inmediata</div>
+    <div style="font-size:7px;font-weight:700;letter-spacing:.15em;color:#FF6B6B;text-transform:uppercase;margin-bottom:8px">🔴 Alertas críticas y altas — acción inmediata</div>
     {{#each criticalAlerts}}
-    <div style="display:flex;gap:0;border:1.5px solid #F7C1C1;border-radius:10px;overflow:hidden;margin-bottom:7px">
-      <div style="width:4px;background:#E24B4A;flex-shrink:0"></div>
+    <div style="display:flex;gap:0;border:1.5px solid {{this.levelBorder}};border-radius:10px;overflow:hidden;margin-bottom:7px">
+      <div style="width:4px;background:{{this.levelColor}};flex-shrink:0"></div>
       <div style="flex:1;padding:9px 12px">
         <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:5px">
           <div style="display:flex;align-items:center;gap:7px">
             <div style="font-size:20px">{{this.icon}}</div>
             <div><div style="font-size:11px;font-weight:800;color:#1A1730">{{this.title}}</div><div style="font-size:8px;color:#888">{{this.detected}}</div></div>
           </div>
-          <span style="background:#E24B4A;color:#fff;font-size:8px;font-weight:700;padding:2px 6px;border-radius:8px;flex-shrink:0">CRÍTICO</span>
+          <span style="background:{{this.levelColor}};color:#fff;font-size:8px;font-weight:700;padding:2px 6px;border-radius:8px;flex-shrink:0">{{this.levelLabelUpper}}</span>
         </div>
         <div style="font-size:9px;color:#444;line-height:1.5;margin-bottom:6px">{{this.description}}</div>
         <div style="background:#FFF5F5;border:1px solid #FAC7C7;border-radius:6px;padding:4px 9px;font-size:9px;color:#A32D2D;font-weight:600">💡 {{this.action}}</div>
@@ -450,7 +451,7 @@
           <span style="font-size:7px;color:#9CA3AF;font-weight:600">Alertas</span>
         </div>
         <div style="text-align:center;padding:4px 4px;background:rgba(255,255,255,0.05);border-radius:6px;display:flex;align-items:center;justify-content:center;gap:5px">
-          <span style="font-size:16px;font-weight:900;color:#6EE7A4;line-height:1">↑{{signalsDelta}}%</span>
+          <span style="font-size:16px;font-weight:900;color:#6EE7A4;line-height:1">{{signalsDeltaShort}}</span>
           <span style="font-size:7px;color:#9CA3AF;font-weight:600">vs ant.</span>
         </div>
       </div>

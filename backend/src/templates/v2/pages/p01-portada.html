@@ -31,7 +31,7 @@
   </div>
 </div>
 <div class="kpis">
-  <div class="kpi"><div class="label">Señales detectadas</div><div class="num num-md">{{signalsCount}}</div><div class="sm muted">↑ +{{signalsDelta}}% vs anterior</div></div>
+  <div class="kpi"><div class="label">Señales detectadas</div><div class="num num-md">{{signalsCount}}</div><div class="sm muted">{{signalsDeltaText}}</div></div>
   <div class="kpi"><div class="label">Movimientos clave</div><div class="num num-md">{{movementsCount}}</div><div class="sm muted">{{criticalMovements}} críticos · {{minorMovements}} menores</div></div>
   <div class="kpi"><div class="label">Alertas activas</div><div class="num num-md">{{alertsCount}}</div><div class="sm muted">requieren atención hoy</div></div>
   <div class="kpi"><div class="label">Competidores</div><div class="num num-md">{{competitorsCount}}</div><div class="sm muted">monitoreados activos</div></div>
@@ -41,7 +41,7 @@
   <div class="card"><div class="label">3 Insights críticos</div><div class="mini-list lst">{{#each insights}}<div class="mini tone-{{this.tone}}"><span class="dot mt"></span><div><div class="label tone-text">{{this.category}}</div><p>{{this.text}}</p></div></div>{{/each}}</div></div>
   <div class="card"><div class="label">3 Acciones inmediatas</div><div class="mini-list lst">{{#each actions}}<div class="mini tone-{{this.tone}}"><span class="chip">{{this.priority}}</span><p>{{this.text}}</p></div>{{/each}}</div></div>
   <div class="stack cover-side">
-    <div class="card"><div class="label">Tendencia general</div><b class="trend-v">{{generalTrend}}</b><div class="sm muted mono">vs reporte anterior {{trendDelta}} pts</div></div>
+    <div class="card"><div class="label">Tendencia general</div><b class="trend-v">{{generalTrend}}</b><div class="sm muted mono">{{trendDeltaText}}</div></div>
     <div class="card"><div class="label">Ranking de amenaza</div><div class="mini-list lst">{{#each topCompetitors}}<div class="tone-{{this.tone}}"><div class="rowline"><span class="who"><span class="avatar">{{this.initials}}</span><span>{{this.name}}</span></span><span class="mono tone-text">{{this.threat}}/10</span></div><div class="bar"><i style="width:{{this.threatPct}}%"></i></div></div>{{/each}}</div></div>
   </div>
 </div>

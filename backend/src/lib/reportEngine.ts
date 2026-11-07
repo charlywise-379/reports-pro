@@ -3,11 +3,17 @@ import fetch from 'node-fetch'
 import fs from 'fs'
 import path from 'path'
 import { prisma } from './prisma'
+import { Prisma } from '@prisma/client'
 import { getSecret } from './config'
 import { renderTemplate } from './reportRender'
 import { resolveReportTemplate, renderReportHtmlV2 } from './reportTemplates'
 import { loadReportLogos } from './reportLogos'
 import { stripCitationTags } from './stripCitations'
+import { computeCounts, computeScores, computeDeltas, SCORING_VERSION, PreviousMetrics, alertLevelOf } from './reportScoring'
+import { enforceRubrics, auditSummary } from './reportEnforcement'
+import { buildCompetitivePrompt, resolvePromptVersion, defaultResearchContext, type PromptVersion } from './reportPrompts'
+import { emptyResearchLog, appendToResearchLog, checkCoverage, researchSummary, type ResearchLog, type ReportWindow, type SearchPlan, type Coverage } from './reportResearch'
+import { inferBusinessType, registeredDirectCompetitors } from './reportPrompts/promptContext'
 
 // ─── Tipos ───────────────────────────────────────────
 interface ReportData {
@@ -36,20 +42,24 @@ interface ReportData {
   riskLevel: string
   generalTrend: string
   trendDelta: string
+  trendDeltaText: string
+  signalsDeltaText: string
+  signalsDeltaShort: string
+  metrics: Record<string, unknown>
   pressureDash: number
   opportunityDash: number
   gaugePath: string
   needleX: number
   needleY: number
-  signalsCount: string
-  signalsDelta: number
-  movementsCount: number | string
-  criticalMovements: number | string
+  signalsCount: number
+  signalsDelta: string
+  movementsCount: number
+  criticalMovements: number
   minorMovements: number
   alertsCount: number
   activeCompetitors: number
-  totalChanges: number | string
-  clientScore?: {
+  totalChanges: number
+  clientScore?: null | {
     overall: number
     price: number
     digital: number
@@ -80,6 +90,7 @@ interface ReportData {
   emergingName: string
   emergingDesc: string
   criticalAlertsCount: number
+  highAlertsCount: number
   mediumAlertsCount: number
   criticalAlerts: any[]
   mediumAlerts: any[]
@@ -134,505 +145,57 @@ function calcGauge(value: number) {
   }
 }
 
-// ─── Inferir giro real del negocio ───────────────────
-function inferBusinessType(setup: any): string {
-  const products = (setup.mainProducts || []).join(' ').toLowerCase()
-  const ctx = (() => { try { return typeof setup.additionalContext === 'string' ? JSON.parse(setup.additionalContext) : (setup.additionalContext || {}) } catch { return {} } })()
-  const pitch = (ctx.pitch || '').toLowerCase()
-  const combined = products + ' ' + pitch
-  if (combined.includes('campaña') || combined.includes('digital') || combined.includes('branding') || combined.includes('contenido') || combined.includes('publicidad') || combined.includes('agencia') || combined.includes('marketing')) return 'Agencia de Marketing Digital y Publicidad'
-  if (combined.includes('web') || combined.includes('ecommerce') || combined.includes('app') || combined.includes('software') || combined.includes('desarrollo')) return 'Empresa de Desarrollo de Software y Tecnología'
-  if (combined.includes('foto') || combined.includes('video') || combined.includes('producción') || combined.includes('audiovisual')) return 'Productora Audiovisual / Estudio Creativo'
-  if (combined.includes('educación') || combined.includes('curso') || combined.includes('capacitación')) return 'Empresa Educativa / EdTech'
-  if (combined.includes('salud') || combined.includes('médico') || combined.includes('clínica')) return 'Empresa del Sector Salud'
-  return setup.industry || 'Empresa PYME en México'
-}
-
-function extractSetupContext(setup: any) {
-  try {
-    const ctx = typeof setup.additionalContext === 'string' ? JSON.parse(setup.additionalContext) : (setup.additionalContext || {})
-    const products = (ctx.products || []).map((p: any) => `• ${p.name} (${p.category}): $${Number(p.priceFrom).toLocaleString('es-MX')} – $${Number(p.priceTo).toLocaleString('es-MX')} MXN`).join('\n')
-    const directComps = (ctx.directCompetitors || []).map((c: any) => `• ${c.name} | URL: ${c.url} | Servicios: ${c.products} | Presencia: ${c.presence} | Amenaza: ${c.threat}/10`).join('\n')
-    const indirectComps = (ctx.indirectCompetitors || []).map((c: any) => `• ${c.name} | Industria: ${c.industry} | Amenaza: ${c.threat}/10`).join('\n')
-    const differentiators = (ctx.differentiators || []).slice(0, 10).join(', ')
-    const pitch = ctx.pitch || ''
-    return { products, directComps, indirectComps, differentiators, pitch }
-  } catch {
-    const fallbackProds = (setup.mainProducts || []).map((p: string) => `• ${p}`).join('\n')
-    const fallbackComps = [1,2,3,4,5].filter((i: number) => setup[`competitor${i}Name`]).map((i: number) => `• ${setup[`competitor${i}Name`]} | URL: ${setup[`competitor${i}Website`] || 'N/A'}`).join('\n')
-    return { products: fallbackProds, directComps: fallbackComps, indirectComps: '', differentiators: '', pitch: '' }
-  }
-}
-
-// ─── Prompt para Claude ───────────────────────────────
-function buildPrompt(project: any, dateInfo: any): string {
-  const setup = project.setup || {}
-  const businessType = inferBusinessType(setup)
-  const { products, directComps, indirectComps, differentiators, pitch } = extractSetupContext(setup)
-  const focusAreas = (setup.focusAreas || []).join(', ') || 'precios, campanas, lanzamientos'
-  const geographicScope = (setup.geographicScope || ['MX']).join(', ')
-  const companyName = setup.companyName || project.companyName || project.name
-  const website = setup.website || ''
-
-  let directCompetitorsList = ''
-  try {
-    const ctx = typeof setup.additionalContext === 'string' ? JSON.parse(setup.additionalContext) : (setup.additionalContext || {})
-    const dc = ctx.directCompetitors || []
-    directCompetitorsList = dc.map((c: any) => `- ${c.name} | URL: ${c.url} | Servicios: ${c.products}`).join('\n')
-    if (!directCompetitorsList) {
-      directCompetitorsList = [1,2,3,4,5]
-        .filter((i: number) => setup[`competitor${i}Name`])
-        .map((i: number) => `- ${setup[`competitor${i}Name`]} | URL: ${setup[`competitor${i}Website`] || 'N/A'}`)
-        .join('\n')
-    }
-  } catch { directCompetitorsList = 'No especificados' }
-
-  // ─── Variables adicionales para el prompt v2.0 ──────
-  const now = new Date()
-  const fechaExacta = now.toLocaleDateString('es-MX', { 
-    weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' 
-  })
-  const horaGeneracion = now.toLocaleTimeString('es-MX', { 
-    hour: '2-digit', minute: '2-digit' 
-  })
-  const mesActual = now.toLocaleDateString('es-MX', { month: 'long', year: 'numeric' })
-
-  // Categorías de recomendación para forzar variedad
-  const recCategories = [
-    'MARKETING DIGITAL', 'VENTAS Y CONVERSIÓN', 'PRODUCTO O SERVICIO',
-    'OPERACIONES', 'TALENTO Y EQUIPO', 'FIDELIZACIÓN DE CLIENTES',
-    'POSICIONAMIENTO Y MARCA', 'NUEVOS CANALES', 'TECNOLOGÍA Y HERRAMIENTAS',
-    'ALIANZAS ESTRATÉGICAS', 'CONTENIDO Y COMUNICACIÓN', 'PRECIO Y PROPUESTA DE VALOR'
-  ]
-  // Seleccionar 6 categorías distintas rotando por semana del año
-  const weekSeed = Math.ceil(now.getDate() / 7) + now.getMonth() * 4
-  const shuffledCats = [...recCategories].sort(() => Math.sin(weekSeed + recCategories.indexOf(recCategories[0])) - 0.5)
-  const selectedCategories = shuffledCats.slice(0, 6).join(', ')
-
-  return `
-═══════════════════════════════════════════════════════════════
-REPORTE DE INTELIGENCIA COMPETITIVA — Reports PRO v2.0
-═══════════════════════════════════════════════════════════════
-
-━━━ ANCLA TEMPORAL — LEER PRIMERO ━━━━━━━━━━━━━━━━━━━━━━━━━━━
-HOY ES: ${fechaExacta}
-HORA DE GENERACIÓN: ${horaGeneracion} CST
-PERIODO DEL REPORTE: ${dateInfo.periodStart} al ${dateInfo.periodEnd}
-MES EN CURSO: ${mesActual}
-
-REGLA DE FRESCURA — APLICAR EN CADA DATO:
-• Datos de los últimos 7 días → etiquetar: "Esta semana · [fuente]"
-• Datos de 8 a 30 días → etiquetar: "Reciente · [fecha específica] · [fuente]"
-• Datos de más de 30 días → etiquetar: "Referencia histórica · [mes y año]"
-• Sin datos encontrados → escribir EXACTAMENTE: "Sin datos públicos disponibles"
-⚠ PROHIBIDO: presentar datos de semanas o meses anteriores como si fueran de esta semana.
-
-━━━ IDENTIDAD DEL CLIENTE ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Empresa: ${companyName}
-Sitio web: ${website}
-Giro real detectado: ${businessType}
-Ubicación: ${setup.city || 'No especificada'}, ${setup.country || 'México'}
-Mercado objetivo: ${setup.targetMarket || 'México'}
-Alcance geográfico: ${geographicScope}
-Tamaño: PYME regional — NO comparar con corporativos multinacionales
-
-PRODUCTOS Y SERVICIOS:
-${products}
-
-DESCRIPCIÓN DEL NEGOCIO:
-${pitch}
-
-DIFERENCIADORES DECLARADOS POR EL CLIENTE:
-${differentiators}
-
-━━━ REGLA ABSOLUTA DE LOCALIZACIÓN ━━━━━━━━━━━━━━━━━━━━━━━━━
-Esta empresa opera en ${setup.city || 'ciudad no especificada'}, ${setup.country || 'México'}.
-• TODA la inteligencia debe ser relevante para ${setup.city || setup.country || 'México'}
-• Competidores: SOLO empresas con presencia real en ${setup.city || setup.country || 'México'}
-• Noticias y tendencias: SOLO de ${setup.city || setup.country || 'México'} o que impacten directamente ahí
-• Al buscar en web: incluye siempre "${setup.city || setup.country || 'México'}" en tus queries
-• Si no hay información local específica, usa contexto nacional pero indícalo explícitamente
-• PROHIBIDO mencionar mercados ajenos sin justificación explícita
-
-━━━ COMPETIDORES REGISTRADOS ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-DIRECTOS — investigar cada uno obligatoriamente:
-${directCompetitorsList}
-
-INDIRECTOS — investigar si hay capacidad:
-${indirectComps}
-
-REGLAS DE COMPETIDORES:
-• Los competidores directos SIEMPRE aparecen en el reporte aunque no tengas datos
-• Si un competidor no tiene presencia digital: escribe "Presencia digital no detectada — canal offline"
-• NUNCA inventes movimientos — si no hay datos, escríbelo explícitamente
-• Para benchmark: top 5 competidores en tabla comparativa; los restantes en secondaryCompetitors
-• secondaryCompetitors DEBE incluir SIEMPRE un mínimo de 3 elementos. Si el cliente no registró suficientes competidores indirectos, investiga y agrega competidores adicionales reales del mismo sector/industria (${setup.industry || 'la industria del cliente'}) en ${setup.city || setup.country || 'México'} mediante búsqueda web. Solo si después de buscar genuinamente no encuentras NINGÚN competidor adicional verificable, usa exactamente este valor para cada campo de texto: "No se encontraron datos" — pero esto debe ser la excepción, no la regla.
-
-REGLAS DE CANALES DE VENTA (newChannels):
-• Recomienda exactamente 3 canales de venta/adquisición REALES y relevantes para ${businessType} en ${setup.industry || 'la industria del cliente'}
-• Varía las recomendaciones según lo que detectes en el mercado y la competencia — NO uses siempre las mismas 3 opciones genéricas. Considera el abanico completo: WhatsApp Business API, LinkedIn Ads B2B, Programmatic Display, Google Shopping, Marketplace especializado del sector, Email marketing automatizado, Partnerships/Alianzas estratégicas, Eventos y ferias del sector, Referidos B2B, TikTok Ads, Influencer marketing de nicho, SEO local, Telemarketing dirigido, etc. — elige las 3 que mejor encajen con lo observado en este reporte específico
-• Cada canal DEBE incluir el campo "reason" con un argumento concreto y específico de por qué conviene implementarlo ahora (basado en una señal real detectada en el mercado o la competencia, no genérico)
-
-━━━ ÁREAS DE MONITOREO ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-${focusAreas}
-
-━━━ FASE 1 — INVESTIGACIÓN OBLIGATORIA (mínimo 10 búsquedas) ━━
-Ejecuta TODAS estas búsquedas antes de estructurar la respuesta:
-
-Por cada competidor directo registrado:
-  → "[nombre competidor] ${setup.city || setup.country || 'México'} ${mesActual}"
-  → "[nombre competidor] precios servicios ${now.getFullYear()}"
-  → "[nombre competidor] instagram linkedin noticias ${now.getFullYear()}"
-  Detecta: nuevos servicios, cambios de precio, campañas activas, vacantes, reseñas
-
-Tendencias del sector:
-  → "${businessType} México tendencias ${mesActual}"
-  → "${businessType} ${setup.city || setup.country || 'México'} noticias ${mesActual}"
-  Detecta: nuevas tecnologías, cambios regulatorios, oportunidades de nicho
-
-Posicionamiento en buscadores — ejecutar POR CADA entidad (cliente + cada competidor directo registrado):
-  → "[nombre de la entidad]" — ¿aparece en resultados? ¿con qué dominio?
-  → "site:[dominio de la entidad, si se conoce]" — ¿está indexado? ¿aproximadamente cuántas páginas?
-  → "${businessType} ${setup.city || setup.country || 'México'}" — ¿aparece esta entidad en estos resultados?
-REGISTRA para cada entidad, y NADA MÁS que esto:
-  a) las queries exactas que ejecutaste para esa entidad
-  b) si la entidad apareció o no en los resultados de cada query
-  c) el dominio que apareció, si alguno
-PROHIBIDO derivar de esto un número de posición en Google — reporta presencia/ausencia por query, nunca una posición inferida.
-
-Contexto económico:
-  → "mercado ${setup.industry || businessType} México ${mesActual} ${now.getFullYear()}"
-  Detecta: cambios de demanda, nuevos competidores, fusiones, regulaciones
-
-━━━ FASE 2 — ANÁLISIS (razonar antes de estructurar) ━━━━━━━━
-Después de investigar, responde mentalmente estas 5 preguntas:
-1. ¿Cuál es el movimiento MÁS IMPORTANTE de la competencia esta semana?
-2. ¿Qué oportunidad CONCRETA puede aprovechar ${companyName} en los próximos 30 días?
-3. ¿Cuál es el riesgo MÁS URGENTE que debe atender?
-4. ¿Cómo está posicionado ${companyName} vs sus competidores directos HOY?
-5. ¿Qué debería hacer ${companyName} ESTA SEMANA específicamente?
-
-━━━ FASE 3 — SCORE DEL CLIENTE ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Evalúa objetivamente a ${companyName} vs competidores (0-100 cada dimensión):
-• Precio / Propuesta de valor: ¿es competitivo en su mercado?
-• Presencia digital: ¿qué tan visible es vs sus competidores?
-• Diferenciación: ¿qué tan único es su producto/servicio?
-• Velocidad de respuesta: ¿qué tan rápido se adapta al mercado?
-Promedio ponderado = clientScore.overall
-
-━━━ REGLAS ABSOLUTAS ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-✓ SIEMPRE HACER:
-• La fidelidad de la información es prioridad absoluta — cada dato debe tener fuente y frescura
-• Incluir todos los competidores directos registrados
-• Cada alerta y movimiento debe tener fuente (URL, medio, o "Estimado")
-• Precios realistas para el mercado mexicano de ${businessType}
-• Acciones concretas y accionables para PYME con recursos limitados
-• Benchmark con los primeros 5 competidores directos en tabla
-• Indicar frescura de cada dato según la Regla de Frescura
-• Mínimo 10 búsquedas web antes de estructurar la respuesta
-• Recomendaciones variadas — categorías a usar esta semana: ${selectedCategories}
-• Validación y Revisión exhaustiva de cada dato antes de incluirlo en el reporte, principalmente posicionamiento SEO, precios, campañas activas, vacantes y reseñas de competidores y toda información que sea facilmente verificable en web. No incluir datos sin haberlos verificado primero.
-
-✗ NUNCA HACER:
-• Inventar movimientos, precios o campañas de competidores
-• Presentar datos de hace más de 30 días como información actual
-• Analizar telecomunicaciones, banca, o corporativos globales
-• Recomendar acciones con presupuesto de corporativo (>$50,000 MXN sin justificación)
-• Repetir la misma recomendación o categoría dos veces en el mismo reporte
-• Usar anglicismos innecesarios — español de México siempre
-• Dejar campos vacíos — si no hay datos: "Sin datos públicos disponibles"
-• Dar recomendaciones genéricas como "mejorar redes sociales" sin especificidad
-• Declarar una posición numérica de Google (#3, #7, "top 5") como dato duro. La herramienta de búsqueda NO devuelve posiciones de SERP reales. Solo puedes afirmar presencia o ausencia en resultados basándote en una búsqueda que realmente ejecutaste para esa entidad. Si no ejecutaste la búsqueda, escribe "Sin verificar" — es preferible una celda "Sin verificar" a una posición inventada, porque el cliente puede comprobar su propio posicionamiento en segundos y una cifra incorrecta destruye la credibilidad de todo el reporte.
-
-━━━ ESTÁNDAR DE CALIDAD — EJEMPLOS OBLIGATORIOS ━━━━━━━━━━━━
-
-ALERTA BUENA ✓:
-"Competitor X lanzó paquete 'Todo Incluido' a $8,500 MXN/mes el 18 de mayo, captando 3 reseñas positivas en Google en 5 días. Fuente: instagram.com/competitorx · Esta semana"
-
-ALERTA MALA ✗ (PROHIBIDA):
-"El competidor mejoró su oferta recientemente" ← sin fecha, sin fuente, sin detalle
-
-RECOMENDACIÓN BUENA ✓:
-"CONTENIDO Y COMUNICACIÓN — Esta semana: Publica 3 casos de éxito reales en Instagram con métricas concretas ('aumentamos ventas 40% en 60 días'). Costo: $0. Tiempo: 2 horas. Impacto esperado: +15% en consultas basado en benchmark del sector."
-
-RECOMENDACIÓN MALA ✗ (PROHIBIDA):
-"Mejorar presencia en redes sociales" ← sin categoría, sin acción específica, sin plazo, sin costo
-
-━━━ INSTRUCCIÓN DE VARIEDAD EN RECOMENDACIONES ━━━━━━━━━━━━━
-Las 6 recomendaciones DEBEN cubrir categorías DIFERENTES.
-Las categorías asignadas para este reporte son: ${selectedCategories}
-Asigna cada recomendación a una categoría distinta.
-Comienza el título de cada recomendación con su categoría en mayúsculas.
-Ejemplo: "PRECIO Y PROPUESTA DE VALOR — Ajusta tu paquete básico a..."
-PROHIBIDO: dar dos recomendaciones de la misma categoría en el mismo reporte.
-
-━━━ ESTRUCTURA DE RESPUESTA JSON ━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-Responde ÚNICAMENTE con JSON válido comenzando con { sin texto previo ni markdown:
-
-{
-  "competitivePressure": <0-100, basado en actividad real detectada esta semana>,
-  "opportunityScore": <0-100, basado en gaps reales encontrados>,
-  "marketRisk": <0-100, basado en amenazas concretas detectadas>,
-  "riskLevel": "<BAJO|MEDIO|ALTO|CRÍTICO>",
-  "generalTrend": "<tendencia específica y concreta para ${businessType} en ${setup.country || 'México'} esta semana>",
-  "trendDelta": "<+N o -N, cambio estimado vs semana anterior>",
-  "signalsCount": "<número total de señales detectadas>",
-  "signalsDelta": <número>,
-  "movementsCount": <número de movimientos de competidores detectados>,
-  "criticalMovements": <número>,
-  "minorMovements": <número>,
-  "alertsCount": <número total>,
-  "totalChanges": <número total de cambios detectados>,
-
-  "clientScore": {
-    "overall": <0-100, promedio ponderado>,
-    "price": <0-100>,
-    "digital": <0-100>,
-    "differentiation": <0-100>,
-    "speed": <0-100>,
-    "vsCompetitors": "<Por encima del promedio|En el promedio|Por debajo del promedio>",
-    "strongAreas": ["<fortaleza concreta detectada>", "<fortaleza 2>"],
-    "weakAreas": ["<área de mejora concreta>", "<área 2>"],
-    "weeklyChange": "<+N o -N vs semana anterior, o 'Primera medición'>",
-    "summary": "<1 oración que resume la posición competitiva del cliente hoy>"
-  },
-
-  "insights": [
-    { "category": "<CATEGORÍA · NIVEL>", "text": "<insight con dato específico, fuente y frescura>" },
-    { "category": "<CATEGORÍA · NIVEL>", "text": "<insight con dato, fuente y frescura>" },
-    { "category": "<CATEGORÍA · NIVEL>", "text": "<insight con dato, fuente y frescura>" }
-  ],
-
-  "actions": [
-    { "priority": "ALTA", "text": "<acción específica esta semana con costo estimado en MXN y tiempo para PYME de ${businessType}>" },
-    { "priority": "MED", "text": "<acción concreta con plazo y costo estimado>" },
-    { "priority": "BAJA", "text": "<acción concreta con plazo>" }
-  ],
-
-  "earlyWarning": "<alerta temprana MÁS URGENTE con dato específico, fuente y fecha>",
-  "marketStatus": "<estado actual del mercado de ${businessType} en ${setup.country || 'México'} — una frase concreta>",
-  "marketStatusDesc": "<2 oraciones con datos reales verificados esta semana y sus fuentes>",
-  "mainAlertTitle": "<la alerta más urgente de esta semana — concreta y específica>",
-  "mainAlertDesc": "<2-3 oraciones con datos reales, fecha y fuente verificable>",
-  "mainAlertLevel": "<BAJO|MEDIO|ALTO|CRÍTICO>",
-
-  "competitors": [
-    {
-      "name": "<nombre exacto — incluir TODOS los registrados>",
-      "scope": "<Local|Regional|Nacional>",
-      "threat": <1-10>,
-      "growth": "<↑ subió +X% Esta semana | → Estable | ↓ bajó -X%>",
-      "recentMove": "<movimiento real con fecha y frescura, o 'Sin datos públicos disponibles'>",
-      "riskLabel": "<BAJO|MEDIO|VIGILAR|CRÍTICO>",
-      "sourceUrl": "<URL donde encontraste info, o 'Sin presencia digital detectada'>",
-      "socialMedia": {
-        "mostActivePlatform": "<Instagram|Facebook|LinkedIn|TikTok|Sin presencia>",
-        "lastPostDate": "<fecha aproximada o 'No detectado'>",
-        "postFrequency": "<Diario|Semanal|Irregular|Inactivo|No detectado>",
-        "topContentType": "<tipo de contenido o 'No detectado'>",
-        "followersEstimate": "<número estimado o 'No detectado'>",
-        "engagementLevel": "<ALTO|MEDIO|BAJO|No detectado>"
-      }
-    }
-  ],
-
-  "mostAggressiveName": "<competidor más activo esta semana>",
-  "mostAggressiveDesc": "<dato específico con fecha y fuente>",
-  "weakestName": "<competidor con mayor debilidad detectada>",
-  "weakestDesc": "<evidencia concreta de la debilidad>",
-  "emergingName": "<amenaza emergente real>",
-  "emergingDesc": "<dato específico que justifica la alerta>",
-
-  "criticalAlerts": [
-    {
-      "icon": "<emoji relevante>",
-      "title": "<alerta específica para ${businessType} — NO genérica>",
-      "detected": "<fecha específica · Fuente: nombre del medio o URL>",
-      "description": "<descripción con datos verificados y frescura indicada>",
-      "action": "<acción concreta accionable para PYME — con costo y tiempo estimado en MXN>"
-    }
-  ],
-  "mediumAlerts": [
-    {
-      "icon": "<emoji>",
-      "title": "<título específico>",
-      "source": "<nombre del medio o URL>",
-      "description": "<descripción con dato específico y frescura>"
-    }
-  ],
-
-  "changesCol1": [
-    {
-      "icon": "<emoji>",
-      "category": "<CAT · NIVEL>",
-      "date": "<día específico, ej: 19 may>",
-      "title": "<cambio real detectado — específico y concreto>",
-      "description": "<detalle con fuente · frescura indicada>",
-      "competitor": "<nombre del competidor o 'Mercado general'>"
-    }
-  ],
-  "changesCol2": [
-    {
-      "icon": "<emoji>",
-      "category": "<CAT · NIVEL>",
-      "date": "<día>",
-      "title": "<cambio concreto>",
-      "description": "<detalle con fuente · frescura>",
-      "competitor": "<nombre>"
-    }
-  ],
-
-  "priceTrends": [
-    { "name": "<competidor registrado>", "change": "<↑ subió +X% Esta semana · [fuente] | → Estable | ↓ bajó -X% | Sin datos públicos disponibles>" }
-  ],
-  "priceTrendAlert": "<resumen de UNA sola línea, máximo 18 palabras, con el dato de precio más relevante y su impacto — sin fuente ni fecha, directo al punto>",
-
-  "dominantMessages": [
-    { "competitor": "<NOMBRE EN MAYÚSCULAS>", "message": "<mensaje real de su web o redes, o estimado basado en posicionamiento visible>" },
-    { "competitor": "<NOMBRE>", "message": "<mensaje>" },
-    { "competitor": "<NOMBRE>", "message": "<mensaje>" }
-  ],
-
-  "newChannels": [
-    {
-      "icon": "<emoji representativo del canal>",
-      "channel": "<nombre del canal de venta o adquisición recomendado para ${businessType} en ${setup.industry || 'esta industria'}>",
-      "desc": "<para qué sirve este canal en una frase corta>",
-      "reason": "<argumento concreto de por qué conviene implementarlo ahora, basado en lo que estás viendo de la competencia o el mercado>"
-    }
-  ],
-  "rivalAdvantages": [
-    { "icon": "<emoji>", "text": "<ventaja visible y concreta del rival líder, con evidencia>", "bg": "#FCEBEB", "border": "#F7C1C1", "textColor": "#A32D2D" },
-    { "icon": "<emoji>", "text": "<segunda ventaja del rival líder>", "bg": "#FCEBEB", "border": "#F7C1C1", "textColor": "#A32D2D" },
-    { "icon": "✅", "text": "<la ventaja propia del cliente frente a ese rival>", "bg": "#EAF3DE", "border": "#C0DD97", "textColor": "#27500A" }
-  ],
-  "rivalLeaderName": "<nombre del competidor con mayor amenaza/posición #1 en el ranking>",
-
-  "opportunities": [
-    {
-      "icon": "<emoji>",
-      "type": "<tipo de oportunidad específica>",
-      "title": "<título concreto para ${businessType} PYME>",
-      "description": "<descripción con el dato que la sustenta y la fuente>",
-      "score": <0-100, qué tan accionable para PYME>,
-      "window": "<ventana de tiempo: '2 semanas', '30 días', 'Este trimestre'>"
-    }
-  ],
-
-  "rivalWeaknesses": [
-    { "competitor": "<NOMBRE — preferir competidores directos>", "weakness": "<debilidad específica con evidencia concreta>" }
-  ],
-
-  "highRisks": [
-    {
-      "icon": "<emoji>",
-      "title": "<riesgo real y concreto para PYME de ${businessType}>",
-      "probability": <0-100>,
-      "description": "<descripción con contexto real y dato específico>",
-      "mitigation": "<acción concreta con recursos limitados — costo y tiempo estimado en MXN>"
-    }
-  ],
-  "mediumRisks": [
-    { "icon": "<emoji>", "title": "<riesgo concreto>", "description": "<descripción con dato específico y fuente>" }
-  ],
-
-  "strengths": [
-    "<fortaleza 1 — basada en diferenciadores reales vs competidores detectados>",
-    "<fortaleza 2>",
-    "<fortaleza 3>",
-    "<fortaleza 4>",
-    "<fortaleza 5>"
-  ],
-  "improvements": [
-    "<área de mejora 1 — detectada comparando cliente vs competidores>",
-    "<área 2>",
-    "<área 3>",
-    "<área 4>",
-    "<área 5>"
-  ],
-
-  "benchmarkRows": [
-    { "factor": "Precio / Tarifas", "client": "<ALTO/MEDIO/BAJO o rango MXN>", "comp1": "<o N/A>", "comp2": "<o N/A>", "comp3": "<o N/A>", "comp4": "<o N/A>", "comp5": "<o N/A>", "position": "<1er lugar | 2do lugar | etc>" },
-    { "factor": "Servicios ofrecidos", "client": "<descripción breve>", "comp1": "<o N/A>", "comp2": "<o N/A>", "comp3": "<o N/A>", "comp4": "<o N/A>", "comp5": "<o N/A>", "position": "<posición>" },
-    { "factor": "Presencia digital", "client": "<ALTA/MEDIA/BAJA>", "comp1": "<o N/A>", "comp2": "<o N/A>", "comp3": "<o N/A>", "comp4": "<o N/A>", "comp5": "<o N/A>", "position": "<posición>" },
-    { "factor": "Redes sociales", "client": "<plataforma activa · frecuencia>", "comp1": "<o N/A>", "comp2": "<o N/A>", "comp3": "<o N/A>", "comp4": "<o N/A>", "comp5": "<o N/A>", "position": "<posición>" },
-    { "factor": "SEO / Posicionamiento Google", "client": "<Top 3 orgánico | Top 10 orgánico | Aparece en resultados | No aparece | Sin verificar>", "comp1": "<mismo formato o 'Sin verificar'>", "comp2": "<mismo formato o 'Sin verificar'>", "comp3": "<mismo formato o 'Sin verificar'>", "comp4": "<mismo formato o 'Sin verificar'>", "comp5": "<mismo formato o 'Sin verificar'>", "position": "<posición>" },
-    { "factor": "Casos de éxito / Portafolio", "client": "<SÍ visible|NO visible|PARCIAL>", "comp1": "<o N/A>", "comp2": "<o N/A>", "comp3": "<o N/A>", "comp4": "<o N/A>", "comp5": "<o N/A>", "position": "<posición>" },
-    { "factor": "Presencia de Mercado", "client": "<años estimados>", "comp1": "<o N/A>", "comp2": "<o N/A>", "comp3": "<o N/A>", "comp4": "<o N/A>", "comp5": "<o N/A>", "position": "<posición>" },
-    { "factor": "Especialización", "client": "<descripción breve>", "comp1": "<o N/A>", "comp2": "<o N/A>", "comp3": "<o N/A>", "comp4": "<o N/A>", "comp5": "<o N/A>", "position": "<posición>" },
-    { "factor": "Cobertura geográfica", "client": "<Local/Regional/Nacional>", "comp1": "<o N/A>", "comp2": "<o N/A>", "comp3": "<o N/A>", "comp4": "<o N/A>", "comp5": "<o N/A>", "position": "<posición>" }
-  ],
-
-  "secondaryCompetitors": [
-    {
-      "name": "<nombre del competidor adicional — del 6 al 10>",
-      "category": "<tipo de empresa o servicio>",
-      "threat": <1-10>,
-      "recentMove": "<movimiento reciente con frescura, o 'Sin datos públicos disponibles'>",
-      "sourceUrl": "<URL o 'Sin presencia digital detectada'>"
-    }
-  ],
-
-  "highPriorityRecs": [
-    {
-      "number": 1,
-      "title": "<CATEGORÍA EN MAYÚSCULAS — verbo + acción específica + resultado esperado>",
-      "owner": "<CEO|Marketing|Ventas|Operaciones|etc>",
-      "deadline": "<'Esta semana'|'En 7 días'|'En 15 días'>",
-      "description": "<máximo 3 pasos concretos y accionables para PYME>",
-      "impact": "<impacto con métrica real: '+20% en consultas', '-15% costo adquisición'>",
-      "difficulty": "<FÁCIL|MEDIO|DIFÍCIL>",
-      "timeRequired": "<CORTO (1-3 días)|MEDIO (1-2 semanas)|LARGO (1+ mes)>",
-      "costRequired": "<BAJO (menos $5,000 MXN)|MEDIO ($5,000-$20,000)|ALTO (más $20,000)>"
-    },
-    {
-      "number": 2,
-      "title": "<CATEGORÍA DIFERENTE A REC 1 — acción específica>",
-      "owner": "<responsable>",
-      "deadline": "<plazo>",
-      "description": "<pasos concretos>",
-      "impact": "<métrica>",
-      "difficulty": "<FÁCIL|MEDIO|DIFÍCIL>",
-      "timeRequired": "<CORTO|MEDIO|LARGO>",
-      "costRequired": "<BAJO|MEDIO|ALTO>"
-    }
-  ],
-  "mediumPriorityRecs": [
-    { "number": 3, "title": "<CATEGORÍA DIFERENTE A 1 Y 2 — acción>", "deadline": "<plazo>", "description": "<detalle accionable>", "impact": "<impacto esperado>" },
-    { "number": 4, "title": "<CATEGORÍA DIFERENTE A 1, 2 Y 3 — acción>", "deadline": "<plazo>", "description": "<detalle>", "impact": "<impacto>" }
-  ],
-  "lowPriorityRecs": [
-    { "number": 5, "title": "<CATEGORÍA DIFERENTE A LAS ANTERIORES — acción>", "description": "<detalle con contexto>" },
-    { "number": 6, "title": "<CATEGORÍA DIFERENTE A TODAS LAS ANTERIORES — acción>", "description": "<detalle con contexto>" }
-  ],
-
-  "criticalSignals": ["<señal crítica específica para ${businessType}>", "<señal 2>", "<señal 3>", "<señal 4>"],
-  "importantSignals": ["<señal 1>", "<señal 2>", "<señal 3>", "<señal 4>", "<señal 5>"],
-  "infoSignals": ["<señal 1>", "<señal 2>", "<señal 3>", "<señal 4>"]
-}`
-}
-
-
 // ─── Llamar a Claude con web search ──────────────────
-export async function callClaudeWithSearch(project: any, dateInfo: any): Promise<any> {
-  console.log('🤖 Iniciando análisis con Claude AI + web search...')
+// Modelo del reporte. claude-sonnet-4-5 se retira el 30 nov 2026 (docs/roadmap/reglas-busqueda-certera.md D.1).
+export const REPORT_MODEL = process.env.REPORT_MODEL || 'claude-opus-5-5'
+const MAX_PAUSE_CONTINUATIONS = 3
+const MAX_COVERAGE_CONTINUATIONS = 1
 
-  const competitors = project.setup?.directCompetitors?.filter((c: any) => c.name) || []
+export interface ReportResearch {
+  promptVersion: PromptVersion
+  window: ReportWindow
+  plan: SearchPlan
+  log: ResearchLog
+  coverage: Coverage
+}
 
-  // Mensajes iniciales con contexto de búsqueda
-  const searchQueries = competitors.slice(0, 5).map((c: any) =>
-    `Busca noticias y movimientos recientes de ${c.name} en México y LATAM: precios, campañas, lanzamientos, contrataciones, expansión. Semana del ${dateInfo.periodStart} al ${dateInfo.periodEnd}.`
-  )
+/** JSON del reporte: el texto posterior al último resultado de herramienta, del primer "{" al último "}". */
+function extractReportJson(content: any[]): any {
+  let lastTool = -1
+  content.forEach((b, i) => { if (b?.type === 'web_search_tool_result' || b?.type === 'web_fetch_tool_result' || b?.type === 'server_tool_use') lastTool = i })
+  const text = content.slice(lastTool + 1).filter(b => b?.type === 'text').map(b => b.text).join('')
+    .replace(/```json\s*/g, '').replace(/```\s*/g, '')
+  const start = text.indexOf('{')
+  const end = text.lastIndexOf('}')
+  if (start < 0 || end <= start) throw new Error('Claude no entregó un JSON en su respuesta final')
+  return stripCitationTags(JSON.parse(text.slice(start, end + 1)))
+}
 
-  if (project.setup?.industry) {
-    searchQueries.push(
-      `Tendencias y noticias recientes del sector ${project.setup.industry} en México y LATAM esta semana.`
-    )
+async function streamOnce(params: any): Promise<any> {
+  for (let attempt = 1; ; attempt++) {
+    try {
+      const stream = getAnthropic().messages.stream(params)
+      return await stream.finalMessage()
+    } catch (err: any) {
+      const retryable = err?.status === 529 || err?.status === 429 || /overloaded/i.test(String(err?.message))
+      if (!retryable || attempt >= 3) throw err
+      const retryAfter = Number(err?.headers?.get?.('retry-after')) || 0
+      const waitMs = Math.max(retryAfter * 1000, attempt * 15000)
+      console.log(`⏳ Claude ocupado (${err?.status}) — reintento ${attempt}/3 en ${waitMs / 1000}s`)
+      await new Promise(r => setTimeout(r, waitMs))
+    }
   }
+}
 
-  const prompt = buildPrompt(project, dateInfo)
+/**
+ * Investigación con Claude + web search/fetch. Devuelve el JSON del reporte y el registro de lo que realmente
+ * se buscó y leyó, que reportEnforcement usa para calcular el nivel de evidencia y que se guarda en el reporte.
+ */
+export async function researchWithClaude(project: any, dateInfo: any, now: Date = new Date()): Promise<{ aiData: any; research: ReportResearch }> {
+  const promptVersion = resolvePromptVersion()
+  const ctx = defaultResearchContext(project, now)
+  const prompt = buildCompetitivePrompt(project, dateInfo, promptVersion, ctx)
+  console.log(`🤖 Investigación con ${REPORT_MODEL} · prompt ${promptVersion} · plan de ${ctx.plan.queries.length} búsquedas`)
   const businessType = inferBusinessType(project.setup || {})
   const systemPrompt = `Eres el analista senior de inteligencia competitiva de Reports PRO, especializado en PYMES de México y LATAM.
 
@@ -642,99 +205,71 @@ IDENTIDAD DEL ANÁLISIS:
 - SOLO analiza: competidores del mismo giro (${businessType}) y tamaño PYME
 - Idioma: español de México — nunca inglés, nunca español neutro
 
-PROCESO DE PENSAMIENTO OBLIGATORIO — ejecutar en orden:
-1. INVESTIGA → busca cada competidor y el mercado (mínimo 10 búsquedas web)
-2. VERIFICA → confirma cada dato con su fuente y fecha
+PROCESO OBLIGATORIO — en orden:
+1. INVESTIGA → ejecuta el plan de búsquedas completo del mensaje (y las lecturas indicadas)
+2. VERIFICA → cada dato que puntúa termina en una página concreta de esta investigación, con fecha y cita
 3. ANALIZA → identifica patrones, movimientos y gaps
 4. SINTETIZA → determina las 3 cosas más importantes para el cliente esta semana
-5. ESTRUCTURA → organiza el JSON de salida
+5. ESTRUCTURA → entrega el JSON de salida como último bloque de texto
 
 REGLA DE ORO: Cada dato debe poder ser verificado por el cliente. Si no puedes verificarlo, márcalo explícitamente como "Estimado" o "Sin datos públicos disponibles". NUNCA inventes datos.`
 
-  // Llamada a Claude con streaming — necesario para respuestas largas con web search
-  const MAX_RETRIES = 3
-  let jsonText = ''
+  const setup = project.setup || {}
+  const tools: any[] = [
+    {
+      type: 'web_search_20260209', name: 'web_search', max_uses: 28, allowed_callers: ['direct'],
+      user_location: { type: 'approximate', city: setup.city || 'Ciudad de México', country: 'MX', timezone: 'America/Mexico_City' },
+    },
+    { type: 'web_fetch_20260209', name: 'web_fetch', max_uses: 10, allowed_callers: ['direct'], citations: { enabled: true }, max_content_tokens: 20000 },
+  ]
+  const messages: any[] = [{ role: 'user', content: prompt }]
+  const log = emptyResearchLog()
+  let pauses = 0, coverageRetries = 0, formatRetries = 0
+  let aiData: any = null
+  let coverage: Coverage = checkCoverage(ctx.plan, log)
 
-  for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
-    try {
-      jsonText = ''
-      console.log(`🔄 Intento ${attempt}/${MAX_RETRIES} — iniciando stream...`)
+  for (;;) {
+    const final = await streamOnce({
+      model: REPORT_MODEL, max_tokens: 64000, system: systemPrompt, tools,
+      output_config: { effort: 'high' }, messages,
+    })
+    appendToResearchLog(log, final.content, final.usage)
+    console.log(`✅ ${final.stop_reason} · búsquedas ${log.queries.length} · lecturas ${log.fetches.length} · tokens ${final.usage?.output_tokens}`)
 
-      const stream = await getAnthropic().messages.stream({
-        model: 'claude-sonnet-4-5',
-        system: systemPrompt,
-        max_tokens: 32000,
-        tools: [
-          {
-            type: 'web_search_20250305' as any,
-            name: 'web_search',
-          },
-        ],
-        messages: [
-          { role: 'user', content: prompt },
-          { role: 'assistant', content: '{' },
-        ],
-      })
-
-      // Recolectar texto del stream + eventos de búsqueda para diagnóstico
-      const searchLog: Array<{ type: 'query' | 'result'; data: unknown }> = []
-      for await (const event of stream) {
-        if (event.type === 'content_block_delta' && event.delta?.type === 'text_delta') {
-          jsonText += event.delta.text
-        }
-        if (event.type === 'content_block_start') {
-          const block = event.content_block as any
-          if (block?.type === 'server_tool_use' && block?.name === 'web_search') {
-            searchLog.push({ type: 'query', data: block.input })
-          }
-          if (block?.type === 'web_search_tool_result') {
-            searchLog.push({ type: 'result', data: block.content })
-          }
-        }
-      }
-
-      const finalMessage = await stream.finalMessage()
-      console.log(`✅ Claude respondió — stop_reason: ${finalMessage.stop_reason} — chars: ${jsonText.length}`)
-      console.log(`🔍 ${searchLog.length} eventos de búsqueda registrados:`, JSON.stringify(searchLog).slice(0, 5000))
-
-      if (finalMessage.stop_reason === 'max_tokens' && attempt < MAX_RETRIES) {
-        console.error(`⚠️ Respuesta truncada por max_tokens en intento ${attempt}/${MAX_RETRIES} — reintentando`)
-        continue
-      }
-
-      break
-
-    } catch (err: any) {
-      const is529 = err?.status === 529 || err?.message?.includes('529') || err?.message?.includes('overloaded')
-      if (is529 && attempt < MAX_RETRIES) {
-        const waitMs = attempt * 15000
-        console.log(`⏳ Claude sobrecargado (529) — reintento ${attempt}/${MAX_RETRIES} en ${waitMs/1000}s...`)
-        await new Promise(resolve => setTimeout(resolve, waitMs))
-        continue
-      }
-      throw err
+    if (final.stop_reason === 'refusal') {
+      throw new Error(`Claude rechazó la solicitud (${final.stop_details?.category ?? 'sin categoría'}): ${final.stop_details?.explanation ?? ''}`)
     }
+    // Continuaciones: se reenvía el contenido del asistente tal cual (historial solo crece).
+    messages.push({ role: 'assistant', content: final.content })
+    if (final.stop_reason === 'pause_turn') {
+      if (++pauses > MAX_PAUSE_CONTINUATIONS) throw new Error('La investigación excedió el límite de pausas')
+      continue
+    }
+    try {
+      aiData = extractReportJson(final.content)
+    } catch (e) {
+      if (++formatRetries > 1) throw new Error(`Claude devolvió JSON inválido: ${e}`)
+      messages.push({ role: 'user', content: final.stop_reason === 'max_tokens'
+        ? 'Tu respuesta se cortó. Entrega de nuevo SOLO el JSON completo del reporte, más compacto (descripciones de una o dos oraciones).'
+        : 'No encontré un JSON válido en tu respuesta. Entrega SOLO el JSON completo del reporte, sin texto antes ni después.' })
+      continue
+    }
+    coverage = checkCoverage(ctx.plan, log)
+    if (promptVersion === 'v3' && coverage.missing.length && coverageRetries < MAX_COVERAGE_CONTINUATIONS) {
+      coverageRetries++
+      console.log(`🔎 Cobertura ${coverage.executed}/${coverage.planned}: se piden ${coverage.missing.length} consultas faltantes`)
+      messages.push({ role: 'user', content: `Faltaron ${coverage.missing.length} consultas del plan de FASE 1:\n${coverage.missing.map(m => `- ${m.query}`).join('\n')}\nEjecútalas tal cual, incorpora lo que encuentres y entrega de nuevo el JSON completo actualizado, con el mismo formato.` })
+      continue
+    }
+    break
   }
+  console.log(`🔍 Cobertura del plan: ${coverage.executed}/${coverage.planned} · web_search ${log.usage.web_search_requests} · web_fetch ${log.usage.web_fetch_requests}`)
+  return { aiData, research: { promptVersion, window: ctx.window, plan: ctx.plan, log, coverage } }
+}
 
-  if (!jsonText) {
-    throw new Error('Claude no devolvió texto en el stream')
-  }
-
-  // Limpiar posible markdown residual
-  jsonText = jsonText
-    .replace(/```json\s*/g, '')
-    .replace(/```\s*/g, '')
-    .trim()
-  if (!jsonText.startsWith('{')) jsonText = '{' + jsonText
-
-  try {
-    const parsed = stripCitationTags(JSON.parse(jsonText))
-    console.log('✅ JSON de Claude parseado correctamente')
-    return parsed
-  } catch (e) {
-    console.error('❌ Error parseando JSON de Claude:', jsonText.slice(0, 500))
-    throw new Error(`Claude devolvió JSON inválido: ${e}`)
-  }
+/** Compatibilidad: solo el JSON del reporte (scripts antiguos). */
+export async function callClaudeWithSearch(project: any, dateInfo: any): Promise<any> {
+  return (await researchWithClaude(project, dateInfo)).aiData
 }
 
 // ─── Colores por índice de competidor ────────────────
@@ -759,26 +294,51 @@ const ACTION_COLORS: Record<string, { color: string; borderColor: string }> = {
 }
 
 // ─── Construir ReportData desde respuesta de Claude ──
-export function buildReportData(project: any, aiData: any, dateInfo: any, editionNumber: number, teaser: boolean): ReportData {
+export function buildReportData(project: any, rawAiData: any, dateInfo: any, editionNumber: number, teaser: boolean, previous?: PreviousMetrics | null, research?: ReportResearch | null): ReportData {
   const now = new Date()
   const nextReport = getNextReportDate(project.frequency, now)
   const companyName = project.companyName || project.name || 'Tu Empresa'
   const industry = project.setup?.industry || 'Tu industria'
-  const projectCompetitors = project.setup?.directCompetitors?.filter((c: any) => c.name) || []
+  const projectCompetitors = registeredDirectCompetitors(project.setup)
 
-  const pressure = aiData.competitivePressure ?? 65
-  const opportunity = aiData.opportunityScore ?? 70
+  // Reglas de evaluación aplicadas por el sistema (sumas de rúbrica, coherencia de alertas, riesgos externos,
+  // tamaños de lista) antes de calcular nada. Ver reportEnforcement.ts.
+  const { aiData, audit } = enforceRubrics(rawAiData, projectCompetitors.map((c: any) => c.name), {
+    companyName,
+    research: research ? { log: research.log, window: research.window, client: { name: companyName, website: project.setup?.website } } : undefined,
+  })
+
+  // Métricas calculadas a partir de la evidencia (ver reportScoring.ts), con las mismas listas que se muestran.
+  const scoringInput = {
+    competitors: aiData.competitors,
+    threatPool: [...(aiData.competitors || []), ...(aiData.secondaryCompetitors || [])],
+    changes: [...(aiData.changesCol1 || []).slice(0, 6), ...(aiData.changesCol2 || []).slice(0, 6)],
+    criticalAlerts: (aiData.criticalAlerts || []).slice(0, 3),
+    mediumAlerts: (aiData.mediumAlerts || []).slice(0, 4),
+    opportunities: (aiData.opportunities || []).slice(0, 4),
+    rivalWeaknesses: aiData.rivalWeaknesses,
+    highRisks: (aiData.highRisks || []).slice(0, 3),
+    mediumRisks: aiData.mediumRisks,
+    priceTrends: aiData.priceTrends,
+  }
+  const counts = computeCounts(scoringInput)
+  const scores = computeScores(scoringInput)
+  const deltas = computeDeltas({ signalsCount: counts.signalsCount, competitivePressure: scores.competitivePressure }, previous)
+
+  const pressure = scores.competitivePressure
+  const opportunity = scores.opportunityScore
   const gauge = calcGauge(pressure)
   const opportunityDash = Math.round((opportunity / 100) * 289)
 
   // Enriquecer competidores con colores
+  // Si Claude no devolvió competidores se listan los registrados, sin amenaza (no hay evidencia para medirla).
   const competitors = (aiData.competitors || projectCompetitors.slice(0, 4).map((c: any) => ({
     name: c.name,
     scope: 'Nacional',
-    threat: 5,
-    growth: '→ Estable',
+    threat: 0,
+    growth: '→ Sin cambios verificables',
     recentMove: 'Sin datos suficientes esta semana',
-    riskLabel: 'MEDIO',
+    riskLabel: 'BAJO',
   }))).map((c: any, i: number) => {
     const palette = COMPETITOR_COLORS[i % COMPETITOR_COLORS.length]
     const initials = c.name.slice(0, 2).toUpperCase()
@@ -837,7 +397,15 @@ export function buildReportData(project: any, aiData: any, dateInfo: any, editio
   }))
 
   // Alertas críticas con defaults de color
+  // Sección "acción inmediata": alertas CRÍTICAS primero y luego las ALTAS (umbral de urgencia).
   const criticalAlerts = (aiData.criticalAlerts || []).slice(0, 3)
+    .map((a: any) => {
+      const level = alertLevelOf(a)
+      return level === 'CRÍTICA'
+        ? { ...a, level, levelLabel: 'Crítico', levelLabelUpper: 'CRÍTICO', levelTone: 'bad', levelColor: '#E24B4A', levelBorder: '#F7C1C1' }
+        : { ...a, level, levelLabel: 'Alto', levelLabelUpper: 'ALTO', levelTone: 'warn', levelColor: '#D9822B', levelBorder: '#F5D3A8' }
+    })
+    .sort((x: any, y: any) => (x.level === y.level ? 0 : x.level === 'CRÍTICA' ? -1 : 1))
   const mediumAlerts = (aiData.mediumAlerts || []).slice(0, 4)
 
   // Oportunidades con colores
@@ -853,12 +421,17 @@ export function buildReportData(project: any, aiData: any, dateInfo: any, editio
   }))
 
   // Riesgos altos con dash calculado
-  const highRisks = (aiData.highRisks || []).slice(0, 3).map((r: any) => ({
-    ...r,
-    impactDash: Math.round((r.probability / 100) * 150),
-    impactGap: Math.round(150 - (r.probability / 100) * 150),
-    impact: Math.round(r.probability / 10),
-  }))
+  const highRisks = (aiData.highRisks || []).slice(0, 3).map((r: any) => {
+    // Impacto evaluado por Claude con la rúbrica (1-10); antes era la probabilidad entre 10.
+    const impact = Number.isFinite(Number(r.impact)) && Number(r.impact) > 0 ? Math.min(10, Math.round(Number(r.impact))) : null
+    const frac = impact !== null ? impact / 10 : 0
+    return {
+      ...r,
+      impactDash: Math.round(frac * 150),
+      impactGap: Math.round(150 - frac * 150),
+      impact: impact ?? '—',
+    }
+  })
 
   // Cambios enriquecidos con colores
   const changeColors: Record<string, any> = {
@@ -902,18 +475,18 @@ export function buildReportData(project: any, aiData: any, dateInfo: any, editio
   // Gauge metrics estándar (basados en scores de AI)
   const gaugeMetrics = [
     { label: 'PRESIÓN COMPETITIVA', value: pressure, status: pressure > 75 ? 'MUY ALTO' : pressure > 50 ? 'MODERADO' : 'BAJO', color: '#534AB7', bg: '#F8F7FF', border: '#CECBF6', labelColor: '#534AB7', trackColor: '#CECBF6', textColor: '#26215C', dash: Math.round((pressure / 100) * 226), gap: Math.round(226 - (pressure / 100) * 226) },
-    { label: 'ACTIVIDAD CAMPAÑAS', value: Math.round(opportunity * 0.85), status: 'MODERADO', color: '#BA7517', bg: '#FAEEDA', border: '#FAC775', labelColor: '#854F0B', trackColor: '#FAC775', textColor: '#633806', dash: Math.round((opportunity * 0.85 / 100) * 226), gap: Math.round(226 - (opportunity * 0.85 / 100) * 226) },
-    { label: 'OPORTUNIDAD DE MERCADO', value: opportunity, status: opportunity > 70 ? 'ALTO' : 'MODERADO', color: '#1D9E75', bg: '#EAF3DE', border: '#C0DD97', labelColor: '#3B6D11', trackColor: '#C0DD97', textColor: '#085041', dash: Math.round((opportunity / 100) * 226), gap: Math.round(226 - (opportunity / 100) * 226) },
-    { label: 'NIVEL DE RIESGO', value: aiData.marketRisk ?? 40, status: (aiData.marketRisk ?? 40) > 60 ? 'ALTO' : 'MEDIO', color: '#E24B4A', bg: '#FCEBEB', border: '#F7C1C1', labelColor: '#A32D2D', trackColor: '#F7C1C1', textColor: '#501313', dash: Math.round(((aiData.marketRisk ?? 40) / 100) * 226), gap: Math.round(226 - ((aiData.marketRisk ?? 40) / 100) * 226) },
+    { label: 'ACTIVIDAD CAMPAÑAS', value: scores.campaignActivity, status: scores.campaignActivity > 75 ? 'MUY ALTO' : scores.campaignActivity > 50 ? 'MODERADO' : 'BAJO', color: '#BA7517', bg: '#FAEEDA', border: '#FAC775', labelColor: '#854F0B', trackColor: '#FAC775', textColor: '#633806', dash: Math.round((scores.campaignActivity / 100) * 226), gap: Math.round(226 - (scores.campaignActivity / 100) * 226) },
+    { label: 'OPORTUNIDAD DE MERCADO', value: opportunity, status: opportunity > 70 ? 'ALTO' : opportunity > 40 ? 'MODERADO' : 'BAJO', color: '#1D9E75', bg: '#EAF3DE', border: '#C0DD97', labelColor: '#3B6D11', trackColor: '#C0DD97', textColor: '#085041', dash: Math.round((opportunity / 100) * 226), gap: Math.round(226 - (opportunity / 100) * 226) },
+    { label: 'NIVEL DE RIESGO', value: scores.marketRisk, status: scores.riskLevel, color: '#E24B4A', bg: '#FCEBEB', border: '#F7C1C1', labelColor: '#A32D2D', trackColor: '#F7C1C1', textColor: '#501313', dash: Math.round((scores.marketRisk / 100) * 226), gap: Math.round(226 - (scores.marketRisk / 100) * 226) },
   ]
 
   // Sector metrics derivados
   const sectorMetrics = [
-    { label: 'SEÑALES DETECTADAS', value: aiData.signalsCount || 'Sin datos', sub: 'esta semana', color: '#534AB7' },
-    { label: 'MOVIMIENTOS', value: aiData.movementsCount != null ? String(aiData.movementsCount) : 'Sin datos', sub: `en ${competitors.length} competidores`, color: '#E24B4A' },
-    { label: 'ALERTAS CRÍTICAS', value: String(criticalAlerts.length), sub: 'requieren acción', color: '#BA7517' },
+    { label: 'SEÑALES DETECTADAS', value: String(counts.signalsCount), sub: 'esta semana', color: '#534AB7' },
+    { label: 'MOVIMIENTOS', value: String(counts.movementsCount), sub: `en ${competitors.length} competidores`, color: '#E24B4A' },
+    { label: 'ALERTAS CRÍTICAS Y ALTAS', value: String(criticalAlerts.length), sub: 'requieren acción', color: '#BA7517' },
     { label: 'OPORTUNIDADES', value: String(opportunities.length), sub: 'identificadas', color: '#1D9E75' },
-    { label: 'NIVEL DE RIESGO', value: aiData.riskLevel || 'MEDIO', sub: 'mercado actual', color: '#8B7BFF' },
+    { label: 'NIVEL DE RIESGO', value: scores.riskLevel, sub: 'mercado actual', color: '#8B7BFF' },
   ]
 
   // Target segments
@@ -1044,25 +617,33 @@ export function buildReportData(project: any, aiData: any, dateInfo: any, editio
     nextEdition: editionNumber + 1,
     deliveryChannel: project.deliveryChannel === 'BOTH' ? 'Email + WhatsApp' : project.deliveryChannel === 'WHATSAPP' ? 'WhatsApp' : 'Email',
     frequency: getFrequencyLabel(project.frequency),
-    activeAreas: (project.setup?.focusAreas || []).length || 6,
-    competitorsCount: competitors.length || 3,
+    activeAreas: (project.setup?.focusAreas || []).length,
+    competitorsCount: competitors.length,
 
-    // Scores
+    // Scores (calculados en reportScoring.ts)
     competitivePressure: pressure,
-    clientScore: aiData.clientScore || {
-      overall: 60,
-      price: 60, digital: 50, differentiation: 65, speed: 55,
-      vsCompetitors: 'En el promedio',
-      strongAreas: ['Especialización en el sector'],
-      weakAreas: ['Presencia digital a fortalecer'],
-      weeklyChange: 'Primera medición',
-      summary: 'Posición competitiva en evaluación inicial — datos disponibles en próximos reportes.'
-    },
+    clientScore: aiData.clientScore || null,
     opportunityScore: opportunity,
-    marketRisk: aiData.marketRisk ?? 40,
-    riskLevel: aiData.riskLevel || 'MEDIO',
-    generalTrend: aiData.generalTrend || 'TENDENCIA ESTABLE',
-    trendDelta: aiData.trendDelta || '+0',
+    marketRisk: scores.marketRisk,
+    riskLevel: scores.riskLevel,
+    generalTrend: aiData.generalTrend || 'Sin tendencia identificada',
+    trendDelta: deltas.trendDeltaText,
+    trendDeltaText: deltas.trendDeltaText,
+    signalsDeltaText: deltas.signalsDeltaText,
+    signalsDeltaShort: deltas.signalsDeltaShort,
+    metrics: {
+      scoringVersion: SCORING_VERSION,
+      ...counts,
+      competitivePressure: scores.competitivePressure,
+      opportunityScore: scores.opportunityScore,
+      marketRisk: scores.marketRisk,
+      riskLevel: scores.riskLevel,
+      campaignActivity: scores.campaignActivity,
+      components: scores.components,
+      enforcement: auditSummary(audit),
+      evidenceQuality: audit.evidenceQuality,
+      ...(research ? { search: researchSummary(research.plan, research.log, research.coverage), model: REPORT_MODEL, promptVersion: research.promptVersion } : {}),
+    },
     pressureDash: gauge.pressureDash,
     opportunityDash,
     gaugePath: gauge.gaugePath,
@@ -1070,14 +651,14 @@ export function buildReportData(project: any, aiData: any, dateInfo: any, editio
     needleY: gauge.needleY,
 
     // KPIs
-    signalsCount: aiData.signalsCount || 'Sin datos',
-    signalsDelta: aiData.signalsDelta ?? 10,
-    movementsCount: aiData.movementsCount ?? 'Sin datos',
-    criticalMovements: aiData.criticalMovements ?? 'Sin datos',
-    minorMovements: aiData.minorMovements ?? 7,
-    alertsCount: criticalAlerts.length,
+    signalsCount: counts.signalsCount,
+    signalsDelta: deltas.signalsDeltaShort,
+    movementsCount: counts.movementsCount,
+    criticalMovements: counts.criticalMovements,
+    minorMovements: counts.minorMovements,
+    alertsCount: counts.alertsCount,
     activeCompetitors: competitors.length,
-    totalChanges: aiData.totalChanges ?? 'Sin datos',
+    totalChanges: counts.totalChanges,
 
     // Página 1
     insights,
@@ -1104,7 +685,8 @@ export function buildReportData(project: any, aiData: any, dateInfo: any, editio
     emergingDesc: aiData.emergingDesc || 'Crecimiento sostenido en métricas digitales.',
 
     // Página 4
-    criticalAlertsCount: criticalAlerts.length,
+    criticalAlertsCount: counts.criticalAlertsCount,
+    highAlertsCount: counts.highAlertsCount,
     mediumAlertsCount: mediumAlerts.length,
     criticalAlerts,
     mediumAlerts,
@@ -1158,9 +740,14 @@ export function buildReportData(project: any, aiData: any, dateInfo: any, editio
         'MEDIO': { color: '#F2C063', label: 'Inversión media' },
         'ALTO': { color: '#E24B4A', label: 'Alta inversión' },
       }
-      const diff = diffMap[rec.difficulty || 'MEDIO'] || diffMap['MEDIO']
-      const time = timeMap[rec.timeRequired || 'MEDIO'] || timeMap['MEDIO']
-      const cost = costMap[rec.costRequired || 'BAJO'] || costMap['BAJO']
+      // El prompt v2 pide "FÁCIL", "DIFÍCIL" o "BAJO (menos $5,000 MXN)": se normaliza a la primera palabra sin acentos.
+      const key = (v: unknown, fallback: string) => {
+        const k = typeof v === 'string' ? v.normalize('NFD').replace(/[̀-ͯ]/g, '').trim().split(/[\s(]/)[0].toUpperCase() : ''
+        return k || fallback
+      }
+      const diff = diffMap[key(rec.difficulty, 'MEDIO')] || diffMap['MEDIO']
+      const time = timeMap[key(rec.timeRequired, 'MEDIO')] || timeMap['MEDIO']
+      const cost = costMap[key(rec.costRequired, 'BAJO')] || costMap['BAJO']
       return {
         ...rec,
         difficultyColor: diff.color, difficultyLabel: diff.label,
@@ -1338,33 +925,19 @@ export async function generateReport(project: any, outputPath: string, options?:
   }
 
   // 1. Llamar a Claude con web search
-  let aiData: any
-  try {
-    aiData = await callClaudeWithSearch(project, dateInfo)
-  } catch (err) {
-    console.error('⚠️ Claude AI falló, usando datos de fallback:', err)
-    // Fallback mínimo si Claude falla — no bloquea el PDF
-    aiData = {
-      competitivePressure: 60,
-      opportunityScore: 65,
-      marketRisk: 35,
-      riskLevel: 'MEDIO',
-      generalTrend: 'TENDENCIA ESTABLE',
-      trendDelta: '+0',
-      insights: [{ category: 'ANÁLISIS · INFO', text: 'Análisis en procesamiento. Próximo reporte con datos completos.' }],
-      actions: [{ priority: 'MED', text: 'Mantener monitoreo activo de competidores esta semana.' }],
-      earlyWarning: 'Sistema de monitoreo activo.',
-      marketStatus: 'Datos en procesamiento',
-      marketStatusDesc: 'El sistema de IA está procesando la información. Los datos estarán disponibles en el próximo reporte.',
-      mainAlertTitle: 'Análisis en curso',
-      mainAlertDesc: 'El motor de inteligencia está recopilando datos de mercado.',
-      mainAlertLevel: 'BAJO',
-    }
-  }
+  // Si Claude falla se lanza el error: el job se reintenta y, si sigue fallando, el reporte queda FAILED
+  // y se avisa al usuario. Antes se emitía un PDF con números fijos que parecían reales.
+  const { aiData, research } = await researchWithClaude(project, dateInfo, now)
 
   // 2. Construir datos completos del reporte
   const editionNumber = await prisma.report.count({ where: { projectId: project.id, status: 'COMPLETED' as any } }) + 1
-  const data = buildReportData(project, aiData, dateInfo, editionNumber, options?.teaser === true)
+  // Métricas del reporte anterior del proyecto, base del "vs anterior"
+  const previousReport = await prisma.report.findFirst({
+    where: { projectId: project.id, status: 'COMPLETED' as any, metricsJson: { not: Prisma.DbNull } },
+    orderBy: { createdAt: 'desc' },
+    select: { metricsJson: true },
+  })
+  const data = buildReportData(project, aiData, dateInfo, editionNumber, options?.teaser === true, previousReport?.metricsJson as PreviousMetrics | null, research)
 
   // 3. Cargar y renderizar template (REPORT_TEMPLATE: v1 | editorial | panel; por defecto v1)
   const templateKind = resolveReportTemplate(process.env.REPORT_TEMPLATE)
@@ -1417,6 +990,7 @@ export async function generateReport(project: any, outputPath: string, options?:
       earlyWarning: data.earlyWarning,
       // Alertas
       criticalAlertsCount: data.criticalAlertsCount,
+      highAlertsCount: data.highAlertsCount,
       mediumAlertsCount: data.mediumAlertsCount,
       criticalAlerts: data.criticalAlerts?.slice(0, 3),
       mediumAlerts: data.mediumAlerts?.slice(0, 3),
@@ -1443,6 +1017,8 @@ export async function generateReport(project: any, outputPath: string, options?:
         where: { id: project.reportId },
         data: {
           sectionsJson,
+          metricsJson: data.metrics as any,
+          evidenceJson: buildEvidenceJson(research) as any,
           reportTitle: `Inteligencia Competitiva · Reporte #${data.edition} · ${data.year}`,
           pdfSizeBytes: Buffer.from(pdfBuffer).length,
           status: 'COMPLETED' as any,
@@ -1455,4 +1031,22 @@ export async function generateReport(project: any, outputPath: string, options?:
   }
 
   return outputPath
+}
+/** Registro de investigación persistido en Report.evidenceJson (sección E.1 de reglas-busqueda-certera.md). */
+export function buildEvidenceJson(research: ReportResearch) {
+  return {
+    generatedAt: research.window.t0,
+    model: REPORT_MODEL,
+    promptVersion: research.promptVersion,
+    window: { today: research.window.today, reportStart: research.window.reportStart, e3Start: research.window.e3Start, e2Start: research.window.e2Start },
+    search: {
+      planVersion: research.plan.version,
+      plan: research.plan.queries.map(q => ({ id: q.id, block: q.block, query: q.query })),
+      queries: research.log.queries,
+      fetches: research.log.fetches,
+      citations: research.log.citations.slice(0, 300),
+      coverage: { planned: research.coverage.planned, executed: research.coverage.executed, missing: research.coverage.missing.map(m => m.query) },
+      usage: research.log.usage,
+    },
+  }
 }
