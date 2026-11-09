@@ -22,7 +22,9 @@ export async function scheduleReports() {
       where: {
         OR: [
           { trialEndsAt: { gt: now }, status: 'TRIAL' },
-          { subscription: { stripeSubscriptionId: { not: null }, status: { in: ['ACTIVE', 'TRIALING'] } } }
+          // Una suscripción con cancelledAt no genera reportes aunque su status no se haya actualizado
+          // (caso real: 4 registros cancelados el 9 sep seguían en ACTIVE y recibían reportes semanales).
+          { subscription: { stripeSubscriptionId: { not: null }, status: { in: ['ACTIVE', 'TRIALING'] }, cancelledAt: null } }
         ]
       },
       include: {
