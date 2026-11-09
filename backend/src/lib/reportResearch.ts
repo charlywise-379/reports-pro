@@ -94,19 +94,58 @@ export function buildSearchPlan(project: any, window: ReportWindow): SearchPlan 
 // ─── Registro de investigación ──────────────────────────────────────────────────────
 export interface ResearchQuery { id: string; query: string; results: Array<{ url: string; title: string; page_age: string | null }>; error: string | null }
 export interface ResearchFetch { id: string; url: string; retrieved_at: string | null; ok: boolean; error: string | null }
+export interface ResearchCall {
+  phase: string
+  model: string
+  input: number       // tokens a precio completo
+  cacheRead: number
+  cacheWrite: number
+  output: number
+  webSearch: number
+  webFetch: number
+}
 export interface ResearchLog {
   queries: ResearchQuery[]
   fetches: ResearchFetch[]
   citations: Array<{ url: string; cited_text: string }>
   usage: { web_search_requests: number; web_fetch_requests: number; input_tokens: number; output_tokens: number }
+  calls: ResearchCall[]
 }
 
 export function emptyResearchLog(): ResearchLog {
-  return { queries: [], fetches: [], citations: [], usage: { web_search_requests: 0, web_fetch_requests: 0, input_tokens: 0, output_tokens: 0 } }
+  return { queries: [], fetches: [], citations: [], usage: { web_search_requests: 0, web_fetch_requests: 0, input_tokens: 0, output_tokens: 0 }, calls: [] }
+}
+
+// Precios por millón de tokens (USD, Claude API, noviembre 2026). Escritura de caché de 5 min = 1.25 × entrada.
+// Haiku 5.5 tiene dos tarifas según el largo del prompt (≤ 100K / > 100K); el uso agregado de una solicitud con
+// herramientas de servidor no dice el largo de cada vuelta, así que se usa la tarifa alta: cota superior.
+const PRICES: Record<string, { input: number; output: number; cacheRead: number; inputLong?: number; outputLong?: number }> = {
+  'claude-opus-5-5': { input: 4, output: 20, cacheRead: 0.2 },
+  'claude-sonnet-5-5': { input: 2, output: 10, cacheRead: 0.2 },
+  'claude-haiku-5-5': { input: 0.1, output: 0.5, cacheRead: 0.01, inputLong: 0.5, outputLong: 2.5 },
+}
+const WEB_SEARCH_USD = 0.01
+
+/** Costo estimado en USD de las llamadas registradas (tokens + búsquedas; las lecturas no tienen cargo extra). */
+export function estimateCostUsd(calls: ResearchCall[]): { total: number; byPhase: Record<string, number> } {
+  const byPhase: Record<string, number> = {}
+  for (const c of calls) {
+    const p = PRICES[c.model]
+    if (!p) continue
+    const long = p.inputLong !== undefined && c.input + c.cacheRead + c.cacheWrite > 100_000
+    const inRate = long ? p.inputLong! : p.input
+    const outRate = long ? p.outputLong! : p.output
+    const readRate = long ? p.inputLong! * 0.1 : p.cacheRead
+    const usd = (c.input * inRate + c.cacheWrite * inRate * 1.25 + c.cacheRead * readRate + c.output * outRate) / 1e6 + c.webSearch * WEB_SEARCH_USD
+    byPhase[c.phase] = (byPhase[c.phase] || 0) + usd
+  }
+  const total = Object.values(byPhase).reduce((s, v) => s + v, 0)
+  for (const k of Object.keys(byPhase)) byPhase[k] = Math.round(byPhase[k] * 1000) / 1000
+  return { total: Math.round(total * 1000) / 1000, byPhase }
 }
 
 /** Agrega al registro los bloques de una respuesta (se llama por cada respuesta: pausas y continuaciones incluidas). */
-export function appendToResearchLog(log: ResearchLog, content: any[], usage?: any): ResearchLog {
+export function appendToResearchLog(log: ResearchLog, content: any[], usage?: any, meta?: { phase: string; model: string }): ResearchLog {
   const inputs = new Map<string, { name: string; input: any }>()
   for (const b of content || []) {
     if (b?.type === 'server_tool_use') inputs.set(b.id, { name: b.name, input: b.input || {} })
@@ -140,7 +179,57 @@ export function appendToResearchLog(log: ResearchLog, content: any[], usage?: an
   log.usage.web_fetch_requests += Number(stu.web_fetch_requests || 0)
   log.usage.input_tokens += Number(usage?.input_tokens || 0) + Number(usage?.cache_read_input_tokens || 0) + Number(usage?.cache_creation_input_tokens || 0)
   log.usage.output_tokens += Number(usage?.output_tokens || 0)
+  if (meta && usage) {
+    log.calls.push({
+      phase: meta.phase, model: meta.model,
+      input: Number(usage.input_tokens || 0), cacheRead: Number(usage.cache_read_input_tokens || 0),
+      cacheWrite: Number(usage.cache_creation_input_tokens || 0), output: Number(usage.output_tokens || 0),
+      webSearch: Number(stu.web_search_requests || 0), webFetch: Number(stu.web_fetch_requests || 0),
+    })
+  }
   return log
+}
+
+// ─── Expediente para la fase de síntesis ────────────────────────────────────────────
+/**
+ * Lo que el modelo de síntesis puede usar: el registro real de búsquedas y lecturas (armado por código, no por la
+ * IA) + los hallazgos y la presencia del cliente que extrajo el modelo de investigación. Las URLs de los hallazgos
+ * que no aparecen en el registro se marcan para que no se usen como evidencia.
+ */
+export function buildDossier(log: ResearchLog, research: any): string {
+  const known = buildUrlIndex(log)
+  const lines: string[] = []
+  lines.push('A) REGISTRO DE BÚSQUEDAS (consulta → resultados: URL · título · antigüedad)')
+  for (const q of log.queries) {
+    lines.push(`• "${q.query}"${q.error ? ` — ERROR ${q.error}` : q.results.length ? '' : ' — sin resultados'}`)
+    for (const r of q.results.slice(0, 10)) lines.push(`    - ${r.url} · ${r.title}${r.page_age ? ` · ${r.page_age}` : ''}`)
+  }
+  lines.push('', 'B) PÁGINAS LEÍDAS (web_fetch)')
+  for (const f of log.fetches) lines.push(`• ${f.url} · ${f.ok ? `leída ${f.retrieved_at || ''}` : `no se pudo leer (${f.error})`}`)
+  if (log.citations.length) {
+    lines.push('', 'C) CITAS TEXTUALES DE LAS PÁGINAS')
+    const seen = new Set<string>()
+    for (const c of log.citations) {
+      const k = `${c.url}|${c.cited_text}`
+      if (seen.has(k)) continue
+      seen.add(k)
+      lines.push(`• ${c.url} — "${c.cited_text}"`)
+    }
+  }
+  const findings = Array.isArray(research?.findings) ? research.findings : []
+  lines.push('', 'D) HALLAZGOS (competidor · tipo · fecha · hecho · URL · cita)')
+  for (const f of findings) {
+    const ok = known.has(normalizeUrl(f?.url)) || Array.from(known.keys()).some(k => k.split('?')[0] === normalizeUrl(f?.url).split('?')[0])
+    lines.push(`• ${f?.competitor ?? 'sector'} · ${f?.kind ?? '-'} · ${f?.date ?? 'sin fecha'} · ${f?.fact ?? ''}\n    URL: ${f?.url ?? '-'}${ok ? '' : '  [URL NO REGISTRADA EN ESTA INVESTIGACIÓN: no usar como evidencia]'} · vía ${f?.via ?? '-'}\n    Cita: "${f?.quote ?? ''}"`)
+  }
+  if (!findings.length && typeof research?.raw === 'string') lines.push(research.raw.slice(0, 20000))
+  const presence = Array.isArray(research?.clientPresence) ? research.clientPresence : []
+  if (presence.length) {
+    lines.push('', 'E) PRESENCIA DEL CLIENTE POR CONSULTA')
+    for (const p of presence) lines.push(`• "${p?.query}" → ${p?.appears ? `aparece (${p?.url || 's/URL'})` : 'NO aparece'}`)
+  }
+  if (research?.notes) lines.push('', `F) NOTAS DE LA INVESTIGACIÓN: ${research.notes}`)
+  return lines.join('\n')
 }
 
 // ─── Cobertura ──────────────────────────────────────────────────────────────────────

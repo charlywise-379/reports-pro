@@ -13,6 +13,8 @@ import type { ReportWindow, SearchPlan } from '../reportResearch'
 export interface PromptResearchContext {
   window: ReportWindow
   plan: SearchPlan
+  /** Fase B (síntesis): expediente de investigación armado por código. Sin él, el prompt pide investigar (una fase). */
+  dossier?: string
 }
 
 const EVIDENCE_FIELD = `"evidence": { "url": "<URL concreta devuelta por una búsqueda o lectura de ESTA investigación>", "date": "<AAAA-MM-DD del hecho o null>", "quote": "<texto literal de la página, máx. 150 caracteres>", "via": "<search|fetch>", "observed": "<precio|promocion|nota_prensa|vacante|pagina_nueva|comunicado|registro_oficial|publicacion_fechada|sectorial|ausencia>", "query": "<solo si observed = ausencia: la consulta exacta ejecutada>" }`
@@ -32,6 +34,7 @@ export function buildCompetitivePromptV3(project: any, dateInfo: any, ctx: Promp
   const { window: w, plan } = ctx
   const setup = project?.setup || {}
   const companyName = setup.companyName || project?.companyName || project?.name
+  const city = setup.city || setup.country || 'México'
   let p = buildCompetitivePromptV2(project, { ...dateInfo, periodStart: w.reportStart, periodEnd: w.today })
 
   p = replaceOnce(p, 'Reports PRO v2.1', 'Reports PRO v3.0')
@@ -55,7 +58,22 @@ REGLA DE FRESCURA — APLICAR EN CADA DATO:`)
   const start = p.indexOf('━━━ FASE 1')
   const end = p.indexOf('━━━ FASE 2')
   if (start < 0 || end < start) throw new Error('Prompt v3: no se encontró FASE 1/FASE 2 en v2')
-  p = p.slice(0, start) + `━━━ FASE 1 — PLAN DE INVESTIGACIÓN OBLIGATORIO (${plan.queries.length} búsquedas fijas) ━━
+  if (ctx.dossier) {
+    p = p.slice(0, start) + `━━━ FASE 1 — EXPEDIENTE DE INVESTIGACIÓN (la investigación web ya se hizo) ━━
+No tienes herramientas de búsqueda. Tu ÚNICA fuente es el EXPEDIENTE al final de este mensaje: el registro de
+búsquedas (consulta → resultados con URL, título y antigüedad), las lecturas de páginas, las citas textuales, los
+hallazgos con URL, fecha y cita, y la presencia del cliente por consulta.
+• evidence.url debe ser una URL que aparece en el expediente; evidence.via y evidence.quote salen del hallazgo o de
+  la cita correspondiente; evidence.date es la fecha del hallazgo (null si no la tiene).
+• Ausencias de ${companyName}: usa "clientPresence" (appears = false) con observed = "ausencia", url = null y
+  "query" igual a la consulta del expediente. clientPresence solo dice aparece / no aparece; nunca una posición.
+• Del expediente extrae: nuevos servicios, cambios de precio, campañas y promociones, vacantes, nuevos
+  competidores, fusiones, cambios regulatorios y de demanda del sector.
+• Un hecho que no está en el expediente no existe para este reporte. Si una sección queda sin material, usa
+  "Sin datos públicos disponibles" o deja la lista de hallazgos vacía.
+
+` + p.slice(end)
+  } else p = p.slice(0, start) + `━━━ FASE 1 — PLAN DE INVESTIGACIÓN OBLIGATORIO (${plan.queries.length} búsquedas fijas) ━━
 El sistema verifica en el registro de búsquedas que ejecutaste TODAS estas consultas, tal cual están escritas,
 antes de aceptar el reporte. Ejecútalas en este orden ANTES de escribir cualquier conclusión:
 ${planLines}
@@ -100,8 +118,11 @@ publicación fechada que hayas visto.
 
 ━━━ AUTOVERIFICACIÓN OBLIGATORIA ANTES DEL JSON`)
   p = replaceOnce(p, '□ Cada *Basis empieza con E3, E2, E1 o E0 (sin prefijo = sin evidencia).',
-    '□ Cada *Basis empieza con E3, E2, E1 o E0 y cada elemento que puntúa trae "evidence" con URL de esta investigación.\n□ Ejecutaste las consultas del plan de FASE 1, todas.')
-  p = replaceOnce(p, '• Mínimo 10 búsquedas web antes de estructurar la respuesta', '• Ejecutar el plan completo de FASE 1 antes de estructurar la respuesta')
+    ctx.dossier
+      ? '□ Cada *Basis empieza con E3, E2, E1 o E0 y cada elemento que puntúa trae "evidence" con una URL del expediente.'
+      : '□ Cada *Basis empieza con E3, E2, E1 o E0 y cada elemento que puntúa trae "evidence" con URL de esta investigación.\n□ Ejecutaste las consultas del plan de FASE 1, todas.')
+  p = replaceOnce(p, '• Mínimo 10 búsquedas web antes de estructurar la respuesta',
+    ctx.dossier ? '• Usar exclusivamente el expediente de investigación de FASE 1' : '• Ejecutar el plan completo de FASE 1 antes de estructurar la respuesta')
 
   // Esquema JSON: campo evidence en cada elemento que puntúa.
   p = replaceAll(p, `"threatBasis": "<E? · a+b+c+d: hecho, fecha y fuente de cada factor>",`,
@@ -118,7 +139,31 @@ publicación fechada que hayas visto.
     `{ "name": "<competidor registrado>", "change": "<↑ subió +X% Esta semana · [fuente] | → Estable | ↓ bajó -X% | Sin datos públicos disponibles>", ${EVIDENCE_FIELD.replace('"evidence": {', '"evidence": { "_": "solo con ↑ o ↓",')} }`)
   p = replaceOnce(p, `"followersEstimate": "<número observado o 'No detectado'>"`, `"followersEstimate": "No detectado"`)
   p = replaceOnce(p, `"engagementLevel": "<ALTO|MEDIO|BAJO|No detectado>"`, `"engagementLevel": "No detectado"`)
+  p = replaceOnce(p, `"postFrequency": "<Diario|Semanal|Irregular|Inactivo|No detectado>"`, `"postFrequency": "No detectado"`)
 
+  // Restos de v1/v2 que contradicen las reglas de evidencia (revisión v1 → v3, 9 nov 2026).
+  p = replaceOnce(p, '<Top 3 orgánico | Top 10 orgánico | Aparece en resultados | No aparece | Sin verificar>',
+    '<Aparece en resultados | No aparece | Sin verificar>')
+  p = replaceOnce(p, `{ "factor": "Redes sociales", "client": "<plataforma activa · frecuencia>"`,
+    `{ "factor": "Redes sociales", "client": "<plataformas con perfil detectado, sin frecuencia | No detectado>"`)
+  p = replaceOnce(p, '• Cada alerta y movimiento debe tener fuente (URL, medio, o "Estimado")',
+    '• Cada alerta y movimiento debe tener fuente: una URL de esta investigación ("Estimado" vale E0)')
+  p = replaceOnce(p, 'd) Presencia digital activa (publica semanal o más, aparece en las búsquedas de FASE 1)',
+    'd) Presencia digital activa (aparece en las búsquedas de FASE 1 o tiene una publicación fechada en la ventana)')
+  p = replaceOnce(p, 'el [fecha], y en cinco días acumuló reseñas nuevas en Google.', 'el [fecha].')
+  p = replaceOnce(p, '<mensaje real de su web o redes, o estimado basado en posicionamiento visible>',
+    "<mensaje literal de su web o redes, o 'Sin datos públicos disponibles'>")
+  if (ctx.dossier) {
+    p = replaceOnce(p, `en ${city} mediante búsqueda web. Solo si después de buscar genuinamente`,
+      `en ${city} que aparezcan en el expediente. Solo si el expediente no trae`)
+    p = replaceOnce(p, 'No incluir datos sin haberlos verificado primero.', 'No incluir datos que no estén en el expediente.')
+  }
+
+  if (ctx.dossier) p += `
+
+━━━ EXPEDIENTE DE INVESTIGACIÓN ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+${ctx.dossier}
+━━━ FIN DEL EXPEDIENTE ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`
   p += `
 Responde con el JSON completo como último bloque de texto, sin texto después del cierre.`
   return p

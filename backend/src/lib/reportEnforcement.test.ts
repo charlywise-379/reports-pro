@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { enforceRubrics, threatFromFactors, riskLabelFor, opportunityFromFactors } from './reportEnforcement'
+import { enforceRubrics, threatFromFactors, riskLabelFor, opportunityFromFactors, normalizePresenceLevel } from './reportEnforcement'
 import { computeScores } from './reportScoring'
 
 const comp = (name: string, f: any, extra: any = {}) => ({ name, threat: 9, riskLabel: 'CRÍTICO', threatFactors: f, recentMove: `${name} movió algo`, ...extra })
@@ -215,5 +215,25 @@ describe('reportEnforcement — alertas de brecha digital propia', () => {
       { title: 'Stickeria mantiene publicación semanal en Instagram', level: 'ALTA' },
     ] }, [], { companyName: 'Stick-A-Boom' })
     expect(aiData.criticalAlerts.map((a: any) => a.level)).toEqual(['CRÍTICA', 'CRÍTICA', 'ALTA'])
+  })
+})
+
+describe('Presencia de Mercado', () => {
+  it('acepta solo Nula/Mínima/Media/Alta; años u otros valores pasan a Sin verificar', () => {
+    expect(normalizePresenceLevel('Alta')).toBe('Alta')
+    expect(normalizePresenceLevel('minima')).toBe('Mínima')
+    expect(normalizePresenceLevel('MEDIA · sucursales en 3 estados')).toBe('Media')
+    expect(normalizePresenceLevel('N/A')).toBe('N/A')
+    expect(normalizePresenceLevel('Estimado 3-5 años')).toBe('Sin verificar')
+    expect(normalizePresenceLevel('15+ años')).toBe('Sin verificar')
+  })
+  it('corrige la fila del benchmark y lo registra en la auditoría', () => {
+    const { aiData, audit } = enforceRubrics({ benchmarkRows: [
+      { factor: 'Presencia de Mercado', client: 'Estimado 3-5 años', comp1: 'Alta', comp2: 'Estimado 5+ años', position: '3er lugar' },
+      { factor: 'Presencia digital', client: 'BAJA' },
+    ] }, [])
+    expect(aiData.benchmarkRows[0]).toMatchObject({ client: 'Sin verificar', comp1: 'Alta', comp2: 'Sin verificar' })
+    expect(aiData.benchmarkRows[1].client).toBe('BAJA')
+    expect(audit.evidenceAdjustments.filter((a: any) => a.item.startsWith('benchmark')).length).toBe(2)
   })
 })

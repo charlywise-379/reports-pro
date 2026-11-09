@@ -12,7 +12,8 @@ import { stripCitationTags } from './stripCitations'
 import { computeCounts, computeScores, computeDeltas, SCORING_VERSION, PreviousMetrics, alertLevelOf } from './reportScoring'
 import { enforceRubrics, auditSummary } from './reportEnforcement'
 import { buildCompetitivePrompt, resolvePromptVersion, defaultResearchContext, type PromptVersion } from './reportPrompts'
-import { emptyResearchLog, appendToResearchLog, checkCoverage, researchSummary, type ResearchLog, type ReportWindow, type SearchPlan, type Coverage } from './reportResearch'
+import { emptyResearchLog, appendToResearchLog, checkCoverage, researchSummary, buildDossier, estimateCostUsd, type ResearchLog, type ReportWindow, type SearchPlan, type Coverage } from './reportResearch'
+import { buildResearchPrompt, RESEARCH_SYSTEM_PROMPT } from './reportPrompts/researchPrompt'
 import { inferBusinessType, registeredDirectCompetitors } from './reportPrompts/promptContext'
 
 // ─── Tipos ───────────────────────────────────────────
@@ -146,28 +147,37 @@ function calcGauge(value: number) {
 }
 
 // ─── Llamar a Claude con web search ──────────────────
-// Modelo del reporte. claude-sonnet-4-5 se retira el 30 nov 2026 (docs/roadmap/reglas-busqueda-certera.md D.1).
+// Modelos del reporte (docs/roadmap/reglas-busqueda-certera.md D.1 y D.6). claude-sonnet-4-5 se retira el 30 nov 2026.
+// - 'split' (por defecto): fase A de investigación con el modelo barato (búsquedas y lecturas) y fase B de
+//   síntesis/evaluación sin herramientas, solo con el expediente verificado. Ambas con caché de prompt.
+// - 'single': una sola llamada con herramientas (REPORT_MODEL), para revertir.
+export const REPORT_PIPELINE = (process.env.REPORT_PIPELINE || 'split').trim().toLowerCase() === 'single' ? 'single' : 'split'
+export const REPORT_RESEARCH_MODEL = process.env.REPORT_RESEARCH_MODEL || 'claude-haiku-5-5'
+export const REPORT_SYNTHESIS_MODEL = process.env.REPORT_SYNTHESIS_MODEL || 'claude-sonnet-5-5'
 export const REPORT_MODEL = process.env.REPORT_MODEL || 'claude-opus-5-5'
 const MAX_PAUSE_CONTINUATIONS = 3
 const MAX_COVERAGE_CONTINUATIONS = 1
 
 export interface ReportResearch {
   promptVersion: PromptVersion
+  pipeline: 'split' | 'single'
+  models: { research: string; synthesis: string }
   window: ReportWindow
   plan: SearchPlan
   log: ResearchLog
   coverage: Coverage
+  findings?: any
 }
 
-/** JSON del reporte: el texto posterior al último resultado de herramienta, del primer "{" al último "}". */
-function extractReportJson(content: any[]): any {
+/** Primer objeto JSON del texto posterior al último bloque de herramienta. */
+function extractJsonFromContent(content: any[]): any {
   let lastTool = -1
   content.forEach((b, i) => { if (b?.type === 'web_search_tool_result' || b?.type === 'web_fetch_tool_result' || b?.type === 'server_tool_use') lastTool = i })
   const text = content.slice(lastTool + 1).filter(b => b?.type === 'text').map(b => b.text).join('')
     .replace(/```json\s*/g, '').replace(/```\s*/g, '')
   const start = text.indexOf('{')
   const end = text.lastIndexOf('}')
-  if (start < 0 || end <= start) throw new Error('Claude no entregó un JSON en su respuesta final')
+  if (start < 0 || end <= start) throw new Error('la respuesta final no trae un JSON')
   return stripCitationTags(JSON.parse(text.slice(start, end + 1)))
 }
 
@@ -187,17 +197,70 @@ async function streamOnce(params: any): Promise<any> {
   }
 }
 
+const webTools = (setup: any, withFetchCitations: boolean): any[] => [
+  {
+    type: 'web_search_20260209', name: 'web_search', max_uses: 28, allowed_callers: ['direct'],
+    user_location: { type: 'approximate', city: setup.city || 'Ciudad de México', country: 'MX', timezone: 'America/Mexico_City' },
+  },
+  { type: 'web_fetch_20260209', name: 'web_fetch', max_uses: 10, allowed_callers: ['direct'], citations: { enabled: withFetchCitations }, max_content_tokens: 12000 },
+]
+
 /**
- * Investigación con Claude + web search/fetch. Devuelve el JSON del reporte y el registro de lo que realmente
- * se buscó y leyó, que reportEnforcement usa para calcular el nivel de evidencia y que se guarda en el reporte.
+ * Conversación con herramientas o sin ellas, con caché de prompt, continuación de pausas, reintento de formato y
+ * (si hay plan) una continuación para pedir las consultas faltantes. Devuelve el JSON final de la conversación.
  */
-export async function researchWithClaude(project: any, dateInfo: any, now: Date = new Date()): Promise<{ aiData: any; research: ReportResearch }> {
-  const promptVersion = resolvePromptVersion()
-  const ctx = defaultResearchContext(project, now)
-  const prompt = buildCompetitivePrompt(project, dateInfo, promptVersion, ctx)
-  console.log(`🤖 Investigación con ${REPORT_MODEL} · prompt ${promptVersion} · plan de ${ctx.plan.queries.length} búsquedas`)
-  const businessType = inferBusinessType(project.setup || {})
-  const systemPrompt = `Eres el analista senior de inteligencia competitiva de Reports PRO, especializado en PYMES de México y LATAM.
+async function runConversation(opts: {
+  phase: string; model: string; system: string; prompt: string; tools?: any[]; effort: 'low' | 'medium' | 'high'
+  maxTokens: number; log: ResearchLog; plan?: SearchPlan; formatHint: string
+}): Promise<any> {
+  const { phase, model, log } = opts
+  // Bloque fijo del sistema con marca de caché + caché automático del resto de la conversación. Con herramientas de
+  // servidor, la API escribe además caché después de cada resultado: cada vuelta relee el contexto a precio de caché.
+  const system = [{ type: 'text', text: opts.system, cache_control: { type: 'ephemeral' } }]
+  const messages: any[] = [{ role: 'user', content: opts.prompt }]
+  let pauses = 0, formatRetries = 0, coverageRetries = 0
+  for (;;) {
+    const final = await streamOnce({
+      model, max_tokens: opts.maxTokens, system, messages,
+      ...(opts.tools ? { tools: opts.tools } : {}),
+      cache_control: { type: 'ephemeral' },
+      output_config: { effort: opts.effort },
+    })
+    appendToResearchLog(log, final.content, final.usage, { phase, model })
+    const u = final.usage || {}
+    console.log(`✅ [${phase}] ${model} · ${final.stop_reason} · entrada ${u.input_tokens} + caché leída ${u.cache_read_input_tokens ?? 0} / escrita ${u.cache_creation_input_tokens ?? 0} · salida ${u.output_tokens} · búsquedas ${log.queries.length}`)
+    if (final.stop_reason === 'refusal') {
+      throw new Error(`Claude rechazó la solicitud en ${phase} (${final.stop_details?.category ?? 'sin categoría'}): ${final.stop_details?.explanation ?? ''}`)
+    }
+    messages.push({ role: 'assistant', content: final.content })
+    if (final.stop_reason === 'pause_turn') {
+      if (++pauses > MAX_PAUSE_CONTINUATIONS) throw new Error(`La ${phase} excedió el límite de pausas`)
+      continue
+    }
+    let json: any
+    try {
+      json = extractJsonFromContent(final.content)
+    } catch (e) {
+      if (++formatRetries > 1) throw new Error(`Claude devolvió JSON inválido en ${phase}: ${e}`)
+      messages.push({ role: 'user', content: final.stop_reason === 'max_tokens'
+        ? `Tu respuesta se cortó. Entrega de nuevo SOLO el JSON completo, más compacto. ${opts.formatHint}`
+        : `No encontré un JSON válido en tu respuesta. Entrega SOLO el JSON completo, sin texto antes ni después. ${opts.formatHint}` })
+      continue
+    }
+    if (opts.plan) {
+      const coverage = checkCoverage(opts.plan, log)
+      if (coverage.missing.length && coverageRetries < MAX_COVERAGE_CONTINUATIONS) {
+        coverageRetries++
+        console.log(`🔎 [${phase}] cobertura ${coverage.executed}/${coverage.planned}: se piden ${coverage.missing.length} consultas faltantes`)
+        messages.push({ role: 'user', content: `Faltaron ${coverage.missing.length} consultas del plan:\n${coverage.missing.map(m => `- ${m.query}`).join('\n')}\nEjecútalas tal cual, incorpora lo que encuentres y entrega de nuevo el JSON completo actualizado. ${opts.formatHint}` })
+        continue
+      }
+    }
+    return json
+  }
+}
+
+const synthesisSystemPrompt = (businessType: string) => `Eres el analista senior de inteligencia competitiva de Reports PRO, especializado en PYMES de México y LATAM.
 
 IDENTIDAD DEL ANÁLISIS:
 - Empresa cliente: ${businessType}
@@ -206,65 +269,68 @@ IDENTIDAD DEL ANÁLISIS:
 - Idioma: español de México — nunca inglés, nunca español neutro
 
 PROCESO OBLIGATORIO — en orden:
-1. INVESTIGA → ejecuta el plan de búsquedas completo del mensaje (y las lecturas indicadas)
-2. VERIFICA → cada dato que puntúa termina en una página concreta de esta investigación, con fecha y cita
+1. INVESTIGA → ejecuta el plan de búsquedas del mensaje, o usa el expediente de investigación si viene incluido
+2. VERIFICA → cada dato que puntúa termina en una página concreta, con fecha y cita
 3. ANALIZA → identifica patrones, movimientos y gaps
 4. SINTETIZA → determina las 3 cosas más importantes para el cliente esta semana
 5. ESTRUCTURA → entrega el JSON de salida como último bloque de texto
 
 REGLA DE ORO: Cada dato debe poder ser verificado por el cliente. Si no puedes verificarlo, márcalo explícitamente como "Estimado" o "Sin datos públicos disponibles". NUNCA inventes datos.`
 
+/**
+ * Investigación y síntesis del reporte. Devuelve el JSON del reporte y el registro de lo que realmente se buscó y
+ * leyó (reportEnforcement lo usa para calcular el nivel de evidencia; se guarda en Report.evidenceJson).
+ */
+export async function researchWithClaude(project: any, dateInfo: any, now: Date = new Date()): Promise<{ aiData: any; research: ReportResearch }> {
+  const promptVersion = resolvePromptVersion()
+  const ctx = defaultResearchContext(project, now)
   const setup = project.setup || {}
-  const tools: any[] = [
-    {
-      type: 'web_search_20260209', name: 'web_search', max_uses: 28, allowed_callers: ['direct'],
-      user_location: { type: 'approximate', city: setup.city || 'Ciudad de México', country: 'MX', timezone: 'America/Mexico_City' },
-    },
-    { type: 'web_fetch_20260209', name: 'web_fetch', max_uses: 10, allowed_callers: ['direct'], citations: { enabled: true }, max_content_tokens: 20000 },
-  ]
-  const messages: any[] = [{ role: 'user', content: prompt }]
+  const businessType = inferBusinessType(setup)
   const log = emptyResearchLog()
-  let pauses = 0, coverageRetries = 0, formatRetries = 0
-  let aiData: any = null
-  let coverage: Coverage = checkCoverage(ctx.plan, log)
+  const pipeline = promptVersion === 'v3' ? REPORT_PIPELINE : 'single'
+  const reportHint = 'Mismo esquema del reporte.'
+  let aiData: any
+  let findings: any
 
-  for (;;) {
-    const final = await streamOnce({
-      model: REPORT_MODEL, max_tokens: 64000, system: systemPrompt, tools,
-      output_config: { effort: 'high' }, messages,
-    })
-    appendToResearchLog(log, final.content, final.usage)
-    console.log(`✅ ${final.stop_reason} · búsquedas ${log.queries.length} · lecturas ${log.fetches.length} · tokens ${final.usage?.output_tokens}`)
-
-    if (final.stop_reason === 'refusal') {
-      throw new Error(`Claude rechazó la solicitud (${final.stop_details?.category ?? 'sin categoría'}): ${final.stop_details?.explanation ?? ''}`)
-    }
-    // Continuaciones: se reenvía el contenido del asistente tal cual (historial solo crece).
-    messages.push({ role: 'assistant', content: final.content })
-    if (final.stop_reason === 'pause_turn') {
-      if (++pauses > MAX_PAUSE_CONTINUATIONS) throw new Error('La investigación excedió el límite de pausas')
-      continue
-    }
+  if (pipeline === 'split') {
+    console.log(`🤖 Fase A (investigación) con ${REPORT_RESEARCH_MODEL} · plan de ${ctx.plan.queries.length} búsquedas`)
     try {
-      aiData = extractReportJson(final.content)
-    } catch (e) {
-      if (++formatRetries > 1) throw new Error(`Claude devolvió JSON inválido: ${e}`)
-      messages.push({ role: 'user', content: final.stop_reason === 'max_tokens'
-        ? 'Tu respuesta se cortó. Entrega de nuevo SOLO el JSON completo del reporte, más compacto (descripciones de una o dos oraciones).'
-        : 'No encontré un JSON válido en tu respuesta. Entrega SOLO el JSON completo del reporte, sin texto antes ni después.' })
-      continue
+      findings = await runConversation({
+        phase: 'investigacion', model: REPORT_RESEARCH_MODEL, system: RESEARCH_SYSTEM_PROMPT,
+        prompt: buildResearchPrompt(project, ctx), tools: webTools(setup, true), effort: 'medium',
+        maxTokens: 32000, log, plan: ctx.plan, formatHint: 'Formato: {"findings": [...], "clientPresence": [...], "notes": "..."}',
+      })
+    } catch (e: any) {
+      // Si la investigación terminó sin JSON legible, la síntesis trabaja con el registro de búsquedas (sí existe).
+      if (!log.queries.length) throw e
+      console.error(`⚠️ Fase A sin JSON de hallazgos (${e?.message}); la síntesis usará solo el registro de búsquedas`)
+      findings = { findings: [], clientPresence: [], notes: 'La investigación no entregó hallazgos estructurados; usar el registro de búsquedas.' }
     }
-    coverage = checkCoverage(ctx.plan, log)
-    if (promptVersion === 'v3' && coverage.missing.length && coverageRetries < MAX_COVERAGE_CONTINUATIONS) {
-      coverageRetries++
-      console.log(`🔎 Cobertura ${coverage.executed}/${coverage.planned}: se piden ${coverage.missing.length} consultas faltantes`)
-      messages.push({ role: 'user', content: `Faltaron ${coverage.missing.length} consultas del plan de FASE 1:\n${coverage.missing.map(m => `- ${m.query}`).join('\n')}\nEjecútalas tal cual, incorpora lo que encuentres y entrega de nuevo el JSON completo actualizado, con el mismo formato.` })
-      continue
-    }
-    break
+    const dossier = buildDossier(log, findings)
+    console.log(`🧠 Fase B (síntesis) con ${REPORT_SYNTHESIS_MODEL} · expediente de ${Math.round(dossier.length / 1000)}k caracteres`)
+    aiData = await runConversation({
+      phase: 'sintesis', model: REPORT_SYNTHESIS_MODEL, system: synthesisSystemPrompt(businessType),
+      prompt: buildCompetitivePrompt(project, dateInfo, promptVersion, { ...ctx, dossier }), effort: 'high',
+      maxTokens: 64000, log, formatHint: reportHint,
+    })
+  } else {
+    console.log(`🤖 Investigación en una fase con ${REPORT_MODEL} · prompt ${promptVersion}`)
+    aiData = await runConversation({
+      phase: 'unica', model: REPORT_MODEL, system: synthesisSystemPrompt(businessType),
+      prompt: buildCompetitivePrompt(project, dateInfo, promptVersion, ctx), tools: webTools(setup, true), effort: 'high',
+      maxTokens: 64000, log, plan: promptVersion === 'v3' ? ctx.plan : undefined, formatHint: reportHint,
+    })
   }
-  console.log(`🔍 Cobertura del plan: ${coverage.executed}/${coverage.planned} · web_search ${log.usage.web_search_requests} · web_fetch ${log.usage.web_fetch_requests}`)
-  return { aiData, research: { promptVersion, window: ctx.window, plan: ctx.plan, log, coverage } }
+  const coverage = checkCoverage(ctx.plan, log)
+  const cost = estimateCostUsd(log.calls)
+  console.log(`🔍 Cobertura ${coverage.executed}/${coverage.planned} · web_search ${log.usage.web_search_requests} · web_fetch ${log.usage.web_fetch_requests} · costo estimado USD ${cost.total} ${JSON.stringify(cost.byPhase)}`)
+  return {
+    aiData,
+    research: {
+      promptVersion, pipeline, window: ctx.window, plan: ctx.plan, log, coverage, findings,
+      models: pipeline === 'split' ? { research: REPORT_RESEARCH_MODEL, synthesis: REPORT_SYNTHESIS_MODEL } : { research: REPORT_MODEL, synthesis: REPORT_MODEL },
+    },
+  }
 }
 
 /** Compatibilidad: solo el JSON del reporte (scripts antiguos). */
@@ -642,7 +708,7 @@ export function buildReportData(project: any, rawAiData: any, dateInfo: any, edi
       components: scores.components,
       enforcement: auditSummary(audit),
       evidenceQuality: audit.evidenceQuality,
-      ...(research ? { search: researchSummary(research.plan, research.log, research.coverage), model: REPORT_MODEL, promptVersion: research.promptVersion } : {}),
+      ...(research ? { search: researchSummary(research.plan, research.log, research.coverage), models: research.models, pipeline: research.pipeline, promptVersion: research.promptVersion, cost: estimateCostUsd(research.log.calls) } : {}),
     },
     pressureDash: gauge.pressureDash,
     opportunityDash,
@@ -1036,8 +1102,12 @@ export async function generateReport(project: any, outputPath: string, options?:
 export function buildEvidenceJson(research: ReportResearch) {
   return {
     generatedAt: research.window.t0,
-    model: REPORT_MODEL,
+    pipeline: research.pipeline,
+    models: research.models,
     promptVersion: research.promptVersion,
+    cost: estimateCostUsd(research.log.calls),
+    calls: research.log.calls,
+    findings: research.findings ?? null,
     window: { today: research.window.today, reportStart: research.window.reportStart, e3Start: research.window.e3Start, e2Start: research.window.e2Start },
     search: {
       planVersion: research.plan.version,

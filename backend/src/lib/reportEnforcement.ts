@@ -51,6 +51,15 @@ export interface EnforcementAudit {
 }
 
 const arr = (v: unknown): any[] => (Array.isArray(v) ? v : [])
+
+const PRESENCE_LEVELS: Record<string, string> = { nula: 'Nula', minima: 'Mínima', media: 'Media', alta: 'Alta' }
+/** Celda de "Presencia de Mercado": Nula | Mínima | Media | Alta; N/A se respeta; lo demás (p. ej. años) → "Sin verificar". */
+export function normalizePresenceLevel(v: unknown): string {
+  const s = String(v ?? '').trim()
+  if (/^(n\/a|sin verificar)$/i.test(s)) return /^n\/a$/i.test(s) ? 'N/A' : 'Sin verificar'
+  const key = s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().split(/[\s·,(—-]/)[0]
+  return PRESENCE_LEVELS[key] ?? 'Sin verificar'
+}
 const intOrNull = (v: unknown): number | null => {
   if (typeof v === 'number' && Number.isFinite(v)) return v
   if (typeof v === 'string' && /^\s*-?\d+(\.\d+)?\s*$/.test(v)) return Number(v)
@@ -452,6 +461,21 @@ export function enforceRubrics(aiData: any, registeredCompetitors: string[] = []
       return { ...pt, change: '→ Sin cambios verificables' }
     })
   }
+  // Presencia de Mercado: solo la escala Nula/Mínima/Media/Alta; años o cualquier otro valor → "Sin verificar".
+  if (Array.isArray(out.benchmarkRows)) {
+    out.benchmarkRows = out.benchmarkRows.map((row: any) => {
+      if (!/presencia de mercado/i.test(String(row?.factor || ''))) return row
+      const fixed: any = { ...row }
+      for (const k of ['client', 'comp1', 'comp2', 'comp3', 'comp4', 'comp5']) {
+        if (fixed[k] === undefined || fixed[k] === null) continue
+        const level = normalizePresenceLevel(fixed[k])
+        if (level !== fixed[k]) capped(`benchmark Presencia de Mercado: ${k}`, 'escala Nula/Mínima/Media/Alta', String(fixed[k]), level)
+        fixed[k] = level
+      }
+      return fixed
+    })
+  }
+
   // Más del 40 % de los elementos puntuados en E0 → semana con poca evidencia verificable.
   if (research) {
     const { scored, e0 } = audit.evidenceChecks

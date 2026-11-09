@@ -102,6 +102,11 @@ REGLAS DE COMPETIDORES:
 • Si un competidor no tiene presencia digital: escribe "Presencia digital no detectada — canal offline"
 • NUNCA inventes movimientos — si no hay datos, escríbelo explícitamente
 • Para benchmark: top 5 competidores en tabla comparativa; los restantes en secondaryCompetitors
+• Presencia de Mercado (tabla benchmark): NUNCA años ni antigüedad estimada. Usa solo esta escala, por lo observable en la web:
+  Alta = referente del giro en la zona: aparece en varias búsquedas genéricas del sector, con sucursales o cobertura amplia y menciones en medios o directorios.
+  Media = establecida: sitio activo, aparece en algunas búsquedas o directorios del sector.
+  Mínima = rastro escaso: solo un sitio o perfil propio, sin menciones externas.
+  Nula = sin rastro público detectable.
 • secondaryCompetitors DEBE incluir SIEMPRE un mínimo de 3 elementos. Si el cliente no registró suficientes competidores indirectos, investiga y agrega competidores adicionales reales del mismo sector/industria (${industry}) en ${city} mediante búsqueda web. Solo si después de buscar genuinamente no encuentras NINGÚN competidor adicional verificable, usa exactamente este valor para cada campo de texto: "No se encontraron datos" — pero esto debe ser la excepción, no la regla.
 
 REGLAS DE CANALES DE VENTA (newChannels):
@@ -539,7 +544,7 @@ van como números JSON (sin comillas, sin "%", sin "/10"). Los campos *Basis son
     { "factor": "Redes sociales", "client": "<plataforma activa · frecuencia>", "comp1": "<o N/A>", "comp2": "<o N/A>", "comp3": "<o N/A>", "comp4": "<o N/A>", "comp5": "<o N/A>", "position": "<posición>" },
     { "factor": "SEO / Posicionamiento Google", "client": "<Top 3 orgánico | Top 10 orgánico | Aparece en resultados | No aparece | Sin verificar>", "comp1": "<mismo formato o 'Sin verificar'>", "comp2": "<mismo formato o 'Sin verificar'>", "comp3": "<mismo formato o 'Sin verificar'>", "comp4": "<mismo formato o 'Sin verificar'>", "comp5": "<mismo formato o 'Sin verificar'>", "position": "<posición>" },
     { "factor": "Casos de éxito / Portafolio", "client": "<SÍ visible|NO visible|PARCIAL>", "comp1": "<o N/A>", "comp2": "<o N/A>", "comp3": "<o N/A>", "comp4": "<o N/A>", "comp5": "<o N/A>", "position": "<posición>" },
-    { "factor": "Presencia de Mercado", "client": "<años estimados>", "comp1": "<o N/A>", "comp2": "<o N/A>", "comp3": "<o N/A>", "comp4": "<o N/A>", "comp5": "<o N/A>", "position": "<posición>" },
+    { "factor": "Presencia de Mercado", "client": "<Nula | Mínima | Media | Alta>", "comp1": "<Nula | Mínima | Media | Alta>", "comp2": "<misma escala>", "comp3": "<misma escala>", "comp4": "<misma escala>", "comp5": "<misma escala>", "position": "<posición>" },
     { "factor": "Especialización", "client": "<descripción breve>", "comp1": "<o N/A>", "comp2": "<o N/A>", "comp3": "<o N/A>", "comp4": "<o N/A>", "comp5": "<o N/A>", "position": "<posición>" },
     { "factor": "Cobertura geográfica", "client": "<Local/Regional/Nacional>", "comp1": "<o N/A>", "comp2": "<o N/A>", "comp3": "<o N/A>", "comp4": "<o N/A>", "comp5": "<o N/A>", "position": "<posición>" }
   ],

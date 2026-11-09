@@ -168,3 +168,52 @@ describe('evidencia verificable', () => {
     expect(aiData.changesCol1[0].category).toBe('EXPANSIÓN · ALTO')
   })
 })
+
+import { buildDossier, estimateCostUsd } from './reportResearch'
+import { buildResearchPrompt } from './reportPrompts/researchPrompt'
+
+describe('dos fases: investigación y síntesis', () => {
+  it('el prompt de investigación lleva el plan completo y el formato de hallazgos', () => {
+    const plan = buildSearchPlan(almex, W)
+    const p = buildResearchPrompt(almex, { window: W, plan })
+    for (const q of plan.queries) expect(p).toContain(q.query)
+    expect(p).toContain('"findings"')
+    expect(p).toContain('https://www.castores.com.mx')
+  })
+
+  it('el expediente lleva el registro real y marca las URLs de hallazgos que no salieron de la investigación', () => {
+    const log = emptyResearchLog()
+    appendToResearchLog(log, fakeContent('"Transportes Castores" precios', [{ url: 'https://www.castores.com.mx/promociones', title: 'Promociones', page_age: '2 days ago' }]))
+    const d = buildDossier(log, {
+      findings: [
+        { competitor: 'Transportes Castores', kind: 'promocion', fact: '15% LTL', date: '2026-11-04', url: 'https://castores.com.mx/promociones', quote: '15%', via: 'search' },
+        { competitor: 'Estafeta', kind: 'nota_prensa', fact: 'x', date: null, url: 'https://inventada.mx/nota', quote: 'x', via: 'search' },
+      ],
+      clientPresence: [{ query: '"Almex"', appears: false, url: null }],
+    })
+    expect(d).toContain('"Transportes Castores" precios')
+    expect(d).toContain('https://www.castores.com.mx/promociones · Promociones · 2 days ago')
+    expect(d).toMatch(/inventada\.mx\/nota {2}\[URL NO REGISTRADA/)
+    expect(d).not.toMatch(/castores\.com\.mx\/promociones {2}\[URL NO REGISTRADA/)
+    expect(d).toMatch(/Almex.{0,4} → NO aparece/)
+  })
+
+  it('el prompt v3 en modo síntesis no pide buscar y trae el expediente', () => {
+    const plan = buildSearchPlan(FIXTURE_PROJECT_REAL, W)
+    const p = buildCompetitivePromptV3(FIXTURE_PROJECT_REAL, FIXTURE_DATE_INFO, { window: W, plan, dossier: 'EXPEDIENTE-DE-PRUEBA' })
+    expect(p).toContain('No tienes herramientas de búsqueda')
+    expect(p).toContain('EXPEDIENTE-DE-PRUEBA')
+    expect(p).not.toContain('PLAN DE INVESTIGACIÓN OBLIGATORIO')
+    expect(p).toContain('"evidence": {')
+  })
+
+  it('costo estimado por fase con caché (Haiku tarifa alta > 100K, Sonnet)', () => {
+    const c = estimateCostUsd([
+      { phase: 'investigacion', model: 'claude-haiku-5-5', input: 1000, cacheRead: 900_000, cacheWrite: 150_000, output: 10_000, webSearch: 22, webFetch: 5 },
+      { phase: 'sintesis', model: 'claude-sonnet-5-5', input: 60_000, cacheRead: 0, cacheWrite: 20_000, output: 45_000, webSearch: 0, webFetch: 0 },
+    ])
+    // Haiku: (1000·0.5 + 150000·0.625 + 900000·0.05 + 10000·2.5)/1e6 + 0.22 = 0.38375 · Sonnet: (60000·2 + 20000·2.5 + 45000·10)/1e6 = 0.62
+    expect(c.byPhase).toEqual({ investigacion: 0.384, sintesis: 0.62 })
+    expect(c.total).toBeCloseTo(1.004, 2)
+  })
+})
