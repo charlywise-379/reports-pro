@@ -284,6 +284,12 @@ model Report {
   reportTitle      String?
   reportPeriod     String?
   sectionsJson     Json?
+  /// Métricas calculadas del reporte (ver src/lib/reportScoring.ts): conteos, scores, componentes y
+  /// scoringVersion. El siguiente reporte del proyecto las usa como base del "vs anterior".
+  metricsJson      Json?
+  /// Registro de investigación del reporte (ver src/lib/reportResearch.ts): plan de búsquedas, consultas y URLs
+  /// devueltas, lecturas, citas, cobertura y uso. Respalda el nivel de evidencia de cada hallazgo.
+  evidenceJson     Json?
   errorMessage     String?
   retryCount       Int               @default(0)
   sentryEventId    String?

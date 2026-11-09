@@ -47,6 +47,9 @@ function useIsMobile() {
   return isMobile
 }
 
+// Margen para que el worker tome un reporte recién encolado y cree su fila GENERATING.
+const QUEUE_GRACE_MS = 90_000
+
 export default function DashboardPage() {
   const router = useRouter()
   const supabase = createClient()
@@ -181,6 +184,8 @@ export default function DashboardPage() {
   const pollingRef = useRef<NodeJS.Timeout | null>(null)
   const countdownRef = useRef<NodeJS.Timeout | null>(null)
   const [countdown, setCountdown] = useState(600)
+  const startedAtRef = useRef<number | null>(null)
+  const graceUntilRef = useRef(0)
   const [stuckMinutes, setStuckMinutes] = useState(0)
   const [isDark, setIsDark] = useState(true)
   useEffect(() => {
@@ -224,9 +229,12 @@ export default function DashboardPage() {
       const sid = typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('sid') : null
       if (sid) {
         try {
-          await fetch(`${BACKEND}/api/stripe/verify-session/${sid}`, {
+          const vr = await fetch(`${BACKEND}/api/stripe/verify-session/${sid}`, {
             headers: { 'Authorization': 'Bearer ' + session.access_token }
           })
+          const vd = await vr.json().catch(() => null)
+          // Tras el pago el backend encola el primer reporte: mostrar el contador desde ya
+          if (vd?.firstReportPending) startPolling()
         } catch(e) {}
       }
 
@@ -353,7 +361,7 @@ export default function DashboardPage() {
           setShowLimitModal(true)
         } else {
           // Está generándose normalmente
-          startPolling()
+          startPolling(reporteGenerando ? new Date(reporteGenerando.createdAt).getTime() : undefined)
           setStuckMinutes(minutosGenerando)
           setLimitMessage('Ya hay un reporte generándose.')
           setNextReportInfo(`Lleva ${minutosGenerando} min. Se desbloquea automáticamente a los 10 min.`)
@@ -381,23 +389,32 @@ export default function DashboardPage() {
       clearInterval(countdownRef.current)
       countdownRef.current = null
     }
+    startedAtRef.current = null
+    graceUntilRef.current = 0
     setCountdown(600)
     setPollingActive(false)
     setGenerating(false)
   }, [])
 
-  const startPolling = useCallback(() => {
-    if (pollingRef.current) return // ya está corriendo
+  // El contador se calcula desde la hora real de inicio del reporte (createdAt de la fila GENERATING),
+  // así no se reinicia al recargar la página.
+  const syncCountdown = useCallback(() => {
+    const start = startedAtRef.current ?? Date.now()
+    setCountdown(Math.max(0, 600 - Math.floor((Date.now() - start) / 1000)))
+  }, [])
+
+  // startedAt: hora de inicio conocida (reporte ya en GENERATING). Sin ella, el reporte acaba de
+  // encolarse: se da un margen para que el worker cree la fila antes de dar el polling por terminado.
+  const startPolling = useCallback((startedAt?: number) => {
+    if (startedAt) startedAtRef.current = startedAt
+    else if (!startedAtRef.current) startedAtRef.current = Date.now()
+    if (pollingRef.current) { syncCountdown(); return } // ya está corriendo
+    if (!startedAt) graceUntilRef.current = Date.now() + QUEUE_GRACE_MS
     setPollingActive(true)
     setGenerating(true)
-    setCountdown(600)
+    syncCountdown()
     if (countdownRef.current) clearInterval(countdownRef.current)
-    countdownRef.current = setInterval(() => {
-      setCountdown(prev => {
-        if (prev <= 1) { clearInterval(countdownRef.current!); return 0 }
-        return prev - 1
-      })
-    }, 1000)
+    countdownRef.current = setInterval(syncCountdown, 1000)
     pollingRef.current = setInterval(async () => {
       try {
         const { data: { session: s2 } } = await supabase.auth.getSession()
@@ -406,16 +423,17 @@ export default function DashboardPage() {
           headers: { 'Authorization': 'Bearer ' + s2.access_token }
         })
         const data = await res.json()
-        const sigueGenerando = (data?.reports || []).some((r: any) => r.status === 'GENERATING')
+        const filaGenerando = (data?.reports || []).find((r: any) => r.status === 'GENERATING')
+        if (filaGenerando) startedAtRef.current = new Date(filaGenerando.createdAt).getTime()
         setDashData(data)
         const latest = (data.reports || []).find((r: any) => r.sectionsJson) || (data.reports || []).find((r: any) => r.status === 'COMPLETED')
         if (latest) setSelectedReport(latest)
-        if (!sigueGenerando) {
+        if (!filaGenerando && Date.now() >= graceUntilRef.current) {
           stopPolling()
         }
       } catch(e) {}
     }, 8000)
-  }, [stopPolling])
+  }, [stopPolling, syncCountdown])
 
   // Detectar reportes GENERATING al cargar el dashboard — con auto-desbloqueo a los 10 min
   useEffect(() => {
@@ -429,10 +447,10 @@ export default function DashboardPage() {
         // Reporte stuck — desbloquear automáticamente
         console.log('[Dashboard] Reporte stuck +10min — desbloqueando automáticamente')
         stopPolling()
-      } else if (!pollingRef.current) {
-        startPolling()
+      } else {
+        startPolling(new Date(reporteGenerando.createdAt).getTime())
       }
-    } else if (!hayGenerando && pollingRef.current) {
+    } else if (!hayGenerando && pollingRef.current && Date.now() >= graceUntilRef.current) {
       stopPolling()
     }
   }, [dashData?.reports])
@@ -1090,7 +1108,7 @@ export default function DashboardPage() {
         <div style={{ display:'grid', gridTemplateColumns: isMobile ? '1fr 1fr' : '1fr 1fr 1fr 1fr', gap:10, marginBottom:14 }}>
           {[
             { label:'PRESIÓN COMPETITIVA', value: s.competitivePressure ? `${s.competitivePressure}%` : '—', sub: s.generalTrend || 'Sin datos', color:'#8B7BFF', pct: s.competitivePressure || 0 },
-            { label:'ALERTAS CRÍTICAS', value: s.criticalAlertsCount !== undefined ? String(s.criticalAlertsCount) : '—', sub: s.mediumAlertsCount !== undefined ? `${s.mediumAlertsCount} alertas medias` : 'Sin datos', color:'#FF6B6B', pct: s.criticalAlertsCount ? Math.min(s.criticalAlertsCount * 20, 100) : 0 },
+            { label:'ALERTAS CRÍTICAS', value: s.criticalAlertsCount !== undefined ? String(s.criticalAlertsCount) : '—', sub: s.mediumAlertsCount !== undefined ? `${s.highAlertsCount !== undefined ? `${s.highAlertsCount} altas · ` : ''}${s.mediumAlertsCount} alertas medias` : 'Sin datos', color:'#FF6B6B', pct: s.criticalAlertsCount ? Math.min(s.criticalAlertsCount * 20, 100) : 0 },
             { label:'OPORTUNIDADES', value: s.opportunityScore ? `${s.opportunityScore}%` : '—', sub: s.opportunities ? `${s.opportunities.length} identificadas` : 'Sin datos', color:'#6EE7A4', pct: s.opportunityScore || 0 },
             { label:'RIESGO DE MERCADO', value: s.marketRisk ? `${s.marketRisk}%` : '—', sub: s.riskLevel || 'Sin datos', color:'#F2C063', pct: s.marketRisk || 0 },
           ].map((k,i)=>(
@@ -1106,18 +1124,26 @@ export default function DashboardPage() {
         {/* ZONA 3 — Alertas críticas reales */}
         {s.criticalAlerts && s.criticalAlerts.length > 0 && (
           <div style={{...S.card, background:T.bgCard, border:`1px solid ${T.border}`, boxShadow: isDark ? "none" : "0 1px 4px rgba(83,74,183,0.08)"}}>
-            <span style={{...S.lbl, color:T.lbl}}>🔴 ALERTAS CRÍTICAS · ACCIÓN INMEDIATA</span>
+            <span style={{...S.lbl, color:T.lbl}}>🔴 ALERTAS CRÍTICAS Y ALTAS · ACCIÓN INMEDIATA</span>
             <div style={{ display:'flex', flexDirection:'column', gap:8 }}>
-              {s.criticalAlerts.map((a: any, i: number) => (
-                <div key={i} style={{ display:'flex', gap:10, padding:'10px 12px', background: isDark ? 'rgba(255,107,107,0.05)' : '#FEF2F2', border:'1px solid rgba(255,107,107,0.25)', borderRadius:10 }}>
+              {s.criticalAlerts.map((a: any, i: number) => {
+                // level: CRÍTICA (o sin nivel, reportes anteriores) | ALTA (umbral de urgencia)
+                const alta = a.level === 'ALTA'
+                const c = alta ? '217,130,43' : '255,107,107'
+                return (
+                <div key={i} style={{ display:'flex', gap:10, padding:'10px 12px', background: isDark ? `rgba(${c},0.05)` : (alta ? '#FFF7ED' : '#FEF2F2'), border:`1px solid rgba(${c},0.25)`, borderRadius:10 }}>
                   <span style={{ fontSize:18, flexShrink:0 }}>{a.icon || '⚠️'}</span>
                   <div style={{ flex:1 }}>
-                    <div style={{ fontSize:12, fontWeight:700, color:T.text, marginBottom:2 }}>{a.title}</div>
+                    <div style={{ fontSize:12, fontWeight:700, color:T.text, marginBottom:2 }}>
+                      <span style={{ fontSize:9, fontWeight:800, color:'#fff', background:`rgb(${c})`, borderRadius:6, padding:'1px 6px', marginRight:6 }}>{alta ? 'ALTA' : 'CRÍTICA'}</span>
+                      {a.title}
+                    </div>
                     <div style={{ fontSize:11, color:T.textSub }}>{a.description}</div>
-                    {a.action && <div style={{ fontSize:10, color:'#FF6B6B', marginTop:4, fontWeight:600 }}>💡 {a.action}</div>}
+                    {a.action && <div style={{ fontSize:10, color: alta ? '#D9822B' : '#FF6B6B', marginTop:4, fontWeight:600 }}>💡 {a.action}</div>}
                   </div>
                 </div>
-              ))}
+                )
+              })}
             </div>
           </div>
         )}

@@ -11,7 +11,7 @@ export function getResend(): Resend {
 }
 
 export async function sendReportEmail(
-  to: string,
+  to: string | string[],
   companyName: string,
   reportUrl: string,
   edition: number,
@@ -111,13 +111,14 @@ export async function sendReportEmail(
 </html>
   `
 
-  await getResend().emails.send({
+  const { error } = await getResend().emails.send({
     from: 'Omni Reports <reportes@flow11.mx>',
     to,
     ...(ccEmails.length > 0 && { cc: ccEmails }),
     subject,
     html,
   })
+  if (error) throw new Error(`Resend rechazó el correo del reporte: ${error.message}`)
 
   console.log(`📧 Email enviado a: ${to}`)
 }
@@ -237,7 +238,7 @@ export async function sendPasswordResetEmail(to: string, fullName: string, reset
 }
 
 export async function sendReportErrorEmail(
-  to: string,
+  to: string | string[],
   companyName: string
 ): Promise<void> {
 

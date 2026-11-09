@@ -7,8 +7,38 @@ import { enqueueMailchimpSync } from '../lib/lifecycleQueue'
 import { getSecret } from '../lib/config'
 import { resolveCheckoutProjectId } from '../lib/checkoutProject'
 import { summarizePromoAccess } from '../lib/userPromoAccess'
+import { reportQueue } from '../lib/queue'
+import { hasConfiguredSetup } from '../lib/scheduleEligibility'
+import { enqueueFirstPaidReport } from '../lib/firstPaidReport'
 
 const router = Router()
+
+// Encola el primer reporte completo tras confirmar el pago. Nunca lanza: un fallo aquí no debe
+// romper el webhook ni la verificación del checkout (el usuario aún puede generarlo con el botón).
+async function triggerFirstPaidReport(projectId: string, userId: string, subscriptionStatus: string): Promise<boolean> {
+  try {
+    const result = await enqueueFirstPaidReport(
+      {
+        isConfigured: async id => hasConfiguredSetup(
+          await prisma.project.findUnique({ where: { id }, select: { competitiveSetup: { select: { companyName: true } } } }) as any,
+        ),
+        hasFullReport: async id => !!(await prisma.report.findFirst({ where: { projectId: id, status: 'COMPLETED' as any, isTeaser: false }, select: { id: true } })),
+        hasGeneratingReport: async id => !!(await prisma.report.findFirst({ where: { projectId: id, status: 'GENERATING' as any }, select: { id: true } })),
+        hasPendingJob: async id => {
+          const jobs = [...(await reportQueue.getWaiting()), ...(await reportQueue.getActive()), ...(await reportQueue.getDelayed())]
+          return jobs.some(j => j.data?.projectId === id)
+        },
+        enqueue: (id, uid, jobId) => reportQueue.add('generate-report', { projectId: id, userId: uid, trigger: 'manual' }, { jobId }),
+      },
+      { projectId, userId, subscriptionStatus },
+    )
+    console.log(`[FirstPaidReport] ${projectId}:`, JSON.stringify(result))
+    return result.queued || result.reason === 'already_generating'
+  } catch (e: any) {
+    console.error('[FirstPaidReport] Error encolando el primer reporte:', e.message)
+    return false
+  }
+}
 
 // POST /api/stripe/create-checkout-session
 router.post('/create-checkout-session', async (req: Request, res: Response) => {
@@ -162,6 +192,7 @@ router.post('/webhook', async (req: Request, res: Response) => {
           where: { id: projectId },
           data: { status: localStatus === 'ACTIVE' ? 'ACTIVE' : 'TRIAL' }
         })
+        await triggerFirstPaidReport(projectId, userId, sub.status)
         break
       }
 
@@ -330,7 +361,8 @@ router.get('/verify-session/:sessionId', async (req: Request, res: Response) => 
     })
     await (prisma.project as any).update({ where: { id: projectId }, data: { status: localStatus === 'ACTIVE' ? 'ACTIVE' : 'TRIAL' } })
     console.log('[VerifySession] OK:', projectId)
-    res.json({ ready: true, projectId, status: sub.status })
+    const firstReportPending = await triggerFirstPaidReport(projectId, userId, sub.status)
+    res.json({ ready: true, projectId, status: sub.status, firstReportPending })
   } catch (e: any) {
     res.status(500).json({ error: e.message })
   }

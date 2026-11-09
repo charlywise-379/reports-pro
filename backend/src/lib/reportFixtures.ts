@@ -136,9 +136,9 @@ export const aiNormal: any = {
     { competitor: 'Pixel & Co', weakness: 'Precios altos para PYMES pequeñas.' },
   ],
   highRisks: [
-    { icon: '⚠️', title: 'Pérdida de clientes por precio', probability: 72, description: 'La baja de Atlas Creativo presiona a tus cuentas de menor ticket.', mitigation: 'Ofrece contratos anuales con beneficios adicionales. Costo estimado $4,000 MXN, 1 semana.' },
-    { icon: '⚠️', title: 'Fuga de talento de performance', probability: 55, description: 'Norte Digital ofrece sueldos 15% mayores.', mitigation: 'Revisa compensación y esquema de bonos. 2 semanas.' },
-    { icon: '⚠️', title: 'Saturación en búsqueda local', probability: 38, description: 'El costo por clic subió 9% en tus palabras clave.', mitigation: 'Diversifica a SEO y marketing de contenidos.' },
+    { icon: '⚠️', title: 'Pérdida de clientes por precio', probability: 72, impact: 8, description: 'La baja de Atlas Creativo presiona a tus cuentas de menor ticket.', mitigation: 'Ofrece contratos anuales con beneficios adicionales. Costo estimado $4,000 MXN, 1 semana.' },
+    { icon: '⚠️', title: 'Fuga de talento de performance', probability: 55, impact: 6, description: 'Norte Digital ofrece sueldos 15% mayores.', mitigation: 'Revisa compensación y esquema de bonos. 2 semanas.' },
+    { icon: '⚠️', title: 'Saturación en búsqueda local', probability: 38, impact: 4, description: 'El costo por clic subió 9% en tus palabras clave.', mitigation: 'Diversifica a SEO y marketing de contenidos.' },
   ],
   mediumRisks: [
     { icon: '⚠️', title: 'Dependencia de un solo canal', description: 'Más del 60% de tus leads llega por recomendación.' },
