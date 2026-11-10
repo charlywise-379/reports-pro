@@ -25,6 +25,7 @@ import { startReportWorker } from "./workers/reportWorker"
 import { startLifecycleWorker } from "./workers/lifecycleWorker"
 import { scheduleReports } from "./jobs/scheduleReports"
 import { sendRenewalReminders } from "./jobs/sendRenewalReminders"
+import { sendOnboardingReminders } from "./jobs/sendOnboardingReminders"
 import { loadSecrets, startSecretsRefresh } from "./lib/config"
 
 dotenv.config()
@@ -167,6 +168,11 @@ async function start() {
   sendRenewalReminders()
   setInterval(sendRenewalReminders, 60 * 60 * 1000)
   console.log("Recordatorio de renovación activo cada hora")
+
+  // Recordatorio único de onboarding (registrados hace 24 h – 7 días sin configuración), cada hora en horario amable.
+  sendOnboardingReminders()
+  setInterval(() => sendOnboardingReminders(), 60 * 60 * 1000)
+  console.log("Recordatorio de onboarding activo cada hora")
 
   app.listen(Number(PORT), "0.0.0.0", () => {
     console.log("Servidor corriendo en puerto " + PORT)
