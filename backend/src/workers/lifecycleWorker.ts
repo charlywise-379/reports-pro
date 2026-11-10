@@ -28,12 +28,19 @@ export function startLifecycleWorker() {
       const { firstName, lastName } = splitName(user.fullName)
       const frequency = (user as any).subscriptions?.[0]?.frequency ?? null
 
+      // Las marcas mailchimpSyncedAt / mailchimpTrialTaggedAt solo se ponen si Mailchimp aceptó el contacto y las
+      // etiquetas; si está deshabilitado o rechazó (4xx), quedan nulas y el log lo dice.
+      let accepted = true
       if (reason === 'registered' || reason === 'paid') {
-        await upsertMember({ email: user.email, firstName, lastName, company: user.company })
+        accepted = await upsertMember({ email: user.email, firstName, lastName, company: user.company })
       }
 
-      await addTags(user.email, tagsForReason(reason, { frequency }))
+      if (accepted) accepted = await addTags(user.email, tagsForReason(reason, { frequency }))
 
+      if (!accepted) {
+        console.warn(`[lifecycle] Mailchimp no aceptó ${reason} para ${user.email}; no se marca como sincronizado`)
+        return
+      }
       if (reason === 'registered') {
         await prisma.user.update({ where: { id: userId }, data: { mailchimpSyncedAt: new Date() } })
       } else if (reason === 'trial') {

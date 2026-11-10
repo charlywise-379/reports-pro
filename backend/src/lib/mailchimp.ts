@@ -36,10 +36,12 @@ export function subscriberHash(email: string): string {
 
 class MailchimpRetryableError extends Error {}
 
-async function mcRequest(path: string, method: 'GET' | 'PUT' | 'POST', body?: unknown): Promise<void> {
+// true solo si Mailchimp aceptó la petición; false si está deshabilitado o hubo error permanente (4xx).
+// Errores transitorios (red, 429, 5xx) lanzan para que la cola reintente.
+async function mcRequest(path: string, method: 'GET' | 'PUT' | 'POST', body?: unknown): Promise<boolean> {
   if (!isMailchimpEnabled()) {
     warnDisabledOnce()
-    return
+    return false
   }
   const url = `https://${datacenter()}.api.mailchimp.com/3.0${path}`
   let res: Response
@@ -55,12 +57,13 @@ async function mcRequest(path: string, method: 'GET' | 'PUT' | 'POST', body?: un
   } catch (e: any) {
     throw new MailchimpRetryableError(`mailchimp network error: ${e?.message || e}`)
   }
-  if (res.ok) return
+  if (res.ok) return true
   const text = await res.text().catch(() => '')
   if (res.status === 429 || res.status >= 500) {
     throw new MailchimpRetryableError(`mailchimp ${res.status}: ${text.slice(0, 300)}`)
   }
   console.warn(`[mailchimp] error permanente ${res.status} en ${method} ${path}: ${text.slice(0, 300)}`)
+  return false
 }
 
 export async function upsertMember(p: {
@@ -68,13 +71,13 @@ export async function upsertMember(p: {
   firstName?: string
   lastName?: string
   company?: string | null
-}): Promise<void> {
+}): Promise<boolean> {
   const merge_fields: Record<string, string> = {}
   if (p.firstName) merge_fields.FNAME = p.firstName
   if (p.lastName) merge_fields.LNAME = p.lastName
   if (p.company) merge_fields.COMPANY = p.company
 
-  await mcRequest(
+  return mcRequest(
     `/lists/${audienceId()}/members/${subscriberHash(p.email)}`,
     'PUT',
     {
@@ -85,9 +88,9 @@ export async function upsertMember(p: {
   )
 }
 
-export async function addTags(email: string, tags: string[]): Promise<void> {
-  if (!tags.length) return
-  await mcRequest(
+export async function addTags(email: string, tags: string[]): Promise<boolean> {
+  if (!tags.length) return true
+  return mcRequest(
     `/lists/${audienceId()}/members/${subscriberHash(email)}/tags`,
     'POST',
     { tags: tags.map(name => ({ name, status: 'active' })) },

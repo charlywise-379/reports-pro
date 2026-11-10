@@ -79,7 +79,7 @@ describe('manejo de errores', () => {
     const fetchMock = vi.fn()
     vi.stubGlobal('fetch', fetchMock)
     const { upsertMember } = await freshImport()
-    await expect(upsertMember({ email: 'a@b.com' })).resolves.toBeUndefined()
+    await expect(upsertMember({ email: 'a@b.com' })).resolves.toBe(false)
     expect(fetchMock).not.toHaveBeenCalled()
   })
   it('HTTP 500 → lanza (reintento)', async () => {
@@ -92,9 +92,14 @@ describe('manejo de errores', () => {
     const { addTags } = await freshImport()
     await expect(addTags('a@b.com', ['x'])).rejects.toThrow()
   })
-  it('HTTP 400 → NO lanza (error permanente)', async () => {
+  it('HTTP 400 → NO lanza (error permanente) y devuelve false', async () => {
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: false, status: 400, text: async () => 'bad email' }))
     const { addTags } = await freshImport()
-    await expect(addTags('a@b.com', ['x'])).resolves.toBeUndefined()
+    await expect(addTags('a@b.com', ['x'])).resolves.toBe(false)
+  })
+  it('HTTP 200 → devuelve true', async () => {
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: true, status: 200, text: async () => '{}' }))
+    const { upsertMember } = await freshImport()
+    await expect(upsertMember({ email: 'a@b.com' })).resolves.toBe(true)
   })
 })
