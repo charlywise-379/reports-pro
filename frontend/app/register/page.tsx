@@ -3,6 +3,7 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { Mail, Lock, User, Phone, Building2, MapPin, Ticket, ArrowRight, ArrowLeft, CheckCircle, Sparkles } from 'lucide-react'
 import posthog from 'posthog-js'
+import { trackMeta } from '@/lib/metaPixel'
 import { resendConfirmationEmail } from '@/lib/authLinkError'
 
 export default function RegisterPage() {
@@ -71,6 +72,7 @@ export default function RegisterPage() {
         return
       }
       posthog.capture('user_signed_up', { email, name: `${firstName} ${lastName}` })
+      trackMeta('CompleteRegistration', {}, { once: `registration:${email.trim().toLowerCase()}` })
       setSuccess(true)
     } catch (e) {
       setError('Ocurrió un error. Intenta de nuevo.')

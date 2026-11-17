@@ -362,7 +362,12 @@ router.get('/verify-session/:sessionId', async (req: Request, res: Response) => 
     await (prisma.project as any).update({ where: { id: projectId }, data: { status: localStatus === 'ACTIVE' ? 'ACTIVE' : 'TRIAL' } })
     console.log('[VerifySession] OK:', projectId)
     const firstReportPending = await triggerFirstPaidReport(projectId, userId, sub.status)
-    res.json({ ready: true, projectId, status: sub.status, firstReportPending })
+    // Para el píxel de Meta (Subscribe): lo cobrado en este checkout (0 si inicia prueba) y su moneda reales de
+    // Stripe. LTV estimado: 6 meses para planes mensuales; el año completo para anuales.
+    const amount = typeof session.amount_total === 'number' ? Math.round(session.amount_total) / 100 : null
+    const interval = sub.items?.data[0]?.price?.recurring?.interval
+    const predictedLtv = amount === null ? null : interval === 'year' ? amount : Math.round(amount * 6 * 100) / 100
+    res.json({ ready: true, projectId, status: sub.status, firstReportPending, amount, currency: session.currency ? session.currency.toUpperCase() : null, predictedLtv })
   } catch (e: any) {
     res.status(500).json({ error: e.message })
   }

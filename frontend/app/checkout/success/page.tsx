@@ -3,6 +3,7 @@ import { useEffect, useState, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import posthog from 'posthog-js'
+import { trackMeta } from '@/lib/metaPixel'
 
 type PollingStatus = 'waiting' | 'active' | 'timeout' | 'error'
 
@@ -40,6 +41,16 @@ function SuccessContent() {
         if (isReady) {
           stopped = true
           posthog.capture('subscription_activated', { session_id: sessionId })
+          // Una sola vez por sesión de checkout (aunque recarguen la página); eventID = sesión de Stripe.
+          if (verifyData.status === 'trialing') {
+            trackMeta('StartTrial', { value: 0, currency: 'USD' }, { once: `trial:${sessionId}`, eventID: `trial_${sessionId}` })
+          } else if (verifyData.status === 'active' && typeof verifyData.amount === 'number' && verifyData.amount > 0) {
+            trackMeta('Subscribe', {
+              value: verifyData.amount,
+              currency: verifyData.currency || 'USD',
+              predicted_ltv: verifyData.predictedLtv ?? verifyData.amount,
+            }, { once: `subscribe:${sessionId}`, eventID: `subscribe_${sessionId}` })
+          }
           setStatus('active')
           setTimeout(() => router.push('/dashboard?verified=1&sid=' + sessionId), 1500)
           return

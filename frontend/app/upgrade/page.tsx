@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import posthog from 'posthog-js'
+import { trackMeta } from '@/lib/metaPixel'
 
 const MXN = 17.50
 
@@ -38,6 +39,7 @@ export default function UpgradePage() {
   useEffect(() => {
     setProjectId(new URLSearchParams(window.location.search).get('projectId'))
   }, [])
+  useEffect(() => { if (!checkingAccess) trackMeta('ViewContent', { content_name: 'Pricing' }) }, [checkingAccess])
   const isMobile = useIsMobile()
   const BACKEND = process.env.NEXT_PUBLIC_BACKEND_URL || 'https://reports-pro-production.up.railway.app'
 

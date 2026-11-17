@@ -3,6 +3,7 @@ import { useEffect, useState, type CSSProperties } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import Reveal from './Reveal'
+import { trackMeta } from '@/lib/metaPixel'
 import FloatingHexes from './FloatingHexes'
 
 const NAVY = '#191462'
@@ -416,6 +417,20 @@ export default function Landing2Page() {
   const nextPain = () => setPain(i => (i + 1) % pains.length)
   // avance automático cada 8s (se reinicia con cada clic); sin animar si el
   // usuario pidió reducir movimiento
+  // Meta: ViewContent cuando al menos 30 % de la sección de precios es visible (una vez por carga de página).
+  useEffect(() => {
+    const el = document.getElementById('precios')
+    if (!el || typeof IntersectionObserver === 'undefined') return
+    const io = new IntersectionObserver(entries => {
+      if (entries.some(e => e.isIntersecting)) {
+        trackMeta('ViewContent', { content_name: 'Pricing' })
+        io.disconnect()
+      }
+    }, { threshold: 0.3 })
+    io.observe(el)
+    return () => io.disconnect()
+  }, [])
+
   useEffect(() => {
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
     const id = window.setTimeout(() => setPain(i => (i + 1) % pains.length), 8000)
