@@ -4,7 +4,7 @@
 // (BD, Redis, JWT, Supabase, master key) y de red (FRONTEND_URL...) nunca
 // van aquí: romperlas desde el backoffice deja fuera al propio backoffice.
 
-export type SecretGroup = 'stripe' | 'resend' | 'anthropic' | 'twilio' | 'mailchimp' | 'cloudflare' | 'pdf'
+export type SecretGroup = 'stripe' | 'resend' | 'anthropic' | 'twilio' | 'mailchimp' | 'meta' | 'cloudflare' | 'pdf'
 
 export type SecretDef = {
   key: string
@@ -22,6 +22,7 @@ export const GROUP_LABELS: Record<SecretGroup, string> = {
   anthropic: 'Anthropic (IA)',
   twilio: 'Twilio (WhatsApp)',
   mailchimp: 'Mailchimp',
+  meta: 'Meta (Conversions API)',
   cloudflare: 'Cloudflare / R2',
   pdf: 'Generación de PDF',
 }
@@ -57,6 +58,10 @@ export const SECRET_DEFS: SecretDef[] = [
   { key: 'MAILCHIMP_API_KEY', group: 'mailchimp', label: 'API key', sensitive: true,
     validate: (v) => (/-us\d+$/.test(v) ? null : 'La llave de Mailchimp debe terminar en -usNN (data center)') },
   { key: 'MAILCHIMP_AUDIENCE_ID', group: 'mailchimp', label: 'Audience ID', sensitive: false },
+  { key: 'META_CAPI_ACCESS_TOKEN', group: 'meta', label: 'Access token (Conversions API)', sensitive: true },
+  { key: 'META_PIXEL_ID', group: 'meta', label: 'ID del píxel', sensitive: false,
+    validate: (v) => (/^\d{10,20}$/.test(v) ? null : 'El ID del píxel de Meta es numérico') },
+  { key: 'META_TEST_EVENT_CODE', group: 'meta', label: 'Código de prueba (solo para probar; borrar después)', sensitive: false },
   { key: 'BLESS_KEY', group: 'pdf', label: 'Llave de generación de PDF', sensitive: true },
   { key: 'TWILIO_ACCOUNT_SID', group: 'twilio', label: 'Account SID', sensitive: false,
     validate: prefix(['AC'], 'El Account SID de Twilio empieza con AC') },

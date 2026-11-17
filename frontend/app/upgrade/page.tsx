@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import posthog from 'posthog-js'
-import { trackMeta } from '@/lib/metaPixel'
+import { trackMeta, metaCookies } from '@/lib/metaPixel'
 
 const MXN = 17.50
 
@@ -88,7 +88,7 @@ export default function UpgradePage() {
       const res = await fetch(`${BACKEND}/api/stripe/create-checkout-session`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId: user.id, planKey: plan.key, billingCycle: billing, ...(projectId ? { projectId } : {}) })
+        body: JSON.stringify({ userId: user.id, planKey: plan.key, billingCycle: billing, ...(projectId ? { projectId } : {}), ...metaCookies() })
       })
       const data = await res.json()
       if (data.url) window.location.href = data.url

@@ -27,6 +27,14 @@ export function trackMeta(event: string, params?: FbqParams, opts: { once?: stri
   } catch { /* nunca romper la UI por medición */ }
 }
 
+/** Cookies _fbp/_fbc del píxel, para que el evento del servidor (Conversions API) coincida con este navegador. */
+export function metaCookies(): { metaFbp?: string; metaFbc?: string } {
+  if (typeof document === 'undefined') return {}
+  const get = (n: string) => document.cookie.split('; ').find(c => c.startsWith(n + '='))?.split('=').slice(1).join('=')
+  const fbp = get('_fbp'), fbc = get('_fbc')
+  return { ...(fbp ? { metaFbp: fbp } : {}), ...(fbc ? { metaFbc: fbc } : {}) }
+}
+
 export function trackMetaPageView(): void {
   if (typeof window === 'undefined' || typeof window.fbq !== 'function') return
   try { window.fbq('track', 'PageView') } catch { /* noop */ }

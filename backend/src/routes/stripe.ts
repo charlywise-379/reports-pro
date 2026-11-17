@@ -4,6 +4,8 @@ import { prisma } from '../lib/prisma'
 import { getPriceAmountUSD, resolvePriceId, configuredPriceIds } from '../lib/stripePriceMap'
 import { requireAuth } from '../middleware/auth'
 import { enqueueMailchimpSync } from '../lib/lifecycleQueue'
+import { sanitizeBrowserContext } from '../lib/metaCapi'
+import { sendFirstPaymentSubscribe } from '../lib/metaSubscribe'
 import { getSecret } from '../lib/config'
 import { resolveCheckoutProjectId } from '../lib/checkoutProject'
 import { summarizePromoAccess } from '../lib/userPromoAccess'
@@ -113,7 +115,11 @@ router.post('/create-checkout-session', async (req: Request, res: Response) => {
       mode: 'subscription',
       subscription_data: {
         ...(yaUsoTrial || skipTrial || hasFullAccessPromo ? {} : { trial_period_days: 7 }),
-        metadata: { userId, projectId: project.id, billingCycle: billingCycle || 'monthly' }
+        // meta_*: cookies del píxel, IP y navegador del checkout, para el evento Subscribe del servidor (metaSubscribe.ts).
+        metadata: {
+          userId, projectId: project.id, billingCycle: billingCycle || 'monthly',
+          ...sanitizeBrowserContext({ fbp: req.body.metaFbp, fbc: req.body.metaFbc, ip: req.ip, ua: req.headers['user-agent'] }),
+        }
       },
       success_url: `${FRONTEND_URL}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${FRONTEND_URL}/checkout/cancel`,
@@ -267,6 +273,8 @@ router.post('/webhook', async (req: Request, res: Response) => {
           if (paidSub?.userId && paidSub.user?.accountType !== 'PARTNER') {
             await enqueueMailchimpSync(paidSub.userId, 'paid')
           }
+          // Meta Conversions API: Subscribe en el primer cobro real (incluido el de fin de prueba).
+          await sendFirstPaymentSubscribe(invoice)
         }
         break
       }
